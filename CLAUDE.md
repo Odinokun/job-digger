@@ -103,6 +103,8 @@ Next.js 16 має зміни проти тренувальних даних мо
 - Нова залежність, плагін, фреймворк або шар абстракції - лише з обґрунтуванням: що вже покриває цю потребу і в чому компроміс. Нічого не додавати мовчки.
 - Поведінку бібліотек, API і CLI не відтворювати з пам'яті - перевіряти в офіційній документації і давати посилання. «Не перевірив» - нормальна відповідь, вигадана - ні.
 - **Форматування автоматичне.** Хуки `PostToolUse` у `.claude/settings.json` після кожного Write/Edit проганяють на файлі Prettier і `eslint --fix`; невиправні помилки ESLint блокують крок і показуються одразу. Руками `npm run format` викликати не потрібно. Prettier також сортує класи Tailwind (`prettier-plugin-tailwindcss`): порядок класів у `className` не обговорюється на рев'ю, його задає плагін. Опція `tailwindStylesheet` у `.prettierrc` вказує на `src/app/globals.css` - без неї плагін не бачить токенів із `@theme` і виносить такі класи на початок.
+- **Класи Tailwind перевіряє ESLint** (`eslint-plugin-tailwindcss`, конфіг `recommended`): друкарська помилка в класі - `no-custom-classname`, суперечливі класи типу `p-2 p-3` - `no-contradicting-classname` (це error, він блокує крок), а `enforces-shorthand` і `enforces-canonical-classname` пропонують коротший запис. Правило `classnames-order` вимкнене: порядок класів - робота Prettier. Налаштування `cssConfigPath` у `eslint.config.mjs` вказує на `src/app/globals.css` і для Tailwind v4 обовʼязкове.
+- Власні класи HeroUI (`button--primary` і подібні) ESLint вважає невідомими і дає warning. Це нормально: у `className` ми пишемо утиліти Tailwind, а не внутрішні класи бібліотеки. Якщо колись знадобиться писати їх руками - у правило додається `whitelist`.
 
 ## Хуки Claude Code
 
