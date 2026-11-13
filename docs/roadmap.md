@@ -4,11 +4,11 @@
 
 ## 11. Етапи реалізації
 
-У кожному етапі тести пишуться першими ([розділ 14](process.md)). Наприкінці етапу всі його тести, зокрема E2E-сценарії, мають бути зеленими.
+У кожному етапі тести пишуться першими ([`CLAUDE.md`](../CLAUDE.md)). Наприкінці етапу всі його тести, зокрема E2E-сценарії, мають бути зеленими.
 
 1. **Основа проєкту**
 
-   Next.js, HeroUI v3, Tailwind v4, TypeScript, Drizzle, PostgreSQL у Docker, базова навігація та локалізація. Запуск лише на 127.0.0.1. Налаштування Vitest і Playwright Test. Одразу після розгортання Next.js - файл `CLAUDE.md` із правилами з [розділу 14](process.md). Репозиторій на GitHub, доступ Claude до GitHub, GitHub Actions для тестів. Встановлення скілів ([розділ 14](process.md)) і прогін плану через Grill Me.
+   Next.js, HeroUI v3, Tailwind v4, TypeScript, Drizzle, PostgreSQL у Docker, базова навігація та локалізація. Запуск лише на 127.0.0.1. Налаштування Vitest і Playwright Test. Одразу після розгортання Next.js - файл [`CLAUDE.md`](../CLAUDE.md) із правилами розробки. Репозиторій на GitHub, доступ Claude до GitHub, GitHub Actions для тестів. Встановлення скілів ([`CLAUDE.md`](../CLAUDE.md)) і прогін плану через Grill Me.
 
 2. **Компанії**
 
