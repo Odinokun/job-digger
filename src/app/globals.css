@@ -1,4 +1,7 @@
 @import "tailwindcss";
+/* Порядок обовʼязковий: tailwindcss першим, інакше стилі HeroUI
+   перекриваються Preflight. */
+@import "@heroui/styles";
 
 /* Шрифти з layout.tsx підключаються до токенів Tailwind: font-sans і font-mono
    у класах дають Geist. inline потрібен тому, що значення - посилання на іншу
