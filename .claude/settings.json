@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | { read -r f; npx --no-install prettier --write --ignore-unknown \"$f\"; }",
+            "statusMessage": "Prettier"
+          },
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | { read -r f; out=$(npx --no-install eslint --fix --no-warn-ignored \"$f\" 2>&1) || { printf '%s\\n' \"$out\" >&2; exit 2; }; }",
+            "statusMessage": "ESLint"
+          }
+        ]
+      }
+    ]
+  }
+}
