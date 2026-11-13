@@ -2,6 +2,9 @@
   "name": "job-digger",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "26.x"
+  },
   "scripts": {
     "dev": "next dev -H 127.0.0.1",
     "build": "next build",
@@ -13,7 +16,7 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "^26",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "typescript": "^5"
