@@ -2,7 +2,7 @@
 # Notification hook: системне повідомлення, коли Claude Code чекає на ввід автора.
 # Рядок повідомлення лишається літеральним: підстановка даних з хука у osascript
 # відкрила б шлях для інжекції AppleScript.
-osascript -e 'display notification "Claude is waiting for your input" with title "Claude Code"'
+osascript -e 'display notification "Claude is waiting for your input" with title "Claude Code" sound name "Ping"'
 
 # Альтернативи для інших систем, якщо проєкт колись перенесуть:
 # Linux: notify-send 'Claude Code' 'Claude is waiting for your input'

@@ -81,6 +81,8 @@ Next.js 16 має зміни проти тренувальних даних мо
 
 Назви файлів розділяють рівні: `*.test.ts` - юніт-тести (проєкт Vitest `unit`), `*.integration.test.ts` - тести зі справжньою базою (проєкт `integration`). Запуск: `npm test` (усе), `npm run test:unit`, `npm run test:integration`, `npm run test:watch`.
 
+E2E живуть окремо від Vitest: тека `e2e/`, файли `*.spec.ts`, конфіг `playwright.config.ts`, запуск `npm run test:e2e` (і `npm run test:e2e:ui`). `npm test` їх не зачіпає, бо вони піднімають застосунок. Браузер лише Chromium, сервер для тестів запускає сам Playwright - деталі в [README](README.md#e2e-тести).
+
 Інтеграційним тестам потрібні піднята база (`docker compose up -d`) і змінна `TEST_DATABASE_URL` - окрема база, не база розробки. Деталі обвʼязки й рішення щодо ізоляції - [src/server/db/testing/README.md](src/server/db/testing/README.md).
 
 `globals` у Vitest вимкнені: `describe`, `it`, `expect` імпортуються явно з `vitest`.
