@@ -44,3 +44,6 @@ next-env.d.ts
 # editors
 .idea/
 .vscode/
+
+# тимчасові файли для роботи з Claude Code (скриншоти тощо)
+.claude/temp/
