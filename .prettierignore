@@ -3,3 +3,6 @@
 out/
 build/
 package-lock.json
+
+# Міграції й знімки схеми генерує drizzle-kit, руками вони не змінюються
+drizzle/

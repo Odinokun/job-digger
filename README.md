@@ -8,7 +8,7 @@
 
 Next.js 16 (App Router, TypeScript) · HeroUI v3 + Tailwind CSS v4 · PostgreSQL + Drizzle ORM · Vitest і Playwright Test
 
-Проєкт на ESM (`"type": "module"`). Службові скрипти запускаються просто через `node` - Node 26 виконує TypeScript без збирача і читає `.env` через `--env-file`, тому ні `tsx`, ні `dotenv` у залежностях немає.
+Проєкт на ESM (`"type": "module"`). Службові скрипти запускаються просто через `node`: Node 26 виконує TypeScript без збирача і читає `.env` через `--env-file`, тому ні `tsx`, ні `dotenv` у залежностях немає. Через нативний TypeScript імпорти в таких скриптах пишуться з розширенням `.ts` (опція `allowImportingTsExtensions` у `tsconfig.json`).
 
 ## Запуск локально
 
@@ -34,7 +34,7 @@ npm run db:seed         # створити системного користув
 
 Перелік змінних із коментарями - у [`.env.example`](.env.example); сам `.env` у git не потрапляє.
 
-Опис сервісу - у [`docker-compose.yml`](docker-compose.yml). База слухає `127.0.0.1:5432` і лише цей комп'ютер, назовні порт не відкритий; якщо цей порт уже зайнятий іншим PostgreSQL, його можна змінити змінною `POSTGRES_PORT`. Дані лежать у томі Docker `pgdata` і переживають перестворення контейнера.
+Як працює схема, міграції й seed - [`src/server/db/README.md`](src/server/db/README.md). Опис сервісу - у [`docker-compose.yml`](docker-compose.yml). База слухає `127.0.0.1:5432` і лише цей комп'ютер, назовні порт не відкритий; якщо цей порт уже зайнятий іншим PostgreSQL, його можна змінити змінною `POSTGRES_PORT`. Дані лежать у томі Docker `pgdata` і переживають перестворення контейнера.
 
 ### Шпаргалка команд
 

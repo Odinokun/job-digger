@@ -14,7 +14,7 @@
 | Мова         | TypeScript                                                    |
 | UI           | HeroUI v3 (3.2.x) + Tailwind CSS v4                           |
 | БД           | PostgreSQL: локально в Docker, онлайн на Neon                 |
-| ORM          | Drizzle ORM (одна схема, один набір міграцій, `DATABASE_URL`) |
+| ORM          | Drizzle ORM 0.45.x (одна схема, один набір міграцій, `DATABASE_URL`) |
 | HTML-парсинг | Cheerio                                                       |
 | Локалізація  | next-intl (en/uk, за замовчуванням en)                        |
 | Тести        | Vitest (юніт та інтеграційні), Playwright Test (E2E)          |
@@ -23,6 +23,10 @@
 Cache Components і React Compiler вимкнені свідомо. Playwright - лише інструмент тестів, у продакшн-код не потрапляє.
 
 Next.js 16 має зміни проти тренувальних даних моделей: документація встановленої версії лежить у `node_modules/next/dist/docs/`, читай її перед написанням коду (про це ж нагадує `AGENTS.md`, який генерує `next dev`).
+
+Те саме з Drizzle, але навпаки: встановлена стабільна 0.45.x, а сайт orm.drizzle.team документує лише v1 (RC), архіву для 0.x немає. API звіряй із типами в `node_modules/drizzle-orm/`. Деталі роботи з базою - [src/server/db/README.md](src/server/db/README.md).
+
+Проєкт на ESM, службові скрипти виконує сам Node 26 без збирача - деталі й наслідки для імпортів у [README](README.md#стек) і [src/server/db/README.md](src/server/db/README.md).
 
 ## Структура репозиторію
 
