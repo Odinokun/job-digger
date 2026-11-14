@@ -34,6 +34,8 @@ npm run db:seed         # створити системного користув
 
 Перелік змінних із коментарями - у [`.env.example`](.env.example); сам `.env` у git не потрапляє.
 
+Інтеграційні тести працюють на окремій базі в тому самому контейнері - вона створюється сама при першому `npm run test:integration`, потрібна лише змінна `TEST_DATABASE_URL` у `.env` ([деталі](src/server/db/testing/README.md)).
+
 Як працює схема, міграції й seed - [`src/server/db/README.md`](src/server/db/README.md). Опис сервісу - у [`docker-compose.yml`](docker-compose.yml). База слухає `127.0.0.1:5432` і лише цей комп'ютер, назовні порт не відкритий; якщо цей порт уже зайнятий іншим PostgreSQL, його можна змінити змінною `POSTGRES_PORT`. Дані лежать у томі Docker `pgdata` і переживають перестворення контейнера.
 
 ### Шпаргалка команд
@@ -68,6 +70,10 @@ npm run db:seed         # створити системного користув
 | `npm run dev`          | Dev-сервер на `127.0.0.1:3000`                         |
 | `npm run build`        | Продакшн-збірка                                        |
 | `npm start`            | Запуск продакшн-збірки на `127.0.0.1:3000`             |
+| `npm test`             | Усі тести: юніт та інтеграційні                        |
+| `npm run test:unit`    | Лише юніт-тести (без бази)                             |
+| `npm run test:integration` | Лише тести зі справжньою базою                     |
+| `npm run test:watch`   | Тести у watch-режимі під час роботи                    |
 | `npm run lint`         | ESLint: правила Next.js, React і TypeScript            |
 | `npm run format`       | Prettier: форматування файлів                          |
 | `npm run format:check` | Prettier: лише перевірка, без змін - для CI            |
