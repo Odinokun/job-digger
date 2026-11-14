@@ -1,0 +1,39 @@
+# Локальна база даних для розробки.
+# Як підняти, шпаргалка команд і попередження про втрату даних - у README.md («База даних»).
+services:
+  db:
+    image: postgres:18
+    container_name: job-digger-db
+    restart: unless-stopped
+
+    # Порт відкритий лише для цього компʼютера, як і `next dev -H 127.0.0.1`:
+    # без префікса 127.0.0.1 Docker відкрив би базу на всю локальну мережу.
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+
+    # Ці змінні діють лише при першій ініціалізації, коли тому ще немає.
+    # Зміна пароля згодом вимагає `docker compose down -v`, тобто втрати локальних даних.
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required, see README.md}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required, see README.md}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required, see README.md}
+
+    # Стандартних 64 МБ /dev/shm для PostgreSQL замало - розмір радить документація образу.
+    shm_size: 128mb
+
+    volumes:
+      # Для PostgreSQL 18 том монтується саме сюди; до 17 включно шлях був
+      # /var/lib/postgresql/data, тому старі приклади з інтернету тут не підходять.
+      - pgdata:/var/lib/postgresql
+
+    # Під час ініціалізації база ще не приймає підключення, тому міграції й застосунок
+    # мають чекати саме на healthy, а не на «контейнер запущений».
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  pgdata:
