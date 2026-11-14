@@ -29,6 +29,7 @@ cp .env.example .env    # далі вписати в .env пароль замі�
 docker compose up -d    # підняти базу у фоні
 docker compose ps       # має бути статус healthy
 npm run db:migrate      # застосувати міграції
+npm run db:seed         # створити системного користувача
 ```
 
 Перелік змінних із коментарями - у [`.env.example`](.env.example); сам `.env` у git не потрапляє.
@@ -72,6 +73,7 @@ npm run db:migrate      # застосувати міграції
 | `npm run format:check` | Prettier: лише перевірка, без змін - для CI            |
 | `npm run db:generate`  | Згенерувати міграцію зі змін у схемі Drizzle           |
 | `npm run db:migrate`   | Застосувати нові міграції до бази                      |
+| `npm run db:seed`      | Створити системного користувача (запуск повторюваний)  |
 | `npm run db:check`     | Перевірити підключення до бази й показати її версію    |
 | `npm run db:psql`      | psql у контейнері бази (потрібна піднята база)         |
 
