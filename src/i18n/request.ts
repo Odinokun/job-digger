@@ -1,11 +1,7 @@
 import { cookies } from "next/headers";
 import { getRequestConfig } from "next-intl/server";
 
-import {
-  defaultLocale,
-  isSupportedLocale,
-  localeCookieName,
-} from "./config";
+import { defaultLocale, isSupportedLocale, localeCookieName } from "./config";
 
 /**
  * next-intl викликає цю функцію раз на запит, щоб дізнатися мову інтерфейсу
