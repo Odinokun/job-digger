@@ -32,7 +32,7 @@ Next.js 16 має зміни проти тренувальних даних мо
 
 Один репозиторій, один застосунок Next.js: фронтенд (сторінки, компоненти, HeroUI) і бекенд (Server Actions, API-маршрути обробника розкладу, черга, парсери, модуль запитів, робота з БД) разом, розведені по папках. Мультипакетний монорепозиторій (Turborepo, pnpm workspaces) не потрібен.
 
-- `src/app` - сторінки, layout, компоненти, маршрути App Router.
+- `src/app` - сторінки, layout, компоненти, маршрути App Router. Деталі - [src/app/README.md](src/app/README.md).
 - `src/server` - Server Actions, робота з БД, черга, парсери, модуль HTTP-запитів. Деталі - [src/server/README.md](src/server/README.md).
 - `docs/` - технічний план.
 
