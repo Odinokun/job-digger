@@ -17,7 +17,11 @@
     "db:psql": "docker compose exec db sh -c 'psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"'",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@heroui/react": "^3.2.7",
@@ -43,6 +47,7 @@
     "prettier": "^3.10.1",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4.3.5",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.1.0"
   }
 }
