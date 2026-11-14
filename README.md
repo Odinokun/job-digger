@@ -28,6 +28,7 @@ PostgreSQL 18 працює локально в контейнері Docker (та
 cp .env.example .env    # далі вписати в .env пароль замість CHANGE_ME (у двох місцях)
 docker compose up -d    # підняти базу у фоні
 docker compose ps       # має бути статус healthy
+npm run db:migrate      # застосувати міграції
 ```
 
 Перелік змінних із коментарями - у [`.env.example`](.env.example); сам `.env` у git не потрапляє.
@@ -69,6 +70,8 @@ docker compose ps       # має бути статус healthy
 | `npm run lint`         | ESLint: правила Next.js, React і TypeScript            |
 | `npm run format`       | Prettier: форматування файлів                          |
 | `npm run format:check` | Prettier: лише перевірка, без змін - для CI            |
+| `npm run db:generate`  | Згенерувати міграцію зі змін у схемі Drizzle           |
+| `npm run db:migrate`   | Застосувати нові міграції до бази                      |
 | `npm run db:check`     | Перевірити підключення до бази й показати її версію    |
 | `npm run db:psql`      | psql у контейнері бази (потрібна піднята база)         |
 
