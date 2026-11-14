@@ -1,0 +1,25 @@
+{
+  "Nav": {
+    "ariaLabel": "Main",
+    "jobs": "Jobs",
+    "companies": "Companies",
+    "history": "History",
+    "settings": "Settings"
+  },
+  "JobsPage": {
+    "title": "Jobs",
+    "empty": "No vacancies yet."
+  },
+  "CompaniesPage": {
+    "title": "Companies",
+    "empty": "No companies yet."
+  },
+  "HistoryPage": {
+    "title": "History",
+    "empty": "No checks yet."
+  },
+  "SettingsPage": {
+    "title": "Settings",
+    "empty": "Nothing to configure yet."
+  }
+}

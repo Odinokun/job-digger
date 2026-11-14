@@ -1,8 +1,12 @@
-export default function HistoryPage() {
+import { getTranslations } from "next-intl/server";
+
+export default async function HistoryPage() {
+  const t = await getTranslations("HistoryPage");
+
   return (
     <>
-      <h1 className="font-sans text-2xl font-bold">History</h1>
-      <p className="mt-2 text-sm text-gray-500">No checks yet.</p>
+      <h1 className="font-sans text-2xl font-bold">{t("title")}</h1>
+      <p className="mt-2 text-sm text-gray-500">{t("empty")}</p>
     </>
   );
 }
