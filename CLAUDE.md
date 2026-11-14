@@ -120,6 +120,24 @@ E2E живуть окремо від Vitest: тека `e2e/`, файли `*.spec
 - **Класи Tailwind перевіряє ESLint** (`eslint-plugin-tailwindcss`, конфіг `recommended`): друкарська помилка в класі - `no-custom-classname`, суперечливі класи типу `p-2 p-3` - `no-contradicting-classname` (це error, він блокує крок), а `enforces-shorthand` і `enforces-canonical-classname` пропонують коротший запис. Правило `classnames-order` вимкнене: порядок класів - робота Prettier. Налаштування `cssConfigPath` у `eslint.config.mjs` вказує на `src/app/globals.css` і для Tailwind v4 обовʼязкове.
 - Власні класи HeroUI (`button--primary` і подібні) ESLint вважає невідомими і дає warning. Це нормально: у `className` ми пишемо утиліти Tailwind, а не внутрішні класи бібліотеки. Якщо колись знадобиться писати їх руками - у правило додається `whitelist`.
 
+## Дозволи Claude Code
+
+Permissions живуть у `.claude/settings.json` поруч із хуками - у git, бо це правило проєкту, а не особиста звичка. Переглянути й змінити інтерактивно - команда `/permissions`.
+
+- **`allow`** - те, що Claude виконує без питання: прогін тестів, лінт, `format:check`, `build`, `db:check`, `tsc`, `prettier`, `eslint`, `playwright`, `docker compose ps/logs` і **читальні** інструменти Trello (`mcp__trello__trelloRead*`).
+- **`deny`** - заборонено повністю: `rm -rf`, `git push --force`, `git reset --hard`, `git clean`, `docker compose down -v` (стирає том із локальною базою) і читання `.env*` інструментом Read.
+- **`ask`** порожній свідомо: без правила Claude Code і так питає. `ask` потрібен лише щоб повернути питання там, де дозвіл уже дано.
+
+Чого в `allow` немає навмисно: `git commit`, `git push`, `gh pr`, встановлення залежностей і **записувальні** інструменти Trello. Це або зміна історії, або дія назовні - вони лишаються з питанням. Правило «коміт лише після перегляду автором» тримається саме на цьому.
+
+Деталі синтаксису - [документація Claude Code](https://code.claude.com/docs/en/permissions). Коротко, що варто знати при правках:
+
+- Порядок перевірки - `deny`, потім `ask`, потім `allow`; перший збіг виграє, і `allow` не робить винятку з `deny`.
+- `ls`, `cat`, `grep`, `head`, `find` і read-only `git` дозволені за замовчуванням, вносити їх не потрібно.
+- У складеній команді кожна частина має бути дозволена окремо, тож `allow` на тести не відкриває `npm test && rm -rf /`.
+- Правила, що намагаються обмежити **аргументи**, крихкі: `docker compose down -v` ловиться, а інший запис того самого прапорця - ні. Тому поруч стоїть і `--volumes`.
+- Списки з різних файлів налаштувань не заміщаються, а складаються.
+
 ## Хуки Claude Code
 
 Налаштування - `.claude/settings.json`, скрипти - `.claude/hooks/`. Усе в git: зміна хука проходить рев'ю так само, як зміна залежності, бо хуки виконуються автоматично з правами автора.
