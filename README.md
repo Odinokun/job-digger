@@ -8,6 +8,8 @@
 
 Next.js 16 (App Router, TypeScript) · HeroUI v3 + Tailwind CSS v4 · PostgreSQL + Drizzle ORM · Vitest і Playwright Test
 
+Проєкт на ESM (`"type": "module"`). Службові скрипти запускаються просто через `node` - Node 26 виконує TypeScript без збирача і читає `.env` через `--env-file`, тому ні `tsx`, ні `dotenv` у залежностях немає.
+
 ## Запуск локально
 
 ```bash
@@ -67,6 +69,7 @@ docker compose ps       # має бути статус healthy
 | `npm run lint`         | ESLint: правила Next.js, React і TypeScript            |
 | `npm run format`       | Prettier: форматування файлів                          |
 | `npm run format:check` | Prettier: лише перевірка, без змін - для CI            |
+| `npm run db:check`     | Перевірити підключення до бази й показати її версію    |
 | `npm run db:psql`      | psql у контейнері бази (потрібна піднята база)         |
 
 ## Документація
