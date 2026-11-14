@@ -47,3 +47,9 @@ next-env.d.ts
 
 # тимчасові файли для роботи з Claude Code (скриншоти тощо)
 .claude/temp/
+
+# playwright (артефакти прогонів E2E; браузери живуть у кеші поза репозиторієм)
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

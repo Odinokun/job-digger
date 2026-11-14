@@ -6,3 +6,8 @@ package-lock.json
 
 # Міграції й знімки схеми генерує drizzle-kit, руками вони не змінюються
 drizzle/
+
+# Артефакти прогонів Playwright: HTML-звіт, трейси, скриншоти
+test-results/
+playwright-report/
+blob-report/
