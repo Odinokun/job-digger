@@ -16,7 +16,7 @@ export async function AppHeader() {
   const t = await getTranslations("Nav");
 
   return (
-    <header className="border-b border-gray-200">
+    <header className="border-b">
       <div className="mx-auto flex max-w-5xl items-center gap-8 px-6">
         {/* "Job Digger" - назва продукту, вона не перекладається. */}
         <Link href="/" className="py-3 font-sans text-lg font-bold">
