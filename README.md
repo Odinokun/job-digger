@@ -77,6 +77,7 @@ npm run db:seed         # створити системного користув
 | `npm run test:e2e`     | E2E у Playwright: сервер підіймається сам              |
 | `npm run test:e2e:ui`  | Ті самі E2E у режимі UI - видно кроки, DOM і запити    |
 | `npm run lint`         | ESLint: правила Next.js, React і TypeScript            |
+| `npm run typecheck`    | TypeScript: лише перевірка типів, без генерації файлів  |
 | `npm run format`       | Prettier: форматування файлів                          |
 | `npm run format:check` | Prettier: лише перевірка, без змін - для CI            |
 | `npm run db:generate`  | Згенерувати міграцію зі змін у схемі Drizzle           |
