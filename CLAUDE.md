@@ -117,7 +117,7 @@ E2E живуть окремо від Vitest: тека `e2e/`, файли `*.spec
 
 - Нова залежність, плагін, фреймворк або шар абстракції - лише з обґрунтуванням: що вже покриває цю потребу і в чому компроміс. Нічого не додавати мовчки.
 - Поведінку бібліотек, API і CLI не відтворювати з пам'яті - перевіряти в офіційній документації і давати посилання. «Не перевірив» - нормальна відповідь, вигадана - ні.
-- **Форматування автоматичне.** Хуки `PostToolUse` у `.claude/settings.json` після кожного Write/Edit проганяють на файлі Prettier і `eslint --fix`; невиправні помилки ESLint блокують крок і показуються одразу. Руками `npm run format` викликати не потрібно. Prettier також сортує класи Tailwind (`prettier-plugin-tailwindcss`): порядок класів у `className` не обговорюється на рев'ю, його задає плагін. Опція `tailwindStylesheet` у `.prettierrc` вказує на `src/app/globals.css` - без неї плагін не бачить токенів із `@theme` і виносить такі класи на початок.
+- **Форматування автоматичне.** Хук `PostToolUse` (`.claude/hooks/format-file.sh`) після кожного Write/Edit у файл проєкту проганяє на ньому Prettier і `eslint --fix`; невиправні помилки ESLint блокують крок і показуються одразу. Файли поза коренем проєкту хук пропускає. Руками `npm run format` викликати не потрібно. Prettier також сортує класи Tailwind (`prettier-plugin-tailwindcss`): порядок класів у `className` не обговорюється на рев'ю, його задає плагін. Опція `tailwindStylesheet` у `.prettierrc` вказує на `src/app/globals.css` - без неї плагін не бачить токенів із `@theme` і виносить такі класи на початок.
 - **Класи Tailwind перевіряє ESLint** (`eslint-plugin-tailwindcss`, конфіг `recommended`): друкарська помилка в класі - `no-custom-classname`, суперечливі класи типу `p-2 p-3` - `no-contradicting-classname` (це error, він блокує крок), а `enforces-shorthand` і `enforces-canonical-classname` пропонують коротший запис. Правило `classnames-order` вимкнене: порядок класів - робота Prettier. Налаштування `cssConfigPath` у `eslint.config.mjs` вказує на `src/app/globals.css` і для Tailwind v4 обовʼязкове.
 - Власні класи HeroUI (`button--primary` і подібні) ESLint вважає невідомими і дає warning. Це нормально: у `className` ми пишемо утиліти Tailwind, а не внутрішні класи бібліотеки. Якщо колись знадобиться писати їх руками - у правило додається `whitelist`.
 
@@ -146,12 +146,13 @@ Permissions живуть у `.claude/settings.json` поруч із хуками
 | Подія         | Що робить                                                                          |
 | ------------- | ---------------------------------------------------------------------------------- |
 | `PreToolUse`  | `protect-files.sh` блокує Write/Edit у `.env*` (крім `.env.example`), `package-lock.json` і міграції в `drizzle/` |
-| `PostToolUse` | Prettier і `eslint --fix` на зміненому файлі                                        |
+| `PostToolUse` | `format-file.sh` проганяє Prettier і `eslint --fix` на зміненому файлі проєкту     |
 | `Notification`| `notify.sh` показує системне повідомлення, коли Claude чекає на ввід                |
 
 - Новий скрипт у `.claude/hooks/` обов'язково з бітом виконання (`chmod +x`): без нього хук падає беззвучно, і захист лише здається налаштованим.
 - `protect-files.sh` блокує тільки Write/Edit, не `Bash`. Лок-файл і секрети це від команд у терміналі не захищає.
 - Повідомлення хуків ідуть у stderr: те, що хук пише в stdout, до Claude не доходить.
+- `format-file.sh` пропускає файли поза коренем проєкту: там немає `eslint.config.*`, ESLint виходить із кодом 2 і крок виглядає як невдалий, хоча файл записано. Перевірка живе в скрипті, а не в полі `if` хука, бо `if` тримає рівно одне permission-правило - одним правилом не покрити і `Write`, і `Edit`.
 
 ## Скіли Claude Code
 
