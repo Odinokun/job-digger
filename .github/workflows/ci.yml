@@ -37,3 +37,50 @@ jobs:
       - run: npm run format:check
       - run: npm run lint
       - run: npm run typecheck
+
+  tests:
+    name: Unit and integration tests
+    runs-on: ubuntu-latest
+
+    # PostgreSQL поруч із job: GitHub підіймає контейнер перед кроками й гасить
+    # після прогону. Кроки не почнуться, поки health-check усередині контейнера
+    # не відповість, тому тести не бачать бази, яка ще ініціалізується.
+    # https://docs.github.com/en/actions/use-cases-and-examples/using-containerized-services/creating-postgresql-service-containers
+    services:
+      postgres:
+        # Той самий major, що в docker-compose.yml: без тега CI колись поїхав би
+        # на наступну версію, а локальна розробка лишилася б на 18.
+        image: postgres:18
+        env:
+          # Одноразові креденшали контейнера, який живе лише цей прогін і
+          # доступний лише з машини цього прогону. Справжні секрети (Neon,
+          # Vercel) підуть у GitHub Secrets, а не сюди.
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Контейнер стає доступний на машині прогону як 127.0.0.1:5432.
+          - 5432:5432
+
+    env:
+      # Базу job_digger_test створює src/server/db/testing/global-setup.ts: він
+      # підключається до службової бази postgres і проганяє міграції. DATABASE_URL
+      # тут не задається - інтеграційним тестам він не потрібен, а запобіжник в
+      # env.ts вимагає лише, щоб адреси не збігалися.
+      TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/job_digger_test
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run test:unit
+      - run: npm run test:integration
