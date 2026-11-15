@@ -39,7 +39,7 @@ jobs:
       - run: npm run typecheck
 
   tests:
-    name: Unit and integration tests
+    name: Tests
     runs-on: ubuntu-latest
 
     # PostgreSQL поруч із job: GitHub підіймає контейнер перед кроками й гасить
@@ -84,3 +84,24 @@ jobs:
 
       - run: npm run test:unit
       - run: npm run test:integration
+
+      # E2E працюють на продакшн-збірці: під CI playwright.config.ts запускає
+      # `npm start`, а не dev-сервер, тому збірка потрібна до них.
+      - run: npm run build
+
+      # Браузери не кешуємо. Документація Playwright: «Caching browser binaries
+      # is not recommended» - відновлення кешу триває приблизно стільки ж, скільки
+      # завантаження, а OS-залежності під Linux однаково не кешуються.
+      # https://playwright.dev/docs/ci
+      - run: npx playwright install --with-deps chromium
+
+      - run: npm run test:e2e
+
+      # Звіт потрібен лише коли E2E впали: на зеленому прогоні його ніхто не
+      # відкриє. У звіті є трейс впалого сценарію (`trace: "on-first-retry"`).
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
