@@ -127,7 +127,9 @@ npm test
 npm run build && CI=1 npm run test:e2e
 ```
 
-**Щоб PR із червоними тестами не можна було злити, самого workflow недостатньо.** У налаштуваннях репозиторію потрібне правило для `main` з увімкненою опцією «Require status checks to pass before merging» - або [classic branch protection](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches), або [ruleset](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets) з тим самим обмеженням (rulesets гнучкіші: на одну гілку їх може діяти кілька, а класичне правило - лише одне). Це налаштування живе на GitHub, а не в репозиторії, тому його робить автор руками.
+**Заблокувати merge червоного PR автоматично на цьому тарифі не вийде.** Репозиторій приватний, а для приватних репозиторіїв на GitHub Free недоступні ні classic branch protection, ні rulesets - API на обидва запити відповідає `403 Upgrade to GitHub Pro or make this repository public to enable this feature`. Тому правило «PR із червоними тестами не зливається» тримається на тому, що автор дивиться вкладку Checks перед squash merge, а не на налаштуваннях GitHub.
+
+Якщо репозиторій колись стане публічним або акаунт - Pro, вимушування вмикається опцією «Require status checks to pass before merging»: або [classic branch protection](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches), або [ruleset](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets) з тим самим обмеженням (rulesets гнучкіші: на одну гілку їх може діяти кілька, класичне правило - лише одне). Обов'язковими варто робити саме job `Lint and types` і `Tests`: сторонні чеки (наприклад сканер секретів GitGuardian) можуть червоніти через історію гілки, яка при squash merge у `main` не потрапляє.
 
 ## Локалізація
 
