@@ -1,0 +1,109 @@
+# Перевірки, які GitHub проганяє на кожен pull request і на кожен push у main.
+# Ті самі команди запускаються локально - перелік у README («Скрипти»).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Токен прогону отримує лише читання коду - рекомендація actions/checkout.
+permissions:
+  contents: read
+
+# Новий коміт у гілку скасовує її попередній прогін: доїдати чергу
+# на вже неактуальному коді немає сенсу.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint and types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # Версія Node береться з .nvmrc, щоб не дублювати її ще й тут.
+      # cache: npm кешує ~/.npm за хешем package-lock.json.
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # ci, а не install: установка строго за package-lock.json, без оновлення версій.
+      - run: npm ci
+
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    # PostgreSQL поруч із job: GitHub підіймає контейнер перед кроками й гасить
+    # після прогону. Кроки не почнуться, поки health-check усередині контейнера
+    # не відповість, тому тести не бачать бази, яка ще ініціалізується.
+    # https://docs.github.com/en/actions/use-cases-and-examples/using-containerized-services/creating-postgresql-service-containers
+    services:
+      postgres:
+        # Той самий major, що в docker-compose.yml: без тега CI колись поїхав би
+        # на наступну версію, а локальна розробка лишилася б на 18.
+        image: postgres:18
+        env:
+          # Пароль - номер прогону, а не літеральний рядок: контейнер однаково
+          # живе лише цей прогін і доступний лише з його машини, зате у файлі
+          # немає нічого, що сканер секретів (у нас GitGuardian) мав би вважати
+          # креденшалом. Контекст github у services.<id>.env дозволений:
+          # https://docs.github.com/en/actions/reference/workflows-and-actions/contexts
+          POSTGRES_PASSWORD: ${{ github.run_id }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Контейнер стає доступний на машині прогону як 127.0.0.1:5432.
+          - 5432:5432
+
+    env:
+      # Базу job_digger_test створює src/server/db/testing/global-setup.ts: він
+      # підключається до службової бази postgres і проганяє міграції. DATABASE_URL
+      # тут не задається - інтеграційним тестам він не потрібен, а запобіжник в
+      # env.ts вимагає лише, щоб адреси не збігалися.
+      TEST_DATABASE_URL: postgres://postgres:${{ github.run_id }}@127.0.0.1:5432/job_digger_test
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run test:unit
+      - run: npm run test:integration
+
+      # E2E працюють на продакшн-збірці: під CI playwright.config.ts запускає
+      # `npm start`, а не dev-сервер, тому збірка потрібна до них.
+      - run: npm run build
+
+      # Браузери не кешуємо. Документація Playwright: «Caching browser binaries
+      # is not recommended» - відновлення кешу триває приблизно стільки ж, скільки
+      # завантаження, а OS-залежності під Linux однаково не кешуються.
+      # https://playwright.dev/docs/ci
+      - run: npx playwright install --with-deps chromium
+
+      - run: npm run test:e2e
+
+      # Звіт потрібен лише коли E2E впали: на зеленому прогоні його ніхто не
+      # відкриє. У звіті є трейс впалого сценарію (`trace: "on-first-retry"`).
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

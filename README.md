@@ -77,6 +77,7 @@ npm run db:seed         # створити системного користув
 | `npm run test:e2e`     | E2E у Playwright: сервер підіймається сам              |
 | `npm run test:e2e:ui`  | Ті самі E2E у режимі UI - видно кроки, DOM і запити    |
 | `npm run lint`         | ESLint: правила Next.js, React і TypeScript            |
+| `npm run typecheck`    | Типи маршрутів Next + `tsc --noEmit`, без збірки        |
 | `npm run format`       | Prettier: форматування файлів                          |
 | `npm run format:check` | Prettier: лише перевірка, без змін - для CI            |
 | `npm run db:generate`  | Згенерувати міграцію зі змін у схемі Drizzle           |
@@ -98,6 +99,37 @@ npx playwright install chromium
 Він качається в кеш системи (~290 МБ), а не в репозиторій. Ставимо лише Chromium: застосунок персональний, кросбраузерність не мета.
 
 Далі достатньо `npm run test:e2e`. Застосунок піднімати заздалегідь не потрібно - Playwright сам запускає `npm run dev` і чекає, поки `127.0.0.1:3000` відповість. Якщо dev-сервер уже запущений, тести використають його.
+
+На CI той самий конфіг поводиться інакше: замість dev-сервера запускається продакшн-збірка (`npm start`, саму збірку робить окремий крок workflow), додається HTML-звіт, а впалий сценарій отримує одну спробу повтору з трейсом.
+
+## CI
+
+Перевірки виконує GitHub Actions за файлом [`.github/workflows/ci.yml`](.github/workflows/ci.yml) - на кожен pull request і на кожен push у `main`. Новий коміт у гілку скасовує її попередній незавершений прогін, щоб не витрачати хвилини на вже неактуальний код.
+
+| Job              | Що виконує                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------ |
+| `Lint and types` | `npm run format:check`, `npm run lint`, `npm run typecheck`                          |
+| `Tests`          | `npm run test:unit`, `npm run test:integration`, `npm run build`, `npm run test:e2e` |
+
+Версія Node береться з [`.nvmrc`](.nvmrc) - локально й на CI вона одна.
+
+**База на CI.** PostgreSQL піднімається service container'ом поруч із job: той самий образ `postgres:18`, що в [`docker-compose.yml`](docker-compose.yml). Змінна `TEST_DATABASE_URL` задається прямо у workflow - контейнер живе лише цей прогін і доступний лише з машини прогону, тому в GitHub Secrets цим креденшалам не місце. Паролем служить `${{ github.run_id }}`: він унікальний для кожного прогону, і у файлі не лежить рядок, схожий на справжній пароль, - інакше на кожному PR червонів би сканер секретів. Базу `job_digger_test` і міграції на ній робить [`global-setup.ts`](src/server/db/testing/global-setup.ts), так само як локально. `DATABASE_URL` на CI не заданий: поки жодна сторінка не читає базу, він не потрібен.
+
+**Браузери Playwright не кешуються** - так радить [документація Playwright](https://playwright.dev/docs/ci): відновлення кешу триває приблизно стільки ж, скільки завантаження, а OS-залежності під Linux однаково не кешуються.
+
+**Коли E2E впали**, у прогоні з'являється артефакт `playwright-report` - HTML-звіт із трейсом впалого сценарію, зберігається 7 днів. На зеленому прогоні артефакту немає.
+
+Відтворити прогін CI локально:
+
+```bash
+npm run format:check && npm run lint && npm run typecheck
+npm test
+npm run build && CI=1 npm run test:e2e
+```
+
+**Заблокувати merge червоного PR автоматично на цьому тарифі не вийде.** Репозиторій приватний, а для приватних репозиторіїв на GitHub Free недоступні ні classic branch protection, ні rulesets - API на обидва запити відповідає `403 Upgrade to GitHub Pro or make this repository public to enable this feature`. Тому правило «PR із червоними тестами не зливається» тримається на тому, що автор дивиться вкладку Checks перед squash merge, а не на налаштуваннях GitHub.
+
+Якщо репозиторій колись стане публічним або акаунт - Pro, вимушування вмикається опцією «Require status checks to pass before merging»: або [classic branch protection](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches), або [ruleset](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets) з тим самим обмеженням (rulesets гнучкіші: на одну гілку їх може діяти кілька, класичне правило - лише одне). Обов'язковими варто робити саме job `Lint and types` і `Tests`: сторонні чеки (наприклад сканер секретів GitGuardian) можуть червоніти через історію гілки, яка при squash merge у `main` не потрапляє.
 
 ## Локалізація
 

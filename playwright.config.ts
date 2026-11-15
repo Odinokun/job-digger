@@ -26,13 +26,24 @@ export default defineConfig({
     trace: "on-first-retry",
   },
 
+  // На CI - короткий список кроків плюс HTML-звіт: workflow вигружає його
+  // артефактом, коли E2E впали, і в ньому видно трейс. Локально лишається
+  // типовий `list` без звіту, інакше кожне падіння відкривало б звіт у браузері
+  // (типове значення `open` - `on-failure`).
+  // https://playwright.dev/docs/test-reporters
+  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
+
   // Один браузер: застосунок персональний, кросбраузерність не мета.
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 
   // Playwright сам підіймає застосунок і чекає, поки url відповість.
   // https://playwright.dev/docs/test-webserver
   webServer: {
-    command: "npm run dev",
+    // Локально - dev-сервер. На CI - продакшн-збірка: E2E заодно перевіряють,
+    // що `next build` не зламався, і сервер стартує одразу, замість компілювати
+    // перший запит. Саму збірку робить окремий крок workflow, тому тут лише
+    // запуск - команда не покладається на те, чи виконується вона через шелл.
+    command: process.env.CI ? "npm start" : "npm run dev",
     url: baseURL,
     // Локально перевикористовуємо вже запущений `npm run dev`; на CI сервера
     // немає, тому Playwright завжди стартує свій.
