@@ -24,8 +24,8 @@ export function NavLink({ href, label }: NavLinkProps) {
       aria-current={isActive ? "page" : undefined}
       className={
         isActive
-          ? "border-b-2 border-current py-2 text-sm font-medium"
-          : "border-b-2 border-transparent py-2 text-sm text-gray-500 hover:text-current"
+          ? "border-b-2 border-foreground py-2 text-sm font-medium"
+          : "border-b-2 border-transparent py-2 text-sm text-muted hover:text-foreground"
       }
     >
       {label}

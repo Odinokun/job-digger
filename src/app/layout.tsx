@@ -30,7 +30,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       lang={locale}
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
-      <body>
+      <body className="bg-background text-foreground">
         {/* Передає локаль і переклади в клієнтські компоненти; від серверного
             батька він успадковує їх сам, тому пропи не потрібні. */}
         <NextIntlClientProvider>

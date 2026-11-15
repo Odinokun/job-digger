@@ -31,3 +31,22 @@ export async function seedSystemUser(db: NodePgDatabase): Promise<User> {
 
   return user;
 }
+
+/**
+ * Користувач, від імені якого працює локальна версія.
+ *
+ * Лише читає: сторінки викликають це на кожен перегляд, а запис у базу на GET
+ * - не те, чого від перегляду очікують. Наповнення бази - `npm run db:seed`.
+ */
+export async function getSystemUser(db: NodePgDatabase): Promise<User> {
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, SYSTEM_USER_EMAIL));
+
+  if (!user) {
+    throw new Error("System user is missing: run npm run db:seed");
+  }
+
+  return user;
+}

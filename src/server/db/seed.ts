@@ -5,9 +5,10 @@
  * не працює. Запуск кілька разів безпечний - логіка в system-user.ts, вона ж
  * покрита інтеграційним тестом.
  */
-import { db } from "./client.ts";
+import { getDb } from "./client.ts";
 import { seedSystemUser } from "./system-user.ts";
 
+const db = getDb();
 const systemUser = await seedSystemUser(db);
 
 console.log("System user:", systemUser.id, systemUser.email);

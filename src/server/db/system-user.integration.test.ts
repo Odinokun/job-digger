@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
 import { SYSTEM_USER_EMAIL, users } from "./schema.ts";
-import { seedSystemUser } from "./system-user.ts";
+import { getSystemUser, seedSystemUser } from "./system-user.ts";
 import { testDb } from "./testing/test-db.ts";
 
 describe("seedSystemUser", () => {
@@ -25,5 +25,21 @@ describe("seedSystemUser", () => {
       .where(eq(users.email, SYSTEM_USER_EMAIL));
 
     expect(rows).toHaveLength(1);
+  });
+});
+
+describe("getSystemUser", () => {
+  it("returns the seeded user", async () => {
+    const seeded = await seedSystemUser(testDb);
+
+    const user = await getSystemUser(testDb);
+
+    expect(user.id).toBe(seeded.id);
+  });
+
+  it("explains how to fix an unseeded database instead of failing deeper", async () => {
+    // Сторінки лише читають користувача, тому порожня база має сказати,
+    // що саме запустити, а не впасти десь у запиті нижче.
+    await expect(getSystemUser(testDb)).rejects.toThrow(/db:seed/);
   });
 });

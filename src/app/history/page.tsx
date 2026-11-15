@@ -6,7 +6,7 @@ export default async function HistoryPage() {
   return (
     <>
       <h1 className="font-sans text-2xl font-bold">{t("title")}</h1>
-      <p className="mt-2 text-sm text-gray-500">{t("empty")}</p>
+      <p className="mt-2 text-sm text-muted">{t("empty")}</p>
     </>
   );
 }
