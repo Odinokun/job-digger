@@ -1,0 +1,39 @@
+# Перевірки, які GitHub проганяє на кожен pull request і на кожен push у main.
+# Ті самі команди запускаються локально - перелік у README («Скрипти»).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Токен прогону отримує лише читання коду - рекомендація actions/checkout.
+permissions:
+  contents: read
+
+# Новий коміт у гілку скасовує її попередній прогін: доїдати чергу
+# на вже неактуальному коді немає сенсу.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint and types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # Версія Node береться з .nvmrc, щоб не дублювати її ще й тут.
+      # cache: npm кешує ~/.npm за хешем package-lock.json.
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # ci, а не install: установка строго за package-lock.json, без оновлення версій.
+      - run: npm ci
+
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
