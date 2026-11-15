@@ -12,7 +12,27 @@
   },
   "CompaniesPage": {
     "title": "Companies",
-    "empty": "No companies yet."
+    "tabsLabel": "Company lists",
+    "tracked": "Tracked",
+    "notTracked": "Not tracked",
+    "emptyTracked": "No company is tracked yet.",
+    "emptyNotTracked": "Every company has at least one career page that is tracked.",
+    "noSources": "No career pages yet.",
+    "platforms": {
+      "greenhouse": "Greenhouse",
+      "lever": "Lever",
+      "ashby": "Ashby",
+      "workday": "Workday",
+      "peopleforce": "PeopleForce",
+      "schemaOrg": "Job posting markup",
+      "unsupported": "Unsupported page"
+    },
+    "statuses": {
+      "notChecked": "Not checked",
+      "notFound": "Not found",
+      "unsupported": "Unsupported",
+      "checkFailed": "Check failed"
+    }
   },
   "HistoryPage": {
     "title": "History",

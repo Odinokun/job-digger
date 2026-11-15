@@ -12,7 +12,27 @@
   },
   "CompaniesPage": {
     "title": "Компанії",
-    "empty": "Компаній ще немає."
+    "tabsLabel": "Списки компаній",
+    "tracked": "Відстежувані",
+    "notTracked": "Без джерел",
+    "emptyTracked": "Жодна компанія ще не відстежується.",
+    "emptyNotTracked": "У кожної компанії є щонайменше одна кар'єрна сторінка, що відстежується.",
+    "noSources": "Кар'єрних сторінок поки немає.",
+    "platforms": {
+      "greenhouse": "Greenhouse",
+      "lever": "Lever",
+      "ashby": "Ashby",
+      "workday": "Workday",
+      "peopleforce": "PeopleForce",
+      "schemaOrg": "Розмітка вакансій",
+      "unsupported": "Сторінка не підтримується"
+    },
+    "statuses": {
+      "notChecked": "Ще не перевірено",
+      "notFound": "Сторінку не знайдено",
+      "unsupported": "Не підтримується",
+      "checkFailed": "Помилка перевірки"
+    }
   },
   "HistoryPage": {
     "title": "Історія",
