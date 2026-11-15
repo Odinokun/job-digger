@@ -77,7 +77,7 @@ npm run db:seed         # створити системного користув
 | `npm run test:e2e`     | E2E у Playwright: сервер підіймається сам              |
 | `npm run test:e2e:ui`  | Ті самі E2E у режимі UI - видно кроки, DOM і запити    |
 | `npm run lint`         | ESLint: правила Next.js, React і TypeScript            |
-| `npm run typecheck`    | TypeScript: лише перевірка типів, без генерації файлів  |
+| `npm run typecheck`    | Типи маршрутів Next + `tsc --noEmit`, без збірки        |
 | `npm run format`       | Prettier: форматування файлів                          |
 | `npm run format:check` | Prettier: лише перевірка, без змін - для CI            |
 | `npm run db:generate`  | Згенерувати міграцію зі змін у схемі Drizzle           |
@@ -113,7 +113,7 @@ npx playwright install chromium
 
 Версія Node береться з [`.nvmrc`](.nvmrc) - локально й на CI вона одна.
 
-**База на CI.** PostgreSQL піднімається service container'ом поруч із job: той самий образ `postgres:18`, що в [`docker-compose.yml`](docker-compose.yml). Змінна `TEST_DATABASE_URL` задається прямо у workflow - це одноразові креденшали контейнера, який живе лише цей прогін і доступний лише з машини прогону, тому в GitHub Secrets їм не місце. Базу `job_digger_test` і міграції на ній робить [`global-setup.ts`](src/server/db/testing/global-setup.ts), так само як локально. `DATABASE_URL` на CI не заданий: поки жодна сторінка не читає базу, він не потрібен.
+**База на CI.** PostgreSQL піднімається service container'ом поруч із job: той самий образ `postgres:18`, що в [`docker-compose.yml`](docker-compose.yml). Змінна `TEST_DATABASE_URL` задається прямо у workflow - контейнер живе лише цей прогін і доступний лише з машини прогону, тому в GitHub Secrets цим креденшалам не місце. Паролем служить `${{ github.run_id }}`: він унікальний для кожного прогону, і у файлі не лежить рядок, схожий на справжній пароль, - інакше на кожному PR червонів би сканер секретів. Базу `job_digger_test` і міграції на ній робить [`global-setup.ts`](src/server/db/testing/global-setup.ts), так само як локально. `DATABASE_URL` на CI не заданий: поки жодна сторінка не читає базу, він не потрібен.
 
 **Браузери Playwright не кешуються** - так радить [документація Playwright](https://playwright.dev/docs/ci): відновлення кешу триває приблизно стільки ж, скільки завантаження, а OS-залежності під Linux однаково не кешуються.
 
