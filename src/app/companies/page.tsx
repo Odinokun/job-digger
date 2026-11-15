@@ -7,7 +7,7 @@ import {
   type CompanyListItem,
   type CompanySource,
 } from "@/server/companies/list";
-import { db } from "@/server/db/client";
+import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 
 import { CompaniesTabs } from "./companies-tabs";
@@ -24,6 +24,7 @@ export default async function CompaniesPage({
   const t = await getTranslations("CompaniesPage");
   const tab = readTab((await searchParams).tab);
 
+  const db = getDb();
   const user = await getSystemUser(db);
   const [companies, counts] = await Promise.all([
     listCompanies(db, { userId: user.id, tab }),
