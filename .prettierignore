@@ -11,3 +11,6 @@ drizzle/
 test-results/
 playwright-report/
 blob-report/
+# Скіли Claude Code: вендорні файли зі сторонніх репозиторіїв. Форматувати їх не можна -
+# хеш кожного скіла лежить у skills-lock.json, і правка зламала б `npx skills check`
+.agents/
