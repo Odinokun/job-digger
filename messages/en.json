@@ -34,6 +34,22 @@
       "unsupported": "Unsupported",
       "checkFailed": "Check failed"
     },
+    "editCompany": {
+      "open": "Edit",
+      "title": "Edit company",
+      "name": "Company name",
+      "sources": "Career pages",
+      "noSources": "No career pages yet.",
+      "remove": "Remove",
+      "keep": "Keep",
+      "lastSourceWarning": "Without a career page the company moves to Not tracked.",
+      "save": "Save",
+      "cancel": "Cancel",
+      "errors": {
+        "nameRequired": "Enter a company name.",
+        "notFound": "This company is no longer there."
+      }
+    },
     "addCompany": {
       "open": "Add company",
       "title": "Add company",

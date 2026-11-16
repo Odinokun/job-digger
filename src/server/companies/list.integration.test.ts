@@ -3,7 +3,11 @@ import { describe, expect, it } from "vitest";
 import { careerSources, companies, users } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
 import { testDb } from "../db/testing/test-db.ts";
-import { countCompaniesByTab, listCompanies } from "./list.ts";
+import {
+  countCompaniesByTab,
+  findCompanyInTab,
+  listCompanies,
+} from "./list.ts";
 
 /** Компанія з відстежуваним джерелом - така потрапляє у вкладку Tracked. */
 async function insertTracked(
@@ -102,6 +106,8 @@ describe("listCompanies", () => {
     const { items: tracked } = await listCompanies(testDb, {
       userId: user.id,
       tab: "tracked",
+      // Ліміт заданий явно: тест про порядок, а не про розмір порції.
+      limit: 10,
     });
 
     expect(tracked.map((company) => company.name)).toEqual([
@@ -335,5 +341,65 @@ describe("countCompaniesByTab", () => {
       tracked: 0,
       notTracked: 0,
     });
+  });
+});
+
+describe("findCompanyInTab", () => {
+  it("returns the company with its sources", async () => {
+    const user = await seedSystemUser(testDb);
+    const company = await insertTracked(user.id, "Bosch");
+
+    const found = await findCompanyInTab(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      tab: "tracked",
+    });
+
+    expect(found).toEqual({
+      id: company.id,
+      name: "Bosch",
+      url: "https://bosch.com",
+      discoveryStatus: "not_checked",
+      sources: [
+        {
+          id: expect.any(String),
+          url: "https://boards.greenhouse.io/bosch",
+          platform: "greenhouse",
+          isTracked: true,
+        },
+      ],
+    });
+  });
+
+  // Саме цим список дізнається, що після Save рядок треба прибрати: компанія
+  // без відстежуваних джерел на вкладці Tracked більше не місце.
+  it("answers null when the company no longer belongs to the tab", async () => {
+    const user = await seedSystemUser(testDb);
+    const company = await insertUntracked(user.id, "Acme");
+
+    expect(
+      await findCompanyInTab(testDb, {
+        userId: user.id,
+        companyId: company.id,
+        tab: "tracked",
+      }),
+    ).toBeNull();
+  });
+
+  it("never returns another user's company", async () => {
+    const owner = await seedSystemUser(testDb);
+    const [other] = await testDb
+      .insert(users)
+      .values({ email: "other@job-digger.local" })
+      .returning();
+    const theirs = await insertTracked(other.id, "Bosch");
+
+    expect(
+      await findCompanyInTab(testDb, {
+        userId: owner.id,
+        companyId: theirs.id,
+        tab: "tracked",
+      }),
+    ).toBeNull();
   });
 });
