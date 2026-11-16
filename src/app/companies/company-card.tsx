@@ -64,6 +64,12 @@ export function CompanyCard({
                 <span className="font-medium">
                   {platformLabels[source.platform]}
                 </span>
+                {/* Підпис стоїть перед адресою, бо саме він розрізняє джерела
+                    одного сайту: три фільтри mozilla.org відрізняються лише
+                    `query` в кінці довгого рядка (картка 2.16). Сама адреса
+                    лишається повною - вона єдина правда про те, що
+                    перевіряється. */}
+                {source.label === null ? null : <span>{source.label}</span>}
                 <a
                   href={source.url}
                   target="_blank"
