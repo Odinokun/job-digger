@@ -40,6 +40,7 @@
       "namePlaceholder": "Bosch",
       "url": "Сайт компанії",
       "urlPlaceholder": "bosch.com/de",
+      "urlHint": "Встав сайт компанії або кар’єрну сторінку - назва й друга адреса заповняться з неї.",
       "careerUrl": "Кар'єрна сторінка",
       "careerUrlPlaceholder": "job-boards.greenhouse.io/bosch",
       "careerUrlHint": "Не обов'язково. Без неї компанія потрапить у Not tracked.",

@@ -10,8 +10,9 @@ import {
   useOverlayState,
 } from "@heroui/react";
 import { useTranslations } from "next-intl";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 
+import { suggestCompanyFields } from "@/lib/companies/suggest";
 import type { UrlRefusalReason } from "@/lib/companies/url";
 
 import { ADD_COMPANY_INITIAL_STATE, addCompanyAction } from "./actions";
@@ -23,12 +24,19 @@ const URL_ERROR_KEYS: Record<UrlRefusalReason, string> = {
   "unsupported-scheme": "errors.urlUnsupportedScheme",
 };
 
+/** Порожня форма: і початковий стан, і те, до чого вона вертається після успіху. */
+const EMPTY_FIELDS = { url: "", name: "", careerUrl: "" };
+
+/** Поля, у які підказка не лізе, якщо користувач уже написав там своє. */
+const EMPTY_EDITS = { name: false, careerUrl: false };
+
 /**
  * Кнопка Add і модальне вікно додавання компанії.
  *
  * Додавання живе саме в модалці, а не на окремій сторінці - це вимога плану
- * (docs/discovery-and-parsing.md, розділ 5). Автоматичного пошуку сторінок тут
- * ще немає: обидві адреси вводяться руками, пошук приходить в етапі 5.
+ * (docs/discovery-and-parsing.md, розділ 5). Справжнього пошуку сторінок тут ще
+ * немає - він приходить в етапі 5; назва й головний сайт лише вгадуються з
+ * вставленої адреси, без жодного запиту в мережу.
  *
  * Компонент клієнтський, бо модалці потрібен стан відкриття, а формі -
  * результат Server Action. Сам список компаній лишається серверним.
@@ -41,6 +49,12 @@ export function AddCompanyDialog() {
     ADD_COMPANY_INITIAL_STATE,
   );
 
+  // Поля контрольовані, бо підказка з адреси пише в них: без стану тут нічого
+  // підставити не можна.
+  const [fields, setFields] = useState(EMPTY_FIELDS);
+  const [editedByHand, setEditedByHand] = useState(EMPTY_EDITS);
+  const [isSuggested, setSuggested] = useState(false);
+
   // Модалку закриває успіх, а не сама кнопка: доки компанія не збереглася,
   // користувач має бачити свої дані й повідомлення про помилку.
   useEffect(() => {
@@ -48,6 +62,72 @@ export function AddCompanyDialog() {
       overlay.close();
     }
   }, [state, overlay]);
+
+  // Форма чиститься на відкритті, а не на успіху: поля контрольовані, тому
+  // інакше наступне відкриття показало б минулу компанію. Скидання стоїть у
+  // кнопці, а не в ефекті - ефект із `setState` дає каскадний рендер
+  // (`react-hooks/set-state-in-effect`).
+  function openDialog() {
+    setFields(EMPTY_FIELDS);
+    setEditedByHand(EMPTY_EDITS);
+    setSuggested(false);
+    overlay.open();
+  }
+
+  function changeField(field: keyof typeof EMPTY_FIELDS, value: string) {
+    setFields((previous) => ({ ...previous, [field]: value }));
+
+    if (field === "url") {
+      // Поле очистили - далі буде інша адреса, і підказка має спрацювати знову.
+      if (value.trim() === "") {
+        setSuggested(false);
+      }
+
+      return;
+    }
+
+    setEditedByHand((previous) => ({ ...previous, [field]: true }));
+  }
+
+  /**
+   * Підказка з адреси - один раз на вставлену адресу.
+   *
+   * Повторювати її на кожному виході з поля не можна: користувач, який дописав
+   * до домену національну версію (`bosch.com` - `bosch.com/de`), побачив би, що
+   * підказка знову обрізала адресу до домену.
+   */
+  function suggestFromUrl() {
+    if (isSuggested || fields.url.trim() === "") {
+      return;
+    }
+
+    const suggestion = suggestCompanyFields(fields.url);
+
+    // Криву адресу підказка не розбирає - тоді поля лишаються як є, а про
+    // помилку скаже Server Action.
+    if (
+      suggestion.url === "" &&
+      suggestion.name === "" &&
+      suggestion.careerUrl === ""
+    ) {
+      return;
+    }
+
+    setSuggested(true);
+    setFields((previous) => ({
+      // Адреса ATS головного сайту не дає, і поле стає порожнім свідомо: сама
+      // адреса переїхала в карʼєрне поле, а сайт компанії вписує користувач.
+      url: suggestion.url,
+      name:
+        editedByHand.name || suggestion.name === ""
+          ? previous.name
+          : suggestion.name,
+      careerUrl:
+        editedByHand.careerUrl || suggestion.careerUrl === ""
+          ? previous.careerUrl
+          : suggestion.careerUrl,
+    }));
+  }
 
   const failure = state.status === "failed" ? state.result : null;
   const sameDomain = failure?.problem === "same-domain" ? failure : null;
@@ -71,7 +151,7 @@ export function AddCompanyDialog() {
 
   return (
     <>
-      <Button onPress={overlay.open}>{t("open")}</Button>
+      <Button onPress={openDialog}>{t("open")}</Button>
 
       <Modal.Backdrop isOpen={overlay.isOpen} onOpenChange={overlay.setOpen}>
         <Modal.Container>
@@ -85,11 +165,29 @@ export function AddCompanyDialog() {
                 Server Action сам перевіряє походження запиту. */}
             <form action={submit}>
               <Modal.Body className="flex flex-col gap-4">
+                {/* Адреса стоїть першою: з неї заповнюються два поля нижче. */}
                 <TextField
                   autoFocus
                   fullWidth
                   isRequired
+                  name="url"
+                  value={fields.url}
+                  onChange={(value) => changeField("url", value)}
+                  onBlur={suggestFromUrl}
+                  isInvalid={urlError !== null}
+                >
+                  <Label>{t("url")}</Label>
+                  <Input placeholder={t("urlPlaceholder")} />
+                  <FieldError>{urlError}</FieldError>
+                  <span className="text-sm text-muted">{t("urlHint")}</span>
+                </TextField>
+
+                <TextField
+                  fullWidth
+                  isRequired
                   name="name"
+                  value={fields.name}
+                  onChange={(value) => changeField("name", value)}
                   isInvalid={nameError !== null}
                 >
                   <Label>{t("name")}</Label>
@@ -99,18 +197,9 @@ export function AddCompanyDialog() {
 
                 <TextField
                   fullWidth
-                  isRequired
-                  name="url"
-                  isInvalid={urlError !== null}
-                >
-                  <Label>{t("url")}</Label>
-                  <Input placeholder={t("urlPlaceholder")} />
-                  <FieldError>{urlError}</FieldError>
-                </TextField>
-
-                <TextField
-                  fullWidth
                   name="careerUrl"
+                  value={fields.careerUrl}
+                  onChange={(value) => changeField("careerUrl", value)}
                   isInvalid={careerUrlError !== null}
                 >
                   <Label>{t("careerUrl")}</Label>
