@@ -108,11 +108,13 @@ function platformSubdomain(host: string): string {
 
 /** Перший сегмент шляху: `jobs.lever.co/spotify/jobs` - `spotify`. */
 function firstPathSegment(normalizedUrl: string, host: string): string {
-  return normalizedUrl
-    .slice(host.length)
-    .split("?")[0]
-    .split("/")
-    .filter((segment) => segment !== "")[0] ?? "";
+  return (
+    normalizedUrl
+      .slice(host.length)
+      .split("?")[0]
+      .split("/")
+      .filter((segment) => segment !== "")[0] ?? ""
+  );
 }
 
 /** Назва компанії з хоста: `about.gitlab.com` - «Gitlab». */

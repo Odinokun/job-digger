@@ -1,8 +1,27 @@
-import type { careerSources } from "../db/schema.ts";
 import { companyUrlHost } from "./url.ts";
 
+/**
+ * Платформи карʼєрних джерел: за платформою вибирається парсер.
+ *
+ * Перелік живе тут, а не в схемі бази, бо потрібен і на клієнті, а зі схеми
+ * тягнувся б разом із Drizzle. Enum `career_platform` будується з цього
+ * масиву - значення й порядок у базі й у коді не можуть розійтися.
+ *
+ * `unsupported` - сторінку знайдено, але читати її нічим
+ * (docs/discovery-and-parsing.md, розділ 6).
+ */
+export const CAREER_PLATFORMS = [
+  "greenhouse",
+  "lever",
+  "ashby",
+  "workday",
+  "peopleforce",
+  "schema_org",
+  "unsupported",
+] as const;
+
 /** Платформа карʼєрного джерела так, як її зберігає база. */
-export type CareerPlatform = (typeof careerSources.$inferInsert)["platform"];
+export type CareerPlatform = (typeof CAREER_PLATFORMS)[number];
 
 /**
  * Домени платформ. Ключ - суфікс хоста, значення - платформа.

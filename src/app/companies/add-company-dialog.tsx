@@ -12,7 +12,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useActionState, useEffect } from "react";
 
-import type { UrlRefusalReason } from "@/server/companies/url";
+import type { UrlRefusalReason } from "@/lib/companies/url";
 
 import { ADD_COMPANY_INITIAL_STATE, addCompanyAction } from "./actions";
 
