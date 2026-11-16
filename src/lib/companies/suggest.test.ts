@@ -23,6 +23,45 @@ describe("suggestCompanyFields", () => {
     });
   });
 
+  describe("a national version of the site", () => {
+    it("keeps the path on the website and leaves the career page empty", () => {
+      expect(suggestCompanyFields("bosch.com/de")).toEqual({
+        url: "bosch.com/de",
+        name: "Bosch",
+        careerUrl: "",
+      });
+    });
+
+    it("recognises a language tag with a region", () => {
+      expect(suggestCompanyFields("bosch.com/en-US")).toEqual({
+        url: "bosch.com/en-US",
+        name: "Bosch",
+        careerUrl: "",
+      });
+    });
+
+    it("ignores the case of the segment", () => {
+      expect(suggestCompanyFields("bosch.com/DE").careerUrl).toBe("");
+    });
+
+    it("keeps the query, which can be the only difference between versions", () => {
+      expect(suggestCompanyFields("bosch.com/de?lang=de").url).toBe(
+        "bosch.com/de?lang=de",
+      );
+    });
+
+    it("leaves a path that is not a language tag in the career page field", () => {
+      expect(suggestCompanyFields("bosch.com/careers")).toEqual({
+        url: "bosch.com",
+        name: "Bosch",
+        careerUrl: "bosch.com/careers",
+      });
+      expect(suggestCompanyFields("bosch.com/de/careers").careerUrl).toBe(
+        "bosch.com/de/careers",
+      );
+    });
+  });
+
   it("names the company after the domain label before the public suffix", () => {
     expect(suggestCompanyFields("about.gitlab.com").name).toBe("Gitlab");
   });
