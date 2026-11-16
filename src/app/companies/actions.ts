@@ -139,6 +139,9 @@ export async function updateCompanyAction(
       removeSourceIds: formData
         .getAll("removeSourceIds")
         .filter((value): value is string => typeof value === "string"),
+      // Порожнє поле адреси - це «джерело не додаємо», а не крива адреса: той
+      // самий підхід, що з карʼєрною сторінкою в модалці Add company.
+      addSource: addedSource(formData),
     });
 
     if (!result.ok) {
@@ -160,7 +163,7 @@ export async function updateCompanyAction(
   const result = outcome.value;
 
   if (!result.ok) {
-    return { status: "failed", problem: result.problem };
+    return { status: "failed", result };
   }
 
   // Рядок список оновить сам, а от лічильники вкладок рендерить сервер:
@@ -168,4 +171,15 @@ export async function updateCompanyAction(
   revalidatePath("/companies");
 
   return { status: "saved", company: result.company };
+}
+
+/** Нове карʼєрне джерело з полів модалки Edit або `undefined`, якщо його не вводили. */
+function addedSource(
+  formData: FormData,
+): { url: string; label?: string } | undefined {
+  const url = readField(formData, "addSourceUrl").trim();
+
+  return url === ""
+    ? undefined
+    : { url, label: readField(formData, "addSourceLabel") };
 }

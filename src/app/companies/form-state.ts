@@ -1,6 +1,7 @@
 import type { CompanyListItem } from "@/lib/companies/company-list";
 import type { Cursor } from "@/lib/pagination/cursor";
 import type { AddCompanyResult } from "@/server/companies/add";
+import type { UpdateCompanyResult } from "@/server/companies/update";
 
 /**
  * Стани форм сторінки Companies і їхні початкові значення.
@@ -51,6 +52,9 @@ export const ADD_COMPANY_INITIAL_STATE: AddCompanyFormState = {
  *
  * `not-found` сюди доходить, якщо компанію видалили в іншій вкладці, поки
  * модалка була відкрита.
+ *
+ * Відмова їде сюди цілою, як і в Add company: у `source-url` є ще й причина,
+ * через яку адресу не прийняли, і звужений `problem` її втрачав би.
  */
 export type EditCompanyFormState =
   | { status: "idle" }
@@ -63,7 +67,7 @@ export type EditCompanyFormState =
    * перечитував дозавантажені порції.
    */
   | { status: "saved"; company: CompanyListItem | null }
-  | { status: "failed"; problem: "name-required" | "not-found" }
+  | { status: "failed"; result: Extract<UpdateCompanyResult, { ok: false }> }
   | { status: "failed-unexpectedly" };
 
 export const EDIT_COMPANY_INITIAL_STATE: EditCompanyFormState = {

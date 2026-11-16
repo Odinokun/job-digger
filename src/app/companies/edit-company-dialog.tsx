@@ -101,11 +101,11 @@ export function EditCompanyDialog({
     );
   }
 
-  const failure = state.status === "failed" ? state.problem : null;
+  const failure = state.status === "failed" ? state.result : null;
   const nameError =
-    failure === "name-required"
+    failure?.problem === "name-required"
       ? t("errors.nameRequired")
-      : failure === "not-found"
+      : failure?.problem === "not-found"
         ? t("errors.notFound")
         : null;
 
