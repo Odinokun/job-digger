@@ -32,6 +32,28 @@
       "notFound": "Not found",
       "unsupported": "Unsupported",
       "checkFailed": "Check failed"
+    },
+    "addCompany": {
+      "open": "Add company",
+      "title": "Add company",
+      "name": "Company name",
+      "namePlaceholder": "Bosch",
+      "url": "Company website",
+      "urlPlaceholder": "bosch.com/de",
+      "careerUrl": "Career page",
+      "careerUrlPlaceholder": "job-boards.greenhouse.io/bosch",
+      "careerUrlHint": "Optional. Without it the company goes to Not tracked.",
+      "save": "Save",
+      "addAnyway": "Add anyway",
+      "cancel": "Cancel",
+      "sameDomainWarning": "You already track other companies on this domain:",
+      "errors": {
+        "nameRequired": "Enter a company name.",
+        "urlEmpty": "Enter an address.",
+        "urlNotAnAddress": "This does not look like an address.",
+        "urlUnsupportedScheme": "Only http and https addresses work.",
+        "alreadyAdded": "Already added as {name}."
+      }
     }
   },
   "HistoryPage": {

@@ -34,6 +34,8 @@
 
 - `companies-tabs.tsx` - вкладки Tracked / Not tracked; серверний.
 - `company-card.tsx` - картка однієї компанії на HeroUI `Card`.
+- `add-company-dialog.tsx` - кнопка Add і модалка додавання; клієнтський.
+- `actions.ts` - Server Action форми додавання.
 
 Файл у теці маршруту, який не називається `page`, `layout` чи іншим зарезервованим
 іменем, маршрутом не стає, тому компоненти сторінки лежать поруч із нею.
@@ -71,4 +73,28 @@ Check now і Delete.
 `<header>`/`<nav>` і `next/link` - останній ще й робить prefetch.
 
 Тексти меню беруться з next-intl: серверний `getTranslations`, ключі - у
-`messages/` у корені ([локалізація](../../README.md#локалізація)).
+`messages/` у корені ([локалізація](../../README.md#локалізація)). У клієнтських
+компонентах - `useTranslations`: `NextIntlClientProvider` у `layout.tsx`
+передає переклади туди сам, тому пропи з текстами не потрібні.
+
+## Додавання компанії
+
+**Server Action лежить у `src/app`, а не в `src/server`.** Так його радить
+розміщувати документація встановленого Next (`app/posts/actions.ts` у
+`node_modules/next/dist/docs/01-app/02-guides/server-actions.md`), і правило
+проєкту лишається цілим: клієнтський компонент імпортує action із `src/app`, а
+той уже кличе `src/server`. Сам `actions.ts` нічого не вирішує - читає поля й
+передає роботу `addCompany` ([деталі](../server/companies/README.md)).
+
+**Успіх не віддає рядок компанії.** Повернене з action серіалізується й іде на
+клієнт, тому стан форми - це `idle`, `added` або `failed` із причиною, а не
+запис із бази.
+
+**Модалку закриває успіх, а не кнопка.** Доки компанія не збереглася,
+користувач мусить бачити свої дані й повідомлення, тому вікно контрольоване
+(`useOverlayState` + `isOpen`/`onOpenChange`), і `useEffect` закриває його на
+`added`.
+
+**Помилка поля йде в `FieldError` разом з `isInvalid`.** Проп
+`validationErrors`, який описує сайт HeroUI, у встановленій 3.2.x живе на
+`Form`, а не на полі - у типах `TextFieldRootProps` його немає.
