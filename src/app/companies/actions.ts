@@ -139,6 +139,7 @@ export async function updateCompanyAction(
       removeSourceIds: formData
         .getAll("removeSourceIds")
         .filter((value): value is string => typeof value === "string"),
+      sourceLabels: typedLabels(formData),
       // Порожнє поле адреси - це «джерело не додаємо», а не крива адреса: той
       // самий підхід, що з карʼєрною сторінкою в модалці Add company.
       addSource: addedSource(formData),
@@ -171,6 +172,29 @@ export async function updateCompanyAction(
   revalidatePath("/companies");
 
   return { status: "saved", company: result.company };
+}
+
+/** Префікс полів із підписами джерел: далі в назві стоїть id джерела. */
+const SOURCE_LABEL_PREFIX = "sourceLabel.";
+
+/**
+ * Підписи наявних джерел із полів форми: id джерела - уведений підпис.
+ *
+ * Назва поля несе id (`sourceLabel.<id>`), а не окремий паралельний масив
+ * ідентифікаторів: `FormData` не гарантує, що два масиви приїдуть однакової
+ * довжини, і підпис міг би дістатися чужому джерелу. Самі id - недовірений
+ * ввід, тому їх перевіряє запит у `updateCompany`.
+ */
+function typedLabels(formData: FormData): Record<string, string> {
+  const labels: Record<string, string> = {};
+
+  for (const [field, value] of formData.entries()) {
+    if (field.startsWith(SOURCE_LABEL_PREFIX) && typeof value === "string") {
+      labels[field.slice(SOURCE_LABEL_PREFIX.length)] = value;
+    }
+  }
+
+  return labels;
 }
 
 /** Нове карʼєрне джерело з полів модалки Edit або `undefined`, якщо його не вводили. */

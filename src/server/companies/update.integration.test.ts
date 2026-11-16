@@ -379,3 +379,96 @@ describe("updateCompany adding a career source", () => {
     expect(await readSources(theirs.company.id)).toHaveLength(1);
   });
 });
+
+describe("updateCompany labelling existing sources", () => {
+  it("writes a label on a source that had none", async () => {
+    const user = await seedSystemUser(testDb);
+    const { company, source } = await insertCompany(user.id, "Mozilla");
+
+    const result = await updateCompany(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      name: "Mozilla",
+      sourceLabels: { [source.id]: "  Remote Canada  " },
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect((await readSources(company.id))[0].label).toBe("Remote Canada");
+  });
+
+  it("clears a label the user emptied", async () => {
+    const user = await seedSystemUser(testDb);
+    const { company, source } = await insertCompany(user.id, "Mozilla");
+    await testDb
+      .update(careerSources)
+      .set({ label: "Remote Canada" })
+      .where(eq(careerSources.id, source.id));
+
+    await updateCompany(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      name: "Mozilla",
+      sourceLabels: { [source.id]: "   " },
+    });
+
+    // Порожній підпис - це «підпису немає», а не порожній рядок у базі.
+    expect((await readSources(company.id))[0].label).toBeNull();
+  });
+
+  it("never labels a source of another company", async () => {
+    const user = await seedSystemUser(testDb);
+    const mine = await insertCompany(user.id, "Acme", "acme");
+    const other = await insertCompany(user.id, "Bosch", "bosch");
+
+    const result = await updateCompany(testDb, {
+      userId: user.id,
+      companyId: mine.company.id,
+      name: "Acme",
+      sourceLabels: { [other.source.id]: "Stolen" },
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect((await readSources(other.company.id))[0].label).toBeNull();
+  });
+
+  it("applies renaming, labelling, removing and adding in one save", async () => {
+    const user = await seedSystemUser(testDb);
+    const { company, source } = await insertCompany(
+      user.id,
+      "Mozilla",
+      "mozilla",
+    );
+    const [dropped] = await testDb
+      .insert(careerSources)
+      .values({
+        companyId: company.id,
+        url: "https://jobs.lever.co/mozilla",
+        platform: "lever",
+      })
+      .returning();
+
+    const result = await updateCompany(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      name: "Mozilla Corporation",
+      sourceLabels: { [source.id]: "Global" },
+      removeSourceIds: [dropped.id],
+      addSource: {
+        url: "https://www.mozilla.org/en-US/careers/listings/?location=Remote%20US",
+        label: "Remote US",
+      },
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect((await readCompany(company.id)).name).toBe("Mozilla Corporation");
+    expect(
+      (await readSources(company.id)).map((row) => [row.url, row.label]),
+    ).toEqual([
+      ["https://boards.greenhouse.io/mozilla", "Global"],
+      [
+        "https://www.mozilla.org/en-US/careers/listings/?location=Remote%20US",
+        "Remote US",
+      ],
+    ]);
+  });
+});

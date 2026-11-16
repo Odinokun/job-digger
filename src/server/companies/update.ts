@@ -17,6 +17,11 @@ export type UpdateCompanyInput = {
   /** Джерела, позначені до видалення. Зміна застосовується на Save. */
   removeSourceIds?: string[];
   /**
+   * Підписи наявних джерел: id джерела - підпис із поля. Порожній підпис
+   * означає «прибрати підпис», а не «не чіпати»: форма надсилає всі поля.
+   */
+  sourceLabels?: Record<string, string>;
+  /**
    * Нова карʼєрна сторінка, уведена руками. Доки автоматичного пошуку немає
    * (задача 5.07), це єдиний спосіб дати компанії друге джерело - наприклад,
    * три фільтри однієї сторінки mozilla.org (картка 2.16).
@@ -38,7 +43,7 @@ export type UpdateCompanyResult =
   | { ok: false; problem: "source-duplicate" };
 
 /**
- * Перейменовує компанію, видаляє позначені карʼєрні джерела й додає нове.
+ * Перейменовує компанію, перепідписує й видаляє її карʼєрні джерела й додає нове.
  *
  * Усе в одній транзакції: інакше крива назва могла б лишити джерела вже
  * видаленими. Вакансії видаленого джерела теж мають зникати (docs/decisions.md,
@@ -55,6 +60,7 @@ export async function updateCompany(
     companyId,
     name,
     removeSourceIds = [],
+    sourceLabels = {},
     addSource,
   }: UpdateCompanyInput,
 ): Promise<UpdateCompanyResult> {
@@ -108,6 +114,23 @@ export async function updateCompany(
           and(
             eq(careerSources.companyId, companyId),
             inArray(careerSources.id, removeSourceIds),
+          ),
+        );
+    }
+
+    // Підписи наявних джерел. Запитів тут стільки, скільки полів у модалці:
+    // джерел у компанії одиниці, тому один `UPDATE ... CASE` того не варт.
+    // `company_id` в умові обовʼязковий - id приходять із клієнта.
+    for (const [sourceId, label] of Object.entries(sourceLabels)) {
+      const trimmed = label.trim();
+
+      await tx
+        .update(careerSources)
+        .set({ label: trimmed === "" ? null : trimmed })
+        .where(
+          and(
+            eq(careerSources.companyId, companyId),
+            eq(careerSources.id, sourceId),
           ),
         );
     }
