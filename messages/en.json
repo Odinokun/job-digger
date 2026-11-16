@@ -40,6 +40,7 @@
       "namePlaceholder": "Bosch",
       "url": "Company website",
       "urlPlaceholder": "bosch.com/de",
+      "urlHint": "Paste the company site or a career page - the name and the other address are filled in from it.",
       "careerUrl": "Career page",
       "careerUrlPlaceholder": "job-boards.greenhouse.io/bosch",
       "careerUrlHint": "Optional. Without it the company goes to Not tracked.",

@@ -12,6 +12,8 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import { CAREER_PLATFORMS } from "../../lib/companies/platform.ts";
+
 /**
  * Єдиний користувач локальної версії. Значення технічне: пошта нікуди не йде,
  * вхід через Google зʼявиться лише в онлайн-версії з allow-list у ENV.
@@ -47,18 +49,11 @@ export const discoveryStatus = pgEnum("discovery_status", [
 ]);
 
 /**
- * Платформа карʼєрного джерела: за нею вибирається парсер. `unsupported` -
- * сторінку знайдено, але читати її нічим (docs/discovery-and-parsing.md, розділ 6).
+ * Платформа карʼєрного джерела: за нею вибирається парсер. Самий перелік -
+ * у [`lib/companies/platform.ts`](../../lib/companies/platform.ts), бо потрібен
+ * і на клієнті.
  */
-export const careerPlatform = pgEnum("career_platform", [
-  "greenhouse",
-  "lever",
-  "ashby",
-  "workday",
-  "peopleforce",
-  "schema_org",
-  "unsupported",
-]);
+export const careerPlatform = pgEnum("career_platform", CAREER_PLATFORMS);
 
 /**
  * Компанія, за вакансіями якої стежить користувач.

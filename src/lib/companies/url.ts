@@ -64,3 +64,13 @@ export function absoluteCompanyUrl(input: string): string {
 
   return SCHEME_PATTERN.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
+
+/**
+ * Хост очищеної адреси - те, що до першого слеша чи знака питання.
+ *
+ * Приймає результат `normalizeCompanyUrl`, тому розбирати рядок через `URL`
+ * тут нема потреби: протоколу немає, хост уже в нижньому регістрі.
+ */
+export function companyUrlHost(normalizedUrl: string): string {
+  return normalizedUrl.split("/")[0].split("?")[0];
+}

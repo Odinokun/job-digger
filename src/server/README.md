@@ -17,6 +17,8 @@
 Готові підпапки:
 
 - [`db`](db/README.md) - схема, підключення до PostgreSQL, міграції й seed.
-- [`companies`](companies/README.md) - очищення адрес компаній і пошук дублікатів.
+- [`companies`](companies/README.md) - пошук дублікатів, списки компаній і додавання.
+  Робота з самим рядком адреси - поза `src/server`, у
+  [`lib/companies`](../lib/companies/README.md): вона потрібна й клієнтові.
 
 Решта (`queue`, `parsers`, `http`) створюються у своїх задачах, а не наперед.

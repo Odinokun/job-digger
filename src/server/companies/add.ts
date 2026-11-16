@@ -6,12 +6,12 @@ import {
   findCompanyUrlConflict,
   type ConflictingCompany,
 } from "./duplicates.ts";
-import { detectPlatform } from "./platform.ts";
+import { detectPlatform } from "../../lib/companies/platform.ts";
 import {
   absoluteCompanyUrl,
   normalizeCompanyUrl,
   type UrlRefusalReason,
-} from "./url.ts";
+} from "../../lib/companies/url.ts";
 
 /** Що користувач увів у модалці Add company. */
 export type AddCompanyInput = {

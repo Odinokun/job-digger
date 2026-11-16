@@ -1,6 +1,6 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { normalizeCompanyUrl } from "../companies/url.ts";
+import { normalizeCompanyUrl } from "../../lib/companies/url.ts";
 import { careerSources, companies } from "./schema.ts";
 
 /** Карʼєрне джерело демо-компанії: без `companyId`, його дає вставка. */
