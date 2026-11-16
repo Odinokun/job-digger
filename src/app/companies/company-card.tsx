@@ -1,6 +1,7 @@
 import { Card } from "@heroui/react";
 
 import type {
+  CompaniesTab,
   CompanyListItem,
   CompanySource,
 } from "@/lib/companies/company-list";
@@ -9,10 +10,13 @@ import { EditCompanyDialog } from "./edit-company-dialog";
 
 interface CompanyCardProps {
   company: CompanyListItem;
+  /** Вкладка списку: модалка Edit повертає рядок саме для неї. */
+  tab: CompaniesTab;
   /** Підпис статусу - лише там, де він щось означає, тобто на вкладці Not tracked. */
   statusLabel?: string;
   noSourcesLabel: string;
   platformLabels: Record<CompanySource["platform"], string>;
+  onSaved: (companyId: string, saved: CompanyListItem | null) => void;
 }
 
 /**
@@ -24,9 +28,11 @@ interface CompanyCardProps {
  */
 export function CompanyCard({
   company,
+  tab,
   statusLabel,
   noSourcesLabel,
   platformLabels,
+  onSaved,
 }: CompanyCardProps) {
   return (
     <Card>
@@ -76,7 +82,12 @@ export function CompanyCard({
           приходять із задачами 2.06 і 4.01 (docs/ui.md, розділ 4.2). */}
       <Card.Footer className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-sm text-muted">{statusLabel}</span>
-        <EditCompanyDialog company={company} platformLabels={platformLabels} />
+        <EditCompanyDialog
+          company={company}
+          tab={tab}
+          platformLabels={platformLabels}
+          onSaved={onSaved}
+        />
       </Card.Footer>
     </Card>
   );

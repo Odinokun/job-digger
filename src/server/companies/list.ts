@@ -181,3 +181,44 @@ export async function countCompaniesByTab(
 
   return row ?? { tracked: 0, notTracked: 0 };
 }
+
+/**
+ * Одна компанія вкладки - такою, якою її показує список.
+ *
+ * Потрібна після Save у модалці Edit: список замінює в себе саме цей рядок,
+ * не перечитуючи порції. `null` означає «на цій вкладці її більше немає» -
+ * компанія без відстежуваних джерел переїхала в Not tracked, тож рядок треба
+ * прибрати.
+ */
+export async function findCompanyInTab(
+  db: NodePgDatabase,
+  {
+    userId,
+    companyId,
+    tab,
+  }: { userId: string; companyId: string; tab: CompaniesTab },
+): Promise<CompanyListItem | null> {
+  const tracked = trackedSourceSubquery(db, companies.id);
+
+  const rows = await db
+    .select({
+      id: companies.id,
+      name: companies.name,
+      url: companies.url,
+      discoveryStatus: companies.discoveryStatus,
+    })
+    .from(companies)
+    .where(
+      and(
+        eq(companies.id, companyId),
+        // Умова на користувача тут і є перевіркою доступу: чужа компанія
+        // просто не знайдеться.
+        eq(companies.userId, userId),
+        tab === "tracked" ? exists(tracked) : notExists(tracked),
+      ),
+    );
+
+  const [company] = await attachSources(db, rows);
+
+  return company ?? null;
+}

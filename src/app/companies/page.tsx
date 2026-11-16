@@ -9,8 +9,7 @@ import { countCompaniesByTab, listCompanies } from "@/server/companies/list";
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 
-import { AddCompanyDialog } from "./add-company-dialog";
-import { CompaniesList } from "./companies-list";
+import { CompaniesBoard } from "./companies-board";
 import { CompaniesTabs } from "./companies-tabs";
 
 export default async function CompaniesPage({
@@ -46,36 +45,26 @@ export default async function CompaniesPage({
   };
 
   return (
-    <>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-sans text-2xl font-bold">{t("title")}</h1>
-        {/* Кнопка Add живе на сторінці Companies, поруч зі списком
-            (docs/ui.md, розділ 4.2). */}
-        <AddCompanyDialog />
-      </div>
-
-      <div className="mt-4">
+    <CompaniesBoard
+      // Ключ - вкладка: показані рядки однієї не мають перетікати в іншу.
+      key={tab}
+      tab={tab}
+      title={t("title")}
+      tabs={
         <CompaniesTabs
           current={tab}
           label={t("tabsLabel")}
           counts={counts}
           labels={{ tracked: t("tracked"), notTracked: t("notTracked") }}
         />
-      </div>
-
-      {/* Сам список клієнтський: Load more додає порції до показаних. */}
-      <CompaniesList
-        tab={tab}
-        initialItems={companies}
-        initialCursor={nextCursor}
-        emptyLabel={
-          tab === "tracked" ? t("emptyTracked") : t("emptyNotTracked")
-        }
-        loadMoreLabel={t("loadMore")}
-        noSourcesLabel={t("noSources")}
-        platformLabels={platformLabels}
-        statusLabels={statusLabels}
-      />
-    </>
+      }
+      initialItems={companies}
+      initialCursor={nextCursor}
+      emptyLabel={tab === "tracked" ? t("emptyTracked") : t("emptyNotTracked")}
+      loadMoreLabel={t("loadMore")}
+      noSourcesLabel={t("noSources")}
+      platformLabels={platformLabels}
+      statusLabels={statusLabels}
+    />
   );
 }

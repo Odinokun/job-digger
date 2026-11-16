@@ -14,15 +14,24 @@ import { useActionState, useEffect, useState } from "react";
 
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import type {
+  CompaniesTab,
   CompanyListItem,
   CompanySource,
 } from "@/lib/companies/company-list";
 
-import { EDIT_COMPANY_INITIAL_STATE, updateCompanyAction } from "./actions";
+import { updateCompanyAction } from "./actions";
+import { EDIT_COMPANY_INITIAL_STATE } from "./form-state";
 
 interface EditCompanyDialogProps {
   company: CompanyListItem;
+  /** Вкладка, у якій зараз показана компанія: від неї залежить, чи лишиться вона в списку. */
+  tab: CompaniesTab;
   platformLabels: Record<CompanySource["platform"], string>;
+  /**
+   * Збережений рядок або `null`, якщо компанія вкладці більше не належить.
+   * Список замінює в себе саме його, тому дозавантажені порції лишаються.
+   */
+  onSaved: (companyId: string, saved: CompanyListItem | null) => void;
 }
 
 /**
@@ -38,7 +47,9 @@ interface EditCompanyDialogProps {
  */
 export function EditCompanyDialog({
   company,
+  tab,
   platformLabels,
+  onSaved,
 }: EditCompanyDialogProps) {
   const t = useTranslations("CompaniesPage.editCompany");
   const showActionFailed = useActionFailedToast();
@@ -52,11 +63,19 @@ export function EditCompanyDialog({
 
   // Модалку закриває успіх, а не кнопка: доки зміни не збереглися, користувач
   // має бачити свої правки й повідомлення про помилку.
+  // Закриття взяте окремою змінною, бо `useOverlayState` повертає новий обʼєкт
+  // на кожен рендер (сама `close` стабільна). Із цілим `overlay` у залежностях
+  // ефект перезапускався б постійно й на відкритті модалки одразу бачив би вже
+  // відпрацьований успіх: вікно закривалося б миттєво, а кнопка виглядала б
+  // мертвою.
+  const closeDialog = overlay.close;
+
   useEffect(() => {
     if (state.status === "saved") {
-      overlay.close();
+      onSaved(company.id, state.company);
+      closeDialog();
     }
-  }, [state, overlay]);
+  }, [state, closeDialog, onSaved, company.id]);
 
   useEffect(() => {
     if (state.status === "failed-unexpectedly") {
@@ -106,6 +125,9 @@ export function EditCompanyDialog({
 
             <form action={submit}>
               <input type="hidden" name="companyId" value={company.id} />
+              {/* Вкладка потрібна серверу, щоб сказати, чи лишається
+                  компанія в цьому списку після збереження. */}
+              <input type="hidden" name="tab" value={tab} />
 
               <Modal.Body className="flex flex-col gap-4">
                 <TextField

@@ -13,10 +13,15 @@ import { useTranslations } from "next-intl";
 import { useActionState, useEffect, useState } from "react";
 
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
+import type {
+  CompaniesTab,
+  CompanyListItem,
+} from "@/lib/companies/company-list";
 import { suggestCompanyFields } from "@/lib/companies/suggest";
 import type { UrlRefusalReason } from "@/lib/companies/url";
 
-import { ADD_COMPANY_INITIAL_STATE, addCompanyAction } from "./actions";
+import { addCompanyAction } from "./actions";
+import { ADD_COMPANY_INITIAL_STATE } from "./form-state";
 
 /** Ключ перекладу для причини, через яку адресу не прийняли. */
 const URL_ERROR_KEYS: Record<UrlRefusalReason, string> = {
@@ -42,7 +47,17 @@ const EMPTY_EDITS = { name: false, careerUrl: false };
  * Компонент клієнтський, бо модалці потрібен стан відкриття, а формі -
  * результат Server Action. Сам список компаній лишається серверним.
  */
-export function AddCompanyDialog() {
+interface AddCompanyDialogProps {
+  /** Вкладка, яку зараз видно: від неї залежить, чи потрапить компанія в цей список. */
+  tab: CompaniesTab;
+  /**
+   * Доданий рядок або `null`, якщо компанія належить іншій вкладці.
+   * Список вставляє його в себе, тому дозавантажені порції лишаються.
+   */
+  onAdded: (added: CompanyListItem | null) => void;
+}
+
+export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
   const t = useTranslations("CompaniesPage.addCompany");
   const showActionFailed = useActionFailedToast();
   const overlay = useOverlayState();
@@ -59,11 +74,19 @@ export function AddCompanyDialog() {
 
   // Модалку закриває успіх, а не сама кнопка: доки компанія не збереглася,
   // користувач має бачити свої дані й повідомлення про помилку.
+  // Закриття взяте окремою змінною, бо `useOverlayState` повертає новий обʼєкт
+  // на кожен рендер (сама `close` стабільна). Із цілим `overlay` у залежностях
+  // ефект перезапускався б постійно й на відкритті модалки одразу бачив би вже
+  // відпрацьований успіх: вікно закривалося б миттєво, а кнопка виглядала б
+  // мертвою.
+  const closeDialog = overlay.close;
+
   useEffect(() => {
     if (state.status === "added") {
-      overlay.close();
+      onAdded(state.company);
+      closeDialog();
     }
-  }, [state, overlay]);
+  }, [state, closeDialog, onAdded]);
 
   // Неочікуваний збій полю форми не належить: виправляти користувачеві нічого,
   // тому про нього повідомляє сповіщення, а вікно лишається відкритим зі
@@ -175,6 +198,9 @@ export function AddCompanyDialog() {
             {/* Звичайна форма з action: так поля надсилаються і без JS, і
                 Server Action сам перевіряє походження запиту. */}
             <form action={submit}>
+              {/* Вкладка потрібна серверу, щоб сказати, чи показувати нову
+                  компанію в цьому списку. */}
+              <input type="hidden" name="tab" value={tab} />
               <Modal.Body className="flex flex-col gap-4">
                 {/* Адреса стоїть першою: з неї заповнюються два поля нижче. */}
                 <TextField
