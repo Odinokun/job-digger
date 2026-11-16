@@ -10,6 +10,7 @@ import {
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 
+import { AddCompanyDialog } from "./add-company-dialog";
 import { CompaniesTabs } from "./companies-tabs";
 import { CompanyCard } from "./company-card";
 
@@ -52,7 +53,12 @@ export default async function CompaniesPage({
 
   return (
     <>
-      <h1 className="font-sans text-2xl font-bold">{t("title")}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="font-sans text-2xl font-bold">{t("title")}</h1>
+        {/* Кнопка Add живе на сторінці Companies, поруч зі списком
+            (docs/ui.md, розділ 4.2). */}
+        <AddCompanyDialog />
+      </div>
 
       <div className="mt-4">
         <CompaniesTabs
