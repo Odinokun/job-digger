@@ -12,6 +12,7 @@ Docker - [кореневий README](../../../README.md#база-даних).
 | `client.ts`           | `getDb()` - пул зʼєднань і єдина точка доступу до бази             |
 | `system-user.ts`      | `seedSystemUser(db)` створює, `getSystemUser(db)` лише читає       |
 | `seed.ts`             | Раннер початкових даних (`npm run db:seed`)                       |
+| `demo-companies.ts`   | `seedDemoCompanies(db, userId)` - набір компаній для ручної перевірки |
 | `check-connection.ts` | Перевірка підключення (`npm run db:check`)                         |
 | [`testing/`](testing/README.md) | Обвʼязка інтеграційних тестів: тестова база й чистий стан |
 
