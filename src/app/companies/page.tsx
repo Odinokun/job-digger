@@ -1,12 +1,11 @@
 import { getTranslations } from "next-intl/server";
 
 import {
-  countCompaniesByTab,
-  listCompanies,
-  type CompaniesTab,
+  parseCompaniesTab,
   type CompanyListItem,
   type CompanySource,
-} from "@/server/companies/list";
+} from "@/lib/companies/company-list";
+import { countCompaniesByTab, listCompanies } from "@/server/companies/list";
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 
@@ -14,16 +13,11 @@ import { AddCompanyDialog } from "./add-company-dialog";
 import { CompaniesTabs } from "./companies-tabs";
 import { CompanyCard } from "./company-card";
 
-/** Вкладка з адреси. Усе, крім відомого значення, - це Tracked. */
-function readTab(value: string | string[] | undefined): CompaniesTab {
-  return value === "not-tracked" ? "not-tracked" : "tracked";
-}
-
 export default async function CompaniesPage({
   searchParams,
 }: PageProps<"/companies">) {
   const t = await getTranslations("CompaniesPage");
-  const tab = readTab((await searchParams).tab);
+  const tab = parseCompaniesTab((await searchParams).tab);
 
   const db = getDb();
   const user = await getSystemUser(db);

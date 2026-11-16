@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import type { CompaniesTab } from "@/server/companies/list";
+import type { CompaniesTab } from "@/lib/companies/company-list";
 
 interface CompaniesTabsProps {
   current: CompaniesTab;

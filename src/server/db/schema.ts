@@ -12,6 +12,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import { DISCOVERY_STATUSES } from "../../lib/companies/company-list.ts";
 import { CAREER_PLATFORMS } from "../../lib/companies/platform.ts";
 
 /**
@@ -40,13 +41,11 @@ export const users = pgTable("users", {
  * Стани компанії на вкладці Not tracked (docs/ui.md, розділ 4.3). Решта статусів
  * зі списку компаній тут не зберігається: Tracked - це «є хоч одне джерело, що
  * відстежується», а OK / Has errors / Checking рахуються з джерел і черги.
+ *
+ * Самий перелік - у [`lib/companies/company-list.ts`](../../lib/companies/company-list.ts),
+ * бо тип статусу потрібен і в клієнтському списку компаній.
  */
-export const discoveryStatus = pgEnum("discovery_status", [
-  "not_checked",
-  "not_found",
-  "unsupported",
-  "check_failed",
-]);
+export const discoveryStatus = pgEnum("discovery_status", DISCOVERY_STATUSES);
 
 /**
  * Платформа карʼєрного джерела: за нею вибирається парсер. Самий перелік -

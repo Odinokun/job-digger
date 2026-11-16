@@ -11,33 +11,17 @@ import {
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { careerSources, companies } from "../db/schema.ts";
+import type {
+  CompaniesTab,
+  CompanyListItem,
+  CompanySource,
+} from "../../lib/companies/company-list.ts";
 import { parseCursor, type Cursor } from "../../lib/pagination/cursor.ts";
-
-/**
- * Вкладки сторінки Companies. Належність до вкладки в базі не зберігається:
- * Tracked - це «є хоч одне джерело, що відстежується» (docs/ui.md, розділи 4.2 і 4.3).
- */
-export type CompaniesTab = "tracked" | "not-tracked";
 
 /**
  * Скільки компаній показуємо одразу. Далі - Load more тією самою порцією.
  */
 export const DEFAULT_LIMIT = 50;
-
-export type CompanySource = {
-  id: string;
-  url: string;
-  platform: (typeof careerSources.$inferSelect)["platform"];
-  isTracked: boolean;
-};
-
-export type CompanyListItem = {
-  id: string;
-  name: string;
-  url: string;
-  discoveryStatus: (typeof companies.$inferSelect)["discoveryStatus"];
-  sources: CompanySource[];
-};
 
 /**
  * Порція списку: самі компанії і те, звідки читати наступну.

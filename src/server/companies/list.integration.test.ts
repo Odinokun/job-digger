@@ -6,7 +6,11 @@ import { testDb } from "../db/testing/test-db.ts";
 import { countCompaniesByTab, listCompanies } from "./list.ts";
 
 /** Компанія з відстежуваним джерелом - така потрапляє у вкладку Tracked. */
-async function insertTracked(userId: string, name: string, slug = name.toLowerCase()) {
+async function insertTracked(
+  userId: string,
+  name: string,
+  slug = name.toLowerCase(),
+) {
   const [company] = await testDb
     .insert(companies)
     .values({
