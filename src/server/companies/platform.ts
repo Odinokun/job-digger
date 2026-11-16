@@ -1,4 +1,5 @@
 import type { careerSources } from "../db/schema.ts";
+import { companyUrlHost } from "./url.ts";
 
 /** Платформа карʼєрного джерела так, як її зберігає база. */
 export type CareerPlatform = (typeof careerSources.$inferInsert)["platform"];
@@ -40,7 +41,7 @@ const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
  * повертає ніколи - розмітку JobPosting видно лише з вмісту сторінки.
  */
 export function detectPlatform(normalizedUrl: string): CareerPlatform {
-  const host = normalizedUrl.split("/")[0].split("?")[0];
+  const host = companyUrlHost(normalizedUrl);
 
   const match = PLATFORM_DOMAINS.find(
     // Порівнюється межа лейбла домену, а не кінець рядка: інакше
