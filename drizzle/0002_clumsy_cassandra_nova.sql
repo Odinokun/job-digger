@@ -1,0 +1,1 @@
+ALTER TABLE "career_sources" ADD COLUMN "label" text;

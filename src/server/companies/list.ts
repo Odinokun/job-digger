@@ -137,6 +137,7 @@ async function attachSources(
       id: careerSources.id,
       companyId: careerSources.companyId,
       url: careerSources.url,
+      label: careerSources.label,
       platform: careerSources.platform,
       isTracked: careerSources.isTracked,
     })

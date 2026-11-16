@@ -36,6 +36,11 @@ export type CompaniesTab = (typeof COMPANIES_TABS)[number];
 export type CompanySource = {
   id: string;
   url: string;
+  /**
+   * Підпис, яким користувач розрізняє джерела одного сайту, або `null`, якщо
+   * підпису немає: адреса сама собою зрозуміла.
+   */
+  label: string | null;
   platform: CareerPlatform;
   isTracked: boolean;
 };

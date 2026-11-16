@@ -105,6 +105,11 @@ export const careerSources = pgTable(
       .notNull()
       .references(() => companies.id, { onDelete: "cascade" }),
     url: text("url").notNull(),
+    // Підпис, яким користувач розрізняє джерела одного сайту: три фільтри
+    // mozilla.org відрізняються лише `query`, і сирий URL їх не розрізняє
+    // (картка 2.16). Необовʼязковий: у джерела з власним доменом підписувати
+    // нічого.
+    label: text("label"),
     platform: careerPlatform("platform").notNull(),
     // Адреса, яку нічим прочитати, зберігається без відстеження: знадобиться,
     // якщо зʼявляться нові способи читання (docs/ui.md, розділ 4.3).
