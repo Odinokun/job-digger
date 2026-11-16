@@ -34,6 +34,11 @@
       "unsupported": "Unsupported",
       "checkFailed": "Check failed"
     },
+    "urlErrors": {
+      "empty": "Enter an address.",
+      "notAnAddress": "This does not look like an address.",
+      "unsupportedScheme": "Only http and https addresses work."
+    },
     "editCompany": {
       "open": "Edit",
       "title": "Edit company",
@@ -45,9 +50,16 @@
       "lastSourceWarning": "Without a career page the company moves to Not tracked.",
       "save": "Save",
       "cancel": "Cancel",
+      "sourceLabel": "Label",
+      "sourceLabelPlaceholder": "Remote Canada",
+      "addSource": "Add a career page",
+      "addSourceUrl": "Address",
+      "addSourceUrlPlaceholder": "mozilla.org/en-US/careers/listings/?location=Remote%20US",
+      "addSourceHint": "Optional. Every address is checked on its own, so the same page with another filter is a separate career page.",
       "errors": {
         "nameRequired": "Enter a company name.",
-        "notFound": "This company is no longer there."
+        "notFound": "This company is no longer there.",
+        "sourceDuplicate": "This company already has this career page."
       }
     },
     "addCompany": {
@@ -67,9 +79,6 @@
       "sameDomainWarning": "You already track other companies on this domain:",
       "errors": {
         "nameRequired": "Enter a company name.",
-        "urlEmpty": "Enter an address.",
-        "urlNotAnAddress": "This does not look like an address.",
-        "urlUnsupportedScheme": "Only http and https addresses work.",
         "alreadyAdded": "Already added as {name}."
       }
     }

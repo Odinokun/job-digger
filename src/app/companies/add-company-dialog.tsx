@@ -18,17 +18,10 @@ import type {
   CompanyListItem,
 } from "@/lib/companies/company-list";
 import { suggestCompanyFields } from "@/lib/companies/suggest";
-import type { UrlRefusalReason } from "@/lib/companies/url";
 
 import { addCompanyAction } from "./actions";
 import { ADD_COMPANY_INITIAL_STATE } from "./form-state";
-
-/** Ключ перекладу для причини, через яку адресу не прийняли. */
-const URL_ERROR_KEYS: Record<UrlRefusalReason, string> = {
-  empty: "errors.urlEmpty",
-  "not-a-url": "errors.urlNotAnAddress",
-  "unsupported-scheme": "errors.urlUnsupportedScheme",
-};
+import { URL_ERROR_KEYS } from "./url-errors";
 
 /** Порожня форма: і початковий стан, і те, до чого вона вертається після успіху. */
 const EMPTY_FIELDS = { url: "", name: "", careerUrl: "" };
@@ -59,6 +52,7 @@ interface AddCompanyDialogProps {
 
 export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
   const t = useTranslations("CompaniesPage.addCompany");
+  const tUrlError = useTranslations("CompaniesPage.urlErrors");
   const showActionFailed = useActionFailedToast();
   const overlay = useOverlayState();
   const [state, submit, isPending] = useActionState(
@@ -173,14 +167,14 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
 
   const urlError =
     failure?.problem === "company-url"
-      ? t(URL_ERROR_KEYS[failure.reason])
+      ? tUrlError(URL_ERROR_KEYS[failure.reason])
       : failure?.problem === "already-added"
         ? t("errors.alreadyAdded", { name: failure.company.name })
         : null;
 
   const careerUrlError =
     failure?.problem === "career-url"
-      ? t(URL_ERROR_KEYS[failure.reason])
+      ? tUrlError(URL_ERROR_KEYS[failure.reason])
       : null;
 
   return (

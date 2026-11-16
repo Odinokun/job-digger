@@ -21,6 +21,7 @@ import type {
 
 import { updateCompanyAction } from "./actions";
 import { EDIT_COMPANY_INITIAL_STATE } from "./form-state";
+import { URL_ERROR_KEYS } from "./url-errors";
 
 interface EditCompanyDialogProps {
   company: CompanyListItem;
@@ -34,12 +35,19 @@ interface EditCompanyDialogProps {
   onSaved: (companyId: string, saved: CompanyListItem | null) => void;
 }
 
+/** Порожній блок додавання: і початковий стан, і те, до чого він вертається. */
+const EMPTY_NEW_SOURCE = { url: "", label: "" };
+
 /**
- * Модалка Edit: назва компанії й видалення карʼєрних джерел.
+ * Модалка Edit: назва компанії, підписи карʼєрних джерел, їх видалення й
+ * додавання нового.
  *
- * Адреси тут не редагуються - ні головний сайт, ні самі джерела: нові джерела
- * приходять із Find pages (задача 5.07), а виправлення адреси в плані немає.
- * Окремої сторінки деталей джерела теж немає (картка 2.05).
+ * Головний сайт компанії тут не редагується, як і адреси наявних джерел:
+ * виправлення адреси в плані немає, а окремої сторінки деталей джерела - теж
+ * (картка 2.05). Нове джерело вводиться руками, бо автоматичний пошук приходить
+ * лише із задачею 5.07, а друге джерело потрібне вже зараз: на mozilla.org
+ * вакансії фільтруються за країною, і кожен фільтр - окрема сторінка
+ * (картка 2.16).
  *
  * Видалення джерела лише позначає його, а застосовує Save: рішення 6 у
  * docs/decisions.md - окремого діалогу підтвердження для одного джерела немає,
@@ -52,6 +60,7 @@ export function EditCompanyDialog({
   onSaved,
 }: EditCompanyDialogProps) {
   const t = useTranslations("CompaniesPage.editCompany");
+  const tUrlError = useTranslations("CompaniesPage.urlErrors");
   const showActionFailed = useActionFailedToast();
   const overlay = useOverlayState();
   const [state, submit, isPending] = useActionState(
@@ -60,6 +69,10 @@ export function EditCompanyDialog({
   );
 
   const [removed, setRemoved] = useState<string[]>([]);
+  // Поля підписів і блок додавання контрольовані: React скидає неконтрольовану
+  // форму після надсилання, і при відмові користувач втратив би введене.
+  const [labels, setLabels] = useState<Record<string, string>>({});
+  const [newSource, setNewSource] = useState(EMPTY_NEW_SOURCE);
 
   // Модалку закриває успіх, а не кнопка: доки зміни не збереглися, користувач
   // має бачити свої правки й повідомлення про помилку.
@@ -84,12 +97,19 @@ export function EditCompanyDialog({
   }, [state, showActionFailed]);
 
   /**
-   * Відкриття скидає позначки: вікно контрольоване, тому без цього наступне
-   * відкриття показало б минулий вибір. Скидання в кнопці, а не в ефекті -
-   * `setState` в ефекті дає каскадний рендер (`react-hooks/set-state-in-effect`).
+   * Відкриття скидає позначки й поля: вікно контрольоване, тому без цього
+   * наступне відкриття показало б минулий вибір. Скидання в кнопці, а не в
+   * ефекті - `setState` в ефекті дає каскадний рендер
+   * (`react-hooks/set-state-in-effect`).
    */
   function openDialog() {
     setRemoved([]);
+    setLabels(
+      Object.fromEntries(
+        company.sources.map((source) => [source.id, source.label ?? ""]),
+      ),
+    );
+    setNewSource(EMPTY_NEW_SOURCE);
     overlay.open();
   }
 
@@ -101,12 +121,23 @@ export function EditCompanyDialog({
     );
   }
 
+  function changeLabel(sourceId: string, value: string) {
+    setLabels((current) => ({ ...current, [sourceId]: value }));
+  }
+
   const failure = state.status === "failed" ? state.result : null;
   const nameError =
     failure?.problem === "name-required"
       ? t("errors.nameRequired")
       : failure?.problem === "not-found"
         ? t("errors.notFound")
+        : null;
+
+  const newSourceError =
+    failure?.problem === "source-url"
+      ? tUrlError(URL_ERROR_KEYS[failure.reason])
+      : failure?.problem === "source-duplicate"
+        ? t("errors.sourceDuplicate")
         : null;
 
   return (
@@ -149,34 +180,53 @@ export function EditCompanyDialog({
                   {company.sources.length === 0 ? (
                     <p className="text-sm text-muted">{t("noSources")}</p>
                   ) : (
-                    <ul className="flex flex-col gap-2">
+                    <ul className="flex flex-col gap-3">
                       {company.sources.map((source) => {
                         const isRemoved = removed.includes(source.id);
 
                         return (
-                          <li
-                            key={source.id}
-                            className="flex flex-wrap items-baseline justify-between gap-2 text-sm"
-                          >
-                            <span
-                              className={
-                                isRemoved ? "text-muted line-through" : ""
-                              }
-                            >
-                              <span className="font-medium">
-                                {platformLabels[source.platform]}
-                              </span>{" "}
-                              <span className="text-muted">{source.url}</span>
-                            </span>
+                          <li key={source.id} className="flex flex-col gap-1">
+                            <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
+                              <span
+                                className={
+                                  isRemoved ? "text-muted line-through" : ""
+                                }
+                              >
+                                <span className="font-medium">
+                                  {platformLabels[source.platform]}
+                                </span>{" "}
+                                <span className="text-muted">{source.url}</span>
+                              </span>
 
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              type="button"
-                              onPress={() => toggleRemoved(source.id)}
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                type="button"
+                                onPress={() => toggleRemoved(source.id)}
+                              >
+                                {isRemoved ? t("keep") : t("remove")}
+                              </Button>
+                            </div>
+
+                            {/* Підпис - те, чим користувач розрізняє джерела
+                                одного сайту: три фільтри mozilla.org інакше
+                                виглядають однаково. Підпис рядка, що йде на
+                                видалення, нікуди не надсилається: вимкнене
+                                поле у FormData не потрапляє. */}
+                            <TextField
+                              fullWidth
+                              name={`sourceLabel.${source.id}`}
+                              aria-label={t("sourceLabel")}
+                              value={labels[source.id] ?? ""}
+                              onChange={(value) =>
+                                changeLabel(source.id, value)
+                              }
+                              isDisabled={isRemoved}
                             >
-                              {isRemoved ? t("keep") : t("remove")}
-                            </Button>
+                              <Input
+                                placeholder={t("sourceLabelPlaceholder")}
+                              />
+                            </TextField>
 
                             {/* Позначене джерело їде у формі як поле: Server
                                 Action читає всі `removeSourceIds` разом. */}
@@ -196,9 +246,43 @@ export function EditCompanyDialog({
                   {/* Попередження замість діалогу підтвердження: компанія без
                       джерел переїжджає в Not tracked (docs/ui.md, розділ 4.3). */}
                   {removed.length > 0 &&
-                  removed.length === company.sources.length ? (
+                  removed.length === company.sources.length &&
+                  newSource.url.trim() === "" ? (
                     <p className="text-sm">{t("lastSourceWarning")}</p>
                   ) : null}
+                </div>
+
+                <div className="flex flex-col gap-2 border-t pt-4">
+                  <span className="text-sm font-medium">{t("addSource")}</span>
+
+                  <TextField
+                    fullWidth
+                    name="addSourceUrl"
+                    value={newSource.url}
+                    onChange={(url) =>
+                      setNewSource((current) => ({ ...current, url }))
+                    }
+                    isInvalid={newSourceError !== null}
+                  >
+                    <Label>{t("addSourceUrl")}</Label>
+                    <Input placeholder={t("addSourceUrlPlaceholder")} />
+                    <FieldError>{newSourceError}</FieldError>
+                    <span className="text-sm text-muted">
+                      {t("addSourceHint")}
+                    </span>
+                  </TextField>
+
+                  <TextField
+                    fullWidth
+                    name="addSourceLabel"
+                    value={newSource.label}
+                    onChange={(label) =>
+                      setNewSource((current) => ({ ...current, label }))
+                    }
+                  >
+                    <Label>{t("sourceLabel")}</Label>
+                    <Input placeholder={t("sourceLabelPlaceholder")} />
+                  </TextField>
                 </div>
               </Modal.Body>
 
