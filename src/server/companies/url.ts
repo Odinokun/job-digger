@@ -1,13 +1,18 @@
+/** Чому адресу не можна використати. */
+export type UrlRefusalReason = "empty" | "not-a-url" | "unsupported-scheme";
+
 /**
  * Очищена форма адреси компанії - та, за якою адреси порівнюються між собою,
  * або причина, чому адресу взагалі не можна використати.
  */
 export type NormalizedCompanyUrl =
-  | { ok: true; url: string }
-  | { ok: false; reason: "empty" | "not-a-url" | "unsupported-scheme" };
+  { ok: true; url: string } | { ok: false; reason: UrlRefusalReason };
 
 /** Завантажуємо лише ці схеми (docs/security.md). */
 const SUPPORTED_SCHEMES = ["http:", "https:"];
+
+/** Протокол на початку рядка: `https:`, `ftp:` і будь-який інший. */
+const SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
 
 /**
  * Приводить адресу компанії до порівнянної форми: без протоколу, без `www.`,
@@ -21,13 +26,11 @@ export function normalizeCompanyUrl(input: string): NormalizedCompanyUrl {
     return { ok: false, reason: "empty" };
   }
 
-  // Користувач може вставити адресу без протоколу - тоді підставляємо https,
-  // бо інакше `new URL` не розбере рядок зовсім.
-  const hasScheme = /^[a-z][a-z0-9+.-]*:/i.test(trimmed);
-
   let parsed;
   try {
-    parsed = new URL(hasScheme ? trimmed : `https://${trimmed}`);
+    // Користувач може вставити адресу без протоколу - тоді підставляємо https,
+    // бо інакше `new URL` не розбере рядок зовсім.
+    parsed = new URL(absoluteCompanyUrl(trimmed));
   } catch {
     return { ok: false, reason: "not-a-url" };
   }
@@ -43,4 +46,21 @@ export function normalizeCompanyUrl(input: string): NormalizedCompanyUrl {
   // Fragment відкидається - він лишається в браузері й не доходить до сервера.
   // Query лишається: ним іноді розрізняють національні версії сайту.
   return { ok: true, url: `${host}${path}${parsed.search}` };
+}
+
+/**
+ * Адреса в абсолютній формі: якщо протоколу немає, підставляється `https://`.
+ *
+ * Потрібна тому, що зберігати введену адресу як є не можна - без протоколу
+ * `<a href>` у списку компаній став би відносним посиланням і вів у нікуди.
+ * Решта адреси не змінюється: шлях, регістр і query лишаються, як ввів
+ * користувач (`normalizeCompanyUrl` дає іншу, порівнянну форму).
+ *
+ * Функція нічого не перевіряє - придатність адреси встановлює
+ * `normalizeCompanyUrl`, і викликати цю варто лише після його `ok`.
+ */
+export function absoluteCompanyUrl(input: string): string {
+  const trimmed = input.trim();
+
+  return SCHEME_PATTERN.test(trimmed) ? trimmed : `https://${trimmed}`;
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizeCompanyUrl } from "./url.ts";
+import { absoluteCompanyUrl, normalizeCompanyUrl } from "./url.ts";
 
 describe("normalizeCompanyUrl", () => {
   it("strips the parts that never make it a different company", () => {
@@ -49,5 +49,22 @@ describe("normalizeCompanyUrl", () => {
       ok: false,
       reason: "unsupported-scheme",
     });
+  });
+});
+
+describe("absoluteCompanyUrl", () => {
+  it("adds https when the input has no scheme", () => {
+    expect(absoluteCompanyUrl("bosch.com/de")).toBe("https://bosch.com/de");
+  });
+
+  it("leaves an address that already has a scheme alone", () => {
+    // Шлях, регістр і query лишаються такими, як ввів користувач.
+    expect(absoluteCompanyUrl("http://bosch.com/DE?lang=de")).toBe(
+      "http://bosch.com/DE?lang=de",
+    );
+  });
+
+  it("trims the input, because a pasted address often carries spaces", () => {
+    expect(absoluteCompanyUrl("  bosch.com  ")).toBe("https://bosch.com");
   });
 });
