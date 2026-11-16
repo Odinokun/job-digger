@@ -14,3 +14,7 @@ blob-report/
 # Скіли Claude Code: вендорні файли зі сторонніх репозиторіїв. Форматувати їх не можна -
 # хеш кожного скіла лежить у skills-lock.json, і правка зламала б `npx skills check`
 .agents/
+
+# Особисті дозволи Claude Code: у git файл не потрапляє, тож у CI його немає
+# взагалі, а локально він ламав `npm run format:check` без жодної зміни в коді
+.claude/settings.local.json
