@@ -27,7 +27,7 @@ export default async function CompaniesPage({
 
   const db = getDb();
   const user = await getSystemUser(db);
-  const [companies, counts] = await Promise.all([
+  const [{ items: companies }, counts] = await Promise.all([
     listCompanies(db, { userId: user.id, tab }),
     countCompaniesByTab(db, user.id),
   ]);

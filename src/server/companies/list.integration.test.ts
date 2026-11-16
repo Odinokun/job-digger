@@ -6,20 +6,20 @@ import { testDb } from "../db/testing/test-db.ts";
 import { countCompaniesByTab, listCompanies } from "./list.ts";
 
 /** Компанія з відстежуваним джерелом - така потрапляє у вкладку Tracked. */
-async function insertTracked(userId: string, name: string) {
+async function insertTracked(userId: string, name: string, slug = name.toLowerCase()) {
   const [company] = await testDb
     .insert(companies)
     .values({
       userId,
       name,
-      url: `https://${name.toLowerCase()}.com`,
-      normalizedUrl: `${name.toLowerCase()}.com`,
+      url: `https://${slug}.com`,
+      normalizedUrl: `${slug}.com`,
     })
     .returning();
 
   await testDb.insert(careerSources).values({
     companyId: company.id,
-    url: `https://boards.greenhouse.io/${name.toLowerCase()}`,
+    url: `https://boards.greenhouse.io/${slug}`,
     platform: "greenhouse",
   });
 
@@ -48,7 +48,7 @@ describe("listCompanies", () => {
     await insertTracked(user.id, "Bosch");
     await insertUntracked(user.id, "Acme");
 
-    const tracked = await listCompanies(testDb, {
+    const { items: tracked } = await listCompanies(testDb, {
       userId: user.id,
       tab: "tracked",
     });
@@ -61,7 +61,7 @@ describe("listCompanies", () => {
     await insertTracked(user.id, "Bosch");
     await insertUntracked(user.id, "Acme");
 
-    const notTracked = await listCompanies(testDb, {
+    const { items: notTracked } = await listCompanies(testDb, {
       userId: user.id,
       tab: "not-tracked",
     });
@@ -80,7 +80,7 @@ describe("listCompanies", () => {
       isTracked: false,
     });
 
-    const notTracked = await listCompanies(testDb, {
+    const { items: notTracked } = await listCompanies(testDb, {
       userId: user.id,
       tab: "not-tracked",
     });
@@ -95,7 +95,7 @@ describe("listCompanies", () => {
     await insertTracked(user.id, "Acme");
     await insertTracked(user.id, "Mango");
 
-    const tracked = await listCompanies(testDb, {
+    const { items: tracked } = await listCompanies(testDb, {
       userId: user.id,
       tab: "tracked",
     });
@@ -113,7 +113,7 @@ describe("listCompanies", () => {
     await insertTracked(user.id, "Bosch");
     await insertTracked(user.id, "Cisco");
 
-    const tracked = await listCompanies(testDb, {
+    const { items: tracked } = await listCompanies(testDb, {
       userId: user.id,
       tab: "tracked",
       limit: 2,
@@ -130,7 +130,7 @@ describe("listCompanies", () => {
       .returning();
     await insertTracked(other.id, "Bosch");
 
-    const tracked = await listCompanies(testDb, {
+    const { items: tracked } = await listCompanies(testDb, {
       userId: owner.id,
       tab: "tracked",
     });
@@ -148,7 +148,9 @@ describe("listCompanies", () => {
       platform: "lever",
     });
 
-    const [listed] = await listCompanies(testDb, {
+    const {
+      items: [listed],
+    } = await listCompanies(testDb, {
       userId: user.id,
       tab: "tracked",
     });
@@ -166,6 +168,140 @@ describe("listCompanies", () => {
         platform: "lever",
         isTracked: true,
       },
+    ]);
+  });
+});
+
+describe("listCompanies pagination", () => {
+  it("hands back a cursor while more companies are left", async () => {
+    const user = await seedSystemUser(testDb);
+    await insertTracked(user.id, "Acme");
+    await insertTracked(user.id, "Bosch");
+    await insertTracked(user.id, "Cisco");
+
+    const first = await listCompanies(testDb, {
+      userId: user.id,
+      tab: "tracked",
+      limit: 2,
+    });
+
+    expect(first.items.map((company) => company.name)).toEqual([
+      "Acme",
+      "Bosch",
+    ]);
+    expect(first.nextCursor).toEqual({ key: "Bosch", id: expect.any(String) });
+  });
+
+  it("has no cursor on the last portion", async () => {
+    const user = await seedSystemUser(testDb);
+    await insertTracked(user.id, "Acme");
+    await insertTracked(user.id, "Bosch");
+
+    const only = await listCompanies(testDb, {
+      userId: user.id,
+      tab: "tracked",
+      limit: 2,
+    });
+
+    expect(only.items).toHaveLength(2);
+    expect(only.nextCursor).toBeNull();
+  });
+
+  it("continues after the cursor without a gap or a repeat", async () => {
+    const user = await seedSystemUser(testDb);
+    await insertTracked(user.id, "Acme");
+    await insertTracked(user.id, "Bosch");
+    await insertTracked(user.id, "Cisco");
+    await insertTracked(user.id, "Delta");
+
+    const first = await listCompanies(testDb, {
+      userId: user.id,
+      tab: "tracked",
+      limit: 2,
+    });
+    const second = await listCompanies(testDb, {
+      userId: user.id,
+      tab: "tracked",
+      limit: 2,
+      after: first.nextCursor,
+    });
+
+    expect(second.items.map((company) => company.name)).toEqual([
+      "Cisco",
+      "Delta",
+    ]);
+    expect(second.nextCursor).toBeNull();
+  });
+
+  // Назва не унікальна, і саме на ній ламалася б пагінація за одним полем:
+  // умова `name > 'Acme'` пропустила б решту однойменних компаній.
+  it("walks through companies that share a name", async () => {
+    const user = await seedSystemUser(testDb);
+    await insertTracked(user.id, "Acme", "acme-one");
+    await insertTracked(user.id, "Acme", "acme-two");
+    await insertTracked(user.id, "Acme", "acme-three");
+
+    const first = await listCompanies(testDb, {
+      userId: user.id,
+      tab: "tracked",
+      limit: 2,
+    });
+    const second = await listCompanies(testDb, {
+      userId: user.id,
+      tab: "tracked",
+      limit: 2,
+      after: first.nextCursor,
+    });
+
+    expect(first.items).toHaveLength(2);
+    expect(second.items).toHaveLength(1);
+    // Три різні компанії, жодна не прийшла двічі.
+    expect(
+      new Set([...first.items, ...second.items].map((company) => company.id))
+        .size,
+    ).toBe(3);
+  });
+
+  it("stays inside the asking user even with a cursor", async () => {
+    const owner = await seedSystemUser(testDb);
+    const [other] = await testDb
+      .insert(users)
+      .values({ email: "other@job-digger.local" })
+      .returning();
+    await insertTracked(owner.id, "Acme");
+    await insertTracked(other.id, "Bosch", "bosch-other");
+
+    const first = await listCompanies(testDb, {
+      userId: owner.id,
+      tab: "tracked",
+      limit: 1,
+    });
+    const second = await listCompanies(testDb, {
+      userId: owner.id,
+      tab: "tracked",
+      limit: 1,
+      after: { key: "Acme", id: first.items[0].id },
+    });
+
+    expect(first.nextCursor).toBeNull();
+    expect(second.items).toEqual([]);
+  });
+
+  // Курсор приходить із клієнта, тому зіпсоване значення - очікуваний випадок.
+  it("starts from the beginning when the cursor is not usable", async () => {
+    const user = await seedSystemUser(testDb);
+    await insertTracked(user.id, "Acme");
+    await insertTracked(user.id, "Bosch");
+
+    const page = await listCompanies(testDb, {
+      userId: user.id,
+      tab: "tracked",
+      after: { key: "Acme", id: "not-a-uuid" },
+    });
+
+    expect(page.items.map((company) => company.name)).toEqual([
+      "Acme",
+      "Bosch",
     ]);
   });
 });

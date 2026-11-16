@@ -11,6 +11,7 @@ import {
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { careerSources, companies } from "../db/schema.ts";
+import { parseCursor, type Cursor } from "../../lib/pagination/cursor.ts";
 
 /**
  * Вкладки сторінки Companies. Належність до вкладки в базі не зберігається:
@@ -19,8 +20,7 @@ import { careerSources, companies } from "../db/schema.ts";
 export type CompaniesTab = "tracked" | "not-tracked";
 
 /**
- * Скільки компаній показуємо одразу. Далі - Load more тією самою порцією,
- * і сам механізм пагінації приходить із задачею 2.10 (docs/ui.md, розділ 4.2).
+ * Скільки компаній показуємо одразу. Далі - Load more тією самою порцією.
  */
 export const DEFAULT_LIMIT = 50;
 
@@ -37,6 +37,17 @@ export type CompanyListItem = {
   url: string;
   discoveryStatus: (typeof companies.$inferSelect)["discoveryStatus"];
   sources: CompanySource[];
+};
+
+/**
+ * Порція списку: самі компанії і те, звідки читати наступну.
+ *
+ * `nextCursor` є лише тоді, коли далі справді щось є, тому кнопка Load more
+ * не питає базу, щоб дізнатися, що показувати більше нічого.
+ */
+export type CompanyListPage = {
+  items: CompanyListItem[];
+  nextCursor: Cursor | null;
 };
 
 /**
@@ -61,7 +72,11 @@ function trackedSourceSubquery(
 }
 
 /**
- * Компанії однієї вкладки для одного користувача.
+ * Порція компаній однієї вкладки для одного користувача.
+ *
+ * `after` - курсор останнього показаного рядка; без нього читається початок
+ * списку. Значення приходить із клієнта, тому проходить `parseCursor`:
+ * непридатний курсор означає «почни з початку», а не помилку.
  */
 export async function listCompanies(
   db: NodePgDatabase,
@@ -69,9 +84,16 @@ export async function listCompanies(
     userId,
     tab,
     limit = DEFAULT_LIMIT,
-  }: { userId: string; tab: CompaniesTab; limit?: number },
-): Promise<CompanyListItem[]> {
+    after,
+  }: {
+    userId: string;
+    tab: CompaniesTab;
+    limit?: number;
+    after?: Cursor | null;
+  },
+): Promise<CompanyListPage> {
   const tracked = trackedSourceSubquery(db, companies.id);
+  const cursor = parseCursor(after);
 
   const rows = await db
     .select({
@@ -85,13 +107,30 @@ export async function listCompanies(
       and(
         eq(companies.userId, userId),
         tab === "tracked" ? exists(tracked) : notExists(tracked),
+        // Порівняння пари, а не двох умов через OR: у PostgreSQL
+        // `(a, b) > (x, y)` - це рівно «наступний рядок за тим самим
+        // порядком», і воно збігається з `ORDER BY name, id`.
+        cursor
+          ? sql`(${companies.name}, ${companies.id}) > (${cursor.key}, ${cursor.id}::uuid)`
+          : undefined,
       ),
     )
-    // Порядок задає код, а не база: список читається за алфавітом назв.
-    .orderBy(asc(companies.name))
-    .limit(limit);
+    // Порядок задає код, а не база: список читається за алфавітом назв, а `id`
+    // робить порядок однозначним при однакових назвах - без цього курсор
+    // губив би рядки на межі порції.
+    .orderBy(asc(companies.name), asc(companies.id))
+    // Один рядок понад порцію - дешевший спосіб дізнатися, що далі ще є, ніж
+    // окремий `count` на кожне Load more.
+    .limit(limit + 1);
 
-  return attachSources(db, rows);
+  const hasMore = rows.length > limit;
+  const visible = hasMore ? rows.slice(0, limit) : rows;
+  const last = visible.at(-1);
+
+  return {
+    items: await attachSources(db, visible),
+    nextCursor: hasMore && last ? { key: last.name, id: last.id } : null,
+  };
 }
 
 /**
