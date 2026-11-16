@@ -10,16 +10,17 @@ import {
   useOverlayState,
 } from "@heroui/react";
 import { useTranslations } from "next-intl";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import type {
   CompaniesTab,
   CompanyListItem,
 } from "@/lib/companies/company-list";
+import type { AddCareerSourceFormState } from "./form-state";
 import { suggestCompanyFields } from "@/lib/companies/suggest";
 
-import { addCompanyAction } from "./actions";
+import { addCareerSourceAction, addCompanyAction } from "./actions";
 import { ADD_COMPANY_INITIAL_STATE } from "./form-state";
 import { URL_ERROR_KEYS } from "./url-errors";
 
@@ -48,11 +49,23 @@ interface AddCompanyDialogProps {
    * Список вставляє його в себе, тому дозавантажені порції лишаються.
    */
   onAdded: (added: CompanyListItem | null) => void;
+  /**
+   * Компанія, якій дісталася вставлена адреса ще одним карʼєрним джерелом.
+   * Рядок уже є в списку, тому його заміщають, а не додають.
+   */
+  onSourceAdded: (companyId: string, saved: CompanyListItem | null) => void;
 }
 
-export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
+export function AddCompanyDialog({
+  tab,
+  onAdded,
+  onSourceAdded,
+}: AddCompanyDialogProps) {
   const t = useTranslations("CompaniesPage.addCompany");
   const tUrlError = useTranslations("CompaniesPage.urlErrors");
+  // Текст про дублікат джерела спільний із модалкою Edit, тому лежить рівнем
+  // вище, поряд із `urlErrors`.
+  const tSourceDuplicate = useTranslations("CompaniesPage");
   const showActionFailed = useActionFailedToast();
   const overlay = useOverlayState();
   const [state, submit, isPending] = useActionState(
@@ -65,6 +78,13 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
   const [fields, setFields] = useState(EMPTY_FIELDS);
   const [editedByHand, setEditedByHand] = useState(EMPTY_EDITS);
   const [isSuggested, setSuggested] = useState(false);
+
+  // Пропозиція «додати цю адресу карʼєрною сторінкою знайденої компанії» -
+  // окрема дія, а не ще одне надсилання форми: компанію вона не додає, тому й
+  // стан у неї свій.
+  const [sourceState, setSourceState] =
+    useState<AddCareerSourceFormState | null>(null);
+  const [isAddingSource, startAddingSource] = useTransition();
 
   // Модалку закриває успіх, а не сама кнопка: доки компанія не збереглася,
   // користувач має бачити свої дані й повідомлення про помилку.
@@ -91,6 +111,19 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
     }
   }, [state, showActionFailed]);
 
+  useEffect(() => {
+    if (sourceState?.status === "added") {
+      onSourceAdded(sourceState.companyId, sourceState.company);
+      closeDialog();
+    }
+  }, [sourceState, closeDialog, onSourceAdded]);
+
+  useEffect(() => {
+    if (sourceState?.status === "failed-unexpectedly") {
+      showActionFailed();
+    }
+  }, [sourceState, showActionFailed]);
+
   // Форма чиститься на відкритті, а не на успіху: поля контрольовані, тому
   // інакше наступне відкриття показало б минулу компанію. Скидання стоїть у
   // кнопці, а не в ефекті - ефект із `setState` дає каскадний рендер
@@ -99,6 +132,7 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
     setFields(EMPTY_FIELDS);
     setEditedByHand(EMPTY_EDITS);
     setSuggested(false);
+    setSourceState(null);
     overlay.open();
   }
 
@@ -157,6 +191,20 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
     }));
   }
 
+  /**
+   * Зберігає вставлену адресу ще одним джерелом знайденої компанії.
+   *
+   * Адреса береться з поля карʼєрної сторінки: саме туди її поклала підказка,
+   * коли впізнала в ній не головний сайт (`suggestCompanyFields`).
+   */
+  function addAsSource(companyId: string) {
+    startAddingSource(async () => {
+      setSourceState(
+        await addCareerSourceAction(companyId, fields.careerUrl, "", tab),
+      );
+    });
+  }
+
   const failure = state.status === "failed" ? state.result : null;
   const sameDomain = failure?.problem === "same-domain" ? failure : null;
 
@@ -172,9 +220,24 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
         ? t("errors.alreadyAdded", { name: failure.company.name })
         : null;
 
+  const sourceFailure =
+    sourceState?.status === "failed" ? sourceState.result : null;
+
   const careerUrlError =
     failure?.problem === "career-url"
       ? tUrlError(URL_ERROR_KEYS[failure.reason])
+      : sourceFailure?.problem === "source-url"
+        ? tUrlError(URL_ERROR_KEYS[sourceFailure.reason])
+        : sourceFailure?.problem === "source-duplicate"
+          ? tSourceDuplicate("sourceDuplicate")
+          : null;
+
+  // Пропозиція зʼявляється лише тоді, коли адресу справді є що додати: при
+  // точному збігу компанії й заповненому полі карʼєрної сторінки. Якщо
+  // користувач вставив сам головний сайт, додавати нічого - лишається відмова.
+  const alreadyAdded =
+    failure?.problem === "already-added" && fields.careerUrl.trim() !== ""
+      ? failure.company
       : null;
 
   return (
@@ -240,6 +303,23 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
                     {t("careerUrlHint")}
                   </span>
                 </TextField>
+
+                {alreadyAdded ? (
+                  <div className="flex flex-col items-start gap-2 text-sm">
+                    <p>{t("addAsSourceHint", { name: alreadyAdded.name })}</p>
+                    {/* Кнопка кличе окрему дію, тому `type="button"`: інакше
+                        вона надіслала б форму ще раз і знову впала б у
+                        «вже додана». */}
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      isPending={isAddingSource}
+                      onPress={() => addAsSource(alreadyAdded.id)}
+                    >
+                      {t("addAsSource", { name: alreadyAdded.name })}
+                    </Button>
+                  </div>
+                ) : null}
 
                 {sameDomain ? (
                   <div className="flex flex-col gap-1 text-sm">

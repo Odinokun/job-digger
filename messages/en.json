@@ -39,6 +39,7 @@
       "notAnAddress": "This does not look like an address.",
       "unsupportedScheme": "Only http and https addresses work."
     },
+    "sourceDuplicate": "This company already has this career page.",
     "editCompany": {
       "open": "Edit",
       "title": "Edit company",
@@ -58,8 +59,7 @@
       "addSourceHint": "Optional. Every address is checked on its own, so the same page with another filter is a separate career page.",
       "errors": {
         "nameRequired": "Enter a company name.",
-        "notFound": "This company is no longer there.",
-        "sourceDuplicate": "This company already has this career page."
+        "notFound": "This company is no longer there."
       }
     },
     "addCompany": {
@@ -77,6 +77,8 @@
       "addAnyway": "Add anyway",
       "cancel": "Cancel",
       "sameDomainWarning": "You already track other companies on this domain:",
+      "addAsSource": "Add as a career page of {name}",
+      "addAsSourceHint": "{name} is already added. The pasted address can become another career page of it.",
       "errors": {
         "nameRequired": "Enter a company name.",
         "alreadyAdded": "Already added as {name}."

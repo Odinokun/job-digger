@@ -61,6 +61,9 @@ export function EditCompanyDialog({
 }: EditCompanyDialogProps) {
   const t = useTranslations("CompaniesPage.editCompany");
   const tUrlError = useTranslations("CompaniesPage.urlErrors");
+  // Текст про дублікат джерела спільний із модалкою Add company, тому лежить
+  // рівнем вище, поряд із `urlErrors`.
+  const tSourceDuplicate = useTranslations("CompaniesPage");
   const showActionFailed = useActionFailedToast();
   const overlay = useOverlayState();
   const [state, submit, isPending] = useActionState(
@@ -137,7 +140,7 @@ export function EditCompanyDialog({
     failure?.problem === "source-url"
       ? tUrlError(URL_ERROR_KEYS[failure.reason])
       : failure?.problem === "source-duplicate"
-        ? t("errors.sourceDuplicate")
+        ? tSourceDuplicate("sourceDuplicate")
         : null;
 
   return (

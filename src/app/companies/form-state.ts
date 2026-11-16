@@ -1,6 +1,7 @@
 import type { CompanyListItem } from "@/lib/companies/company-list";
 import type { Cursor } from "@/lib/pagination/cursor";
 import type { AddCompanyResult } from "@/server/companies/add";
+import type { AddCareerSourceResult } from "@/server/companies/sources";
 import type { UpdateCompanyResult } from "@/server/companies/update";
 
 /**
@@ -73,6 +74,23 @@ export type EditCompanyFormState =
 export const EDIT_COMPANY_INITIAL_STATE: EditCompanyFormState = {
   status: "idle",
 };
+
+/**
+ * Чим закінчилася пропозиція «додати цю адресу карʼєрною сторінкою знайденої
+ * компанії» в модалці Add company.
+ *
+ * `company` - рядок компанії, якій дісталося джерело, або `null`, якщо вона
+ * цій вкладці не належить: список замінює в себе саме його.
+ */
+export type AddCareerSourceFormState =
+  /**
+   * `companyId` потрібен окремо від рядка: коли компанія цій вкладці не
+   * належить, `company` приходить як `null`, а прибрати зі списку треба саме
+   * її рядок.
+   */
+  | { status: "added"; companyId: string; company: CompanyListItem | null }
+  | { status: "failed"; result: Extract<AddCareerSourceResult, { ok: false }> }
+  | { status: "failed-unexpectedly" };
 
 /**
  * Наступна порція списку компаній або факт збою.
