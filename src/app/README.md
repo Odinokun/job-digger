@@ -36,8 +36,10 @@
 
 - `companies-tabs.tsx` - вкладки Tracked / Not tracked; серверний.
 - `company-card.tsx` - картка однієї компанії на HeroUI `Card`.
+- `companies-list.tsx` - список компаній і кнопка Load more; клієнтський
+  ([розділ «Довгі списки»](#довгі-списки)).
 - `add-company-dialog.tsx` - кнопка Add і модалка додавання; клієнтський.
-- `actions.ts` - Server Action форми додавання.
+- `actions.ts` - Server Actions сторінки: форма додавання і Load more.
 
 Файл у теці маршруту, який не називається `page`, `layout` чи іншим зарезервованим
 іменем, маршрутом не стає, тому компоненти сторінки лежать поруч із нею.
@@ -156,3 +158,32 @@ layout, але не той layout, у якому живе. Наш root layout д
 **Текст один на всі неочікувані збої.** Користувачеві байдуже, впала база чи
 запит: зробити він може те саме - повторити. Коди помилок англійською лишаються
 в лозі сервера.
+
+## Довгі списки
+
+**Перша порція - із сервера, продовження - кнопкою.** Сторінка рендерить перші
+50 компаній у серверному компоненті, а `companies-list.tsx` тримає показані
+порції й дозавантажує наступні через Server Action `loadMoreCompaniesAction`.
+Механіка курсора - у [`server/companies`](../server/companies/README.md),
+сам курсор - у [`lib/pagination`](../lib/pagination/cursor.ts).
+
+**Список клієнтський, бо Load more додає рядки до вже показаних**
+(docs/ui.md, розділ 4.2). Ціна - дозавантажене зникає при перезавантаженні
+сторінки: в адресі лишається лише вкладка. Вкладки натомість живуть в URL, тому
+перехід між Tracked і Not tracked читає свою першу порцію з сервера.
+
+**Порції тримає `useState`, а не `useActionState`.** Той передає попередній стан
+у Server Action, тобто надсилав би всі вже показані компанії на сервер і назад
+на кожне натискання. `useTransition` лишається - із нього береться `isPending`
+для кнопки.
+
+**Аргументи Server Action - недовірені.** `loadMoreCompaniesAction` приймає їх
+як `unknown` і сам розбирає вкладку й курсор, бо Server Action доступний прямим
+POST-запитом, а не лише через кнопку («Server Functions are reachable via direct
+POST requests» - `node_modules/next/dist/docs/01-app/01-getting-started/07-mutating-data.md`).
+Користувача функція бере на сервері й з клієнта не приймає взагалі.
+
+**Типи рядка списку живуть у `src/lib`.** Клієнтський компонент не імпортує з
+`src/server`, тому `CompanyListItem`, `CompaniesTab` і перелік `discovery_status`
+переїхали в [`lib/companies/company-list.ts`](../lib/companies/README.md) - тим
+самим ходом, що й перелік платформ.
