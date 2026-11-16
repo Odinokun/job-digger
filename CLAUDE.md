@@ -162,7 +162,7 @@ a matching action» ([документація](https://code.claude.com/docs/en/
 
 Деталі синтаксису - [документація Claude Code](https://code.claude.com/docs/en/permissions). Коротко, що варто знати при правках:
 
-- **Правила читаються на старті сесії.** Змінений `settings.json` на вже запущену сесію не діє: правило, змерджене в 11:46, не впливало на сесію, яка стартувала в 10:53, і коміт у ній далі відбивався. Після правки дозволів - перезапуск Claude Code.
+- **Правила перечитуються під час сесії.** Claude Code стежить за файлами налаштувань: «Claude Code watches your settings files and reloads them when they change, so it applies most edits to the running session without a restart» ([документація](https://code.claude.com/docs/en/settings)). Дозволи беруться з файлу на диску, тому в гілці, куди ця правка ще не дійшла, `ask` на `git push` не діє: 16.11.2026 push із `feat/national-site-path` відбив класифікатор, а з цієї гілки той самий push пройшов у тій самій сесії. Старий протилежний висновок («правило, змерджене в 11:46, не діяло на сесію з 10:53») мав іншу причину: merge у `main` не чіпає `settings.json` у робочому дереві feature-гілки.
 - Порядок перевірки - `deny`, потім `ask`, потім `allow`; перший збіг виграє, і `allow` не робить винятку з `deny`.
 - `ls`, `cat`, `grep`, `head`, `find` і read-only `git` дозволені за замовчуванням, вносити їх не потрібно.
 - Правило `Read(...)` у `deny` діє не лише на інструмент Read, а й на команди Bash, які Claude Code розпізнає як читання файлу: `cat`, `head`, `tail`, `sed`, `tee`.
