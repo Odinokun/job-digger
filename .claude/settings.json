@@ -3,12 +3,20 @@
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
+      "Read(!.env.example)",
+      "Bash(git commit --amend*)",
       "Bash(rm -rf *)",
       "Bash(git push --force*)",
       "Bash(git reset --hard*)",
       "Bash(git clean *)",
       "Bash(docker compose down -v*)",
       "Bash(docker compose down --volumes*)"
+    ],
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr merge:*)",
+      "mcp__trello__trelloWrite*"
     ],
     "allow": [
       "Bash(git commit:*)",
