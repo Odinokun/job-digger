@@ -10,6 +10,7 @@ import {
 import type { Cursor } from "@/lib/pagination/cursor";
 import { addCompany, type AddCompanyResult } from "@/server/companies/add";
 import { listCompanies } from "@/server/companies/list";
+import { updateCompany } from "@/server/companies/update";
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 
@@ -124,4 +125,62 @@ export async function loadMoreCompaniesAction(
   }
 
   return { ok: true, ...outcome.value };
+}
+
+/**
+ * Стан модалки Edit між надсиланнями.
+ *
+ * `not-found` сюди доходить, якщо компанію видалили в іншій вкладці, поки
+ * модалка була відкрита.
+ */
+export type EditCompanyFormState =
+  | { status: "idle" }
+  | { status: "saved" }
+  | { status: "failed"; problem: "name-required" | "not-found" }
+  | { status: "failed-unexpectedly" };
+
+export const EDIT_COMPANY_INITIAL_STATE: EditCompanyFormState = {
+  status: "idle",
+};
+
+/**
+ * Обгортка Server Action над `updateCompany`.
+ *
+ * Поля форми - недовірений ввід, тому id компанії й джерел ідуть у
+ * `updateCompany` як є: там вони перевіряються умовами запиту (компанія - за
+ * користувачем, джерела - за компанією), а не довірою до клієнта.
+ */
+export async function updateCompanyAction(
+  _state: EditCompanyFormState,
+  formData: FormData,
+): Promise<EditCompanyFormState> {
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return updateCompany(db, {
+      userId: user.id,
+      companyId: readField(formData, "companyId"),
+      name: readField(formData, "name"),
+      removeSourceIds: formData
+        .getAll("removeSourceIds")
+        .filter((value): value is string => typeof value === "string"),
+    });
+  });
+
+  if (!outcome.ok) {
+    return { status: "failed-unexpectedly" };
+  }
+
+  const result = outcome.value;
+
+  if (!result.ok) {
+    return { status: "failed", problem: result.problem };
+  }
+
+  // Змінилися і рядок компанії, і лічильники вкладок: компанія без джерел
+  // переїжджає в Not tracked.
+  revalidatePath("/companies");
+
+  return { status: "saved" };
 }

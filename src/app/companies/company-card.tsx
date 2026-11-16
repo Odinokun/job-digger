@@ -5,6 +5,8 @@ import type {
   CompanySource,
 } from "@/lib/companies/company-list";
 
+import { EditCompanyDialog } from "./edit-company-dialog";
+
 interface CompanyCardProps {
   company: CompanyListItem;
   /** Підпис статусу - лише там, де він щось означає, тобто на вкладці Not tracked. */
@@ -70,11 +72,12 @@ export function CompanyCard({
         )}
       </Card.Content>
 
-      {statusLabel ? (
-        <Card.Footer>
-          <span className="text-sm text-muted">{statusLabel}</span>
-        </Card.Footer>
-      ) : null}
+      {/* Дії картки. Поки лише Edit: Check now, Mark all as read і Delete
+          приходять із задачами 2.06 і 4.01 (docs/ui.md, розділ 4.2). */}
+      <Card.Footer className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-sm text-muted">{statusLabel}</span>
+        <EditCompanyDialog company={company} platformLabels={platformLabels} />
+      </Card.Footer>
     </Card>
   );
 }
