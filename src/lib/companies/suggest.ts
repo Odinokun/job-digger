@@ -29,6 +29,16 @@ const NOTHING: CompanyFieldSuggestion = { url: "", name: "", careerUrl: "" };
 const SECOND_LEVEL_SUFFIXES = ["co", "com", "net", "org", "gov", "edu", "ac"];
 
 /**
+ * Сегмент шляху, що виглядає як мовний код: `de`, `uk`, `en-US`, `de-de`.
+ *
+ * Форма, а не список ISO 639-1: список довелося б дорости до всіх кодів і
+ * тримати актуальним, а вигоди - лише на рідких випадках. Евристика помилиться
+ * на `bosch.com/hr` (Хорватія чи розділ HR), і це прийнято: поле редаговане,
+ * тому ціна помилки - одне виправлення руками замість двох.
+ */
+const LANGUAGE_SEGMENT_PATTERN = /^[a-z]{2}(-[a-z]{2})?$/i;
+
+/**
  * Платформи, у яких назва компанії стоїть у субдомені, а не в шляху:
  * `bosch.wd3.myworkdayjobs.com` і `acme.peopleforce.io` проти
  * `jobs.lever.co/spotify`.
@@ -62,6 +72,17 @@ export function suggestCompanyFields(input: string): CompanyFieldSuggestion {
       url: "",
       name: companyNameFromPlatformUrl(normalized.url, host, platform),
       careerUrl: normalized.url,
+    };
+  }
+
+  // Національна версія сайту (`bosch.com/de`) - це все ще головний сайт, а не
+  // окрема сторінка: шлях лишається в адресі сайту, бо без нього `bosch.com`
+  // веде на інший, глобальний сайт. Карʼєрне поле ця адреса не заповнює.
+  if (isNationalSiteUrl(normalized.url, host)) {
+    return {
+      url: normalized.url,
+      name: companyNameFromHost(host),
+      careerUrl: "",
     };
   }
 
@@ -106,15 +127,30 @@ function platformSubdomain(host: string): string {
   return host.slice(0, host.length - suffix.length - 1).split(".")[0];
 }
 
+/**
+ * Чи адреса схожа на національну версію сайту: `bosch.com/de`, `bosch.com/en-US`.
+ *
+ * Дивимося лише на шлях: query національну версію не скасовує, бо нею іноді
+ * саму версію й задають (`bosch.com/de?lang=de`).
+ */
+function isNationalSiteUrl(normalizedUrl: string, host: string): boolean {
+  const segments = pathSegments(normalizedUrl, host);
+
+  return segments.length === 1 && LANGUAGE_SEGMENT_PATTERN.test(segments[0]);
+}
+
 /** Перший сегмент шляху: `jobs.lever.co/spotify/jobs` - `spotify`. */
 function firstPathSegment(normalizedUrl: string, host: string): string {
-  return (
-    normalizedUrl
-      .slice(host.length)
-      .split("?")[0]
-      .split("/")
-      .filter((segment) => segment !== "")[0] ?? ""
-  );
+  return pathSegments(normalizedUrl, host)[0] ?? "";
+}
+
+/** Сегменти шляху без порожніх: `bosch.com/de/careers/` - `["de", "careers"]`. */
+function pathSegments(normalizedUrl: string, host: string): string[] {
+  return normalizedUrl
+    .slice(host.length)
+    .split("?")[0]
+    .split("/")
+    .filter((segment) => segment !== "");
 }
 
 /** Назва компанії з хоста: `about.gitlab.com` - «Gitlab». */
