@@ -12,7 +12,7 @@
 | `url.ts`        | `normalizeCompanyUrl` - адреса в порівнянній формі, `companyUrlHost` - її хост |
 | `duplicates.ts` | `findCompanyUrlConflict` - що вже є серед компаній користувача    |
 | `list.ts`       | `listCompanies` і `countCompaniesByTab` - списки для сторінки     |
-| `platform.ts`   | `detectPlatform` - платформа джерела, виведена з його адреси       |
+| `platform.ts`   | `detectPlatform` і `platformHostSuffix` - платформа джерела за адресою |
 | `add.ts`        | `addCompany` - додавання компанії з однією карʼєрною сторінкою      |
 | `suggest.ts`    | `suggestCompanyFields` - підказки для полів модалки з однієї адреси |
 
@@ -158,6 +158,8 @@ nothing`, і якщо вона нічого не повернула - компа
 | `bosch.com`                | `bosch.com`   | Bosch  | -                          |
 | `bosch.com/de/careers/jobs`| `bosch.com`   | Bosch  | `bosch.com/de/careers/jobs`|
 | `about.gitlab.com`         | `about.gitlab.com` | Gitlab | -                     |
+| `jobs.lever.co/spotify`    | -             | Spotify| `jobs.lever.co/spotify`    |
+| `bosch.wd3.myworkdayjobs.com/External` | - | Bosch | та сама адреса           |
 
 **Назва - передостанній лейбл домену**, з кроком назад на домені другого рівня
 (`bosch.com.ua` - Bosch, інакше вийшла б «Com»). Список таких суфіксів короткий і
@@ -170,3 +172,15 @@ nothing`, і якщо вона нічого не повернула - компа
 користувач переносить адресу сам. Правило свідомо не вгадує за словами в шляху
 (`careers`, `jobs`): такий список довелося б тримати й доповнювати, а вигоди - лише
 на крайніх випадках.
+
+**Адреса ATS не дає головного сайту.** `lever.co` сайтом Spotify не є, а вивести
+`spotify.com` зі slug-а не можна: буває `.io`, `.ai`, інший slug. Поле лишається
+порожнім - його заповнює користувач або, з етапу 5, Find pages. Підставити туди саму
+адресу ATS теж не можна: тоді всі компанії з Lever виглядали б як один домен, і
+попередження про однаковий домен втратило б сенс.
+
+**Де в адресі ATS стоїть назва - залежить від платформи.** У Greenhouse, Lever і Ashby
+це перший сегмент шляху, у Workday і PeopleForce - субдомен (`bosch.wd3.myworkdayjobs.com`).
+Перелік доменів платформ лишається один - у `platform.ts`; `suggest.ts` бере в нього
+суфікс через `platformHostSuffix`, щоб відрізнити лейбли компанії від лейблів платформи.
+Адреса без slug-а (`jobs.lever.co`) назви не дає.

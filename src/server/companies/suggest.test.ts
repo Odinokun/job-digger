@@ -47,4 +47,44 @@ describe("suggestCompanyFields", () => {
     expect(suggestCompanyFields("не адреса")).toEqual(nothing);
     expect(suggestCompanyFields("ftp://bosch.com")).toEqual(nothing);
   });
+
+  describe("an address on a known ATS", () => {
+    it("takes the company name from the path slug", () => {
+      expect(suggestCompanyFields("jobs.lever.co/spotify").name).toBe(
+        "Spotify",
+      );
+      expect(
+        suggestCompanyFields("https://job-boards.greenhouse.io/acme-corp").name,
+      ).toBe("Acme Corp");
+      expect(suggestCompanyFields("jobs.ashbyhq.com/openai/jobs").name).toBe(
+        "Openai",
+      );
+    });
+
+    it("takes the company name from the subdomain where the slug lives there", () => {
+      expect(
+        suggestCompanyFields("bosch.wd3.myworkdayjobs.com/en-US/External").name,
+      ).toBe("Bosch");
+      expect(suggestCompanyFields("acme.peopleforce.io/careers").name).toBe(
+        "Acme",
+      );
+    });
+
+    it("suggests the pasted address as the career page and no website", () => {
+      expect(suggestCompanyFields("jobs.lever.co/spotify")).toEqual({
+        url: "",
+        name: "Spotify",
+        careerUrl: "jobs.lever.co/spotify",
+      });
+    });
+
+    it("leaves the name empty when the address carries no slug", () => {
+      expect(suggestCompanyFields("jobs.lever.co")).toEqual({
+        url: "",
+        name: "",
+        careerUrl: "jobs.lever.co",
+      });
+      expect(suggestCompanyFields("peopleforce.io").name).toBe("");
+    });
+  });
 });

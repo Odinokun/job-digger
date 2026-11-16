@@ -41,13 +41,29 @@ const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
  * повертає ніколи - розмітку JobPosting видно лише з вмісту сторінки.
  */
 export function detectPlatform(normalizedUrl: string): CareerPlatform {
+  return matchPlatformDomain(normalizedUrl)?.[1] ?? "unsupported";
+}
+
+/**
+ * Суфікс хоста, за яким платформу впізнали, або `null` для невідомого хоста.
+ *
+ * Потрібен там, де з адреси треба дістати частину, яку додала сама платформа:
+ * у `bosch.wd3.myworkdayjobs.com` суфікс - `myworkdayjobs.com`, і все перед ним
+ * належить компанії (`suggest.ts`).
+ */
+export function platformHostSuffix(normalizedUrl: string): string | null {
+  return matchPlatformDomain(normalizedUrl)?.[0] ?? null;
+}
+
+/** Рядок `PLATFORM_DOMAINS`, під який підпадає хост адреси. */
+function matchPlatformDomain(
+  normalizedUrl: string,
+): (typeof PLATFORM_DOMAINS)[number] | undefined {
   const host = companyUrlHost(normalizedUrl);
 
-  const match = PLATFORM_DOMAINS.find(
+  return PLATFORM_DOMAINS.find(
     // Порівнюється межа лейбла домену, а не кінець рядка: інакше
     // `not-greenhouse.io` вважався б дошкою Greenhouse.
     ([suffix]) => host === suffix || host.endsWith(`.${suffix}`),
   );
-
-  return match ? match[1] : "unsupported";
 }
