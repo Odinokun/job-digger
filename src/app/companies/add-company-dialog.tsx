@@ -12,6 +12,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useActionState, useEffect, useState } from "react";
 
+import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import { suggestCompanyFields } from "@/lib/companies/suggest";
 import type { UrlRefusalReason } from "@/lib/companies/url";
 
@@ -43,6 +44,7 @@ const EMPTY_EDITS = { name: false, careerUrl: false };
  */
 export function AddCompanyDialog() {
   const t = useTranslations("CompaniesPage.addCompany");
+  const showActionFailed = useActionFailedToast();
   const overlay = useOverlayState();
   const [state, submit, isPending] = useActionState(
     addCompanyAction,
@@ -62,6 +64,15 @@ export function AddCompanyDialog() {
       overlay.close();
     }
   }, [state, overlay]);
+
+  // Неочікуваний збій полю форми не належить: виправляти користувачеві нічого,
+  // тому про нього повідомляє сповіщення, а вікно лишається відкритим зі
+  // введеними даними.
+  useEffect(() => {
+    if (state.status === "failed-unexpectedly") {
+      showActionFailed();
+    }
+  }, [state, showActionFailed]);
 
   // Форма чиститься на відкритті, а не на успіху: поля контрольовані, тому
   // інакше наступне відкриття показало б минулу компанію. Скидання стоїть у

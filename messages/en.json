@@ -57,6 +57,14 @@
       }
     }
   },
+  "Errors": {
+    "actionFailed": "The action could not be completed. Try again."
+  },
+  "ErrorScreen": {
+    "title": "Something went wrong",
+    "text": "This page could not be loaded. The database may be unavailable.",
+    "retry": "Try again"
+  },
   "HistoryPage": {
     "title": "History",
     "empty": "No checks yet."

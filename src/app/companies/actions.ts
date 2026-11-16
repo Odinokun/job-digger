@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { runAction } from "@/app/action-result";
 import { addCompany, type AddCompanyResult } from "@/server/companies/add";
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
@@ -16,7 +17,14 @@ import { getSystemUser } from "@/server/db/system-user";
 export type AddCompanyFormState =
   | { status: "idle" }
   | { status: "added" }
-  | { status: "failed"; result: Extract<AddCompanyResult, { ok: false }> };
+  | { status: "failed"; result: Extract<AddCompanyResult, { ok: false }> }
+  /**
+   * Збій, якого форма не передбачала: база не піднята, запит упав.
+   *
+   * Окремо від `failed`: там причина належить полю форми й користувач може її
+   * виправити, а тут виправляти нічого - лишається повторити дію.
+   */
+  | { status: "failed-unexpectedly" };
 
 export const ADD_COMPANY_INITIAL_STATE: AddCompanyFormState = {
   status: "idle",
@@ -33,17 +41,25 @@ export async function addCompanyAction(
   _state: AddCompanyFormState,
   formData: FormData,
 ): Promise<AddCompanyFormState> {
-  const db = getDb();
-  const user = await getSystemUser(db);
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
 
-  const result = await addCompany(db, {
-    userId: user.id,
-    name: readField(formData, "name"),
-    url: readField(formData, "url"),
-    careerUrl: readField(formData, "careerUrl"),
-    // Прапорець зʼявляється у формі лише після попередження про домен.
-    sameDomainConfirmed: formData.get("sameDomainConfirmed") === "true",
+    return addCompany(db, {
+      userId: user.id,
+      name: readField(formData, "name"),
+      url: readField(formData, "url"),
+      careerUrl: readField(formData, "careerUrl"),
+      // Прапорець зʼявляється у формі лише після попередження про домен.
+      sameDomainConfirmed: formData.get("sameDomainConfirmed") === "true",
+    });
   });
+
+  if (!outcome.ok) {
+    return { status: "failed-unexpectedly" };
+  }
+
+  const result = outcome.value;
 
   if (!result.ok) {
     return { status: "failed", result };

@@ -1,3 +1,4 @@
+import { Toast } from "@heroui/react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
@@ -36,6 +37,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <NextIntlClientProvider>
           <AppHeader />
           <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
+          {/* Регіон сповіщень. Без пропа `queue` він бере глобальну чергу -
+              ту саму, у яку пише `toast` із будь-якого компонента. */}
+          <Toast.Provider />
         </NextIntlClientProvider>
       </body>
     </html>
