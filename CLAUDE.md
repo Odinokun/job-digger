@@ -128,11 +128,21 @@ E2E живуть окремо від Vitest: тека `e2e/`, файли `*.spec
 
 Permissions живуть у `.claude/settings.json` поруч із хуками - у git, бо це правило проєкту, а не особиста звичка. Переглянути й змінити інтерактивно - команда `/permissions`.
 
-- **`allow`** - те, що Claude виконує без питання: прогін тестів, лінт, `format:check`, `build`, `db:check`, `tsc`, `prettier`, `eslint`, `playwright`, `docker compose ps/logs` і **читальні** інструменти Trello (`mcp__trello__trelloRead*`).
+- **`allow`** - те, що Claude виконує без питання: прогін тестів, лінт, `format:check`, `build`, `db:check`, `tsc`, `prettier`, `eslint`, `playwright`, `docker compose ps/logs`, `git commit` і **читальні** інструменти Trello (`mcp__trello__trelloRead*`).
 - **`deny`** - заборонено повністю: `rm -rf`, `git push --force`, `git reset --hard`, `git clean`, `docker compose down -v` (стирає том із локальною базою) і читання `.env*` інструментом Read.
 - **`ask`** порожній свідомо: без правила Claude Code і так питає. `ask` потрібен лише щоб повернути питання там, де дозвіл уже дано.
 
-Чого в `allow` немає навмисно: `git commit`, `git push`, `gh pr`, встановлення залежностей і **записувальні** інструменти Trello. Це або зміна історії, або дія назовні - вони лишаються з питанням. Правило «коміт лише після перегляду автором» тримається саме на цьому.
+Чого в `allow` немає навмисно: `git push`, `gh pr`, встановлення залежностей і
+**записувальні** інструменти Trello. Це дії назовні - вони лишаються з питанням.
+
+**`git commit` у `allow` з 16.11.2026.** Правило «коміт лише після перегляду
+автором» тримається не на дозволі, а на процесі: Claude показує текст коміту й
+чекає окремого «ок». Технічний дозвіл цього не змінює. Причина правки в тому, що
+в auto mode команда поза `allow` і поза `deny` не питає автора: «a classifier
+reviews actions instead of you» ([документація](https://code.claude.com/docs/en/permissions)).
+Цей класифікатор на тому самому `git commit` то дозволяв його, то відбивав як
+«Destructive or Unwanted Actions» - кілька разів підряд, без жодної зміни в
+репозиторії. Явне правило прибирає класифікатор із цього шляху.
 
 Деталі синтаксису - [документація Claude Code](https://code.claude.com/docs/en/permissions). Коротко, що варто знати при правках:
 

@@ -11,6 +11,7 @@
       "Bash(docker compose down --volumes*)"
     ],
     "allow": [
+      "Bash(git commit:*)",
       "Bash(npm test*)",
       "Bash(npm run test*)",
       "Bash(npm run lint*)",
