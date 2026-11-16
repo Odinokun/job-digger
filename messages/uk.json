@@ -18,6 +18,7 @@
     "emptyTracked": "Жодна компанія ще не відстежується.",
     "emptyNotTracked": "У кожної компанії є щонайменше одна кар'єрна сторінка, що відстежується.",
     "noSources": "Кар'єрних сторінок поки немає.",
+    "loadMore": "Завантажити ще",
     "platforms": {
       "greenhouse": "Greenhouse",
       "lever": "Lever",
