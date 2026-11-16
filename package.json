@@ -13,6 +13,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "node --env-file=.env src/server/db/seed.ts",
+    "db:seed:demo": "node --env-file=.env src/server/db/seed-demo.ts",
     "db:check": "node --env-file=.env src/server/db/check-connection.ts",
     "db:psql": "docker compose exec db sh -c 'psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"'",
     "lint": "eslint .",
