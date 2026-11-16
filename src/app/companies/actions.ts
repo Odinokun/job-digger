@@ -3,7 +3,13 @@
 import { revalidatePath } from "next/cache";
 
 import { runAction } from "@/app/action-result";
+import {
+  parseCompaniesTab,
+  type CompanyListItem,
+} from "@/lib/companies/company-list";
+import type { Cursor } from "@/lib/pagination/cursor";
 import { addCompany, type AddCompanyResult } from "@/server/companies/add";
+import { listCompanies } from "@/server/companies/list";
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 
@@ -77,4 +83,45 @@ function readField(formData: FormData, name: string): string {
   const value = formData.get(name);
 
   return typeof value === "string" ? value : "";
+}
+
+/**
+ * Наступна порція списку компаній або факт збою.
+ *
+ * Помилку не розрізняємо: показати її нічим, крім того самого сповіщення.
+ */
+export type LoadMoreCompaniesResult =
+  | { ok: true; items: CompanyListItem[]; nextCursor: Cursor | null }
+  | { ok: false };
+
+/**
+ * Наступні 50 компаній після курсора.
+ *
+ * Аргументи приходять із клієнта й нічим не захищені: Server Action доступний
+ * прямим POST-запитом, а не лише через кнопку (документація Next, «Server
+ * Functions are reachable via direct POST requests»). Тому вкладка й курсор
+ * розбираються тут, а користувач береться на сервері - з клієнта він не
+ * передається взагалі.
+ */
+export async function loadMoreCompaniesAction(
+  tab: unknown,
+  after: unknown,
+): Promise<LoadMoreCompaniesResult> {
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return listCompanies(db, {
+      userId: user.id,
+      tab: parseCompaniesTab(tab),
+      // `after` чистить сам `listCompanies` через `parseCursor`.
+      after: after as Cursor | null,
+    });
+  });
+
+  if (!outcome.ok) {
+    return { ok: false };
+  }
+
+  return { ok: true, ...outcome.value };
 }

@@ -1,33 +1,27 @@
 import { getTranslations } from "next-intl/server";
 
 import {
-  countCompaniesByTab,
-  listCompanies,
-  type CompaniesTab,
-  type CompanyListItem,
+  parseCompaniesTab,
   type CompanySource,
-} from "@/server/companies/list";
+  type DiscoveryStatus,
+} from "@/lib/companies/company-list";
+import { countCompaniesByTab, listCompanies } from "@/server/companies/list";
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 
 import { AddCompanyDialog } from "./add-company-dialog";
+import { CompaniesList } from "./companies-list";
 import { CompaniesTabs } from "./companies-tabs";
-import { CompanyCard } from "./company-card";
-
-/** Вкладка з адреси. Усе, крім відомого значення, - це Tracked. */
-function readTab(value: string | string[] | undefined): CompaniesTab {
-  return value === "not-tracked" ? "not-tracked" : "tracked";
-}
 
 export default async function CompaniesPage({
   searchParams,
 }: PageProps<"/companies">) {
   const t = await getTranslations("CompaniesPage");
-  const tab = readTab((await searchParams).tab);
+  const tab = parseCompaniesTab((await searchParams).tab);
 
   const db = getDb();
   const user = await getSystemUser(db);
-  const [companies, counts] = await Promise.all([
+  const [{ items: companies, nextCursor }, counts] = await Promise.all([
     listCompanies(db, { userId: user.id, tab }),
     countCompaniesByTab(db, user.id),
   ]);
@@ -44,7 +38,7 @@ export default async function CompaniesPage({
     unsupported: t("platforms.unsupported"),
   };
 
-  const statusLabels: Record<CompanyListItem["discoveryStatus"], string> = {
+  const statusLabels: Record<DiscoveryStatus, string> = {
     not_checked: t("statuses.notChecked"),
     not_found: t("statuses.notFound"),
     unsupported: t("statuses.unsupported"),
@@ -69,30 +63,19 @@ export default async function CompaniesPage({
         />
       </div>
 
-      {companies.length === 0 ? (
-        <p className="mt-6 text-sm text-muted">
-          {tab === "tracked" ? t("emptyTracked") : t("emptyNotTracked")}
-        </p>
-      ) : (
-        <ul className="mt-6 flex flex-col gap-4">
-          {companies.map((company) => (
-            <li key={company.id}>
-              <CompanyCard
-                company={company}
-                // Статус описує стан пошуку сторінок, тому має сенс лише там,
-                // де компанія ще не відстежується (docs/ui.md, розділ 4.3).
-                statusLabel={
-                  tab === "not-tracked"
-                    ? statusLabels[company.discoveryStatus]
-                    : undefined
-                }
-                noSourcesLabel={t("noSources")}
-                platformLabels={platformLabels}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* Сам список клієнтський: Load more додає порції до показаних. */}
+      <CompaniesList
+        tab={tab}
+        initialItems={companies}
+        initialCursor={nextCursor}
+        emptyLabel={
+          tab === "tracked" ? t("emptyTracked") : t("emptyNotTracked")
+        }
+        loadMoreLabel={t("loadMore")}
+        noSourcesLabel={t("noSources")}
+        platformLabels={platformLabels}
+        statusLabels={statusLabels}
+      />
     </>
   );
 }

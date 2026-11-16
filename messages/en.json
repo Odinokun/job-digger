@@ -18,6 +18,7 @@
     "emptyTracked": "No company is tracked yet.",
     "emptyNotTracked": "Every company has at least one career page that is tracked.",
     "noSources": "No career pages yet.",
+    "loadMore": "Load more",
     "platforms": {
       "greenhouse": "Greenhouse",
       "lever": "Lever",

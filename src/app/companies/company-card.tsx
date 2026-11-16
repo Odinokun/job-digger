@@ -1,6 +1,9 @@
 import { Card } from "@heroui/react";
 
-import type { CompanyListItem, CompanySource } from "@/server/companies/list";
+import type {
+  CompanyListItem,
+  CompanySource,
+} from "@/lib/companies/company-list";
 
 interface CompanyCardProps {
   company: CompanyListItem;
