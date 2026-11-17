@@ -19,6 +19,10 @@ import type {
 } from "@/lib/companies/company-list";
 import type { AddCareerSourceFormState } from "./form-state";
 import { suggestCompanyFields } from "@/lib/companies/suggest";
+import {
+  normalizeCompanyUrl,
+  type UrlRefusalReason,
+} from "@/lib/companies/url";
 
 import { addCareerSourceAction, addCompanyAction } from "./actions";
 import { ADD_COMPANY_INITIAL_STATE } from "./form-state";
@@ -29,6 +33,9 @@ const EMPTY_FIELDS = { url: "", name: "", careerUrl: "" };
 
 /** Поля, у які підказка не лізе, якщо користувач уже написав там своє. */
 const EMPTY_EDITS = { name: false, careerUrl: false };
+
+/** Жодної клієнтської відмови: і початковий стан, і скидання при правці. */
+const EMPTY_REFUSALS = { url: null, careerUrl: null };
 
 /**
  * Кнопка Add і модальне вікно додавання компанії.
@@ -86,6 +93,12 @@ export function AddCompanyDialog({
     useState<AddCareerSourceFormState | null>(null);
   const [isAddingSource, startAddingSource] = useTransition();
   const [, startSubmit] = useTransition();
+  // Відмови, які видно ще до Save. Та сама перевірка повториться на сервері -
+  // поля приходять із клієнта, - але `ftp://` нема чого везти туди й назад.
+  const [refusals, setRefusals] = useState<{
+    url: UrlRefusalReason | null;
+    careerUrl: UrlRefusalReason | null;
+  }>(EMPTY_REFUSALS);
 
   // Модалку закриває успіх, а не сама кнопка: доки компанія не збереглася,
   // користувач має бачити свої дані й повідомлення про помилку.
@@ -134,11 +147,17 @@ export function AddCompanyDialog({
     setEditedByHand(EMPTY_EDITS);
     setSuggested(false);
     setSourceState(null);
+    setRefusals(EMPTY_REFUSALS);
     overlay.open();
   }
 
   function changeField(field: keyof typeof EMPTY_FIELDS, value: string) {
     setFields((previous) => ({ ...previous, [field]: value }));
+
+    // Текст відмови стосувався попереднього значення поля.
+    if (field !== "name") {
+      setRefusals((previous) => ({ ...previous, [field]: null }));
+    }
 
     if (field === "url") {
       // Поле очистили - далі буде інша адреса, і підказка має спрацювати знову.
@@ -206,6 +225,28 @@ export function AddCompanyDialog({
     });
   }
 
+  /**
+   * Перевіряє адресу на виході з поля.
+   *
+   * Порожнє поле помилкою не вважається: адреса компанії обовʼязкова, але про
+   * це скаже Save, а не вихід із поля, у яке ще нічого не встигли ввести.
+   */
+  function checkAddress(field: "url" | "careerUrl") {
+    const typed = fields[field].trim();
+
+    if (typed === "") {
+      setRefusals((previous) => ({ ...previous, [field]: null }));
+      return;
+    }
+
+    const normalized = normalizeCompanyUrl(typed);
+
+    setRefusals((previous) => ({
+      ...previous,
+      [field]: normalized.ok ? null : normalized.reason,
+    }));
+  }
+
   const failure = state.status === "failed" ? state.result : null;
   const sameDomain = failure?.problem === "same-domain" ? failure : null;
 
@@ -214,8 +255,10 @@ export function AddCompanyDialog({
   const nameError =
     failure?.problem === "name-required" ? t("errors.nameRequired") : null;
 
-  const urlError =
-    failure?.problem === "company-url"
+  // Клієнтська відмова свіжіша за стан минулого надсилання, тому йде першою.
+  const urlError = refusals.url
+    ? tUrlError(URL_ERROR_KEYS[refusals.url])
+    : failure?.problem === "company-url"
       ? tUrlError(URL_ERROR_KEYS[failure.reason])
       : failure?.problem === "already-added"
         ? t("errors.alreadyAdded", { name: failure.company.name })
@@ -224,8 +267,9 @@ export function AddCompanyDialog({
   const sourceFailure =
     sourceState?.status === "failed" ? sourceState.result : null;
 
-  const careerUrlError =
-    failure?.problem === "career-url"
+  const careerUrlError = refusals.careerUrl
+    ? tUrlError(URL_ERROR_KEYS[refusals.careerUrl])
+    : failure?.problem === "career-url"
       ? tUrlError(URL_ERROR_KEYS[failure.reason])
       : sourceFailure?.problem === "source-url"
         ? tUrlError(URL_ERROR_KEYS[sourceFailure.reason])
@@ -292,7 +336,10 @@ export function AddCompanyDialog({
                   name="url"
                   value={fields.url}
                   onChange={(value) => changeField("url", value)}
-                  onBlur={suggestFromUrl}
+                  onBlur={() => {
+                    suggestFromUrl();
+                    checkAddress("url");
+                  }}
                   isInvalid={urlError !== null}
                 >
                   <Label>{t("url")}</Label>
@@ -319,6 +366,7 @@ export function AddCompanyDialog({
                   name="careerUrl"
                   value={fields.careerUrl}
                   onChange={(value) => changeField("careerUrl", value)}
+                  onBlur={() => checkAddress("careerUrl")}
                   isInvalid={careerUrlError !== null}
                 >
                   <Label>{t("careerUrl")}</Label>
