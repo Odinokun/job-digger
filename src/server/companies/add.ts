@@ -7,8 +7,10 @@ import {
   type CompanyWithSource,
 } from "./source-duplicates.ts";
 import {
+  findCompaniesByName,
   findCompanyUrlConflict,
   type ConflictingCompany,
+  type NamedCompany,
 } from "./duplicates.ts";
 import { detectPlatform } from "../../lib/companies/platform.ts";
 import {
@@ -32,10 +34,14 @@ export type AddCompanyInput = {
   /** Карʼєрна сторінка. Необовʼязкова: без неї компанія йде в Not tracked. */
   careerUrl?: string;
   /**
-   * Користувач уже бачив попередження про інші компанії того самого домену
-   * і натиснув Save вдруге.
+   * Користувач уже бачив попередження - про інші компанії того самого домену
+   * або про компанію з такою самою назвою - і натиснув Save вдруге.
+   *
+   * Прапорець один на обидва попередження: користувач підтверджує рішення
+   * «усе одно додати», а не кожну перевірку окремо. Точний збіг адреси
+   * (`already-added`) ним не пробивається.
    */
-  sameDomainConfirmed?: boolean;
+  confirmed?: boolean;
 };
 
 /**
@@ -64,7 +70,13 @@ export type AddCompanyResult =
    */
   | { ok: false; problem: "source-taken"; company: CompanyWithSource }
   | { ok: false; problem: "already-added"; company: ConflictingCompany }
-  | { ok: false; problem: "same-domain"; companies: ConflictingCompany[] };
+  | { ok: false; problem: "same-domain"; companies: ConflictingCompany[] }
+  /**
+   * Компанія з такою самою назвою вже є. Єдиний сигнал, який лишається, коли в
+   * однієї картки є тільки сайт, а в іншої - тільки карʼєрна сторінка
+   * (картка 2.17).
+   */
+  | { ok: false; problem: "same-name"; companies: NamedCompany[] };
 
 /**
  * Додає компанію з однією карʼєрною сторінкою, введеною руками.
@@ -80,13 +92,7 @@ export type AddCompanyResult =
  */
 export async function addCompany(
   db: NodePgDatabase,
-  {
-    userId,
-    name,
-    url,
-    careerUrl,
-    sameDomainConfirmed = false,
-  }: AddCompanyInput,
+  { userId, name, url, careerUrl, confirmed = false }: AddCompanyInput,
 ): Promise<AddCompanyResult> {
   const trimmedName = name.trim();
 
@@ -134,6 +140,10 @@ export async function addCompany(
       })
     : { kind: "none" as const };
 
+  const sameName = confirmed
+    ? []
+    : await findCompaniesByName(db, { userId, name: trimmedName });
+
   // Очищена адреса сайту або `null`: далі вона потрібна і для вставки, і для
   // гілки конфлікту, тож розбирати обʼєднаний тип удруге нема за чим.
   const companyNormalizedUrl = normalizedCompanyUrl?.ok
@@ -146,12 +156,18 @@ export async function addCompany(
 
   // Той самий домен - лише попередження: на ньому можуть жити різні компанії,
   // наприклад національні версії. Рішення лишається за користувачем.
-  if (conflict.kind === "same-domain" && !sameDomainConfirmed) {
+  if (conflict.kind === "same-domain" && !confirmed) {
     return {
       ok: false,
       problem: "same-domain",
       companies: conflict.companies,
     };
+  }
+
+  // Найслабший сигнал перевіряється останнім: спершу точний збіг адреси, потім
+  // домен, і аж тоді назва.
+  if (sameName.length > 0) {
+    return { ok: false, problem: "same-name", companies: sameName };
   }
 
   return db.transaction(async (tx) => {

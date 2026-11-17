@@ -43,8 +43,10 @@ export async function addCompanyAction(
       name: readField(formData, "name"),
       url: readField(formData, "url"),
       careerUrl: readField(formData, "careerUrl"),
-      // Прапорець зʼявляється у формі лише після попередження про домен.
-      sameDomainConfirmed: formData.get("sameDomainConfirmed") === "true",
+      // Прапорець зʼявляється у формі лише після попередження - про домен або
+      // про однакову назву. Один на обидва: користувач підтверджує рішення
+      // «усе одно додати», а не кожну перевірку окремо.
+      confirmed: formData.get("confirmed") === "true",
     });
 
     if (!result.ok) {

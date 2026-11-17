@@ -280,7 +280,7 @@ describe("addCompany", () => {
       userId,
       name: "Bosch UA",
       url: "https://www.bosch.com/ua",
-      sameDomainConfirmed: true,
+      confirmed: true,
     });
 
     expect(result.ok).toBe(true);
@@ -299,7 +299,7 @@ describe("addCompany", () => {
       userId,
       name: "Spotify again",
       url: "https://www.spotify.com",
-      sameDomainConfirmed: true,
+      confirmed: true,
     });
 
     expect(result).toMatchObject({ ok: false, problem: "already-added" });
@@ -477,5 +477,95 @@ describe("addCompany", () => {
       company: { name: "Spotify" },
     });
     expect(await testDb.select().from(companies)).toHaveLength(1);
+  });
+
+  it("warns about a company with the same name instead of saving", async () => {
+    const userId = await user();
+
+    await addCompany(testDb, {
+      userId,
+      name: "Linear",
+      url: "",
+      careerUrl: "jobs.ashbyhq.com/linear",
+    });
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Linear",
+      url: "linear.app",
+    });
+
+    // Спільної адреси в цих двох карток немає взагалі: в однієї лише джерело,
+    // в іншої лише сайт. Збігається тільки назва - і це єдиний сигнал, що це
+    // та сама компанія (картка 2.17).
+    expect(result).toMatchObject({
+      ok: false,
+      problem: "same-name",
+      companies: [{ name: "Linear" }],
+    });
+    expect(await testDb.select().from(companies)).toHaveLength(1);
+  });
+
+  it("saves once the same-name warning is confirmed", async () => {
+    const userId = await user();
+
+    await addCompany(testDb, {
+      userId,
+      name: "Linear",
+      url: "",
+      careerUrl: "jobs.ashbyhq.com/linear",
+    });
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Linear",
+      url: "linear.app",
+      confirmed: true,
+    });
+
+    // Дві різні компанії можуть називатися однаково, тому це попередження, а
+    // не заборона.
+    expect(result.ok).toBe(true);
+    expect(await testDb.select().from(companies)).toHaveLength(2);
+  });
+
+  it("does not let a confirmation push through an exact duplicate", async () => {
+    const userId = await user();
+
+    await addCompany(testDb, { userId, name: "Bosch", url: "bosch.com" });
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Bosch",
+      url: "bosch.com",
+      confirmed: true,
+    });
+
+    // Точний збіг адреси підтвердженням не пробивається - ні цим, ні тим, що
+    // проходить попередження про домен.
+    expect(result).toMatchObject({ ok: false, problem: "already-added" });
+  });
+
+  it("does not warn about a name taken by another user", async () => {
+    const owner = await user();
+    const [stranger] = await testDb
+      .insert(users)
+      .values({ email: "stranger@job-digger.local" })
+      .returning();
+
+    await addCompany(testDb, {
+      userId: stranger.id,
+      name: "Linear",
+      url: "linear.app",
+    });
+
+    const result = await addCompany(testDb, {
+      userId: owner,
+      name: "Linear",
+      url: "",
+      careerUrl: "jobs.ashbyhq.com/linear",
+    });
+
+    expect(result.ok).toBe(true);
   });
 });

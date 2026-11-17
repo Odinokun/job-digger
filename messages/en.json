@@ -84,8 +84,11 @@
       "addAnyway": "Add anyway",
       "cancel": "Cancel",
       "sameDomainWarning": "You already track other companies on this domain:",
+      "sameNameWarning": "You already have a company with this name:",
+      "noSite": "no website",
       "addAsSource": "Add as a career page of {name}",
       "addAsSourceHint": "{name} is already added. The pasted address can become another career page of it.",
+      "addAsSourceChoose": "Or add the pasted address to one of them:",
       "errors": {
         "nameRequired": "Enter a company name.",
         "alreadyAdded": "Already added as {name}.",
