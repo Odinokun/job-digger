@@ -13,6 +13,7 @@
 | Фреймворк    | Next.js 16, App Router, Turbopack                             |
 | Мова         | TypeScript                                                    |
 | UI           | HeroUI v3 (3.2.x) + Tailwind CSS v4                           |
+| Іконки       | @gravity-ui/icons - набір із прикладів документації HeroUI    |
 | БД           | PostgreSQL: локально в Docker, онлайн на Neon                 |
 | ORM          | Drizzle ORM 0.45.x (одна схема, один набір міграцій, `DATABASE_URL`) |
 | HTML-парсинг | Cheerio                                                       |
