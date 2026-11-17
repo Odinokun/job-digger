@@ -37,7 +37,11 @@ export function CompanyCard({
   return (
     <Card>
       <Card.Header>
-        <Card.Title>{company.name}</Card.Title>
+        {/* Назва компанії набрана шрифтом заголовків, а не тіла: у темі «Ink»
+            це єдине, що відрізняє дані від підписів інтерфейсу. */}
+        <Card.Title className="font-display text-lg font-semibold tracking-tight">
+          {company.name}
+        </Card.Title>
         <Card.Description>
           {/* Зовнішнє посилання: rel обовʼязковий (docs/security.md). */}
           <a

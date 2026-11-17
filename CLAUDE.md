@@ -22,6 +22,8 @@
 
 Cache Components і React Compiler вимкнені свідомо. Playwright - лише інструмент тестів, у продакшн-код не потрапляє.
 
+Тема застосунку - «Ink»: токени в `src/app/globals.css`, шрифти в `src/app/layout.tsx`. Правила, обмеження на тон accent і рішення щодо бейджів - [src/app/README.md](src/app/README.md#тема-ink).
+
 Next.js 16 має зміни проти тренувальних даних моделей: документація встановленої версії лежить у `node_modules/next/dist/docs/`, читай її перед написанням коду (про це ж нагадує `AGENTS.md`, який генерує `next dev`).
 
 Те саме з Drizzle, але навпаки: встановлена стабільна 0.45.x, а сайт orm.drizzle.team документує лише v1 (RC), архіву для 0.x немає. API звіряй із типами в `node_modules/drizzle-orm/`. Деталі роботи з базою - [src/server/db/README.md](src/server/db/README.md).
@@ -132,8 +134,8 @@ E2E живуть окремо від Vitest: тека `e2e/`, файли `*.spec
 
 Permissions живуть у `.claude/settings.json` поруч із хуками - у git, бо це правило проєкту, а не особиста звичка. Переглянути й змінити інтерактивно - команда `/permissions`.
 
-- **`allow`** - те, що Claude виконує без питання: прогін тестів, лінт, `format:check`, `build`, `db:check`, `tsc`, `prettier`, `eslint`, `playwright`, `docker compose ps/logs`, `git commit` і **читальні** інструменти Trello (`mcp__trello__trelloRead*`).
-- **`ask`** - дії назовні, на яких Claude зупиняється й питає автора: `git push`, `gh pr create`, `gh pr merge` і **записувальні** інструменти Trello (`mcp__trello__trelloWrite*`).
+- **`allow`** - те, що Claude виконує без питання: прогін тестів, лінт, `format:check`, `build`, `db:check`, `tsc`, `prettier`, `eslint`, `playwright`, `docker compose ps/logs`, `git commit` і **всі** інструменти Trello, разом із записувальними (`mcp__trello__trelloRead*`, `mcp__trello__trelloWrite*`).
+- **`ask`** - дії назовні, на яких Claude зупиняється й питає автора: `git push`, `gh pr create`, `gh pr merge`.
 - **`deny`** - заборонено повністю: `rm -rf`, `git push --force`, `git reset --hard`, `git clean`, `git commit --amend`, `docker compose down -v` (стирає том із локальною базою) і читання `.env` та `.env.*`, крім `.env.example`.
 
 **Чому дії назовні саме в `ask`, а не просто поза списками.** Сесія працює в
@@ -146,6 +148,13 @@ Unwanted Actions» без жодної зміни в репозиторії, а 
 дію з правилом `ask` він перехопити не може: «The classifier cannot auto-approve
 a matching action» ([документація](https://code.claude.com/docs/en/auto-mode-config)).
 Тож `ask` - єдиний спосіб справді отримати питання, а не лотерею.
+
+**Записувальні інструменти Trello у `allow` з 17.11.2026.** Автор хоче, щоб Claude
+правив описи карток і пересовував їх між колонками без окремого підтвердження -
+достатньо, що він про це каже в діалозі. Важливо, що правило саме **перенесене в
+`allow`**, а не видалене: дія без жодного правила в auto mode потрапляє не до автора,
+а до фонового класифікатора, і тоді Trello працював би через раз, як це було з
+`git push`. Процес не змінився - Claude однаково повідомляє, що саме змінив у картці.
 
 **`git commit` у `allow` з 16.11.2026.** Правило «коміт лише після перегляду
 автором» тримається не на дозволі, а на процесі: Claude показує текст коміту й

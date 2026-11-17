@@ -5,7 +5,9 @@ export default async function JobsPage() {
 
   return (
     <>
-      <h1 className="font-sans text-2xl font-bold">{t("title")}</h1>
+      <h1 className="font-display text-3xl font-semibold tracking-tight">
+        {t("title")}
+      </h1>
       <p className="mt-2 text-sm text-muted">{t("empty")}</p>
     </>
   );

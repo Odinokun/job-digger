@@ -117,7 +117,9 @@ export function CompaniesBoard({
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-sans text-2xl font-bold">{title}</h1>
+        <h1 className="font-display text-3xl font-semibold tracking-tight">
+          {title}
+        </h1>
         {/* Кнопка Add живе на сторінці Companies, поруч зі списком
             (docs/ui.md, розділ 4.2). */}
         <AddCompanyDialog tab={tab} onAdded={addRow} onSourceAdded={applyRow} />
