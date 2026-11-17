@@ -6,10 +6,15 @@ import {
   Instrument_Sans,
   Space_Grotesk,
 } from "next/font/google";
+import { cookies } from "next/headers";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
+
+import { parseThemePreference, THEME_COOKIE_NAME } from "@/lib/theme";
+
 import "./globals.css";
 import { AppHeader } from "./components/app-header";
+import { ThemeScript } from "./theme-script";
 
 // Тема «Ink»: Instrument Sans у тілі, Space Grotesk на заголовках і назвах
 // компаній, Fraunces на логотипі, IBM Plex Mono на адресах. Відхилені кандидати
@@ -52,11 +57,29 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   // читалок екрана й правильного перенесення слів.
   const locale = await getLocale();
 
+  // Оформлення - теж cookie, як і мова. Явний вибір сервер ставить одразу в
+  // HTML, тому темна тема не мигає світлою на першому фарбуванні.
+  const theme = parseThemePreference(
+    (await cookies()).get(THEME_COOKIE_NAME)?.value,
+  );
+
   return (
     <html
       lang={locale}
+      // Для System атрибута немає: системну тему знає лише браузер, і її
+      // проставляє `ThemeScript` до першого фарбування. Через це HTML на
+      // клієнті відрізняється від серверного, і React попереджав би про
+      // розбіжність - `suppressHydrationWarning` глушить це рівно тут і на
+      // дітей не поширюється.
+      data-theme={theme === "system" ? undefined : theme}
+      suppressHydrationWarning
       className={`${appSans.variable} ${appDisplay.variable} ${appBrand.variable} ${appMono.variable}`}
     >
+      {theme === "system" ? (
+        <head>
+          <ThemeScript />
+        </head>
+      ) : null}
       <body className="bg-background text-foreground">
         {/* Передає локаль і переклади в клієнтські компоненти; від серверного
             батька він успадковує їх сам, тому пропи не потрібні. */}
