@@ -10,14 +10,16 @@ import {
   useOverlayState,
 } from "@heroui/react";
 import { useTranslations } from "next-intl";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
+import { prepareCareerSource } from "@/lib/companies/career-source";
 import type {
   CompaniesTab,
   CompanyListItem,
   CompanySource,
 } from "@/lib/companies/company-list";
+import type { UrlRefusalReason } from "@/lib/companies/url";
 
 import { updateCompanyAction } from "./actions";
 import { EDIT_COMPANY_INITIAL_STATE } from "./form-state";
@@ -76,6 +78,14 @@ export function EditCompanyDialog({
   // форму після надсилання, і при відмові користувач втратив би введене.
   const [labels, setLabels] = useState<Record<string, string>>({});
   const [newSource, setNewSource] = useState(EMPTY_NEW_SOURCE);
+  // Відмова, яку видно ще до Save: ту саму перевірку робить і сервер, але
+  // чекати на надсилання, щоб побачити `ftp://`, нема за чим.
+  const [newSourceRefusal, setNewSourceRefusal] = useState<
+    | { problem: "source-url"; reason: UrlRefusalReason }
+    | { problem: "source-duplicate" }
+    | null
+  >(null);
+  const [, startSubmit] = useTransition();
 
   // Модалку закриває успіх, а не кнопка: доки зміни не збереглися, користувач
   // має бачити свої правки й повідомлення про помилку.
@@ -113,6 +123,7 @@ export function EditCompanyDialog({
       ),
     );
     setNewSource(EMPTY_NEW_SOURCE);
+    setNewSourceRefusal(null);
     overlay.open();
   }
 
@@ -121,6 +132,41 @@ export function EditCompanyDialog({
       current.includes(sourceId)
         ? current.filter((id) => id !== sourceId)
         : [...current, sourceId],
+    );
+  }
+
+  /**
+   * Перевіряє введену адресу на виході з поля - тією самою чистою функцією,
+   * якою потім скористається сервер (`prepareCareerSource` у `src/lib`).
+   *
+   * Серверну перевірку це не заміняє: поля приходять із клієнта, а між
+   * перевіркою і вставкою джерела могли змінитися. Зате крива адреса й
+   * дублікат видні одразу, а не аж після Save.
+   */
+  function checkNewSource() {
+    const typed = newSource.url.trim();
+
+    // Порожнє поле - це «джерела не додаємо», а не помилка.
+    if (typed === "") {
+      setNewSourceRefusal(null);
+      return;
+    }
+
+    const prepared = prepareCareerSource({
+      url: typed,
+      // Позначені до видалення не враховуємо: після Save їх уже не буде, тому
+      // та сама адреса дублікатом не стане.
+      existingUrls: company.sources
+        .filter((source) => !removed.includes(source.id))
+        .map((source) => source.url),
+    });
+
+    setNewSourceRefusal(
+      prepared.ok
+        ? null
+        : prepared.problem === "url"
+          ? { problem: "source-url", reason: prepared.reason }
+          : { problem: "source-duplicate" },
     );
   }
 
@@ -136,10 +182,18 @@ export function EditCompanyDialog({
         ? t("errors.notFound")
         : null;
 
+  // Клієнтська відмова має перевагу: вона свіжіша за стан минулого надсилання.
+  const sourceRefusal =
+    newSourceRefusal ??
+    (failure?.problem === "source-url" ||
+    failure?.problem === "source-duplicate"
+      ? failure
+      : null);
+
   const newSourceError =
-    failure?.problem === "source-url"
-      ? tUrlError(URL_ERROR_KEYS[failure.reason])
-      : failure?.problem === "source-duplicate"
+    sourceRefusal?.problem === "source-url"
+      ? tUrlError(URL_ERROR_KEYS[sourceRefusal.reason])
+      : sourceRefusal?.problem === "source-duplicate"
         ? tSourceDuplicate("sourceDuplicate")
         : null;
 
@@ -150,14 +204,34 @@ export function EditCompanyDialog({
       </Button>
 
       <Modal.Backdrop isOpen={overlay.isOpen} onOpenChange={overlay.setOpen}>
-        <Modal.Container>
+        {/* Довгий вміст скролиться всередині вікна: без цього
+                  `modal__dialog` обрізає його (`overflow-clip`), і в компанії
+                  з трьома джерелами блок додавання та кнопки опинялися за
+                  межею вікна - до них не було як дотягнутися. */}
+        <Modal.Container scroll="inside">
           <Modal.Dialog>
             <Modal.CloseTrigger />
             <Modal.Header>
               <Modal.Heading>{t("title")}</Modal.Heading>
             </Modal.Header>
 
-            <form action={submit}>
+            {/* Форма надсилається вручну, а не через `action={submit}`:
+                React після дії робить формі `reset`, і React Aria повідомляє
+                `onChange("")`, через що введене зникало навіть із
+                контрольованих полів. Деталі - у модалці Add company. */}
+            {/* Форма - проміжний елемент між `Modal.Dialog` і `Modal.Body`,
+                тому вона мусить сама бути колонкою flex: інакше обмеження
+                висоти до тіла не доходить, і скрол усередині вікна не
+                працює - кнопки опиняються за нижнім краєм. */}
+            <form
+              className="flex min-h-0 flex-1 flex-col gap-6"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const fieldsToSend = new FormData(event.currentTarget);
+
+                startSubmit(() => submit(fieldsToSend));
+              }}
+            >
               <input type="hidden" name="companyId" value={company.id} />
               {/* Вкладка потрібна серверу, щоб сказати, чи лишається
                   компанія в цьому списку після збереження. */}
@@ -201,9 +275,22 @@ export function EditCompanyDialog({
                                 <span className="text-muted">{source.url}</span>
                               </span>
 
+                              {/* Видалення - небезпечна дія, тому кнопка
+                                  червона: обведена, доки джерело лишається, і
+                                  залита, коли воно вже позначене. HeroUI
+                                  `outline` рамки не малює (лише прозорий фон),
+                                  тому рамка й колір тексту задані утилітами, а
+                                  `--button-fg` перебивається змінною: сам
+                                  `text-danger` програв би правилу
+                                  `color: var(--button-fg)` з базового класу. */}
                               <Button
                                 size="sm"
-                                variant="ghost"
+                                variant={isRemoved ? "danger" : "outline"}
+                                className={
+                                  isRemoved
+                                    ? ""
+                                    : "border border-danger [--button-fg:var(--color-danger)]"
+                                }
                                 type="button"
                                 onPress={() => toggleRemoved(source.id)}
                               >
@@ -262,9 +349,13 @@ export function EditCompanyDialog({
                     fullWidth
                     name="addSourceUrl"
                     value={newSource.url}
-                    onChange={(url) =>
-                      setNewSource((current) => ({ ...current, url }))
-                    }
+                    onChange={(url) => {
+                      // Правка знімає відмову: текст про неї стосувався
+                      // попереднього значення.
+                      setNewSourceRefusal(null);
+                      setNewSource((current) => ({ ...current, url }));
+                    }}
+                    onBlur={checkNewSource}
                     isInvalid={newSourceError !== null}
                   >
                     <Label>{t("addSourceUrl")}</Label>

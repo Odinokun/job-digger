@@ -85,6 +85,7 @@ export function AddCompanyDialog({
   const [sourceState, setSourceState] =
     useState<AddCareerSourceFormState | null>(null);
   const [isAddingSource, startAddingSource] = useTransition();
+  const [, startSubmit] = useTransition();
 
   // Модалку закриває успіх, а не сама кнопка: доки компанія не збереглася,
   // користувач має бачити свої дані й повідомлення про помилку.
@@ -245,16 +246,40 @@ export function AddCompanyDialog({
       <Button onPress={openDialog}>{t("open")}</Button>
 
       <Modal.Backdrop isOpen={overlay.isOpen} onOpenChange={overlay.setOpen}>
-        <Modal.Container>
+        {/* Довгий вміст скролиться всередині вікна: без цього
+                  `modal__dialog` обрізає його (`overflow-clip`), і в компанії
+                  з трьома джерелами блок додавання та кнопки опинялися за
+                  межею вікна - до них не було як дотягнутися. */}
+        <Modal.Container scroll="inside">
           <Modal.Dialog>
             <Modal.CloseTrigger />
             <Modal.Header>
               <Modal.Heading>{t("title")}</Modal.Heading>
             </Modal.Header>
 
-            {/* Звичайна форма з action: так поля надсилаються і без JS, і
-                Server Action сам перевіряє походження запиту. */}
-            <form action={submit}>
+            {/* Форма надсилається вручну, а не через `action={submit}`:
+                React після дії робить формі `reset`, React Aria бачить цю
+                подію й повідомляє `onChange("")`, тому навіть контрольовані
+                поля втрачали введене - після відмови «вже додана» адреса
+                зникала разом із пропозицією додати її джерелом. Виклик у
+                `startTransition` обовʼязковий, інакше `isPending` з
+                `useActionState` не оновлюється (попередження React «An async
+                function with useActionState was called outside of a
+                transition»). Прогресивного покращення це не знімає: модалку
+                все одно відкриває JavaScript. */}
+            {/* Форма - проміжний елемент між `Modal.Dialog` і `Modal.Body`,
+                тому вона мусить сама бути колонкою flex: інакше обмеження
+                висоти до тіла не доходить, і скрол усередині вікна не
+                працює - кнопки опиняються за нижнім краєм. */}
+            <form
+              className="flex min-h-0 flex-1 flex-col gap-6"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const fieldsToSend = new FormData(event.currentTarget);
+
+                startSubmit(() => submit(fieldsToSend));
+              }}
+            >
               {/* Вкладка потрібна серверу, щоб сказати, чи показувати нову
                   компанію в цьому списку. */}
               <input type="hidden" name="tab" value={tab} />
