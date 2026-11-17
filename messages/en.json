@@ -39,6 +39,8 @@
       "notAnAddress": "This does not look like an address.",
       "unsupportedScheme": "Only http and https addresses work."
     },
+    "sourceLabel": "Label",
+    "sourceLabelPlaceholder": "Remote Canada",
     "sourceDuplicate": "This company already has this career page.",
     "editCompany": {
       "open": "Edit",
@@ -51,8 +53,6 @@
       "lastSourceWarning": "Without a career page the company moves to Not tracked.",
       "save": "Save",
       "cancel": "Cancel",
-      "sourceLabel": "Label",
-      "sourceLabelPlaceholder": "Remote Canada",
       "addSource": "Add a career page",
       "addSourceUrl": "Address",
       "addSourceUrlPlaceholder": "mozilla.org/en-US/careers/listings/?location=Remote%20US",

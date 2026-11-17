@@ -63,9 +63,9 @@ export function EditCompanyDialog({
 }: EditCompanyDialogProps) {
   const t = useTranslations("CompaniesPage.editCompany");
   const tUrlError = useTranslations("CompaniesPage.urlErrors");
-  // Текст про дублікат джерела спільний із модалкою Add company, тому лежить
-  // рівнем вище, поряд із `urlErrors`.
-  const tSourceDuplicate = useTranslations("CompaniesPage");
+  // Підпис джерела й текст про дублікат задаються у двох модалках, тому їхні
+  // тексти лежать рівнем вище, поряд із `urlErrors`.
+  const tShared = useTranslations("CompaniesPage");
   const showActionFailed = useActionFailedToast();
   const overlay = useOverlayState();
   const [state, submit, isPending] = useActionState(
@@ -86,6 +86,10 @@ export function EditCompanyDialog({
     | null
   >(null);
   const [, startSubmit] = useTransition();
+  // Чи надсилали форму після відкриття вікна: `useActionState` переживає
+  // закриття модалки, і без прапорця наступне відкриття показувало б відмову
+  // минулого разу. Те саме в модалці Add company.
+  const [isSubmitted, setSubmitted] = useState(false);
 
   // Модалку закриває успіх, а не кнопка: доки зміни не збереглися, користувач
   // має бачити свої правки й повідомлення про помилку.
@@ -124,6 +128,7 @@ export function EditCompanyDialog({
     );
     setNewSource(EMPTY_NEW_SOURCE);
     setNewSourceRefusal(null);
+    setSubmitted(false);
     overlay.open();
   }
 
@@ -174,7 +179,8 @@ export function EditCompanyDialog({
     setLabels((current) => ({ ...current, [sourceId]: value }));
   }
 
-  const failure = state.status === "failed" ? state.result : null;
+  const failure =
+    isSubmitted && state.status === "failed" ? state.result : null;
   const nameError =
     failure?.problem === "name-required"
       ? t("errors.nameRequired")
@@ -194,7 +200,7 @@ export function EditCompanyDialog({
     sourceRefusal?.problem === "source-url"
       ? tUrlError(URL_ERROR_KEYS[sourceRefusal.reason])
       : sourceRefusal?.problem === "source-duplicate"
-        ? tSourceDuplicate("sourceDuplicate")
+        ? tShared("sourceDuplicate")
         : null;
 
   return (
@@ -229,6 +235,7 @@ export function EditCompanyDialog({
                 event.preventDefault();
                 const fieldsToSend = new FormData(event.currentTarget);
 
+                setSubmitted(true);
                 startSubmit(() => submit(fieldsToSend));
               }}
             >
@@ -306,7 +313,7 @@ export function EditCompanyDialog({
                             <TextField
                               fullWidth
                               name={`sourceLabel.${source.id}`}
-                              aria-label={t("sourceLabel")}
+                              aria-label={tShared("sourceLabel")}
                               value={labels[source.id] ?? ""}
                               onChange={(value) =>
                                 changeLabel(source.id, value)
@@ -314,7 +321,7 @@ export function EditCompanyDialog({
                               isDisabled={isRemoved}
                             >
                               <Input
-                                placeholder={t("sourceLabelPlaceholder")}
+                                placeholder={tShared("sourceLabelPlaceholder")}
                               />
                             </TextField>
 
@@ -374,8 +381,8 @@ export function EditCompanyDialog({
                       setNewSource((current) => ({ ...current, label }))
                     }
                   >
-                    <Label>{t("sourceLabel")}</Label>
-                    <Input placeholder={t("sourceLabelPlaceholder")} />
+                    <Label>{tShared("sourceLabel")}</Label>
+                    <Input placeholder={tShared("sourceLabelPlaceholder")} />
                   </TextField>
                 </div>
               </Modal.Body>

@@ -70,9 +70,9 @@ export function AddCompanyDialog({
 }: AddCompanyDialogProps) {
   const t = useTranslations("CompaniesPage.addCompany");
   const tUrlError = useTranslations("CompaniesPage.urlErrors");
-  // Текст про дублікат джерела спільний із модалкою Edit, тому лежить рівнем
-  // вище, поряд із `urlErrors`.
-  const tSourceDuplicate = useTranslations("CompaniesPage");
+  // Підпис джерела й текст про дублікат задаються у двох модалках, тому їхні
+  // тексти лежать рівнем вище, поряд із `urlErrors`.
+  const tShared = useTranslations("CompaniesPage");
   const showActionFailed = useActionFailedToast();
   const overlay = useOverlayState();
   const [state, submit, isPending] = useActionState(
@@ -92,6 +92,15 @@ export function AddCompanyDialog({
   const [sourceState, setSourceState] =
     useState<AddCareerSourceFormState | null>(null);
   const [isAddingSource, startAddingSource] = useTransition();
+  // Підпис для адреси, яка стане ще одним джерелом знайденої компанії: там
+  // він потрібен так само, як у модалці Edit - трьох фільтрів однієї сторінки
+  // інакше не розрізнити.
+  const [sourceLabel, setSourceLabel] = useState("");
+  // Чи надсилали форму після того, як вікно відкрили. `useActionState` живе
+  // стільки ж, скільки компонент, а модалка лише ховається - без цього
+  // прапорця наступне відкриття одразу показувало б відмову минулого разу
+  // («Already added as ...» ще до того, як користувач щось увів).
+  const [isSubmitted, setSubmitted] = useState(false);
   const [, startSubmit] = useTransition();
   // Відмови, які видно ще до Save. Та сама перевірка повториться на сервері -
   // поля приходять із клієнта, - але `ftp://` нема чого везти туди й назад.
@@ -147,6 +156,8 @@ export function AddCompanyDialog({
     setEditedByHand(EMPTY_EDITS);
     setSuggested(false);
     setSourceState(null);
+    setSourceLabel("");
+    setSubmitted(false);
     setRefusals(EMPTY_REFUSALS);
     overlay.open();
   }
@@ -220,7 +231,12 @@ export function AddCompanyDialog({
   function addAsSource(companyId: string) {
     startAddingSource(async () => {
       setSourceState(
-        await addCareerSourceAction(companyId, fields.careerUrl, "", tab),
+        await addCareerSourceAction(
+          companyId,
+          fields.careerUrl,
+          sourceLabel,
+          tab,
+        ),
       );
     });
   }
@@ -247,7 +263,8 @@ export function AddCompanyDialog({
     }));
   }
 
-  const failure = state.status === "failed" ? state.result : null;
+  const failure =
+    isSubmitted && state.status === "failed" ? state.result : null;
   const sameDomain = failure?.problem === "same-domain" ? failure : null;
 
   // Помилка поля йде в `FieldError` разом з `isInvalid`: проп
@@ -274,7 +291,7 @@ export function AddCompanyDialog({
       : sourceFailure?.problem === "source-url"
         ? tUrlError(URL_ERROR_KEYS[sourceFailure.reason])
         : sourceFailure?.problem === "source-duplicate"
-          ? tSourceDuplicate("sourceDuplicate")
+          ? tShared("sourceDuplicate")
           : null;
 
   // Пропозиція зʼявляється лише тоді, коли адресу справді є що додати: при
@@ -321,6 +338,7 @@ export function AddCompanyDialog({
                 event.preventDefault();
                 const fieldsToSend = new FormData(event.currentTarget);
 
+                setSubmitted(true);
                 startSubmit(() => submit(fieldsToSend));
               }}
             >
@@ -380,6 +398,16 @@ export function AddCompanyDialog({
                 {alreadyAdded ? (
                   <div className="flex flex-col items-start gap-2 text-sm">
                     <p>{t("addAsSourceHint", { name: alreadyAdded.name })}</p>
+
+                    <TextField
+                      fullWidth
+                      value={sourceLabel}
+                      onChange={setSourceLabel}
+                    >
+                      <Label>{tShared("sourceLabel")}</Label>
+                      <Input placeholder={tShared("sourceLabelPlaceholder")} />
+                    </TextField>
+
                     {/* Кнопка кличе окрему дію, тому `type="button"`: інакше
                         вона надіслала б форму ще раз і знову впала б у
                         «вже додана». */}

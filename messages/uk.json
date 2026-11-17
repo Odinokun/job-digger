@@ -39,6 +39,8 @@
       "notAnAddress": "Це не схоже на адресу.",
       "unsupportedScheme": "Працюють лише адреси http і https."
     },
+    "sourceLabel": "Підпис",
+    "sourceLabelPlaceholder": "Remote Canada",
     "sourceDuplicate": "Ця кар'єрна сторінка в компанії вже є.",
     "editCompany": {
       "open": "Редагувати",
@@ -51,8 +53,6 @@
       "lastSourceWarning": "Без кар'єрної сторінки компанія перейде в Not tracked.",
       "save": "Зберегти",
       "cancel": "Скасувати",
-      "sourceLabel": "Підпис",
-      "sourceLabelPlaceholder": "Remote Canada",
       "addSource": "Додати кар'єрну сторінку",
       "addSourceUrl": "Адреса",
       "addSourceUrlPlaceholder": "mozilla.org/en-US/careers/listings/?location=Remote%20US",
