@@ -369,4 +369,85 @@ describe("addCompany", () => {
     expect(result.ok).toBe(true);
     expect(await testDb.select().from(companies)).toHaveLength(2);
   });
+
+  it("adds a company found only on an ATS page, without a site", async () => {
+    const userId = await user();
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Spotify",
+      url: "",
+      careerUrl: "jobs.lever.co/spotify",
+    });
+
+    expect(result.ok).toBe(true);
+
+    const [company] = await testDb.select().from(companies);
+
+    // Сайту немає в обох колонках: і в тій, що показується, і в тій, що
+    // служить порівнянню. Компанію далі ідентифікує її джерело.
+    expect(company.url).toBeNull();
+    expect(company.normalizedUrl).toBeNull();
+
+    const [source] = await sourcesOf(company.id);
+
+    expect(source.url).toBe("https://jobs.lever.co/spotify");
+    expect(source.platform).toBe("lever");
+  });
+
+  it("refuses a company with neither a site nor a career page", async () => {
+    const userId = await user();
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Spotify",
+      url: "   ",
+      careerUrl: "",
+    });
+
+    // Без жодної адреси компанію не ідентифікує ніщо й перевіряти в неї нічого.
+    expect(result).toEqual({ ok: false, problem: "address-required" });
+    expect(await testDb.select().from(companies)).toHaveLength(0);
+  });
+
+  it("still refuses a site it cannot use, even though a site is optional now", async () => {
+    const userId = await user();
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Spotify",
+      url: "ftp://spotify.com",
+      careerUrl: "jobs.lever.co/spotify",
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      problem: "company-url",
+      reason: "unsupported-scheme",
+    });
+    expect(await testDb.select().from(companies)).toHaveLength(0);
+  });
+
+  it("lets two companies without a site live side by side", async () => {
+    const userId = await user();
+
+    await addCompany(testDb, {
+      userId,
+      name: "Spotify",
+      url: "",
+      careerUrl: "jobs.lever.co/spotify",
+    });
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Netflix",
+      url: "",
+      careerUrl: "jobs.lever.co/netflix",
+    });
+
+    // Unique-індекс `(user_id, normalized_url)` на двох NULL не спрацьовує:
+    // у PostgreSQL NULL не дорівнює NULL (docs/18/indexes-unique).
+    expect(result.ok).toBe(true);
+    expect(await testDb.select().from(companies)).toHaveLength(2);
+  });
 });
