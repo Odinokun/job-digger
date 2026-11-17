@@ -41,10 +41,21 @@
 - `add-company-dialog.tsx` - кнопка Add і модалка додавання; клієнтський.
 - `edit-company-dialog.tsx` - кнопка Edit і модалка редагування; клієнтський.
 - `delete-company-dialog.tsx` - кошик і підтвердження видалення; клієнтський.
-- `actions.ts` - Server Actions сторінки: додавання, редагування, видалення,
-  джерело до вже доданої компанії і Load more.
-- `form-state.ts` - типи станів цих форм окремо від `actions.ts`
+- `companies/actions.ts` - Server Actions сторінки: додавання, редагування,
+  видалення, джерело до вже доданої компанії і Load more.
+- `form-state.ts` - типи станів цих форм окремо від `companies/actions.ts`
   ([розділ «Модалки й Server Actions»](#модалки-й-server-actions-дві-пастки)).
+
+Сторінка Settings - у `settings/` ([розділ «Перемикання теми»](#перемикання-теми)):
+
+- `settings/theme-switcher.tsx` - Light / Dark / System на HeroUI
+  `ToggleButtonGroup`; клієнтський, бо ставить атрибут теми одразу, не чекаючи
+  на мережу.
+- `settings/actions.ts` - `setThemeAction`, що лише запамʼятовує вибір у cookie.
+
+Повні шляхи тут не для краси: файлів `actions.ts` дві штуки, і коротке імʼя вже
+двозначне. Тест [`readme-coverage.test.ts`](../readme-coverage.test.ts) зараховує
+коротке імʼя лише тоді, коли воно в межах README унікальне.
 
 Файл у теці маршруту, який не називається `page`, `layout` чи іншим зарезервованим
 іменем, маршрутом не стає, тому компоненти сторінки лежать поруч із нею.

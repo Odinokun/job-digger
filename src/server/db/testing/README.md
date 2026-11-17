@@ -11,6 +11,7 @@
 | `global-setup.ts` | Один раз на прогін: створює базу, якщо немає, і проганяє міграції       |
 | `test-db.ts`      | Підключення `testDb` і `truncateAll()`                                 |
 | `setup.ts`        | `beforeEach(truncateAll)` і закриття пулу після файлу тестів            |
+| `career-source-values.ts` | `normalizedSourceUrl` - очищена адреса для прямої вставки джерела в тестах |
 
 ## Як це працює
 
