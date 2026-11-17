@@ -37,7 +37,7 @@ Next.js 16 має зміни проти тренувальних даних мо
 
 - `src/app` - сторінки, layout, компоненти, маршрути App Router. Деталі - [src/app/README.md](src/app/README.md).
 - `src/server` - Server Actions, робота з БД, черга, парсери, модуль HTTP-запитів. Деталі - [src/server/README.md](src/server/README.md).
-- `src/lib` - чиста логіка й типи, спільні для сервера й клієнта: адреси компаній, платформи, типи списку компаній, курсор пагінації (`src/lib/pagination`).
+- `src/lib` - чиста логіка й типи, спільні для сервера й клієнта: адреси компаній, порівняння назв, платформи, типи списку компаній, курсор пагінації (`src/lib/pagination`).
   Нічого з `drizzle-orm`, `src/server` чи Node API - саме тому її можна імпортувати
   в клієнтські компоненти. Деталі - [src/lib/companies/README.md](src/lib/companies/README.md).
 - `src/i18n` - налаштування next-intl: список мов і читання локалі з cookie. Самі переклади - у `messages/` у корені.
