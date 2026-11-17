@@ -19,6 +19,7 @@ interface CompaniesListProps {
   isLoadingMore: boolean;
   onLoadMore: () => void;
   onSaved: (companyId: string, saved: CompanyListItem | null) => void;
+  onDeleted: (companyId: string) => void;
   emptyLabel: string;
   loadMoreLabel: string;
   noSourcesLabel: string;
@@ -40,6 +41,7 @@ export function CompaniesList({
   isLoadingMore,
   onLoadMore,
   onSaved,
+  onDeleted,
   emptyLabel,
   loadMoreLabel,
   noSourcesLabel,
@@ -73,6 +75,7 @@ export function CompaniesList({
               noSourcesLabel={noSourcesLabel}
               platformLabels={platformLabels}
               onSaved={onSaved}
+              onDeleted={onDeleted}
             />
           </li>
         ))}

@@ -87,6 +87,18 @@ export function CompaniesBoard({
     [],
   );
 
+  /**
+   * Видалену компанію прибираємо зі списку: той самий `applyRow` без рядка.
+   * Окремий колбек, а не `applyRow` напряму, бо діалог видалення не має чого
+   * повертати - рядка більше немає.
+   */
+  const removeRow = useCallback(
+    (companyId: string) => {
+      applyRow(companyId, null);
+    },
+    [applyRow],
+  );
+
   const addRow = useCallback(
     (added: CompanyListItem | null) => {
       if (added) {
@@ -134,6 +146,7 @@ export function CompaniesBoard({
         isLoadingMore={isPending}
         onLoadMore={loadMore}
         onSaved={applyRow}
+        onDeleted={removeRow}
         emptyLabel={emptyLabel}
         loadMoreLabel={loadMoreLabel}
         noSourcesLabel={noSourcesLabel}
