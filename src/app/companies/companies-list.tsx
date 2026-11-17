@@ -52,7 +52,11 @@ export function CompaniesList({
 
   return (
     <>
-      <ul className="mt-6 flex flex-col gap-4">
+      {/* Дві картки в ряд від ширини sm, одна на вузькому екрані. Саме grid, а
+          не flex: у рядку сітки картки вирівнюються по найвищій, і через
+          `flex-1` на `Card.Content` кнопка Edit лишається притиснутою до низу
+          в обох. На flex-wrap висоти були б рваними. */}
+      <ul className="mt-6 grid gap-4 sm:grid-cols-2">
         {items.map((company) => (
           <li key={company.id}>
             <CompanyCard

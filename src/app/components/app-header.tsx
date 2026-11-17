@@ -17,9 +17,11 @@ export async function AppHeader() {
 
   return (
     <header className="border-b">
-      <div className="mx-auto flex max-w-5xl items-center gap-8 px-6">
+      {/* Ширина збігається з `main` у layout.tsx: меню має стояти над вмістом,
+          а не над іншою колонкою. */}
+      <div className="mx-auto flex max-w-7xl items-center gap-8 px-6">
         {/* "Job Digger" - назва продукту, вона не перекладається. */}
-        <Link href="/" className="py-3 font-sans text-lg font-bold">
+        <Link href="/" className="py-3 font-brand text-xl font-semibold">
           Job Digger
         </Link>
         <nav aria-label={t("ariaLabel")} className="flex items-center gap-6">

@@ -3,10 +3,142 @@
    перекриваються Preflight. */
 @import "@heroui/styles";
 
-/* Шрифти з layout.tsx підключаються до токенів Tailwind: font-sans і font-mono
-   у класах дають Geist. inline потрібен тому, що значення - посилання на іншу
-   CSS-змінну. */
+/* Шрифти з layout.tsx підключаються до токенів Tailwind: font-sans, font-display
+   і font-mono у класах дають Instrument Sans, Instrument Serif і IBM Plex Mono.
+   inline потрібен тому, що значення - посилання на іншу CSS-змінну.
+
+   --color-* - простір імен Tailwind, який генерує утиліти кольору, тому ці два
+   рядки створюють bg-info і text-info. У HeroUI такого токена немає, і він
+   потрібен саме цій темі: --accent тут безтоновий, тож бейдж «є нові вакансії»
+   без власного кольору вийшов би сірим. Деталі - src/app/README.md. */
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-app-sans);
+  --font-display: var(--font-app-display);
+  --font-brand: var(--font-app-brand);
+  --font-mono: var(--font-app-mono);
+
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
+  /* Кнопка HeroUI має `rounded-3xl` жорстко у своєму CSS, а бібліотека рахує
+     --radius-3xl як calc(var(--radius) * 3) - тобто 12px за нашого
+     --radius: 0.25rem (themes/shared/theme.css). Розмикаємо звʼязок, щоб
+     кнопка була 4px. Наслідок свідомий: різкішають і модалки з поповерами,
+     бо шкала радіусів одна на всіх. */
+  --radius-3xl: 0.25rem;
+}
+
+/* Тема «Ink».
+
+   Перевизначаються лише базові токени: похідні (*-hover, *-soft, *-soft-foreground,
+   border-secondary, separator-secondary) HeroUI виводить із них через color-mix сам -
+   node_modules/@heroui/styles/dist/themes/default/variables.css.
+
+   Блоки навмисно поза @layer: бібліотека тримає свою тему в @layer base, а в
+   каскаді незашаровані оголошення сильніші за зашаровані - тому ці значення
+   перекривають її незалежно від порядку імпортів.
+
+   Темна схема описана наперед і поки не видна: клас .dark ніде не ставиться,
+   перемикач Light/Dark/System - окрема картка. */
+:root {
+  --radius: 0.25rem;
+
+  /* Основа: холодний сірий майже без відтінку (chroma <= 0.006). Нейтраль із
+     власним тоном тут була б шумом - уся увага належить семантичним кольорам. */
+  --background: oklch(0.968 0.001 250);
+  --foreground: oklch(0.185 0.004 250);
+
+  --surface: oklch(1 0 0);
+  --surface-secondary: oklch(0.952 0.002 250);
+  --surface-tertiary: oklch(0.935 0.002 250);
+  --overlay: oklch(1 0 0);
+
+  --muted: oklch(0.495 0.006 250);
+  --default: oklch(0.935 0.002 250);
+  --default-foreground: oklch(0.185 0.004 250);
+  --segment: oklch(1 0 0);
+
+  --field-background: oklch(1 0 0);
+  --field-foreground: oklch(0.185 0.004 250);
+  --field-placeholder: oklch(0.565 0.006 250);
+
+  --border: oklch(0.888 0.003 250);
+  --separator: oklch(0.92 0.002 250);
+
+  /* Accent без тону: кнопка читається як дія, а не як стан. Побічний наслідок -
+     тон accent не може сперечатися з success, warning чи danger, бо його немає. */
+  --accent: oklch(0.225 0.008 250);
+  --accent-foreground: oklch(0.985 0.001 250);
+
+  /* Семантика - єдиний колір на екрані. *-foreground потрібні тому, що бейджі
+     статусів заливаються самим токеном (Solid), а не його *-soft. */
+  --success: oklch(0.575 0.13 150);
+  --success-foreground: oklch(0.985 0.005 150);
+  --warning: oklch(0.692 0.148 64);
+  --warning-foreground: oklch(0.19 0.012 64);
+  --danger: oklch(0.565 0.21 26);
+  --danger-foreground: oklch(0.985 0.005 26);
+
+  /* Власний семантичний колір: «є нові вакансії». Азур, бо його тон (238)
+     далекий від success, warning і danger. */
+  --info: oklch(0.528 0.188 238);
+  --info-foreground: oklch(0.99 0.005 238);
+
+  /* Hover задається явно. Похідні HeroUI домішують лише 10% accent-foreground,
+     і на майже чорній кнопці такої зміни не видно. */
+  --accent-hover: oklch(0.385 0.012 250);
+  --default-hover: oklch(0.878 0.004 250);
+}
+
+.dark,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --background: oklch(0.142 0.003 250);
+  --foreground: oklch(0.965 0.002 250);
+
+  --surface: oklch(0.193 0.004 250);
+  --surface-secondary: oklch(0.232 0.004 250);
+  --surface-tertiary: oklch(0.262 0.004 250);
+  --overlay: oklch(0.193 0.004 250);
+
+  --muted: oklch(0.688 0.006 250);
+  --default: oklch(0.252 0.005 250);
+  --default-foreground: oklch(0.965 0.002 250);
+  --segment: oklch(0.372 0.006 250);
+
+  --field-background: oklch(0.193 0.004 250);
+  --field-foreground: oklch(0.965 0.002 250);
+  --field-placeholder: oklch(0.632 0.006 250);
+
+  --border: oklch(0.272 0.005 250);
+  --separator: oklch(0.232 0.004 250);
+
+  /* Дзеркально до світлої схеми: майже біла кнопка з темним текстом. */
+  --accent: oklch(0.955 0.003 250);
+  --accent-foreground: oklch(0.168 0.006 250);
+
+  /* Світліші за свої світлі відповідники: на темному тлі той самий тон
+     читається тускліше. */
+  --success: oklch(0.722 0.14 150);
+  --success-foreground: oklch(0.16 0.012 150);
+  --warning: oklch(0.802 0.14 64);
+  --warning-foreground: oklch(0.175 0.012 64);
+  --danger: oklch(0.648 0.192 26);
+  --danger-foreground: oklch(0.158 0.02 26);
+
+  --info: oklch(0.652 0.172 238);
+  --info-foreground: oklch(0.145 0.032 238);
+
+  --accent-hover: oklch(0.808 0.006 250);
+  --default-hover: oklch(0.332 0.006 250);
+}
+
+/* Картка. Це перевизначення класу бібліотеки, не токена: у HeroUI `.card` має
+   лише тінь, рамки немає зовсім, а радіус дорівнює кнопчиному
+   (components/card.css). При оновленні HeroUI цей блок треба перечитати - саме
+   тому він стоїть окремо й підписаний. */
+.card {
+  border-radius: calc(var(--radius) * 1.5);
+  border: 1px solid var(--border);
 }

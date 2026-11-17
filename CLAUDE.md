@@ -22,6 +22,8 @@
 
 Cache Components і React Compiler вимкнені свідомо. Playwright - лише інструмент тестів, у продакшн-код не потрапляє.
 
+Тема застосунку - «Ink»: токени в `src/app/globals.css`, шрифти в `src/app/layout.tsx`. Правила, обмеження на тон accent і рішення щодо бейджів - [src/app/README.md](src/app/README.md#тема-ink).
+
 Next.js 16 має зміни проти тренувальних даних моделей: документація встановленої версії лежить у `node_modules/next/dist/docs/`, читай її перед написанням коду (про це ж нагадує `AGENTS.md`, який генерує `next dev`).
 
 Те саме з Drizzle, але навпаки: встановлена стабільна 0.45.x, а сайт orm.drizzle.team документує лише v1 (RC), архіву для 0.x немає. API звіряй із типами в `node_modules/drizzle-orm/`. Деталі роботи з базою - [src/server/db/README.md](src/server/db/README.md).
