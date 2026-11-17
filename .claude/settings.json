@@ -12,12 +12,7 @@
       "Bash(docker compose down -v*)",
       "Bash(docker compose down --volumes*)"
     ],
-    "ask": [
-      "Bash(git push:*)",
-      "Bash(gh pr create:*)",
-      "Bash(gh pr merge:*)",
-      "mcp__trello__trelloWrite*"
-    ],
+    "ask": ["Bash(git push:*)", "Bash(gh pr create:*)", "Bash(gh pr merge:*)"],
     "allow": [
       "Bash(git commit:*)",
       "Bash(npm test*)",
@@ -32,7 +27,8 @@
       "Bash(npx playwright *)",
       "Bash(docker compose ps*)",
       "Bash(docker compose logs*)",
-      "mcp__trello__trelloRead*"
+      "mcp__trello__trelloRead*",
+      "mcp__trello__trelloWrite*"
     ]
   },
   "hooks": {
