@@ -281,6 +281,12 @@ export function AddCompanyDialog({
         ? t("errors.alreadyAdded", { name: failure.company.name })
         : null;
 
+  // Стосується пари полів, а не одного, тому стоїть окремо, а не в `FieldError`.
+  const addressError =
+    failure?.problem === "address-required"
+      ? t("errors.addressRequired")
+      : null;
+
   const sourceFailure =
     sourceState?.status === "failed" ? sourceState.result : null;
 
@@ -292,7 +298,11 @@ export function AddCompanyDialog({
         ? tUrlError(URL_ERROR_KEYS[sourceFailure.reason])
         : sourceFailure?.problem === "source-duplicate"
           ? tShared("sourceDuplicate")
-          : null;
+          : failure?.problem === "source-taken"
+            ? tShared("sourceTaken", { name: failure.company.name })
+            : sourceFailure?.problem === "source-taken"
+              ? tShared("sourceTaken", { name: sourceFailure.company.name })
+              : null;
 
   // Пропозиція зʼявляється лише тоді, коли адресу справді є що додати: при
   // точному збігу компанії й заповненому полі карʼєрної сторінки. Якщо
@@ -347,10 +357,13 @@ export function AddCompanyDialog({
               <input type="hidden" name="tab" value={tab} />
               <Modal.Body className="flex flex-col gap-4">
                 {/* Адреса стоїть першою: з неї заповнюються два поля нижче. */}
+                {/* `isRequired` немає: компанію, знайдену лише на джоб-борді,
+                    сайт вигадувати не змушуємо. Правило «хоча б одна з двох
+                    адрес» стосується пари полів, тому його показує рядок над
+                    кнопками, а не підпис під полем (картка 2.17). */}
                 <TextField
                   autoFocus
                   fullWidth
-                  isRequired
                   name="url"
                   value={fields.url}
                   onChange={(value) => changeField("url", value)}
@@ -440,6 +453,13 @@ export function AddCompanyDialog({
                       value="true"
                     />
                   </div>
+                ) : null}
+
+                {/* Відмова про пару полів: яке з двох заповнити - вибір
+                    користувача, тому текст стоїть під ними обома, а не в
+                    одному `FieldError`. */}
+                {addressError ? (
+                  <p className="text-sm text-danger">{addressError}</p>
                 ) : null}
               </Modal.Body>
 
