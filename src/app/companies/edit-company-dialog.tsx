@@ -1,5 +1,6 @@
 "use client";
 
+import { PencilToSquare } from "@gravity-ui/icons";
 import {
   Button,
   FieldError,
@@ -209,8 +210,16 @@ export function EditCompanyDialog({
 
   return (
     <>
-      <Button size="sm" variant="secondary" onPress={openDialog}>
-        {t("open")}
+      {/* Лише іконка, як і кошик поруч: текст «Edit» у картці нічого не
+          додавав, а `aria-label` лишає кнопку названою для читалок екрана. */}
+      <Button
+        isIconOnly
+        size="sm"
+        variant="secondary"
+        aria-label={t("open")}
+        onPress={openDialog}
+      >
+        <PencilToSquare />
       </Button>
 
       <Modal.Backdrop isOpen={overlay.isOpen} onOpenChange={overlay.setOpen}>
