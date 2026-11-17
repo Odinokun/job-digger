@@ -3,10 +3,14 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { normalizeCompanyUrl } from "../../lib/companies/url.ts";
 import { careerSources, companies } from "./schema.ts";
 
-/** Карʼєрне джерело демо-компанії: без `companyId`, його дає вставка. */
+/**
+ * Карʼєрне джерело демо-компанії: без `companyId`, його дає вставка.
+ * `normalizedUrl` теж не задається руками - його рахує та сама функція, що й
+ * ручне додавання джерела.
+ */
 type DemoSource = Omit<
   typeof careerSources.$inferInsert,
-  "id" | "companyId" | "createdAt" | "lastSuccessAt"
+  "id" | "companyId" | "normalizedUrl" | "createdAt" | "lastSuccessAt"
 > & {
   /** Скільки днів тому джерело останнього разу прочиталося без помилки. */
   lastSuccessDaysAgo?: number;
@@ -18,8 +22,13 @@ type DemoSource = Omit<
  */
 type DemoCompany = Omit<
   typeof companies.$inferInsert,
-  "id" | "userId" | "normalizedUrl" | "createdAt"
+  "id" | "userId" | "url" | "normalizedUrl" | "createdAt"
 > & {
+  /**
+   * Головний сайт у демо-даних є завжди, хоч у схемі колонка й необовʼязкова:
+   * компанію без сайту перевіряють окремі тести, а не демо-набір.
+   */
+  url: string;
   sources: DemoSource[];
 };
 
@@ -206,6 +215,7 @@ export async function seedDemoCompanies(
           demo.sources.map(({ lastSuccessDaysAgo, ...source }) => ({
             ...source,
             companyId: company.id,
+            normalizedUrl: demoSourceNormalizedUrl(demo.name, source.url),
             lastSuccessAt:
               lastSuccessDaysAgo === undefined
                 ? null
@@ -219,4 +229,20 @@ export async function seedDemoCompanies(
 
     return result;
   });
+}
+
+/**
+ * Очищена адреса демо-джерела. Непридатна адреса тут - помилка в самих демо-даних,
+ * тому виняток, а не мовчазний пропуск: те саме правило, що для адреси компанії.
+ */
+function demoSourceNormalizedUrl(companyName: string, url: string): string {
+  const normalized = normalizeCompanyUrl(url);
+
+  if (!normalized.ok) {
+    throw new Error(
+      `Demo company "${companyName}" has an unusable career source url: ${url} (${normalized.reason})`,
+    );
+  }
+
+  return normalized.url;
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { careerSources, companies, users } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
+import { normalizedSourceUrl } from "../db/testing/career-source-values.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import {
   countCompaniesByTab,
@@ -28,6 +29,7 @@ async function insertTracked(
   await testDb.insert(careerSources).values({
     companyId: company.id,
     url: `https://boards.greenhouse.io/${slug}`,
+    normalizedUrl: normalizedSourceUrl(`https://boards.greenhouse.io/${slug}`),
     platform: "greenhouse",
   });
 
@@ -84,6 +86,7 @@ describe("listCompanies", () => {
     await testDb.insert(careerSources).values({
       companyId: company.id,
       url: "https://acme.com/careers",
+      normalizedUrl: normalizedSourceUrl("https://acme.com/careers"),
       platform: "unsupported",
       isTracked: false,
     });
@@ -156,6 +159,7 @@ describe("listCompanies", () => {
     await testDb.insert(careerSources).values({
       companyId: company.id,
       url: "https://jobs.lever.co/bosch",
+      normalizedUrl: normalizedSourceUrl("https://jobs.lever.co/bosch"),
       platform: "lever",
       label: "Remote Canada",
     });

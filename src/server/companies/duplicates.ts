@@ -1,4 +1,4 @@
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, isNotNull, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { companies } from "../db/schema.ts";
@@ -45,6 +45,11 @@ export async function findCompanyUrlConflict(
     .where(
       and(
         eq(companies.userId, userId),
+        // Компанія без сайту не конфліктує по сайту ні з ким (картка 2.17).
+        // Умова на домен нижче відсіяла б її й сама - `NULL = ...` не
+        // істинне, - але сказати це прямо чесніше, ніж покластися на побічний
+        // ефект тричевої логіки.
+        isNotNull(companies.normalizedUrl),
         // Домен обчислюється в SQL, а не шукається через `like 'bosch.com%'`:
         // інакше bosch.com.ua вважався б тим самим доменом, що bosch.com.
         sql`split_part(split_part(${companies.normalizedUrl}, '/', 1), '?', 1) = ${domain}`,
@@ -54,14 +59,30 @@ export async function findCompanyUrlConflict(
     // так само, як їх показує список компаній - за назвою.
     .orderBy(asc(companies.name));
 
-  const exact = rows.find((row) => row.normalizedUrl === normalizedUrl);
+  // Звуження типу: запит уже відсіяв рядки без адреси, але знати про це
+  // компілятор не може - колонки в схемі nullable.
+  const withUrl = rows.filter(
+    (
+      row,
+    ): row is {
+      id: string;
+      name: string;
+      url: string;
+      normalizedUrl: string;
+    } => row.url !== null && row.normalizedUrl !== null,
+  );
+
+  const exact = withUrl.find((row) => row.normalizedUrl === normalizedUrl);
 
   if (exact) {
     return { kind: "exact", company: withoutNormalizedUrl(exact) };
   }
 
-  if (rows.length > 0) {
-    return { kind: "same-domain", companies: rows.map(withoutNormalizedUrl) };
+  if (withUrl.length > 0) {
+    return {
+      kind: "same-domain",
+      companies: withUrl.map(withoutNormalizedUrl),
+    };
   }
 
   return { kind: "none" };

@@ -148,7 +148,21 @@ export async function addCompany(
         );
       }
 
-      return { ok: false, problem: "already-added", company: existing };
+      // `url` і `normalized_url` пишуться разом, а знайшли ми рядок саме за
+      // другим - отже перший теж на місці. Компілятор цього не знає, бо в схемі
+      // обидві колонки необовʼязкові (картка 2.17), тож інваріант перевіряємо
+      // явно, як і неможливу відсутність рядка вище.
+      if (existing.url === null) {
+        throw new Error(
+          `Company ${existing.id} has a normalized url but no url`,
+        );
+      }
+
+      return {
+        ok: false,
+        problem: "already-added",
+        company: { id: existing.id, name: existing.name, url: existing.url },
+      };
     }
 
     if (normalizedCareerUrl?.ok) {
@@ -157,6 +171,7 @@ export async function addCompany(
       await tx.insert(careerSources).values({
         companyId: company.id,
         url: absoluteCompanyUrl(typedCareerUrl),
+        normalizedUrl: normalizedCareerUrl.url,
         platform,
         // Сторінку, яку нічим прочитати, зберігаємо без відстеження
         // (docs/ui.md, розділ 4.3).

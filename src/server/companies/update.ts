@@ -139,6 +139,7 @@ export async function updateCompany(
       await tx.insert(careerSources).values({
         companyId,
         url: newSource.url,
+        normalizedUrl: newSource.normalizedUrl,
         label: newSource.label,
         platform: newSource.platform,
         isTracked: newSource.isTracked,

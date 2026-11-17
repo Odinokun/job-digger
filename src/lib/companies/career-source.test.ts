@@ -12,6 +12,7 @@ describe("prepareCareerSource", () => {
     ).toEqual({
       ok: true,
       url: "https://boards.greenhouse.io/bosch",
+      normalizedUrl: "boards.greenhouse.io/bosch",
       label: null,
       platform: "greenhouse",
       isTracked: true,
@@ -27,6 +28,9 @@ describe("prepareCareerSource", () => {
     ).toEqual({
       ok: true,
       url: "https://www.mozilla.org/en-US/careers/listings/",
+      // `www.` і кінцевий слеш зняті, бо саме ця форма лягає в
+      // `career_sources.normalized_url` і служить порівнянню.
+      normalizedUrl: "mozilla.org/en-US/careers/listings",
       label: null,
       platform: "unsupported",
       isTracked: false,

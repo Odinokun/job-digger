@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { careerSources, companies, users } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
+import { normalizedSourceUrl } from "../db/testing/career-source-values.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import { addCareerSource } from "./sources.ts";
 
@@ -21,6 +22,7 @@ async function insertCompany(userId: string, name: string, slug = "acme") {
   await testDb.insert(careerSources).values({
     companyId: company.id,
     url: `https://boards.greenhouse.io/${slug}`,
+    normalizedUrl: normalizedSourceUrl(`https://boards.greenhouse.io/${slug}`),
     platform: "greenhouse",
   });
 

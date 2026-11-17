@@ -67,10 +67,14 @@ export const companies = pgTable(
     name: text("name").notNull(),
     // Головна адреса так, як її ввів користувач: зі шляхом, бо bosch.com/de і
     // bosch.com/ua - різні компанії (docs/discovery-and-parsing.md, розділ 5).
-    url: text("url").notNull(),
+    //
+    // Необовʼязкова: адреса ATS головного сайту не дає (`jobs.lever.co/spotify`),
+    // і вигадувати його за користувача нема з чого - буває і `.io`, і `.ai`
+    // (картка 2.17). Компанію тоді ідентифікує її карʼєрне джерело.
+    url: text("url"),
     // Та сама адреса в очищеній формі - лише для порівняння дублікатів.
     // Саме очищення й повідомлення про збіг - задача 2.02.
-    normalizedUrl: text("normalized_url").notNull(),
+    normalizedUrl: text("normalized_url"),
     discoveryStatus: discoveryStatus("discovery_status")
       .notNull()
       .default("not_checked"),
@@ -105,6 +109,12 @@ export const careerSources = pgTable(
       .notNull()
       .references(() => companies.id, { onDelete: "cascade" }),
     url: text("url").notNull(),
+    // Та сама адреса в очищеній формі. Потрібна, щоб запитом знаходити те саме
+    // джерело в **іншої** компанії: нормалізація живе в TypeScript
+    // (`normalizeCompanyUrl`), виразом в SQL її не записати, тож результат
+    // доводиться зберігати. Для компанії без сайту це єдине, чим вона
+    // відрізняється від такої самої (картка 2.17).
+    normalizedUrl: text("normalized_url").notNull(),
     // Підпис, яким користувач розрізняє джерела одного сайту: три фільтри
     // mozilla.org відрізняються лише `query`, і сирий URL їх не розрізняє
     // (картка 2.16). Необовʼязковий: у джерела з власним доменом підписувати

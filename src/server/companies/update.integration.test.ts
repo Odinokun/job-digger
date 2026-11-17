@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { careerSources, companies, users } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
+import { normalizedSourceUrl } from "../db/testing/career-source-values.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import { listCompanies } from "./list.ts";
 import { updateCompany } from "./update.ts";
@@ -24,6 +25,9 @@ async function insertCompany(userId: string, name: string, slug = "acme") {
     .values({
       companyId: company.id,
       url: `https://boards.greenhouse.io/${slug}`,
+      normalizedUrl: normalizedSourceUrl(
+        `https://boards.greenhouse.io/${slug}`,
+      ),
       platform: "greenhouse",
     })
     .returning();
@@ -100,6 +104,7 @@ describe("updateCompany", () => {
       .values({
         companyId: company.id,
         url: "https://jobs.lever.co/acme",
+        normalizedUrl: normalizedSourceUrl("https://jobs.lever.co/acme"),
         platform: "lever",
       })
       .returning();
@@ -288,6 +293,9 @@ describe("updateCompany adding a career source", () => {
     await testDb.insert(careerSources).values({
       companyId: company.id,
       url: "https://www.mozilla.org/en-US/careers/listings/?location=Remote%20Canada",
+      normalizedUrl: normalizedSourceUrl(
+        "https://www.mozilla.org/en-US/careers/listings/?location=Remote%20Canada",
+      ),
       platform: "unsupported",
       isTracked: false,
       label: "Remote Canada",
@@ -443,6 +451,7 @@ describe("updateCompany labelling existing sources", () => {
       .values({
         companyId: company.id,
         url: "https://jobs.lever.co/mozilla",
+        normalizedUrl: normalizedSourceUrl("https://jobs.lever.co/mozilla"),
         platform: "lever",
       })
       .returning();

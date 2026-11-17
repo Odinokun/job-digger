@@ -1,0 +1,1 @@
+ALTER TABLE "career_sources" ALTER COLUMN "normalized_url" SET NOT NULL;

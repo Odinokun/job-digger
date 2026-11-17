@@ -70,6 +70,7 @@ export async function addCareerSource(
     await tx.insert(careerSources).values({
       companyId,
       url: prepared.url,
+      normalizedUrl: prepared.normalizedUrl,
       label: prepared.label,
       platform: prepared.platform,
       isTracked: prepared.isTracked,

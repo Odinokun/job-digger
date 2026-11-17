@@ -52,15 +52,20 @@ export function CompanyCard({
           {company.name}
         </Card.Title>
         <Card.Description>
-          {/* Зовнішнє посилання: rel обовʼязковий (docs/security.md). */}
-          <a
-            href={company.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-2"
-          >
-            {company.url}
-          </a>
+          {/* Головного сайту може не бути: компанію, знайдену лише на ATS, не
+              змушуємо його вигадувати (картка 2.17). Тоді рядок просто
+              порожній, а що саме показувати замість нього - крок UI. */}
+          {company.url === null ? null : (
+            /* Зовнішнє посилання: rel обовʼязковий (docs/security.md). */
+            <a
+              href={company.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2"
+            >
+              {company.url}
+            </a>
+          )}
         </Card.Description>
       </Card.Header>
 

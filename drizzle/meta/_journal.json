@@ -22,6 +22,20 @@
       "when": 1794866979920,
       "tag": "0002_clumsy_cassandra_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794939276470,
+      "tag": "0003_quiet_rachel_grey",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794939307428,
+      "tag": "0004_rare_vin_gonzales",
+      "breakpoints": true
     }
   ]
 }
