@@ -19,6 +19,7 @@ interface CompaniesListProps {
   isLoadingMore: boolean;
   onLoadMore: () => void;
   onSaved: (companyId: string, saved: CompanyListItem | null) => void;
+  onDeleted: (companyId: string) => void;
   emptyLabel: string;
   loadMoreLabel: string;
   noSourcesLabel: string;
@@ -40,6 +41,7 @@ export function CompaniesList({
   isLoadingMore,
   onLoadMore,
   onSaved,
+  onDeleted,
   emptyLabel,
   loadMoreLabel,
   noSourcesLabel,
@@ -53,9 +55,10 @@ export function CompaniesList({
   return (
     <>
       {/* Дві картки в ряд від ширини sm, одна на вузькому екрані. Саме grid, а
-          не flex: у рядку сітки картки вирівнюються по найвищій, і через
-          `flex-1` на `Card.Content` кнопка Edit лишається притиснутою до низу
-          в обох. На flex-wrap висоти були б рваними. */}
+          не flex: у рядку сітки елементи вирівнюються по найвищому, і картка
+          компанії з одним джерелом виходить такої самої висоти, що й сусідня з
+          чотирма. Саме розтягування - на `h-full` у [картці](./company-card.tsx).
+          На flex-wrap висоти були б рваними. */}
       <ul className="mt-6 grid gap-4 sm:grid-cols-2">
         {items.map((company) => (
           <li key={company.id}>
@@ -72,6 +75,7 @@ export function CompaniesList({
               noSourcesLabel={noSourcesLabel}
               platformLabels={platformLabels}
               onSaved={onSaved}
+              onDeleted={onDeleted}
             />
           </li>
         ))}

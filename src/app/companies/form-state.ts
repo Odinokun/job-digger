@@ -1,6 +1,7 @@
 import type { CompanyListItem } from "@/lib/companies/company-list";
 import type { Cursor } from "@/lib/pagination/cursor";
 import type { AddCompanyResult } from "@/server/companies/add";
+import type { DeleteCompanyResult } from "@/server/companies/delete";
 import type { AddCareerSourceResult } from "@/server/companies/sources";
 import type { UpdateCompanyResult } from "@/server/companies/update";
 
@@ -72,6 +73,26 @@ export type EditCompanyFormState =
   | { status: "failed-unexpectedly" };
 
 export const EDIT_COMPANY_INITIAL_STATE: EditCompanyFormState = {
+  status: "idle",
+};
+
+/**
+ * Стан діалогу підтвердження видалення.
+ *
+ * Успіх не віддає нічого, крім факту: рядка компанії більше немає, а її id
+ * список і так знає - саме його рядок він прибирає зі себе.
+ *
+ * `not-found` сюди доходить, якщо компанію видалили в іншій вкладці, поки
+ * діалог був відкритий. Для списку це той самий результат - компанії немає, -
+ * тому рядок прибирається й тут, просто текст інший.
+ */
+export type DeleteCompanyFormState =
+  | { status: "idle" }
+  | { status: "deleted" }
+  | { status: "failed"; result: Extract<DeleteCompanyResult, { ok: false }> }
+  | { status: "failed-unexpectedly" };
+
+export const DELETE_COMPANY_INITIAL_STATE: DeleteCompanyFormState = {
   status: "idle",
 };
 

@@ -28,6 +28,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@gravity-ui/icons": "^2.23.1",
     "@heroui/react": "^3.2.7",
     "@heroui/styles": "^3.2.7",
     "drizzle-orm": "^0.45.4",

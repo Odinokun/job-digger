@@ -6,6 +6,7 @@ import type {
   CompanySource,
 } from "@/lib/companies/company-list";
 
+import { DeleteCompanyDialog } from "./delete-company-dialog";
 import { EditCompanyDialog } from "./edit-company-dialog";
 
 interface CompanyCardProps {
@@ -17,6 +18,7 @@ interface CompanyCardProps {
   noSourcesLabel: string;
   platformLabels: Record<CompanySource["platform"], string>;
   onSaved: (companyId: string, saved: CompanyListItem | null) => void;
+  onDeleted: (companyId: string) => void;
 }
 
 /**
@@ -33,9 +35,16 @@ export function CompanyCard({
   noSourcesLabel,
   platformLabels,
   onSaved,
+  onDeleted,
 }: CompanyCardProps) {
   return (
-    <Card>
+    // `h-full` - те, що робить картки в рядку однаковими: елемент сітки
+    // розтягується сам, а от картка всередині лишається заввишки свого вмісту.
+    // Без цього низ картки з одним джерелом висить посеред рядка, поки сусідня
+    // з чотирма джерелами стоїть на повну висоту. Решту робить сам HeroUI:
+    // `.card` - колонка flex, `.card__content` - `flex: 1`, тому вільне місце
+    // дістається саме вмісту, а підвал зі статусом і кнопками йде донизу.
+    <Card className="h-full">
       <Card.Header>
         {/* Назва компанії набрана шрифтом заголовків, а не тіла: у темі «Ink»
             це єдине, що відрізняє дані від підписів інтерфейсу. */}
@@ -88,16 +97,19 @@ export function CompanyCard({
         )}
       </Card.Content>
 
-      {/* Дії картки. Поки лише Edit: Check now, Mark all as read і Delete
-          приходять із задачами 2.06 і 4.01 (docs/ui.md, розділ 4.2). */}
+      {/* Дії картки. Edit і Delete: Check now, Mark all as read і Mark all as
+          unread приходять із задачами 3.14 і 3.18 (docs/ui.md, розділ 4.2). */}
       <Card.Footer className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-sm text-muted">{statusLabel}</span>
-        <EditCompanyDialog
-          company={company}
-          tab={tab}
-          platformLabels={platformLabels}
-          onSaved={onSaved}
-        />
+        <div className="flex items-center gap-2">
+          <EditCompanyDialog
+            company={company}
+            tab={tab}
+            platformLabels={platformLabels}
+            onSaved={onSaved}
+          />
+          <DeleteCompanyDialog company={company} onDeleted={onDeleted} />
+        </div>
       </Card.Footer>
     </Card>
   );
