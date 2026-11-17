@@ -48,7 +48,11 @@ export type CompanySource = {
 export type CompanyListItem = {
   id: string;
   name: string;
-  url: string;
+  /**
+   * Головний сайт або `null`: компанію, знайдену лише на ATS, вигадувати сайт
+   * не змушуємо (картка 2.17). Тоді в картці показуються самі джерела.
+   */
+  url: string | null;
   discoveryStatus: DiscoveryStatus;
   sources: CompanySource[];
 };

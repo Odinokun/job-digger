@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { careerSources, companies, users } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
+import { normalizedSourceUrl } from "../db/testing/career-source-values.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import { listCompanies } from "./list.ts";
 import { updateCompany } from "./update.ts";
@@ -24,6 +25,9 @@ async function insertCompany(userId: string, name: string, slug = "acme") {
     .values({
       companyId: company.id,
       url: `https://boards.greenhouse.io/${slug}`,
+      normalizedUrl: normalizedSourceUrl(
+        `https://boards.greenhouse.io/${slug}`,
+      ),
       platform: "greenhouse",
     })
     .returning();
@@ -100,6 +104,7 @@ describe("updateCompany", () => {
       .values({
         companyId: company.id,
         url: "https://jobs.lever.co/acme",
+        normalizedUrl: normalizedSourceUrl("https://jobs.lever.co/acme"),
         platform: "lever",
       })
       .returning();
@@ -288,6 +293,9 @@ describe("updateCompany adding a career source", () => {
     await testDb.insert(careerSources).values({
       companyId: company.id,
       url: "https://www.mozilla.org/en-US/careers/listings/?location=Remote%20Canada",
+      normalizedUrl: normalizedSourceUrl(
+        "https://www.mozilla.org/en-US/careers/listings/?location=Remote%20Canada",
+      ),
       platform: "unsupported",
       isTracked: false,
       label: "Remote Canada",
@@ -443,6 +451,7 @@ describe("updateCompany labelling existing sources", () => {
       .values({
         companyId: company.id,
         url: "https://jobs.lever.co/mozilla",
+        normalizedUrl: normalizedSourceUrl("https://jobs.lever.co/mozilla"),
         platform: "lever",
       })
       .returning();
@@ -470,5 +479,41 @@ describe("updateCompany labelling existing sources", () => {
         "Remote US",
       ],
     ]);
+  });
+
+  it("refuses a new source that already belongs to another company", async () => {
+    const user = await seedSystemUser(testDb);
+    const { company } = await insertCompany(user.id, "Acme");
+    const { company: other } = await insertCompany(user.id, "Bosch", "bosch");
+
+    const result = await updateCompany(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      name: "Acme",
+      addSource: { url: "https://www.boards.greenhouse.io/bosch/" },
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      problem: "source-taken",
+      company: { id: other.id, name: "Bosch" },
+    });
+    expect(await readSources(company.id)).toHaveLength(1);
+  });
+
+  it("does not call its own source a page of another company", async () => {
+    const user = await seedSystemUser(testDb);
+    const { company, source } = await insertCompany(user.id, "Acme");
+
+    // Власне джерело компанії - дублікат усередині неї, і про це вже є окрема
+    // відмова. Перевірка між компаніями тут спрацювати не має.
+    const result = await updateCompany(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      name: "Acme",
+      addSource: { url: source.url },
+    });
+
+    expect(result).toEqual({ ok: false, problem: "source-duplicate" });
   });
 });

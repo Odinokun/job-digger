@@ -266,6 +266,7 @@ export function AddCompanyDialog({
   const failure =
     isSubmitted && state.status === "failed" ? state.result : null;
   const sameDomain = failure?.problem === "same-domain" ? failure : null;
+  const sameName = failure?.problem === "same-name" ? failure : null;
 
   // Помилка поля йде в `FieldError` разом з `isInvalid`: проп
   // `validationErrors` у встановленій версії живе на `Form`, а не на полі.
@@ -281,6 +282,12 @@ export function AddCompanyDialog({
         ? t("errors.alreadyAdded", { name: failure.company.name })
         : null;
 
+  // Стосується пари полів, а не одного, тому стоїть окремо, а не в `FieldError`.
+  const addressError =
+    failure?.problem === "address-required"
+      ? t("errors.addressRequired")
+      : null;
+
   const sourceFailure =
     sourceState?.status === "failed" ? sourceState.result : null;
 
@@ -292,15 +299,33 @@ export function AddCompanyDialog({
         ? tUrlError(URL_ERROR_KEYS[sourceFailure.reason])
         : sourceFailure?.problem === "source-duplicate"
           ? tShared("sourceDuplicate")
-          : null;
+          : failure?.problem === "source-taken"
+            ? tShared("sourceTaken", { name: failure.company.name })
+            : sourceFailure?.problem === "source-taken"
+              ? tShared("sourceTaken", { name: sourceFailure.company.name })
+              : null;
 
-  // Пропозиція зʼявляється лише тоді, коли адресу справді є що додати: при
-  // точному збігу компанії й заповненому полі карʼєрної сторінки. Якщо
-  // користувач вставив сам головний сайт, додавати нічого - лишається відмова.
-  const alreadyAdded =
-    failure?.problem === "already-added" && fields.careerUrl.trim() !== ""
-      ? failure.company
-      : null;
+  /**
+   * Компанії, яким можна віддати вставлену адресу замість створення нової
+   * картки.
+   *
+   * Два випадки: точний збіг із сайтом уже доданої компанії (картка 2.16) і
+   * збіг за назвою (картка 2.17) - одна компанія публікує вакансії на кількох
+   * платформах, і кожна наступна адреса має лягати в наявну картку.
+   *
+   * Умова на поле карʼєрної сторінки спільна: якщо користувач вставив сам
+   * головний сайт, додавати як джерело нічого.
+   *
+   * Потрібні тільки `id` і назва - цього досить і для кнопки, і для виклику.
+   */
+  const attachTargets: { id: string; name: string }[] =
+    fields.careerUrl.trim() === ""
+      ? []
+      : failure?.problem === "already-added"
+        ? [failure.company]
+        : failure?.problem === "same-name"
+          ? failure.companies
+          : [];
 
   return (
     <>
@@ -347,10 +372,13 @@ export function AddCompanyDialog({
               <input type="hidden" name="tab" value={tab} />
               <Modal.Body className="flex flex-col gap-4">
                 {/* Адреса стоїть першою: з неї заповнюються два поля нижче. */}
+                {/* `isRequired` немає: компанію, знайдену лише на джоб-борді,
+                    сайт вигадувати не змушуємо. Правило «хоча б одна з двох
+                    адрес» стосується пари полів, тому його показує рядок над
+                    кнопками, а не підпис під полем (картка 2.17). */}
                 <TextField
                   autoFocus
                   fullWidth
-                  isRequired
                   name="url"
                   value={fields.url}
                   onChange={(value) => changeField("url", value)}
@@ -395,30 +423,20 @@ export function AddCompanyDialog({
                   </span>
                 </TextField>
 
-                {alreadyAdded ? (
-                  <div className="flex flex-col items-start gap-2 text-sm">
-                    <p>{t("addAsSourceHint", { name: alreadyAdded.name })}</p>
-
-                    <TextField
-                      fullWidth
-                      value={sourceLabel}
-                      onChange={setSourceLabel}
-                    >
-                      <Label>{tShared("sourceLabel")}</Label>
-                      <Input placeholder={tShared("sourceLabelPlaceholder")} />
-                    </TextField>
-
-                    {/* Кнопка кличе окрему дію, тому `type="button"`: інакше
-                        вона надіслала б форму ще раз і знову впала б у
-                        «вже додана». */}
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      isPending={isAddingSource}
-                      onPress={() => addAsSource(alreadyAdded.id)}
-                    >
-                      {t("addAsSource", { name: alreadyAdded.name })}
-                    </Button>
+                {sameName ? (
+                  <div className="flex flex-col gap-1 text-sm">
+                    <p>{t("sameNameWarning")}</p>
+                    <ul className="list-inside list-disc text-muted">
+                      {sameName.companies.map((company) => (
+                        <li key={company.id}>
+                          {/* Компанія без сайту - саме той випадок, заради
+                              якого це попередження й зʼявилося, тому замість
+                              порожнечі тут підпис (картка 2.17). */}
+                          {company.name} - {company.url ?? t("noSite")}
+                        </li>
+                      ))}
+                    </ul>
+                    <input type="hidden" name="confirmed" value="true" />
                   </div>
                 ) : null}
 
@@ -434,12 +452,57 @@ export function AddCompanyDialog({
                     </ul>
                     {/* Той самий прапорець, що й у addCompany: повторний Save
                         проходить попередження, точний дублікат - ні. */}
-                    <input
-                      type="hidden"
-                      name="sameDomainConfirmed"
-                      value="true"
-                    />
+                    <input type="hidden" name="confirmed" value="true" />
                   </div>
+                ) : null}
+
+                {attachTargets.length > 0 ? (
+                  <div className="flex flex-col items-start gap-2 text-sm">
+                    <p>
+                      {attachTargets.length === 1
+                        ? t("addAsSourceHint", { name: attachTargets[0].name })
+                        : t("addAsSourceChoose")}
+                    </p>
+
+                    {/* Підпис спільний на всі кнопки: він описує саме цю
+                        адресу, а не компанію, якій вона дістанеться. Ним
+                        розрізняють платформи однієї компанії в списку джерел. */}
+                    <TextField
+                      fullWidth
+                      value={sourceLabel}
+                      onChange={setSourceLabel}
+                    >
+                      <Label>{tShared("sourceLabel")}</Label>
+                      <Input placeholder={tShared("sourceLabelPlaceholder")} />
+                    </TextField>
+
+                    {/* Кнопка на кожну знайдену компанію: однойменних може бути
+                        кілька, і яка з них основна - знає тільки користувач.
+
+                        Кнопки кличуть окрему дію, тому `type="button"`: інакше
+                        вони надіслали б форму ще раз і знову впали б у те саме
+                        попередження. */}
+                    <div className="flex flex-wrap gap-2">
+                      {attachTargets.map((company) => (
+                        <Button
+                          key={company.id}
+                          type="button"
+                          variant="secondary"
+                          isPending={isAddingSource}
+                          onPress={() => addAsSource(company.id)}
+                        >
+                          {t("addAsSource", { name: company.name })}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Відмова про пару полів: яке з двох заповнити - вибір
+                    користувача, тому текст стоїть під ними обома, а не в
+                    одному `FieldError`. */}
+                {addressError ? (
+                  <p className="text-sm text-danger">{addressError}</p>
                 ) : null}
               </Modal.Body>
 

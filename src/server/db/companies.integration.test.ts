@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { careerSources, companies, users } from "./schema.ts";
 import { seedSystemUser } from "./system-user.ts";
+import { normalizedSourceUrl } from "./testing/career-source-values.ts";
 import { testDb } from "./testing/test-db.ts";
 
 // Головна адреса зберігається разом зі шляхом, а нормалізована форма - окремо:
@@ -95,6 +96,9 @@ describe("career_sources", () => {
       .values({
         companyId: company.id,
         url: "https://boards.greenhouse.io/bosch",
+        normalizedUrl: normalizedSourceUrl(
+          "https://boards.greenhouse.io/bosch",
+        ),
         platform: "greenhouse",
       })
       .returning();
@@ -113,6 +117,7 @@ describe("career_sources", () => {
       .values({
         companyId: company.id,
         url: "https://bosch.com/careers",
+        normalizedUrl: normalizedSourceUrl("https://bosch.com/careers"),
         platform: "unsupported",
         isTracked: false,
       })
@@ -126,6 +131,7 @@ describe("career_sources", () => {
     await testDb.insert(careerSources).values({
       companyId: company.id,
       url: "https://boards.greenhouse.io/bosch",
+      normalizedUrl: normalizedSourceUrl("https://boards.greenhouse.io/bosch"),
       platform: "greenhouse",
     });
 

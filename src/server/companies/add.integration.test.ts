@@ -280,7 +280,7 @@ describe("addCompany", () => {
       userId,
       name: "Bosch UA",
       url: "https://www.bosch.com/ua",
-      sameDomainConfirmed: true,
+      confirmed: true,
     });
 
     expect(result.ok).toBe(true);
@@ -299,7 +299,7 @@ describe("addCompany", () => {
       userId,
       name: "Spotify again",
       url: "https://www.spotify.com",
-      sameDomainConfirmed: true,
+      confirmed: true,
     });
 
     expect(result).toMatchObject({ ok: false, problem: "already-added" });
@@ -368,5 +368,204 @@ describe("addCompany", () => {
     // Дані ізольовані за користувачем, тому це не дублікат.
     expect(result.ok).toBe(true);
     expect(await testDb.select().from(companies)).toHaveLength(2);
+  });
+
+  it("adds a company found only on an ATS page, without a site", async () => {
+    const userId = await user();
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Spotify",
+      url: "",
+      careerUrl: "jobs.lever.co/spotify",
+    });
+
+    expect(result.ok).toBe(true);
+
+    const [company] = await testDb.select().from(companies);
+
+    // Сайту немає в обох колонках: і в тій, що показується, і в тій, що
+    // служить порівнянню. Компанію далі ідентифікує її джерело.
+    expect(company.url).toBeNull();
+    expect(company.normalizedUrl).toBeNull();
+
+    const [source] = await sourcesOf(company.id);
+
+    expect(source.url).toBe("https://jobs.lever.co/spotify");
+    expect(source.platform).toBe("lever");
+  });
+
+  it("refuses a company with neither a site nor a career page", async () => {
+    const userId = await user();
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Spotify",
+      url: "   ",
+      careerUrl: "",
+    });
+
+    // Без жодної адреси компанію не ідентифікує ніщо й перевіряти в неї нічого.
+    expect(result).toEqual({ ok: false, problem: "address-required" });
+    expect(await testDb.select().from(companies)).toHaveLength(0);
+  });
+
+  it("still refuses a site it cannot use, even though a site is optional now", async () => {
+    const userId = await user();
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Spotify",
+      url: "ftp://spotify.com",
+      careerUrl: "jobs.lever.co/spotify",
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      problem: "company-url",
+      reason: "unsupported-scheme",
+    });
+    expect(await testDb.select().from(companies)).toHaveLength(0);
+  });
+
+  it("lets two companies without a site live side by side", async () => {
+    const userId = await user();
+
+    await addCompany(testDb, {
+      userId,
+      name: "Spotify",
+      url: "",
+      careerUrl: "jobs.lever.co/spotify",
+    });
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Netflix",
+      url: "",
+      careerUrl: "jobs.lever.co/netflix",
+    });
+
+    // Unique-індекс `(user_id, normalized_url)` на двох NULL не спрацьовує:
+    // у PostgreSQL NULL не дорівнює NULL (docs/18/indexes-unique).
+    expect(result.ok).toBe(true);
+    expect(await testDb.select().from(companies)).toHaveLength(2);
+  });
+
+  it("refuses a career page that already belongs to another company", async () => {
+    const userId = await user();
+
+    await addCompany(testDb, {
+      userId,
+      name: "Spotify",
+      url: "",
+      careerUrl: "jobs.lever.co/spotify",
+    });
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Spotify Technology",
+      url: "",
+      // Та сама сторінка, записана інакше: порівняння йде по очищеній формі.
+      careerUrl: "https://www.jobs.lever.co/spotify/",
+    });
+
+    // Саме це тримає від двійників компанію, яку нічим більше не відрізнити:
+    // без сайту карʼєрна сторінка - уся її ідентичність (картка 2.17).
+    expect(result).toMatchObject({
+      ok: false,
+      problem: "source-taken",
+      company: { name: "Spotify" },
+    });
+    expect(await testDb.select().from(companies)).toHaveLength(1);
+  });
+
+  it("warns about a company with the same name instead of saving", async () => {
+    const userId = await user();
+
+    await addCompany(testDb, {
+      userId,
+      name: "Linear",
+      url: "",
+      careerUrl: "jobs.ashbyhq.com/linear",
+    });
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Linear",
+      url: "linear.app",
+    });
+
+    // Спільної адреси в цих двох карток немає взагалі: в однієї лише джерело,
+    // в іншої лише сайт. Збігається тільки назва - і це єдиний сигнал, що це
+    // та сама компанія (картка 2.17).
+    expect(result).toMatchObject({
+      ok: false,
+      problem: "same-name",
+      companies: [{ name: "Linear" }],
+    });
+    expect(await testDb.select().from(companies)).toHaveLength(1);
+  });
+
+  it("saves once the same-name warning is confirmed", async () => {
+    const userId = await user();
+
+    await addCompany(testDb, {
+      userId,
+      name: "Linear",
+      url: "",
+      careerUrl: "jobs.ashbyhq.com/linear",
+    });
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Linear",
+      url: "linear.app",
+      confirmed: true,
+    });
+
+    // Дві різні компанії можуть називатися однаково, тому це попередження, а
+    // не заборона.
+    expect(result.ok).toBe(true);
+    expect(await testDb.select().from(companies)).toHaveLength(2);
+  });
+
+  it("does not let a confirmation push through an exact duplicate", async () => {
+    const userId = await user();
+
+    await addCompany(testDb, { userId, name: "Bosch", url: "bosch.com" });
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Bosch",
+      url: "bosch.com",
+      confirmed: true,
+    });
+
+    // Точний збіг адреси підтвердженням не пробивається - ні цим, ні тим, що
+    // проходить попередження про домен.
+    expect(result).toMatchObject({ ok: false, problem: "already-added" });
+  });
+
+  it("does not warn about a name taken by another user", async () => {
+    const owner = await user();
+    const [stranger] = await testDb
+      .insert(users)
+      .values({ email: "stranger@job-digger.local" })
+      .returning();
+
+    await addCompany(testDb, {
+      userId: stranger.id,
+      name: "Linear",
+      url: "linear.app",
+    });
+
+    const result = await addCompany(testDb, {
+      userId: owner,
+      name: "Linear",
+      url: "",
+      careerUrl: "jobs.ashbyhq.com/linear",
+    });
+
+    expect(result.ok).toBe(true);
   });
 });

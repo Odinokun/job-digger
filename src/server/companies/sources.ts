@@ -4,6 +4,10 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { prepareCareerSource } from "../../lib/companies/career-source.ts";
 import type { UrlRefusalReason } from "../../lib/companies/url.ts";
 import { careerSources, companies } from "../db/schema.ts";
+import {
+  findCompanyWithSource,
+  type CompanyWithSource,
+} from "./source-duplicates.ts";
 
 /** Яке джерело і якій компанії додаємо. */
 export type AddCareerSourceInput = {
@@ -23,7 +27,13 @@ export type AddCareerSourceResult =
   | { ok: true }
   | { ok: false; problem: "not-found" }
   | { ok: false; problem: "source-url"; reason: UrlRefusalReason }
-  | { ok: false; problem: "source-duplicate" };
+  | { ok: false; problem: "source-duplicate" }
+  /**
+   * Це джерело вже належить іншій компанії того самого користувача. Окремо від
+   * `source-duplicate`: там сторінка вже є в цієї ж компанії й видно її в
+   * списку вище, а тут треба назвати, у кого вона (картка 2.17).
+   */
+  | { ok: false; problem: "source-taken"; company: CompanyWithSource };
 
 /**
  * Додає карʼєрне джерело до вже доданої компанії.
@@ -67,9 +77,20 @@ export async function addCareerSource(
         : { ok: false, problem: "source-duplicate" };
     }
 
+    const taken = await findCompanyWithSource(tx, {
+      userId,
+      normalizedUrl: prepared.normalizedUrl,
+      exceptCompanyId: companyId,
+    });
+
+    if (taken) {
+      return { ok: false, problem: "source-taken", company: taken };
+    }
+
     await tx.insert(careerSources).values({
       companyId,
       url: prepared.url,
+      normalizedUrl: prepared.normalizedUrl,
       label: prepared.label,
       platform: prepared.platform,
       isTracked: prepared.isTracked,

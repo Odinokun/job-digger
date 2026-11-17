@@ -76,7 +76,7 @@
       "namePlaceholder": "Bosch",
       "url": "Company website",
       "urlPlaceholder": "bosch.com/de",
-      "urlHint": "Paste the company site or a career page - the name and the other address are filled in from it.",
+      "urlHint": "Paste the company site or a career page - the name and the other address are filled in from it. A company that lives only on a job board can go without a site.",
       "careerUrl": "Career page",
       "careerUrlPlaceholder": "job-boards.greenhouse.io/bosch",
       "careerUrlHint": "Optional. Without it the company goes to Not tracked.",
@@ -84,13 +84,18 @@
       "addAnyway": "Add anyway",
       "cancel": "Cancel",
       "sameDomainWarning": "You already track other companies on this domain:",
+      "sameNameWarning": "You already have a company with this name:",
+      "noSite": "no website",
       "addAsSource": "Add as a career page of {name}",
       "addAsSourceHint": "{name} is already added. The pasted address can become another career page of it.",
+      "addAsSourceChoose": "Or add the pasted address to one of them:",
       "errors": {
         "nameRequired": "Enter a company name.",
-        "alreadyAdded": "Already added as {name}."
+        "alreadyAdded": "Already added as {name}.",
+        "addressRequired": "Enter a company website or a career page."
       }
-    }
+    },
+    "sourceTaken": "This career page already belongs to {name}."
   },
   "Errors": {
     "actionFailed": "The action could not be completed. Try again."

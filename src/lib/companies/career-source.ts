@@ -23,6 +23,12 @@ export type PreparedCareerSource = {
   ok: true;
   /** Адреса в абсолютній формі: саме вона зберігається й стає посиланням. */
   url: string;
+  /**
+   * Та сама адреса в очищеній формі. Віддається назовні, бо її зберігає
+   * `career_sources.normalized_url`: порівняння з джерелами інших компаній
+   * робиться запитом, а не в памʼяті (картка 2.17).
+   */
+  normalizedUrl: string;
   label: string | null;
   platform: CareerPlatform;
   isTracked: boolean;
@@ -88,6 +94,7 @@ export function prepareCareerSource({
   return {
     ok: true,
     url: absoluteCompanyUrl(typed),
+    normalizedUrl: normalized.url,
     // Порожній підпис - це «підпису немає», а не порожній рядок у базі.
     label: trimmedLabel === "" ? null : trimmedLabel,
     platform,

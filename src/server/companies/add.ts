@@ -3,8 +3,14 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { careerSources, companies } from "../db/schema.ts";
 import {
+  findCompanyWithSource,
+  type CompanyWithSource,
+} from "./source-duplicates.ts";
+import {
+  findCompaniesByName,
   findCompanyUrlConflict,
   type ConflictingCompany,
+  type NamedCompany,
 } from "./duplicates.ts";
 import { detectPlatform } from "../../lib/companies/platform.ts";
 import {
@@ -17,15 +23,25 @@ import {
 export type AddCompanyInput = {
   userId: string;
   name: string;
-  /** Головний сайт компанії. Зберігається зі шляхом. */
+  /**
+   * Головний сайт компанії. Зберігається зі шляхом.
+   *
+   * Необовʼязковий: адреса ATS головного сайту не дає, і вигадувати його за
+   * користувача нема з чого (картка 2.17). Але хоча б одна адреса - сайт або
+   * карʼєрна сторінка - потрібна, інакше компанію не ідентифікує ніщо.
+   */
   url: string;
   /** Карʼєрна сторінка. Необовʼязкова: без неї компанія йде в Not tracked. */
   careerUrl?: string;
   /**
-   * Користувач уже бачив попередження про інші компанії того самого домену
-   * і натиснув Save вдруге.
+   * Користувач уже бачив попередження - про інші компанії того самого домену
+   * або про компанію з такою самою назвою - і натиснув Save вдруге.
+   *
+   * Прапорець один на обидва попередження: користувач підтверджує рішення
+   * «усе одно додати», а не кожну перевірку окремо. Точний збіг адреси
+   * (`already-added`) ним не пробивається.
    */
-  sameDomainConfirmed?: boolean;
+  confirmed?: boolean;
 };
 
 /**
@@ -39,10 +55,28 @@ export type AddCompanyInput = {
 export type AddCompanyResult =
   | { ok: true; companyId: string }
   | { ok: false; problem: "name-required" }
+  /**
+   * Порожні обидва поля адреси. Окремо від `company-url`: там адреса є, але
+   * непридатна, і виправляти треба саме її, а тут вибір за користувачем -
+   * увести будь-яку з двох.
+   */
+  | { ok: false; problem: "address-required" }
   | { ok: false; problem: "company-url"; reason: UrlRefusalReason }
   | { ok: false; problem: "career-url"; reason: UrlRefusalReason }
+  /**
+   * Це джерело вже належить іншій компанії того самого користувача. Окремо від
+   * `source-duplicate`: там сторінка вже є в цієї ж компанії й видно її в
+   * списку вище, а тут треба назвати, у кого вона (картка 2.17).
+   */
+  | { ok: false; problem: "source-taken"; company: CompanyWithSource }
   | { ok: false; problem: "already-added"; company: ConflictingCompany }
-  | { ok: false; problem: "same-domain"; companies: ConflictingCompany[] };
+  | { ok: false; problem: "same-domain"; companies: ConflictingCompany[] }
+  /**
+   * Компанія з такою самою назвою вже є. Єдиний сигнал, який лишається, коли в
+   * однієї картки є тільки сайт, а в іншої - тільки карʼєрна сторінка
+   * (картка 2.17).
+   */
+  | { ok: false; problem: "same-name"; companies: NamedCompany[] };
 
 /**
  * Додає компанію з однією карʼєрною сторінкою, введеною руками.
@@ -58,13 +92,7 @@ export type AddCompanyResult =
  */
 export async function addCompany(
   db: NodePgDatabase,
-  {
-    userId,
-    name,
-    url,
-    careerUrl,
-    sameDomainConfirmed = false,
-  }: AddCompanyInput,
+  { userId, name, url, careerUrl, confirmed = false }: AddCompanyInput,
 ): Promise<AddCompanyResult> {
   const trimmedName = name.trim();
 
@@ -72,9 +100,19 @@ export async function addCompany(
     return { ok: false, problem: "name-required" };
   }
 
-  const normalizedCompanyUrl = normalizeCompanyUrl(url);
+  // Порожнє поле - це «адреси немає», а не крива адреса. Так само для обох
+  // полів: порожній сайт не те саме, що `ftp://`.
+  const typedUrl = url.trim();
+  const typedCareerUrl = careerUrl?.trim() ?? "";
 
-  if (!normalizedCompanyUrl.ok) {
+  if (typedUrl === "" && typedCareerUrl === "") {
+    return { ok: false, problem: "address-required" };
+  }
+
+  const normalizedCompanyUrl =
+    typedUrl === "" ? null : normalizeCompanyUrl(typedUrl);
+
+  if (normalizedCompanyUrl && !normalizedCompanyUrl.ok) {
     return {
       ok: false,
       problem: "company-url",
@@ -82,8 +120,6 @@ export async function addCompany(
     };
   }
 
-  // Порожнє поле карʼєрної сторінки - це «джерела немає», а не крива адреса.
-  const typedCareerUrl = careerUrl?.trim() ?? "";
   const normalizedCareerUrl =
     typedCareerUrl === "" ? null : normalizeCompanyUrl(typedCareerUrl);
 
@@ -95,10 +131,24 @@ export async function addCompany(
     };
   }
 
-  const conflict = await findCompanyUrlConflict(db, {
-    userId,
-    normalizedUrl: normalizedCompanyUrl.url,
-  });
+  // Без сайту порівнювати нічого: компанії без нього не конфліктують між собою
+  // по сайту, а однакову компанію ловить дедуплікація карʼєрних джерел.
+  const conflict = normalizedCompanyUrl?.ok
+    ? await findCompanyUrlConflict(db, {
+        userId,
+        normalizedUrl: normalizedCompanyUrl.url,
+      })
+    : { kind: "none" as const };
+
+  const sameName = confirmed
+    ? []
+    : await findCompaniesByName(db, { userId, name: trimmedName });
+
+  // Очищена адреса сайту або `null`: далі вона потрібна і для вставки, і для
+  // гілки конфлікту, тож розбирати обʼєднаний тип удруге нема за чим.
+  const companyNormalizedUrl = normalizedCompanyUrl?.ok
+    ? normalizedCompanyUrl.url
+    : null;
 
   if (conflict.kind === "exact") {
     return { ok: false, problem: "already-added", company: conflict.company };
@@ -106,7 +156,7 @@ export async function addCompany(
 
   // Той самий домен - лише попередження: на ньому можуть жити різні компанії,
   // наприклад національні версії. Рішення лишається за користувачем.
-  if (conflict.kind === "same-domain" && !sameDomainConfirmed) {
+  if (conflict.kind === "same-domain" && !confirmed) {
     return {
       ok: false,
       problem: "same-domain",
@@ -114,14 +164,33 @@ export async function addCompany(
     };
   }
 
+  // Найслабший сигнал перевіряється останнім: спершу точний збіг адреси, потім
+  // домен, і аж тоді назва.
+  if (sameName.length > 0) {
+    return { ok: false, problem: "same-name", companies: sameName };
+  }
+
   return db.transaction(async (tx) => {
+    if (normalizedCareerUrl?.ok) {
+      // Та сама сторінка в іншої компанії означає, що компанію вже додано: без
+      // сайту карʼєрне джерело - уся її ідентичність (картка 2.17).
+      const taken = await findCompanyWithSource(tx, {
+        userId,
+        normalizedUrl: normalizedCareerUrl.url,
+      });
+
+      if (taken) {
+        return { ok: false, problem: "source-taken", company: taken };
+      }
+    }
+
     const [company] = await tx
       .insert(companies)
       .values({
         userId,
         name: trimmedName,
-        url: absoluteCompanyUrl(url),
-        normalizedUrl: normalizedCompanyUrl.url,
+        url: typedUrl === "" ? null : absoluteCompanyUrl(typedUrl),
+        normalizedUrl: companyNormalizedUrl,
       })
       // Перевірка вище дружня, але не атомарна: між нею і цією вставкою інший
       // запит міг додати ту саму компанію. Останнє слово за unique-індексом
@@ -132,23 +201,46 @@ export async function addCompany(
       .returning();
 
     if (!company) {
+      // Конфлікт можливий лише по `(user_id, normalized_url)`, а NULL у
+      // PostgreSQL не дорівнює NULL - отже компанія без сайту сюди не
+      // потрапляє й вставляється завжди.
+      if (companyNormalizedUrl === null) {
+        throw new Error(
+          "Company without a site conflicted on insert, which the unique index cannot do",
+        );
+      }
+
       const [existing] = await tx
         .select({ id: companies.id, name: companies.name, url: companies.url })
         .from(companies)
         .where(
           and(
             eq(companies.userId, userId),
-            eq(companies.normalizedUrl, normalizedCompanyUrl.url),
+            eq(companies.normalizedUrl, companyNormalizedUrl),
           ),
         );
 
       if (!existing) {
         throw new Error(
-          `Company url ${normalizedCompanyUrl.url} conflicted on insert but cannot be found`,
+          `Company url ${companyNormalizedUrl} conflicted on insert but cannot be found`,
         );
       }
 
-      return { ok: false, problem: "already-added", company: existing };
+      // `url` і `normalized_url` пишуться разом, а знайшли ми рядок саме за
+      // другим - отже перший теж на місці. Компілятор цього не знає, бо в схемі
+      // обидві колонки необовʼязкові (картка 2.17), тож інваріант перевіряємо
+      // явно, як і неможливу відсутність рядка вище.
+      if (existing.url === null) {
+        throw new Error(
+          `Company ${existing.id} has a normalized url but no url`,
+        );
+      }
+
+      return {
+        ok: false,
+        problem: "already-added",
+        company: { id: existing.id, name: existing.name, url: existing.url },
+      };
     }
 
     if (normalizedCareerUrl?.ok) {
@@ -157,6 +249,7 @@ export async function addCompany(
       await tx.insert(careerSources).values({
         companyId: company.id,
         url: absoluteCompanyUrl(typedCareerUrl),
+        normalizedUrl: normalizedCareerUrl.url,
         platform,
         // Сторінку, яку нічим прочитати, зберігаємо без відстеження
         // (docs/ui.md, розділ 4.3).

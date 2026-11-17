@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { companies, users } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
 import { testDb } from "../db/testing/test-db.ts";
-import { findCompanyUrlConflict } from "./duplicates.ts";
+import { findCompaniesByName, findCompanyUrlConflict } from "./duplicates.ts";
 
 const BOSCH_DE = {
   name: "Bosch DE",
@@ -99,5 +99,73 @@ describe("findCompanyUrlConflict", () => {
     });
 
     expect(conflict).toEqual({ kind: "none" });
+  });
+});
+
+describe("findCompaniesByName", () => {
+  it("finds a company with the same name, ignoring case and spaces", async () => {
+    const user = await seedSystemUser(testDb);
+
+    await testDb.insert(companies).values({
+      userId: user.id,
+      name: "Linear",
+      url: "https://linear.app",
+      normalizedUrl: "linear.app",
+    });
+
+    const found = await findCompaniesByName(testDb, {
+      userId: user.id,
+      name: "  linear ",
+    });
+
+    // Назва - те єдине, що збігається у двох карток однієї компанії, коли в
+    // однієї немає сайту, а в іншої - карʼєрного джерела (картка 2.17).
+    expect(found).toMatchObject([{ name: "Linear" }]);
+  });
+
+  it("sees one company behind differently written names", async () => {
+    const user = await seedSystemUser(testDb);
+
+    await testDb.insert(companies).values({
+      userId: user.id,
+      name: "Rolls-Royce",
+      url: "https://rolls-roycemotorcars.com",
+      normalizedUrl: "rolls-roycemotorcars.com",
+    });
+
+    // Дефіси й пробіли в назві нічого не означають: користувач записав ту саму
+    // компанію інакше.
+    for (const typed of ["Rolls Royce", "rollsroyce", "  ROLLS-ROYCE "]) {
+      expect(
+        await findCompaniesByName(testDb, { userId: user.id, name: typed }),
+      ).toMatchObject([{ name: "Rolls-Royce" }]);
+    }
+  });
+
+  it("does not see a company of another user", async () => {
+    const owner = await seedSystemUser(testDb);
+    const [stranger] = await testDb
+      .insert(users)
+      .values({ email: "stranger@job-digger.local" })
+      .returning();
+
+    await testDb.insert(companies).values({
+      userId: stranger.id,
+      name: "Linear",
+      url: "https://linear.app",
+      normalizedUrl: "linear.app",
+    });
+
+    expect(
+      await findCompaniesByName(testDb, { userId: owner.id, name: "Linear" }),
+    ).toEqual([]);
+  });
+
+  it("finds nothing when the name is new", async () => {
+    const user = await seedSystemUser(testDb);
+
+    expect(
+      await findCompaniesByName(testDb, { userId: user.id, name: "Linear" }),
+    ).toEqual([]);
   });
 });

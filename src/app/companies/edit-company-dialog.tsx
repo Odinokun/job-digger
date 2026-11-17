@@ -201,7 +201,11 @@ export function EditCompanyDialog({
       ? tUrlError(URL_ERROR_KEYS[sourceRefusal.reason])
       : sourceRefusal?.problem === "source-duplicate"
         ? tShared("sourceDuplicate")
-        : null;
+        : // Джерело іншої компанії: тут його в списку вище не видно, тому
+          // відмова називає, у кого саме воно (картка 2.17).
+          failure?.problem === "source-taken"
+          ? tShared("sourceTaken", { name: failure.company.name })
+          : null;
 
   return (
     <>
