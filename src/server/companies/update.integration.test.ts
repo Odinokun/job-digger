@@ -480,4 +480,40 @@ describe("updateCompany labelling existing sources", () => {
       ],
     ]);
   });
+
+  it("refuses a new source that already belongs to another company", async () => {
+    const user = await seedSystemUser(testDb);
+    const { company } = await insertCompany(user.id, "Acme");
+    const { company: other } = await insertCompany(user.id, "Bosch", "bosch");
+
+    const result = await updateCompany(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      name: "Acme",
+      addSource: { url: "https://www.boards.greenhouse.io/bosch/" },
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      problem: "source-taken",
+      company: { id: other.id, name: "Bosch" },
+    });
+    expect(await readSources(company.id)).toHaveLength(1);
+  });
+
+  it("does not call its own source a page of another company", async () => {
+    const user = await seedSystemUser(testDb);
+    const { company, source } = await insertCompany(user.id, "Acme");
+
+    // Власне джерело компанії - дублікат усередині неї, і про це вже є окрема
+    // відмова. Перевірка між компаніями тут спрацювати не має.
+    const result = await updateCompany(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      name: "Acme",
+      addSource: { url: source.url },
+    });
+
+    expect(result).toEqual({ ok: false, problem: "source-duplicate" });
+  });
 });

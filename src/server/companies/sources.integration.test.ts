@@ -142,4 +142,24 @@ describe("addCareerSource", () => {
 
     expect(result).toEqual({ ok: false, problem: "not-found" });
   });
+
+  it("refuses a page that already belongs to another company", async () => {
+    const user = await seedSystemUser(testDb);
+    const mozilla = await insertCompany(user.id, "Mozilla", "mozilla");
+    const bosch = await insertCompany(user.id, "Bosch", "bosch");
+
+    const result = await addCareerSource(testDb, {
+      userId: user.id,
+      companyId: bosch.id,
+      // Сторінка Mozilla, записана інакше: порівняння по очищеній формі.
+      url: "https://www.boards.greenhouse.io/mozilla/",
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      problem: "source-taken",
+      company: { id: mozilla.id, name: "Mozilla" },
+    });
+    expect(await readSources(bosch.id)).toHaveLength(1);
+  });
 });

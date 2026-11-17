@@ -7,6 +7,10 @@ import {
 } from "../../lib/companies/career-source.ts";
 import type { UrlRefusalReason } from "../../lib/companies/url.ts";
 import { careerSources, companies } from "../db/schema.ts";
+import {
+  findCompanyWithSource,
+  type CompanyWithSource,
+} from "./source-duplicates.ts";
 
 /** Що користувач змінив у модалці Edit. */
 export type UpdateCompanyInput = {
@@ -40,7 +44,13 @@ export type UpdateCompanyResult =
   | { ok: false; problem: "name-required" }
   | { ok: false; problem: "not-found" }
   | { ok: false; problem: "source-url"; reason: UrlRefusalReason }
-  | { ok: false; problem: "source-duplicate" };
+  | { ok: false; problem: "source-duplicate" }
+  /**
+   * Це джерело вже належить іншій компанії того самого користувача. Окремо від
+   * `source-duplicate`: там сторінка вже є в цієї ж компанії й видно її в
+   * списку вище, а тут треба назвати, у кого вона (картка 2.17).
+   */
+  | { ok: false; problem: "source-taken"; company: CompanyWithSource };
 
 /**
  * Перейменовує компанію, перепідписує й видаляє її карʼєрні джерела й додає нове.
@@ -136,6 +146,16 @@ export async function updateCompany(
     }
 
     if (newSource) {
+      const taken = await findCompanyWithSource(tx, {
+        userId,
+        normalizedUrl: newSource.normalizedUrl,
+        exceptCompanyId: companyId,
+      });
+
+      if (taken) {
+        return { ok: false, problem: "source-taken", company: taken };
+      }
+
       await tx.insert(careerSources).values({
         companyId,
         url: newSource.url,

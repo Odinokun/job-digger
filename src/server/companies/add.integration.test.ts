@@ -450,4 +450,32 @@ describe("addCompany", () => {
     expect(result.ok).toBe(true);
     expect(await testDb.select().from(companies)).toHaveLength(2);
   });
+
+  it("refuses a career page that already belongs to another company", async () => {
+    const userId = await user();
+
+    await addCompany(testDb, {
+      userId,
+      name: "Spotify",
+      url: "",
+      careerUrl: "jobs.lever.co/spotify",
+    });
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "Spotify Technology",
+      url: "",
+      // Та сама сторінка, записана інакше: порівняння йде по очищеній формі.
+      careerUrl: "https://www.jobs.lever.co/spotify/",
+    });
+
+    // Саме це тримає від двійників компанію, яку нічим більше не відрізнити:
+    // без сайту карʼєрна сторінка - уся її ідентичність (картка 2.17).
+    expect(result).toMatchObject({
+      ok: false,
+      problem: "source-taken",
+      company: { name: "Spotify" },
+    });
+    expect(await testDb.select().from(companies)).toHaveLength(1);
+  });
 });

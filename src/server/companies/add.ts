@@ -3,6 +3,10 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { careerSources, companies } from "../db/schema.ts";
 import {
+  findCompanyWithSource,
+  type CompanyWithSource,
+} from "./source-duplicates.ts";
+import {
   findCompanyUrlConflict,
   type ConflictingCompany,
 } from "./duplicates.ts";
@@ -53,6 +57,12 @@ export type AddCompanyResult =
   | { ok: false; problem: "address-required" }
   | { ok: false; problem: "company-url"; reason: UrlRefusalReason }
   | { ok: false; problem: "career-url"; reason: UrlRefusalReason }
+  /**
+   * Це джерело вже належить іншій компанії того самого користувача. Окремо від
+   * `source-duplicate`: там сторінка вже є в цієї ж компанії й видно її в
+   * списку вище, а тут треба назвати, у кого вона (картка 2.17).
+   */
+  | { ok: false; problem: "source-taken"; company: CompanyWithSource }
   | { ok: false; problem: "already-added"; company: ConflictingCompany }
   | { ok: false; problem: "same-domain"; companies: ConflictingCompany[] };
 
@@ -145,6 +155,19 @@ export async function addCompany(
   }
 
   return db.transaction(async (tx) => {
+    if (normalizedCareerUrl?.ok) {
+      // Та сама сторінка в іншої компанії означає, що компанію вже додано: без
+      // сайту карʼєрне джерело - уся її ідентичність (картка 2.17).
+      const taken = await findCompanyWithSource(tx, {
+        userId,
+        normalizedUrl: normalizedCareerUrl.url,
+      });
+
+      if (taken) {
+        return { ok: false, problem: "source-taken", company: taken };
+      }
+    }
+
     const [company] = await tx
       .insert(companies)
       .values({
