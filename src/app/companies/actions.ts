@@ -6,6 +6,7 @@ import { runAction } from "@/app/action-result";
 import { parseCompaniesTab } from "@/lib/companies/company-list";
 import type { Cursor } from "@/lib/pagination/cursor";
 import { addCompany } from "@/server/companies/add";
+import { deleteCompany } from "@/server/companies/delete";
 import { findCompanyInTab, listCompanies } from "@/server/companies/list";
 import { addCareerSource } from "@/server/companies/sources";
 import { updateCompany } from "@/server/companies/update";
@@ -15,6 +16,7 @@ import { getSystemUser } from "@/server/db/system-user";
 import type {
   AddCareerSourceFormState,
   AddCompanyFormState,
+  DeleteCompanyFormState,
   EditCompanyFormState,
   LoadMoreCompaniesResult,
 } from "./form-state";
@@ -174,6 +176,43 @@ export async function updateCompanyAction(
   revalidatePath("/companies");
 
   return { status: "saved", company: result.company };
+}
+
+/**
+ * Обгортка Server Action над `deleteCompany`.
+ *
+ * Вкладки тут немає, на відміну від Edit: після видалення перечитувати рядок
+ * нічим, список просто прибирає його зі себе. Id компанії - недовірений ввід,
+ * права на неї перевіряє запит у `deleteCompany`.
+ */
+export async function deleteCompanyAction(
+  _state: DeleteCompanyFormState,
+  formData: FormData,
+): Promise<DeleteCompanyFormState> {
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return deleteCompany(db, {
+      userId: user.id,
+      companyId: readField(formData, "companyId"),
+    });
+  });
+
+  if (!outcome.ok) {
+    return { status: "failed-unexpectedly" };
+  }
+
+  const result = outcome.value;
+
+  if (!result.ok) {
+    return { status: "failed", result };
+  }
+
+  // Рядок список прибере сам, а лічильники вкладок рендерить сервер.
+  revalidatePath("/companies");
+
+  return { status: "deleted" };
 }
 
 /**
