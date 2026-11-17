@@ -34,6 +34,14 @@
       "unsupported": "Не підтримується",
       "checkFailed": "Помилка перевірки"
     },
+    "urlErrors": {
+      "empty": "Введіть адресу.",
+      "notAnAddress": "Це не схоже на адресу.",
+      "unsupportedScheme": "Працюють лише адреси http і https."
+    },
+    "sourceLabel": "Підпис",
+    "sourceLabelPlaceholder": "Remote Canada",
+    "sourceDuplicate": "Ця кар'єрна сторінка в компанії вже є.",
     "editCompany": {
       "open": "Редагувати",
       "title": "Редагувати компанію",
@@ -45,6 +53,10 @@
       "lastSourceWarning": "Без кар'єрної сторінки компанія перейде в Not tracked.",
       "save": "Зберегти",
       "cancel": "Скасувати",
+      "addSource": "Додати кар'єрну сторінку",
+      "addSourceUrl": "Адреса",
+      "addSourceUrlPlaceholder": "mozilla.org/en-US/careers/listings/?location=Remote%20US",
+      "addSourceHint": "Не обов'язково. Кожна адреса перевіряється окремо, тому та сама сторінка з іншим фільтром - це окрема кар'єрна сторінка.",
       "errors": {
         "nameRequired": "Введіть назву компанії.",
         "notFound": "Цієї компанії вже немає."
@@ -65,11 +77,10 @@
       "addAnyway": "Усе одно додати",
       "cancel": "Скасувати",
       "sameDomainWarning": "На цьому домені ви вже стежите за іншими компаніями:",
+      "addAsSource": "Додати кар'єрною сторінкою {name}",
+      "addAsSourceHint": "{name} уже додана. Вставлена адреса може стати ще однією її кар'єрною сторінкою.",
       "errors": {
         "nameRequired": "Введіть назву компанії.",
-        "urlEmpty": "Введіть адресу.",
-        "urlNotAnAddress": "Це не схоже на адресу.",
-        "urlUnsupportedScheme": "Працюють лише адреси http і https.",
         "alreadyAdded": "Уже додана як {name}."
       }
     }

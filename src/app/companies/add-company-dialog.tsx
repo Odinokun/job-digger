@@ -10,31 +10,32 @@ import {
   useOverlayState,
 } from "@heroui/react";
 import { useTranslations } from "next-intl";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import type {
   CompaniesTab,
   CompanyListItem,
 } from "@/lib/companies/company-list";
+import type { AddCareerSourceFormState } from "./form-state";
 import { suggestCompanyFields } from "@/lib/companies/suggest";
-import type { UrlRefusalReason } from "@/lib/companies/url";
+import {
+  normalizeCompanyUrl,
+  type UrlRefusalReason,
+} from "@/lib/companies/url";
 
-import { addCompanyAction } from "./actions";
+import { addCareerSourceAction, addCompanyAction } from "./actions";
 import { ADD_COMPANY_INITIAL_STATE } from "./form-state";
-
-/** Ключ перекладу для причини, через яку адресу не прийняли. */
-const URL_ERROR_KEYS: Record<UrlRefusalReason, string> = {
-  empty: "errors.urlEmpty",
-  "not-a-url": "errors.urlNotAnAddress",
-  "unsupported-scheme": "errors.urlUnsupportedScheme",
-};
+import { URL_ERROR_KEYS } from "./url-errors";
 
 /** Порожня форма: і початковий стан, і те, до чого вона вертається після успіху. */
 const EMPTY_FIELDS = { url: "", name: "", careerUrl: "" };
 
 /** Поля, у які підказка не лізе, якщо користувач уже написав там своє. */
 const EMPTY_EDITS = { name: false, careerUrl: false };
+
+/** Жодної клієнтської відмови: і початковий стан, і скидання при правці. */
+const EMPTY_REFUSALS = { url: null, careerUrl: null };
 
 /**
  * Кнопка Add і модальне вікно додавання компанії.
@@ -55,10 +56,23 @@ interface AddCompanyDialogProps {
    * Список вставляє його в себе, тому дозавантажені порції лишаються.
    */
   onAdded: (added: CompanyListItem | null) => void;
+  /**
+   * Компанія, якій дісталася вставлена адреса ще одним карʼєрним джерелом.
+   * Рядок уже є в списку, тому його заміщають, а не додають.
+   */
+  onSourceAdded: (companyId: string, saved: CompanyListItem | null) => void;
 }
 
-export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
+export function AddCompanyDialog({
+  tab,
+  onAdded,
+  onSourceAdded,
+}: AddCompanyDialogProps) {
   const t = useTranslations("CompaniesPage.addCompany");
+  const tUrlError = useTranslations("CompaniesPage.urlErrors");
+  // Підпис джерела й текст про дублікат задаються у двох модалках, тому їхні
+  // тексти лежать рівнем вище, поряд із `urlErrors`.
+  const tShared = useTranslations("CompaniesPage");
   const showActionFailed = useActionFailedToast();
   const overlay = useOverlayState();
   const [state, submit, isPending] = useActionState(
@@ -71,6 +85,29 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
   const [fields, setFields] = useState(EMPTY_FIELDS);
   const [editedByHand, setEditedByHand] = useState(EMPTY_EDITS);
   const [isSuggested, setSuggested] = useState(false);
+
+  // Пропозиція «додати цю адресу карʼєрною сторінкою знайденої компанії» -
+  // окрема дія, а не ще одне надсилання форми: компанію вона не додає, тому й
+  // стан у неї свій.
+  const [sourceState, setSourceState] =
+    useState<AddCareerSourceFormState | null>(null);
+  const [isAddingSource, startAddingSource] = useTransition();
+  // Підпис для адреси, яка стане ще одним джерелом знайденої компанії: там
+  // він потрібен так само, як у модалці Edit - трьох фільтрів однієї сторінки
+  // інакше не розрізнити.
+  const [sourceLabel, setSourceLabel] = useState("");
+  // Чи надсилали форму після того, як вікно відкрили. `useActionState` живе
+  // стільки ж, скільки компонент, а модалка лише ховається - без цього
+  // прапорця наступне відкриття одразу показувало б відмову минулого разу
+  // («Already added as ...» ще до того, як користувач щось увів).
+  const [isSubmitted, setSubmitted] = useState(false);
+  const [, startSubmit] = useTransition();
+  // Відмови, які видно ще до Save. Та сама перевірка повториться на сервері -
+  // поля приходять із клієнта, - але `ftp://` нема чого везти туди й назад.
+  const [refusals, setRefusals] = useState<{
+    url: UrlRefusalReason | null;
+    careerUrl: UrlRefusalReason | null;
+  }>(EMPTY_REFUSALS);
 
   // Модалку закриває успіх, а не сама кнопка: доки компанія не збереглася,
   // користувач має бачити свої дані й повідомлення про помилку.
@@ -97,6 +134,19 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
     }
   }, [state, showActionFailed]);
 
+  useEffect(() => {
+    if (sourceState?.status === "added") {
+      onSourceAdded(sourceState.companyId, sourceState.company);
+      closeDialog();
+    }
+  }, [sourceState, closeDialog, onSourceAdded]);
+
+  useEffect(() => {
+    if (sourceState?.status === "failed-unexpectedly") {
+      showActionFailed();
+    }
+  }, [sourceState, showActionFailed]);
+
   // Форма чиститься на відкритті, а не на успіху: поля контрольовані, тому
   // інакше наступне відкриття показало б минулу компанію. Скидання стоїть у
   // кнопці, а не в ефекті - ефект із `setState` дає каскадний рендер
@@ -105,11 +155,20 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
     setFields(EMPTY_FIELDS);
     setEditedByHand(EMPTY_EDITS);
     setSuggested(false);
+    setSourceState(null);
+    setSourceLabel("");
+    setSubmitted(false);
+    setRefusals(EMPTY_REFUSALS);
     overlay.open();
   }
 
   function changeField(field: keyof typeof EMPTY_FIELDS, value: string) {
     setFields((previous) => ({ ...previous, [field]: value }));
+
+    // Текст відмови стосувався попереднього значення поля.
+    if (field !== "name") {
+      setRefusals((previous) => ({ ...previous, [field]: null }));
+    }
 
     if (field === "url") {
       // Поле очистили - далі буде інша адреса, і підказка має спрацювати знову.
@@ -163,7 +222,49 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
     }));
   }
 
-  const failure = state.status === "failed" ? state.result : null;
+  /**
+   * Зберігає вставлену адресу ще одним джерелом знайденої компанії.
+   *
+   * Адреса береться з поля карʼєрної сторінки: саме туди її поклала підказка,
+   * коли впізнала в ній не головний сайт (`suggestCompanyFields`).
+   */
+  function addAsSource(companyId: string) {
+    startAddingSource(async () => {
+      setSourceState(
+        await addCareerSourceAction(
+          companyId,
+          fields.careerUrl,
+          sourceLabel,
+          tab,
+        ),
+      );
+    });
+  }
+
+  /**
+   * Перевіряє адресу на виході з поля.
+   *
+   * Порожнє поле помилкою не вважається: адреса компанії обовʼязкова, але про
+   * це скаже Save, а не вихід із поля, у яке ще нічого не встигли ввести.
+   */
+  function checkAddress(field: "url" | "careerUrl") {
+    const typed = fields[field].trim();
+
+    if (typed === "") {
+      setRefusals((previous) => ({ ...previous, [field]: null }));
+      return;
+    }
+
+    const normalized = normalizeCompanyUrl(typed);
+
+    setRefusals((previous) => ({
+      ...previous,
+      [field]: normalized.ok ? null : normalized.reason,
+    }));
+  }
+
+  const failure =
+    isSubmitted && state.status === "failed" ? state.result : null;
   const sameDomain = failure?.problem === "same-domain" ? failure : null;
 
   // Помилка поля йде в `FieldError` разом з `isInvalid`: проп
@@ -171,16 +272,34 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
   const nameError =
     failure?.problem === "name-required" ? t("errors.nameRequired") : null;
 
-  const urlError =
-    failure?.problem === "company-url"
-      ? t(URL_ERROR_KEYS[failure.reason])
+  // Клієнтська відмова свіжіша за стан минулого надсилання, тому йде першою.
+  const urlError = refusals.url
+    ? tUrlError(URL_ERROR_KEYS[refusals.url])
+    : failure?.problem === "company-url"
+      ? tUrlError(URL_ERROR_KEYS[failure.reason])
       : failure?.problem === "already-added"
         ? t("errors.alreadyAdded", { name: failure.company.name })
         : null;
 
-  const careerUrlError =
-    failure?.problem === "career-url"
-      ? t(URL_ERROR_KEYS[failure.reason])
+  const sourceFailure =
+    sourceState?.status === "failed" ? sourceState.result : null;
+
+  const careerUrlError = refusals.careerUrl
+    ? tUrlError(URL_ERROR_KEYS[refusals.careerUrl])
+    : failure?.problem === "career-url"
+      ? tUrlError(URL_ERROR_KEYS[failure.reason])
+      : sourceFailure?.problem === "source-url"
+        ? tUrlError(URL_ERROR_KEYS[sourceFailure.reason])
+        : sourceFailure?.problem === "source-duplicate"
+          ? tShared("sourceDuplicate")
+          : null;
+
+  // Пропозиція зʼявляється лише тоді, коли адресу справді є що додати: при
+  // точному збігу компанії й заповненому полі карʼєрної сторінки. Якщо
+  // користувач вставив сам головний сайт, додавати нічого - лишається відмова.
+  const alreadyAdded =
+    failure?.problem === "already-added" && fields.careerUrl.trim() !== ""
+      ? failure.company
       : null;
 
   return (
@@ -188,16 +307,41 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
       <Button onPress={openDialog}>{t("open")}</Button>
 
       <Modal.Backdrop isOpen={overlay.isOpen} onOpenChange={overlay.setOpen}>
-        <Modal.Container>
+        {/* Довгий вміст скролиться всередині вікна: без цього
+                  `modal__dialog` обрізає його (`overflow-clip`), і в компанії
+                  з трьома джерелами блок додавання та кнопки опинялися за
+                  межею вікна - до них не було як дотягнутися. */}
+        <Modal.Container scroll="inside">
           <Modal.Dialog>
             <Modal.CloseTrigger />
             <Modal.Header>
               <Modal.Heading>{t("title")}</Modal.Heading>
             </Modal.Header>
 
-            {/* Звичайна форма з action: так поля надсилаються і без JS, і
-                Server Action сам перевіряє походження запиту. */}
-            <form action={submit}>
+            {/* Форма надсилається вручну, а не через `action={submit}`:
+                React після дії робить формі `reset`, React Aria бачить цю
+                подію й повідомляє `onChange("")`, тому навіть контрольовані
+                поля втрачали введене - після відмови «вже додана» адреса
+                зникала разом із пропозицією додати її джерелом. Виклик у
+                `startTransition` обовʼязковий, інакше `isPending` з
+                `useActionState` не оновлюється (попередження React «An async
+                function with useActionState was called outside of a
+                transition»). Прогресивного покращення це не знімає: модалку
+                все одно відкриває JavaScript. */}
+            {/* Форма - проміжний елемент між `Modal.Dialog` і `Modal.Body`,
+                тому вона мусить сама бути колонкою flex: інакше обмеження
+                висоти до тіла не доходить, і скрол усередині вікна не
+                працює - кнопки опиняються за нижнім краєм. */}
+            <form
+              className="flex min-h-0 flex-1 flex-col gap-6"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const fieldsToSend = new FormData(event.currentTarget);
+
+                setSubmitted(true);
+                startSubmit(() => submit(fieldsToSend));
+              }}
+            >
               {/* Вкладка потрібна серверу, щоб сказати, чи показувати нову
                   компанію в цьому списку. */}
               <input type="hidden" name="tab" value={tab} />
@@ -210,7 +354,10 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
                   name="url"
                   value={fields.url}
                   onChange={(value) => changeField("url", value)}
-                  onBlur={suggestFromUrl}
+                  onBlur={() => {
+                    suggestFromUrl();
+                    checkAddress("url");
+                  }}
                   isInvalid={urlError !== null}
                 >
                   <Label>{t("url")}</Label>
@@ -237,6 +384,7 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
                   name="careerUrl"
                   value={fields.careerUrl}
                   onChange={(value) => changeField("careerUrl", value)}
+                  onBlur={() => checkAddress("careerUrl")}
                   isInvalid={careerUrlError !== null}
                 >
                   <Label>{t("careerUrl")}</Label>
@@ -246,6 +394,33 @@ export function AddCompanyDialog({ tab, onAdded }: AddCompanyDialogProps) {
                     {t("careerUrlHint")}
                   </span>
                 </TextField>
+
+                {alreadyAdded ? (
+                  <div className="flex flex-col items-start gap-2 text-sm">
+                    <p>{t("addAsSourceHint", { name: alreadyAdded.name })}</p>
+
+                    <TextField
+                      fullWidth
+                      value={sourceLabel}
+                      onChange={setSourceLabel}
+                    >
+                      <Label>{tShared("sourceLabel")}</Label>
+                      <Input placeholder={tShared("sourceLabelPlaceholder")} />
+                    </TextField>
+
+                    {/* Кнопка кличе окрему дію, тому `type="button"`: інакше
+                        вона надіслала б форму ще раз і знову впала б у
+                        «вже додана». */}
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      isPending={isAddingSource}
+                      onPress={() => addAsSource(alreadyAdded.id)}
+                    >
+                      {t("addAsSource", { name: alreadyAdded.name })}
+                    </Button>
+                  </div>
+                ) : null}
 
                 {sameDomain ? (
                   <div className="flex flex-col gap-1 text-sm">

@@ -151,11 +151,13 @@ describe("listCompanies", () => {
   it("brings the career sources along, since the list shows them", async () => {
     const user = await seedSystemUser(testDb);
     const company = await insertTracked(user.id, "Bosch");
-    // Друге джерело тієї ж компанії: у списку видно обидва.
+    // Друге джерело тієї ж компанії: у списку видно обидва. Підпис є лише в
+    // нього - саме так список показує, чим джерела відрізняються.
     await testDb.insert(careerSources).values({
       companyId: company.id,
       url: "https://jobs.lever.co/bosch",
       platform: "lever",
+      label: "Remote Canada",
     });
 
     const {
@@ -171,12 +173,14 @@ describe("listCompanies", () => {
         url: "https://boards.greenhouse.io/bosch",
         platform: "greenhouse",
         isTracked: true,
+        label: null,
       },
       {
         id: expect.any(String),
         url: "https://jobs.lever.co/bosch",
         platform: "lever",
         isTracked: true,
+        label: "Remote Canada",
       },
     ]);
   });
@@ -366,6 +370,7 @@ describe("findCompanyInTab", () => {
           url: "https://boards.greenhouse.io/bosch",
           platform: "greenhouse",
           isTracked: true,
+          label: null,
         },
       ],
     });

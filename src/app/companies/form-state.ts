@@ -1,6 +1,8 @@
 import type { CompanyListItem } from "@/lib/companies/company-list";
 import type { Cursor } from "@/lib/pagination/cursor";
 import type { AddCompanyResult } from "@/server/companies/add";
+import type { AddCareerSourceResult } from "@/server/companies/sources";
+import type { UpdateCompanyResult } from "@/server/companies/update";
 
 /**
  * Стани форм сторінки Companies і їхні початкові значення.
@@ -51,6 +53,9 @@ export const ADD_COMPANY_INITIAL_STATE: AddCompanyFormState = {
  *
  * `not-found` сюди доходить, якщо компанію видалили в іншій вкладці, поки
  * модалка була відкрита.
+ *
+ * Відмова їде сюди цілою, як і в Add company: у `source-url` є ще й причина,
+ * через яку адресу не прийняли, і звужений `problem` її втрачав би.
  */
 export type EditCompanyFormState =
   | { status: "idle" }
@@ -63,12 +68,29 @@ export type EditCompanyFormState =
    * перечитував дозавантажені порції.
    */
   | { status: "saved"; company: CompanyListItem | null }
-  | { status: "failed"; problem: "name-required" | "not-found" }
+  | { status: "failed"; result: Extract<UpdateCompanyResult, { ok: false }> }
   | { status: "failed-unexpectedly" };
 
 export const EDIT_COMPANY_INITIAL_STATE: EditCompanyFormState = {
   status: "idle",
 };
+
+/**
+ * Чим закінчилася пропозиція «додати цю адресу карʼєрною сторінкою знайденої
+ * компанії» в модалці Add company.
+ *
+ * `company` - рядок компанії, якій дісталося джерело, або `null`, якщо вона
+ * цій вкладці не належить: список замінює в себе саме його.
+ */
+export type AddCareerSourceFormState =
+  /**
+   * `companyId` потрібен окремо від рядка: коли компанія цій вкладці не
+   * належить, `company` приходить як `null`, а прибрати зі списку треба саме
+   * її рядок.
+   */
+  | { status: "added"; companyId: string; company: CompanyListItem | null }
+  | { status: "failed"; result: Extract<AddCareerSourceResult, { ok: false }> }
+  | { status: "failed-unexpectedly" };
 
 /**
  * Наступна порція списку компаній або факт збою.

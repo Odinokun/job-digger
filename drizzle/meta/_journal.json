@@ -15,6 +15,13 @@
       "when": 1794771727515,
       "tag": "0001_dusty_bedlam",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794866979920,
+      "tag": "0002_clumsy_cassandra_nova",
+      "breakpoints": true
     }
   ]
 }

@@ -120,7 +120,7 @@ export function CompaniesBoard({
         <h1 className="font-sans text-2xl font-bold">{title}</h1>
         {/* Кнопка Add живе на сторінці Companies, поруч зі списком
             (docs/ui.md, розділ 4.2). */}
-        <AddCompanyDialog tab={tab} onAdded={addRow} />
+        <AddCompanyDialog tab={tab} onAdded={addRow} onSourceAdded={applyRow} />
       </div>
 
       <div className="mt-4">{tabs}</div>

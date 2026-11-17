@@ -7,11 +7,13 @@ import { parseCompaniesTab } from "@/lib/companies/company-list";
 import type { Cursor } from "@/lib/pagination/cursor";
 import { addCompany } from "@/server/companies/add";
 import { findCompanyInTab, listCompanies } from "@/server/companies/list";
+import { addCareerSource } from "@/server/companies/sources";
 import { updateCompany } from "@/server/companies/update";
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 
 import type {
+  AddCareerSourceFormState,
   AddCompanyFormState,
   EditCompanyFormState,
   LoadMoreCompaniesResult,
@@ -139,6 +141,10 @@ export async function updateCompanyAction(
       removeSourceIds: formData
         .getAll("removeSourceIds")
         .filter((value): value is string => typeof value === "string"),
+      sourceLabels: typedLabels(formData),
+      // Порожнє поле адреси - це «джерело не додаємо», а не крива адреса: той
+      // самий підхід, що з карʼєрною сторінкою в модалці Add company.
+      addSource: addedSource(formData),
     });
 
     if (!result.ok) {
@@ -160,7 +166,7 @@ export async function updateCompanyAction(
   const result = outcome.value;
 
   if (!result.ok) {
-    return { status: "failed", problem: result.problem };
+    return { status: "failed", result };
   }
 
   // Рядок список оновить сам, а от лічильники вкладок рендерить сервер:
@@ -168,4 +174,103 @@ export async function updateCompanyAction(
   revalidatePath("/companies");
 
   return { status: "saved", company: result.company };
+}
+
+/**
+ * Додає вставлену адресу карʼєрною сторінкою вже доданої компанії.
+ *
+ * Викликається не з форми, а кнопкою в модалці Add company, коли адреса
+ * збіглася з уже доданою компанією (картка 2.16). Аргументи приходять із
+ * клієнта й нічим не захищені - Server Action доступний прямим POST-запитом,
+ * тому тут вони зводяться до рядків, а права на компанію перевіряє
+ * `addCareerSource` своїм запитом.
+ */
+export async function addCareerSourceAction(
+  companyId: unknown,
+  url: unknown,
+  label: unknown,
+  tab: unknown,
+): Promise<AddCareerSourceFormState> {
+  const company = asString(companyId);
+  const currentTab = parseCompaniesTab(tab);
+
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    const result = await addCareerSource(db, {
+      userId: user.id,
+      companyId: company,
+      url: asString(url),
+      label: asString(label),
+    });
+
+    if (!result.ok) {
+      return result;
+    }
+
+    return {
+      ok: true as const,
+      company: await findCompanyInTab(db, {
+        userId: user.id,
+        companyId: company,
+        tab: currentTab,
+      }),
+    };
+  });
+
+  if (!outcome.ok) {
+    return { status: "failed-unexpectedly" };
+  }
+
+  const result = outcome.value;
+
+  if (!result.ok) {
+    return { status: "failed", result };
+  }
+
+  // Рядок список замінить сам, а лічильники вкладок рендерить сервер: із новим
+  // джерелом компанія переїжджає з Not tracked у Tracked.
+  revalidatePath("/companies");
+
+  return { status: "added", companyId: company, company: result.company };
+}
+
+/** Аргумент Server Action як рядок: із клієнта може приїхати будь-що. */
+function asString(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+/** Префікс полів із підписами джерел: далі в назві стоїть id джерела. */
+const SOURCE_LABEL_PREFIX = "sourceLabel.";
+
+/**
+ * Підписи наявних джерел із полів форми: id джерела - уведений підпис.
+ *
+ * Назва поля несе id (`sourceLabel.<id>`), а не окремий паралельний масив
+ * ідентифікаторів: `FormData` не гарантує, що два масиви приїдуть однакової
+ * довжини, і підпис міг би дістатися чужому джерелу. Самі id - недовірений
+ * ввід, тому їх перевіряє запит у `updateCompany`.
+ */
+function typedLabels(formData: FormData): Record<string, string> {
+  const labels: Record<string, string> = {};
+
+  for (const [field, value] of formData.entries()) {
+    if (field.startsWith(SOURCE_LABEL_PREFIX) && typeof value === "string") {
+      labels[field.slice(SOURCE_LABEL_PREFIX.length)] = value;
+    }
+  }
+
+  return labels;
+}
+
+/** Нове карʼєрне джерело з полів модалки Edit або `undefined`, якщо його не вводили. */
+function addedSource(
+  formData: FormData,
+): { url: string; label?: string } | undefined {
+  const url = readField(formData, "addSourceUrl").trim();
+
+  return url === ""
+    ? undefined
+    : { url, label: readField(formData, "addSourceLabel") };
 }
