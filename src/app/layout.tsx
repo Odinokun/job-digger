@@ -8,8 +8,10 @@ import {
 } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
+
 import "./globals.css";
 import { AppHeader } from "./components/app-header";
+import { ThemeScript } from "./theme-script";
 
 // Тема «Ink»: Instrument Sans у тілі, Space Grotesk на заголовках і назвах
 // компаній, Fraunces на логотипі, IBM Plex Mono на адресах. Відхилені кандидати
@@ -55,8 +57,22 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang={locale}
+      // `data-theme` тут немає свідомо: атрибутом володіє `ThemeScript`, а не
+      // React. Якби його рендерив layout, кожен перерендер після Server Action
+      // повертав би атрибут до серверного значення й зтирав вибір - на екрані
+      // це виглядало як блимання теми.
+      //
+      // Через це HTML на клієнті відрізняється від серверного, і React
+      // попереджав би про розбіжність: `suppressHydrationWarning` глушить це
+      // рівно на цьому елементі й на дітей не поширюється.
+      suppressHydrationWarning
       className={`${appSans.variable} ${appDisplay.variable} ${appBrand.variable} ${appMono.variable}`}
     >
+      {/* Завжди, а не за умовою: тег, який зʼявляється в дереві під час
+          клієнтського рендера, React не виконує й пише про це в консоль. */}
+      <head>
+        <ThemeScript />
+      </head>
       <body className="bg-background text-foreground">
         {/* Передає локаль і переклади в клієнтські компоненти; від серверного
             батька він успадковує їх сам, тому пропи не потрібні. */}

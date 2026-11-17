@@ -111,6 +111,13 @@
   },
   "SettingsPage": {
     "title": "Settings",
-    "empty": "Nothing to configure yet."
+    "appearance": {
+      "title": "Appearance",
+      "label": "Appearance",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "systemHint": "System follows the setting of your device."
+    }
   }
 }
