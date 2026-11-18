@@ -44,9 +44,9 @@ PR: #57
 | [3.01 Фейковий сервер із відповідями платформ](3.01-fake-platform-server.md)                     | done    |
 | [3.02 Модуль HTTP-запитів з ввічливістю](3.02-polite-http-client.md)                             | done    |
 | [3.03 Захист від SSRF](3.03-ssrf-protection.md)                                                  | done    |
-| [3.04 Схема vacancies](3.04-vacancies-schema.md)                                                 | todo    |
+| [3.04 Схема vacancies](3.04-vacancies-schema.md)                                                 | done    |
 | [3.05 Очищення URL і внутрішній ключ вакансії](3.05-url-cleanup-vacancy-key.md)                  | done    |
-| [3.06 Парсер Greenhouse](3.06-greenhouse-parser.md)                                              | todo    |
+| [3.06 Парсер Greenhouse](3.06-greenhouse-parser.md)                                              | done    |
 | [3.07 Парсер Lever](3.07-lever-parser.md)                                                        | backlog |
 | [3.08 Парсер Ashby](3.08-ashby-parser.md)                                                        | backlog |
 | [3.09 Парсер Workday](3.09-workday-parser.md)                                                    | backlog |

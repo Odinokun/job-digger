@@ -135,3 +135,48 @@ export const careerSources = pgTable(
   },
   (table) => [index("career_sources_company_idx").on(table.companyId)],
 );
+
+/**
+ * Вакансія кар'єрного джерела (docs/discovery-and-parsing.md, розділ 7).
+ * Компанія й адреса джерела - через звʼязок «вакансія → джерело → компанія»,
+ * окремо не зберігаються; опис, зарплата й тип зайнятості - теж.
+ */
+export const vacancies = pgTable(
+  "vacancies",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    // Видалення джерела чи компанії забирає й вакансії, зокрема з Favorites:
+    // те саме правило, що для Delete компанії (docs/ui.md, розділ 4.2).
+    sourceId: uuid("source_id")
+      .notNull()
+      .references(() => careerSources.id, { onDelete: "cascade" }),
+    // Внутрішній ключ у межах джерела: `id:<ID на платформі>` або, якщо ID
+    // немає, `url:<очищена адреса>`. Рядок складає задача 3.05.
+    key: text("key").notNull(),
+    title: text("title").notNull(),
+    url: text("url").notNull(),
+    // Необовʼязкова: якщо джерело її не дало, у списку стоїть «—».
+    location: text("location"),
+    // Дата виявлення: за нею сортується список Jobs, і вона ж - межа для
+    // «Mark all as read» (docs/ui.md, розділ 4.1).
+    firstDetectedAt: timestamp("first_detected_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    // Коли перевірка бачила вакансію востаннє («last checked» у плані).
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    isRead: boolean("is_read").notNull().default(false),
+    isFavorite: boolean("is_favorite").notNull().default(false),
+    // Позначка Closed: вакансія з Favorites зникла з сайту. Момент, а не
+    // так/ні, - щоб було видно, коли вона закрилась.
+    closedAt: timestamp("closed_at", { withTimezone: true }),
+  },
+  (table) => [
+    // Усередині одного джерела повторних записів не створюємо - це тримає база.
+    // Між джерелами дублікати дозволені.
+    uniqueIndex("vacancies_source_key_idx").on(table.sourceId, table.key),
+    // Список Jobs: сортування й курсор за датою виявлення та id.
+    index("vacancies_detected_idx").on(table.firstDetectedAt, table.id),
+  ],
+);

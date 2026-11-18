@@ -28,9 +28,9 @@ interface DeleteCompanyDialogProps {
  * йому `role="alertdialog"` разом зі статусною іконкою. Модалки Add і Edit -
  * звичайні форми, тому в них `Modal`.
  *
- * Чисел вакансій діалог не називає, хоч план їх і обіцяє: таблиці `vacancies`
- * ще немає (задача 3.04), тому порахувати нічим. Поки діалог називає компанію
- * й кількість її карʼєрних сторінок.
+ * Діалог називає, що саме зникне: компанію, кількість її карʼєрних сторінок і,
+ * якщо вони є, вакансій - разом із тими, що в Favorites. Числа приходять зі
+ * списку компаній (`company.vacancies`), окремого запиту на відкриття немає.
  */
 export function DeleteCompanyDialog({
   company,
@@ -119,6 +119,9 @@ export function DeleteCompanyDialog({
                     count: company.sources.length,
                   })}
                 </p>
+                {company.vacancies.total === 0 ? null : (
+                  <p>{t("vacancies", company.vacancies)}</p>
+                )}
               </AlertDialog.Body>
 
               <AlertDialog.Footer>

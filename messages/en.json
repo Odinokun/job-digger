@@ -66,6 +66,7 @@
       "open": "Delete company",
       "title": "Delete this company?",
       "warning": "{count, plural, =0 {{name} will be deleted.} one {{name} and its # career page will be deleted.} other {{name} and its # career pages will be deleted.}} This cannot be undone.",
+      "vacancies": "{total, plural, one {Its # vacancy} other {Its # vacancies}} will go too{favorites, plural, =0 {.} other {, # of them in Favorites.}}",
       "confirm": "Delete",
       "cancel": "Cancel"
     },
