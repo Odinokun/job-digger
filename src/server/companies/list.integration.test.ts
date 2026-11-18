@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { careerSources, companies, users } from "../db/schema.ts";
+import { eq } from "drizzle-orm";
+
+import { careerSources, companies, users, vacancies } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
 import { normalizedSourceUrl } from "../db/testing/career-source-values.ts";
 import { testDb } from "../db/testing/test-db.ts";
@@ -377,6 +379,7 @@ describe("findCompanyInTab", () => {
           label: null,
         },
       ],
+      vacancies: { total: 0, favorites: 0 },
     });
   });
 
@@ -410,5 +413,73 @@ describe("findCompanyInTab", () => {
         tab: "tracked",
       }),
     ).toBeNull();
+  });
+});
+
+describe("vacancy counts", () => {
+  /** Вакансії першого джерела компанії: `favorites` із них - у Favorites. */
+  async function addVacancies(
+    companyId: string,
+    total: number,
+    favorites: number,
+  ) {
+    const [source] = await testDb
+      .select({ id: careerSources.id })
+      .from(careerSources)
+      .where(eq(careerSources.companyId, companyId));
+
+    for (let i = 0; i < total; i += 1) {
+      await testDb.insert(vacancies).values({
+        sourceId: source.id,
+        key: `id:${i}`,
+        title: `Job ${i}`,
+        url: `https://example.com/jobs/${i}`,
+        isFavorite: i < favorites,
+      });
+    }
+  }
+
+  it("counts the vacancies of each company and how many are favorites", async () => {
+    const user = await seedSystemUser(testDb);
+    const bosch = await insertTracked(user.id, "Bosch");
+    const linear = await insertTracked(user.id, "Linear");
+    await addVacancies(bosch.id, 3, 1);
+    await addVacancies(linear.id, 2, 0);
+
+    const { items } = await listCompanies(testDb, {
+      userId: user.id,
+      tab: "tracked",
+    });
+
+    expect(items.map(({ name, vacancies }) => ({ name, vacancies }))).toEqual([
+      { name: "Bosch", vacancies: { total: 3, favorites: 1 } },
+      { name: "Linear", vacancies: { total: 2, favorites: 0 } },
+    ]);
+  });
+
+  it("gives zero to a company without vacancies", async () => {
+    const user = await seedSystemUser(testDb);
+    await insertUntracked(user.id, "Acme");
+
+    const { items } = await listCompanies(testDb, {
+      userId: user.id,
+      tab: "not-tracked",
+    });
+
+    expect(items[0]?.vacancies).toEqual({ total: 0, favorites: 0 });
+  });
+
+  it("counts the same way for a single company found by id", async () => {
+    const user = await seedSystemUser(testDb);
+    const bosch = await insertTracked(user.id, "Bosch");
+    await addVacancies(bosch.id, 2, 2);
+
+    const company = await findCompanyInTab(testDb, {
+      userId: user.id,
+      companyId: bosch.id,
+      tab: "tracked",
+    });
+
+    expect(company?.vacancies).toEqual({ total: 2, favorites: 2 });
   });
 });

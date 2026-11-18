@@ -10,7 +10,7 @@ import {
 } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { careerSources, companies } from "../db/schema.ts";
+import { careerSources, companies, vacancies } from "../db/schema.ts";
 import type {
   CompaniesTab,
   CompanyListItem,
@@ -112,21 +112,21 @@ export async function listCompanies(
   const last = visible.at(-1);
 
   return {
-    items: await attachSources(db, visible),
+    items: await attachDetails(db, visible),
     nextCursor: hasMore && last ? { key: last.name, id: last.id } : null,
   };
 }
 
 /**
- * Дотягує джерела показаних компаній другим запитом.
+ * Дотягує до показаних компаній джерела й числа вакансій - окремими запитами.
  *
- * Окремий запит, а не join: join дублював би рядок компанії на кожне джерело,
+ * Окремі запити, а не join: join дублював би рядок компанії на кожне джерело,
  * а агрегація в json зробила б запит помітно складнішим заради того самого
  * результату на півсотні рядків.
  */
-async function attachSources(
+async function attachDetails(
   db: NodePgDatabase,
-  rows: Omit<CompanyListItem, "sources">[],
+  rows: Omit<CompanyListItem, "sources" | "vacancies">[],
 ): Promise<CompanyListItem[]> {
   if (rows.length === 0) {
     return [];
@@ -159,7 +159,40 @@ async function attachSources(
     byCompany.set(companyId, list);
   }
 
-  return rows.map((row) => ({ ...row, sources: byCompany.get(row.id) ?? [] }));
+  const counts = await countVacancies(
+    db,
+    rows.map((row) => row.id),
+  );
+
+  return rows.map((row) => ({
+    ...row,
+    sources: byCompany.get(row.id) ?? [],
+    vacancies: counts.get(row.id) ?? { total: 0, favorites: 0 },
+  }));
+}
+
+/** Вакансії компаній: усього й у Favorites, по всіх джерелах кожної. */
+async function countVacancies(
+  db: NodePgDatabase,
+  companyIds: string[],
+): Promise<Map<string, CompanyListItem["vacancies"]>> {
+  const rows = await db
+    .select({
+      companyId: careerSources.companyId,
+      total: count(),
+      favorites: count(sql`case when ${vacancies.isFavorite} then 1 end`),
+    })
+    .from(vacancies)
+    .innerJoin(careerSources, eq(vacancies.sourceId, careerSources.id))
+    .where(inArray(careerSources.companyId, companyIds))
+    .groupBy(careerSources.companyId);
+
+  return new Map(
+    rows.map(({ companyId, total, favorites }) => [
+      companyId,
+      { total, favorites },
+    ]),
+  );
 }
 
 /**
@@ -219,7 +252,7 @@ export async function findCompanyInTab(
       ),
     );
 
-  const [company] = await attachSources(db, rows);
+  const [company] = await attachDetails(db, rows);
 
   return company ?? null;
 }

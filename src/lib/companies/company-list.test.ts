@@ -29,6 +29,7 @@ describe("compareCompanyRows", () => {
     url: `https://${name.toLowerCase()}.com`,
     discoveryStatus: "not_checked",
     sources: [],
+    vacancies: { total: 0, favorites: 0 },
   });
 
   it("orders by name the way the database does", () => {

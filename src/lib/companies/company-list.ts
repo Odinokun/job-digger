@@ -55,6 +55,11 @@ export type CompanyListItem = {
   url: string | null;
   discoveryStatus: DiscoveryStatus;
   sources: CompanySource[];
+  /**
+   * Вакансії всіх джерел компанії: скільки всього і скільки з них у Favorites.
+   * Їх називає діалог видалення - разом із компанією зникають і вони.
+   */
+  vacancies: { total: number; favorites: number };
 };
 
 /**
