@@ -1,0 +1,75 @@
+import { expect, test } from "@playwright/test";
+
+import { companyCard, vacancyRow } from "./locators.ts";
+
+/**
+ * Головний сценарій етапу 3 (задача 3.20): додав URL - бачиш вакансії.
+ *
+ * Критерій готовності етапу: написаний на його початку й червоний, поки етап не
+ * зроблено. Тег `@pending` тримає його поза звичайним прогоном і CI; запуск -
+ * `npm run test:e2e:pending`. Тег знімається останнім пунктом задачі 3.16.
+ *
+ * Справжній Greenhouse тут не викликається: застосунок іде на фейковий
+ * вебсервер, який віддає збережену дошку Discord - 26 вакансій
+ * (src/server/http/testing/README.md).
+ */
+
+const BOARD_URL = "job-boards.greenhouse.io/discord";
+const BOARD_SIZE = 26;
+const TITLE = "Account Executive, Mobile Gaming & Apps";
+
+test(
+  "a Greenhouse board turns into unread vacancies that can be read and favorited",
+  { tag: "@pending" },
+  async ({ page }) => {
+    // Додавання: адреса дошки сама дає назву, Greenhouse підтримується.
+    await page.goto("/companies");
+    await page.getByRole("button", { name: "Add company" }).click();
+    const addDialog = page.getByRole("dialog", { name: "Add company" });
+
+    await addDialog.getByLabel("Company website").fill(BOARD_URL);
+    await addDialog.getByLabel("Company website").blur();
+    await expect(addDialog.getByLabel("Company name")).toHaveValue("Discord");
+
+    await addDialog.getByRole("button", { name: "Save" }).click();
+    await expect(addDialog).toBeHidden();
+
+    await page
+      .getByRole("navigation", { name: "Company lists" })
+      .getByRole("link", { name: /^Tracked/ })
+      .click();
+    const card = companyCard(page, "Discord");
+    await expect(card).toBeVisible();
+
+    // Перевірка однієї компанії. Завершення видно за часом останньої перевірки.
+    await card.getByRole("button", { name: "Check now" }).click();
+    await expect(card.getByText(/Last checked/)).toBeVisible();
+
+    // Unread: уся дошка, кожна вакансія з назвою компанії.
+    await page
+      .getByRole("navigation", { name: "Main" })
+      .getByRole("link", { name: /^Jobs/ })
+      .click();
+    await expect(
+      page.locator('a[href^="https://job-boards.greenhouse.io/discord/jobs/"]'),
+    ).toHaveCount(BOARD_SIZE);
+    await expect(vacancyRow(page, TITLE)).toContainText("Discord");
+
+    // Mark as read переносить вакансію з Unread у Read.
+    await vacancyRow(page, TITLE)
+      .getByRole("button", { name: "Mark as read" })
+      .click();
+    await expect(vacancyRow(page, TITLE)).toHaveCount(0);
+
+    await page.getByRole("link", { name: /^Read/ }).click();
+    await expect(vacancyRow(page, TITLE)).toBeVisible();
+
+    // Favorite додає її у Favorites.
+    await vacancyRow(page, TITLE)
+      .getByRole("button", { name: "Favorite" })
+      .click();
+
+    await page.getByRole("link", { name: /^Favorites/ }).click();
+    await expect(vacancyRow(page, TITLE)).toBeVisible();
+  },
+);
