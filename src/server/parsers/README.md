@@ -12,7 +12,7 @@
 | `greenhouse.ts`      | Greenhouse: `readGreenhouse(sourceUrl, client)` і його частини |
 | `greenhouse.test.ts` | Юніт-тести парсера Greenhouse                     |
 | `greenhouse.integration.test.ts` | `readGreenhouse` через фейковий вебсервер |
-| `shared.ts`          | Спільне для парсерів: `collectVacancies` (правило кривих записів), `fetchJson` і `postJson` (запит → статус → JSON), `UNREADABLE`, `isRecord`, `isWebUrl` |
+| `shared.ts`          | Спільне для парсерів: `collectVacancies` (правило кривих записів), `fetchJson` і `postJson` (запит → статус → JSON), `fetchText` (те саме для HTML), `UNREADABLE`, `isRecord`, `isWebUrl` |
 | `shared.test.ts`     | Юніт-тести `collectVacancies`                     |
 | `lever.ts`           | Lever: `readLever(sourceUrl, client)`, `leverSite`, `parseLeverPostings` |
 | `lever.test.ts`      | Юніт-тести парсера Lever                          |
@@ -25,6 +25,7 @@
 | `workday.integration.test.ts` | `readWorkday` через фейковий вебсервер і сервер зі сторінками |
 | `peopleforce.ts`     | PeopleForce: `readPeopleForce(sourceUrl, client)`, `peopleforceSite`, `parsePeopleForcePage` |
 | `peopleforce.test.ts` | Юніт-тести парсера PeopleForce                   |
+| `peopleforce.integration.test.ts` | `readPeopleForce` через фейковий вебсервер і сервер зі сторінками |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
 
 ## Спільний формат

@@ -55,9 +55,41 @@ export function postJson(
   return answerOf(() => client.post(url, json));
 }
 
+/**
+ * Сторінка через HTTP-клієнт: `{ ok: true, body }` - тіло як є, для HTML -
+ * або ті самі помилки, що в `fetchJson`, крім розбору JSON.
+ */
+export async function fetchText(
+  client: HttpClient,
+  url: string,
+): Promise<{ ok: true; body: string } | Extract<ParseResult, { ok: false }>> {
+  const sent = await responseOf(() => client.get(url));
+
+  return sent.ok ? { ok: true, body: sent.response.body } : sent;
+}
+
 async function answerOf(
   send: () => Promise<HttpResponse>,
 ): Promise<FetchedJson> {
+  const sent = await responseOf(send);
+
+  if (!sent.ok) {
+    return sent;
+  }
+
+  try {
+    return { ok: true, answer: JSON.parse(sent.response.body) };
+  } catch {
+    return UNREADABLE;
+  }
+}
+
+/** Відповідь 2xx або помилка парсера за статусом чи збоєм запиту. */
+async function responseOf(
+  send: () => Promise<HttpResponse>,
+): Promise<
+  { ok: true; response: HttpResponse } | Extract<ParseResult, { ok: false }>
+> {
   let response;
 
   try {
@@ -83,11 +115,7 @@ async function answerOf(
     };
   }
 
-  try {
-    return { ok: true, answer: JSON.parse(response.body) };
-  } catch {
-    return UNREADABLE;
-  }
+  return { ok: true, response };
 }
 
 /**

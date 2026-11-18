@@ -6,8 +6,14 @@
  */
 import * as cheerio from "cheerio";
 
-import { collectVacancies, UNREADABLE, type ReadVacancy } from "./shared.ts";
-import type { ParseResult } from "./types.ts";
+import type { HttpClient } from "../http/client.ts";
+import {
+  collectVacancies,
+  fetchText,
+  UNREADABLE,
+  type ReadVacancy,
+} from "./shared.ts";
+import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 /**
  * Адреса сайту кар'єри компанії (`https://team.peopleforce.io`) або `null`, якщо
@@ -151,4 +157,58 @@ function readerFor(pageUrl: string): ReadVacancy {
       location: place === "" ? null : place,
     };
   };
+}
+
+/**
+ * Скільки сторінок читати щонайбільше. Досягнення ліміту - нормальне
+ * завершення (задача 3.12, де ліміт стане налаштуванням через ENV).
+ */
+export const PEOPLEFORCE_MAX_PAGES = 5;
+
+/**
+ * Вакансії кар'єрного джерела на PeopleForce: сайт компанії з адреси,
+ * сторінки `/careers?page=N` через HTTP-клієнт і розбір кожної. Адреса не
+ * PeopleForce - `unreadable` без жодного запиту.
+ *
+ * Наступна сторінка - лише за посиланням `rel="next"`: номер за межею списку
+ * PeopleForce не відхиляє, а віддає останню сторінку ще раз (перевірено на
+ * Webellian 18.11.2026). Збій будь-якої сторінки - збій усього джерела.
+ */
+export async function readPeopleForce(
+  sourceUrl: string,
+  client: HttpClient,
+  { maxPages = PEOPLEFORCE_MAX_PAGES }: { maxPages?: number } = {},
+): Promise<ParseResult> {
+  const site = peopleforceSite(sourceUrl);
+
+  if (site === null) {
+    return UNREADABLE;
+  }
+
+  const vacancies: ParsedVacancy[] = [];
+  let skipped = 0;
+
+  for (let page = 1; page <= maxPages; page += 1) {
+    const pageUrl = `${site}/careers?page=${page}`;
+    const fetched = await fetchText(client, pageUrl);
+
+    if (!fetched.ok) {
+      return fetched;
+    }
+
+    const parsed = parsePeopleForcePage(fetched.body, pageUrl);
+
+    if (!parsed.ok) {
+      return parsed;
+    }
+
+    vacancies.push(...parsed.vacancies);
+    skipped += parsed.skipped;
+
+    if (!parsed.hasNext) {
+      break;
+    }
+  }
+
+  return { ok: true, vacancies, skipped };
 }
