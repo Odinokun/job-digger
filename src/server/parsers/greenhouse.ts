@@ -2,6 +2,7 @@
  * Парсер Greenhouse: вакансії з публічного Job Board API
  * (https://docs.greenhouse.io/job-board.html).
  */
+import { HttpError, type HttpClient } from "../http/client.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 /**
@@ -111,4 +112,57 @@ function isWebUrl(value: string): boolean {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Вакансії кар'єрного джерела на Greenhouse: назва дошки з адреси, запит до
+ * Job Board API через HTTP-клієнт і розбір відповіді. Адреса, у якій немає
+ * дошки Greenhouse, - `unreadable` без жодного запиту.
+ */
+export async function readGreenhouse(
+  sourceUrl: string,
+  client: HttpClient,
+): Promise<ParseResult> {
+  const board = greenhouseBoardToken(sourceUrl);
+
+  if (board === null) {
+    return UNREADABLE;
+  }
+
+  let response;
+
+  try {
+    response = await client.get(
+      `https://boards-api.greenhouse.io/v1/boards/${encodeURIComponent(board)}/jobs`,
+    );
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return {
+        ok: false,
+        error: { reason: "fetch-failed", cause: error.reason },
+      };
+    }
+    throw error;
+  }
+
+  if (response.status === 404) {
+    return { ok: false, error: { reason: "not-found" } };
+  }
+
+  if (response.status < 200 || response.status >= 300) {
+    return {
+      ok: false,
+      error: { reason: "bad-status", status: response.status },
+    };
+  }
+
+  let answer: unknown;
+
+  try {
+    answer = JSON.parse(response.body);
+  } catch {
+    return UNREADABLE;
+  }
+
+  return parseGreenhouseJobs(answer);
 }

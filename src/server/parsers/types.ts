@@ -22,6 +22,8 @@ export type ParserError =
   | { reason: "not-found" }
   /** Відповідь не того формату - зокрема хоч одна вакансія в ній крива. */
   | { reason: "unreadable" }
+  /** Сайт відповів не 2xx і не 404 (наприклад 403 чи 500 після повторів). */
+  | { reason: "bad-status"; status: number }
   /** Запит не вдався: причина - з `HttpError`. */
   | { reason: "fetch-failed"; cause: HttpErrorReason };
 
