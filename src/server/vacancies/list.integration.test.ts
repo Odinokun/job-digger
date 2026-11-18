@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
 import type { JobsTab } from "../../lib/vacancies/vacancy-list.ts";
@@ -208,5 +209,125 @@ describe("hasAnyVacancy", () => {
       .returning();
 
     expect(await hasAnyVacancy(testDb, stranger.id)).toBe(false);
+  });
+});
+
+describe("listVacancies pagination", () => {
+  /** `count` вакансій з різними датами; повертає назви від найновішої. */
+  async function seedMany(userId: string, count: number) {
+    const sourceId = await sourceOf(userId, "Discord");
+    for (let i = 0; i < count; i += 1) {
+      await addVacancy(sourceId, {
+        title: `Job ${String(i).padStart(2, "0")}`,
+        detected: new Date(Date.UTC(2026, 10, 1, 0, i)),
+      });
+    }
+
+    return Array.from(
+      { length: count },
+      (_, i) => `Job ${String(count - 1 - i).padStart(2, "0")}`,
+    );
+  }
+
+  /** Усі порції вкладки Unread по `limit` рядків, курсор за курсором. */
+  async function walk(userId: string, limit: number) {
+    const titles: string[] = [];
+    let after = null;
+    do {
+      const page = await listVacancies(testDb, {
+        userId,
+        tab: "unread",
+        limit,
+        after,
+      });
+      titles.push(...page.items.map((item) => item.title));
+      after = page.nextCursor;
+    } while (after !== null);
+
+    return titles;
+  }
+
+  it("hands back a cursor while more vacancies are left", async () => {
+    const user = await seedSystemUser(testDb);
+    await seedMany(user.id, 3);
+
+    const page = await listVacancies(testDb, {
+      userId: user.id,
+      tab: "unread",
+      limit: 2,
+    });
+
+    expect(page.items).toHaveLength(2);
+    expect(page.nextCursor).not.toBeNull();
+  });
+
+  it("has no cursor on the last portion", async () => {
+    const user = await seedSystemUser(testDb);
+    await seedMany(user.id, 2);
+
+    const page = await listVacancies(testDb, {
+      userId: user.id,
+      tab: "unread",
+      limit: 2,
+    });
+
+    expect(page.nextCursor).toBeNull();
+  });
+
+  it("continues after the cursor without a gap or a repeat", async () => {
+    const user = await seedSystemUser(testDb);
+    const expected = await seedMany(user.id, 7);
+
+    expect(await walk(user.id, 3)).toEqual(expected);
+  });
+
+  it("walks through vacancies detected at the same moment", async () => {
+    // Одна перевірка дає всім вакансіям джерела однакову дату виявлення -
+    // звичайний випадок, а не рідкісний.
+    const user = await seedSystemUser(testDb);
+    const sourceId = await sourceOf(user.id, "Discord");
+    for (let i = 0; i < 5; i += 1) {
+      await addVacancy(sourceId, { title: `Same ${i}` });
+    }
+
+    const titles = await walk(user.id, 2);
+
+    expect(titles).toHaveLength(5);
+    expect(new Set(titles).size).toBe(5);
+  });
+
+  it("keeps microseconds of the detection time in the cursor", async () => {
+    // База зберігає час до мікросекунд, JS Date - лише до мілісекунд. Якби
+    // курсор губив мікросекунди, рядок на межі порції повторювався б.
+    const user = await seedSystemUser(testDb);
+    const sourceId = await sourceOf(user.id, "Discord");
+    for (const [title, time] of [
+      ["First", "2026-11-18 10:00:00.000100+00"],
+      ["Second", "2026-11-18 10:00:00.000200+00"],
+      ["Third", "2026-11-18 10:00:00.000300+00"],
+    ]) {
+      const row = await addVacancy(sourceId, { title });
+      await testDb.execute(
+        sql`update ${vacancies} set first_detected_at = ${time}::timestamptz where id = ${row.id}`,
+      );
+    }
+
+    expect(await walk(user.id, 1)).toEqual(["Third", "Second", "First"]);
+  });
+
+  it("starts from the beginning when the cursor is not usable", async () => {
+    const user = await seedSystemUser(testDb);
+    const expected = await seedMany(user.id, 2);
+    const [first] = (
+      await listVacancies(testDb, { userId: user.id, tab: "unread" })
+    ).items;
+
+    const page = await listVacancies(testDb, {
+      userId: user.id,
+      tab: "unread",
+      after: { key: "not a date", id: first.id },
+    });
+
+    expect(page.items.map((item) => item.title)).toEqual(expected);
   });
 });

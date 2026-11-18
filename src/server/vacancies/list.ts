@@ -8,14 +8,30 @@ import type {
   JobsTab,
   VacancyListItem,
 } from "../../lib/vacancies/vacancy-list.ts";
+import { parseCursor, type Cursor } from "../../lib/pagination/cursor.ts";
 import { careerSources, companies, vacancies } from "../db/schema.ts";
 
 /** Скільки вакансій показуємо одразу. Далі - Load more тією самою порцією. */
 export const DEFAULT_LIMIT = 50;
 
+/**
+ * Порція списку й курсор наступної. `nextCursor` є лише тоді, коли далі справді
+ * щось є.
+ */
 export type VacancyListPage = {
   items: VacancyListItem[];
+  nextCursor: Cursor | null;
 };
+
+/**
+ * Ключ курсора - дата виявлення точно так, як її зберігає база: ISO з
+ * мікросекундами. JS `Date` тримає лише мілісекунди, тож курсор, зібраний з
+ * нього, губив би мікросекунди, і рядок на межі порції приходив би вдруге.
+ */
+const CURSOR_KEY = sql<string>`to_char(${vacancies.firstDetectedAt} at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`;
+
+/** Форма ключа, яку дає `CURSOR_KEY`: усе інше - непридатний курсор. */
+const CURSOR_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/;
 
 /**
  * Умова вкладки. Активна вакансія - без позначки Closed; Closed буває лише у
@@ -44,13 +60,23 @@ export async function listVacancies(
     userId,
     tab,
     limit = DEFAULT_LIMIT,
+    after,
   }: {
     userId: string;
     tab: JobsTab;
     limit?: number;
+    /**
+     * Курсор останнього показаного рядка. Приходить із клієнта, тож непридатний
+     * означає «почни з початку», а не помилку - як у списку компаній.
+     */
+    after?: Cursor | null;
   },
 ): Promise<VacancyListPage> {
-  const items = await db
+  const parsed = parseCursor(after);
+  const cursor =
+    parsed !== null && CURSOR_KEY_PATTERN.test(parsed.key) ? parsed : null;
+
+  const rows = await db
     .select({
       id: vacancies.id,
       title: vacancies.title,
@@ -61,18 +87,42 @@ export async function listVacancies(
       isRead: vacancies.isRead,
       isFavorite: vacancies.isFavorite,
       closedAt: vacancies.closedAt,
+      cursorKey: CURSOR_KEY,
     })
     .from(vacancies)
     // Користувач - лише через компанію: у вакансії власного `user_id` немає.
     .innerJoin(careerSources, eq(vacancies.sourceId, careerSources.id))
     .innerJoin(companies, eq(careerSources.companyId, companies.id))
-    .where(and(eq(companies.userId, userId), tabCondition(tab)))
-    // `id` робить порядок однозначним при однаковій даті - саме так
-    // сортуватиме й курсор.
+    .where(
+      and(
+        eq(companies.userId, userId),
+        tabCondition(tab),
+        // Порівняння пари - рівно «наступний рядок за тим самим порядком»,
+        // як у списку компаній, лише в бік старіших.
+        cursor
+          ? sql`(${vacancies.firstDetectedAt}, ${vacancies.id}) < (${cursor.key}::timestamptz, ${cursor.id}::uuid)`
+          : undefined,
+      ),
+    )
+    // `id` робить порядок однозначним при однаковій даті: одна перевірка дає
+    // всім вакансіям джерела той самий момент виявлення.
     .orderBy(desc(vacancies.firstDetectedAt), desc(vacancies.id))
-    .limit(limit);
+    // Один рядок понад порцію показує, чи є що читати далі.
+    .limit(limit + 1);
 
-  return { items };
+  const hasMore = rows.length > limit;
+  const visible = hasMore ? rows.slice(0, limit) : rows;
+  const last = visible.at(-1);
+
+  return {
+    // Ключ курсора - службове поле запиту, у рядок списку він не йде.
+    items: visible.map((row) => {
+      const item: VacancyListItem & { cursorKey?: string } = { ...row };
+      delete item.cursorKey;
+      return item;
+    }),
+    nextCursor: hasMore && last ? { key: last.cursorKey, id: last.id } : null,
+  };
 }
 
 /**
