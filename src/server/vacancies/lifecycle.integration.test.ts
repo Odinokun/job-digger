@@ -9,6 +9,7 @@ import { syncSourceVacancies } from "./lifecycle.ts";
 
 const FIRST_CHECK = new Date("2026-11-01T10:00:00Z");
 const SECOND_CHECK = new Date("2026-11-02T10:00:00Z");
+const THIRD_CHECK = new Date("2026-11-03T10:00:00Z");
 
 /** Компанія з одним джерелом Greenhouse - повертає id джерела. */
 async function greenhouseSource(board = "discord"): Promise<string> {
@@ -134,5 +135,72 @@ describe("syncSourceVacancies", () => {
         firstDetectedAt: FIRST_CHECK,
       }),
     ]);
+  });
+
+  it("deletes a vacancy that disappeared after a successful check", async () => {
+    const sourceId = await greenhouseSource();
+    await sync(sourceId, ok(parsed("101"), parsed("102")), FIRST_CHECK);
+
+    await sync(sourceId, ok(parsed("102")), SECOND_CHECK);
+
+    expect(await rowsOf(sourceId)).toEqual([
+      expect.objectContaining({ key: "id:102" }),
+    ]);
+  });
+
+  it("deletes every vacancy when a successful check finds none", async () => {
+    const sourceId = await greenhouseSource();
+    await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
+
+    await sync(sourceId, ok(), SECOND_CHECK);
+
+    expect(await rowsOf(sourceId)).toEqual([]);
+  });
+
+  it("marks a disappeared favorite as closed instead of deleting it", async () => {
+    const sourceId = await greenhouseSource();
+    await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
+    await testDb
+      .update(vacancies)
+      .set({ isRead: true, isFavorite: true })
+      .where(eq(vacancies.sourceId, sourceId));
+
+    await sync(sourceId, ok(), SECOND_CHECK);
+
+    expect(await rowsOf(sourceId)).toEqual([
+      expect.objectContaining({
+        key: "id:101",
+        isRead: true,
+        isFavorite: true,
+        closedAt: SECOND_CHECK,
+        lastSeenAt: FIRST_CHECK,
+      }),
+    ]);
+  });
+
+  it("keeps the moment a favorite closed on later checks", async () => {
+    const sourceId = await greenhouseSource();
+    await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
+    await testDb
+      .update(vacancies)
+      .set({ isFavorite: true })
+      .where(eq(vacancies.sourceId, sourceId));
+    await sync(sourceId, ok(), SECOND_CHECK);
+
+    await sync(sourceId, ok(), THIRD_CHECK);
+
+    expect(await rowsOf(sourceId)).toEqual([
+      expect.objectContaining({ closedAt: SECOND_CHECK }),
+    ]);
+  });
+
+  it("leaves vacancies of other sources alone", async () => {
+    const sourceId = await greenhouseSource("discord");
+    const otherId = await greenhouseSource("linear");
+    await sync(otherId, ok(parsed("101")), FIRST_CHECK);
+
+    await sync(sourceId, ok(), SECOND_CHECK);
+
+    expect(await rowsOf(otherId)).toHaveLength(1);
   });
 });

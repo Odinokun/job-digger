@@ -6,7 +6,7 @@ import { sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { vacancies } from "../db/schema.ts";
-import type { ParseResult } from "../parsers/types.ts";
+import type { ParsedVacancy, ParseResult } from "../parsers/types.ts";
 import { vacancyKey } from "./key.ts";
 
 export interface SyncSourceVacanciesInput {
@@ -26,10 +26,28 @@ export async function syncSourceVacancies(
 ): Promise<void> {
   if (!result.ok) return;
 
+  await db.transaction(async (tx) => {
+    await upsertSeen(tx, sourceId, result.vacancies, checkedAt);
+    await removeGone(tx, sourceId, checkedAt);
+  });
+}
+
+type Executor = Pick<NodePgDatabase, "insert" | "execute">;
+
+/** Знайдені вакансії: нові створюються, наявні отримують свіжі дані з сайту. */
+async function upsertSeen(
+  db: Executor,
+  sourceId: string,
+  list: ParsedVacancy[],
+  checkedAt: Date,
+): Promise<void> {
+  // Порожній `values([])` Drizzle не приймає, а вставляти й нічого.
+  if (list.length === 0) return;
+
   await db
     .insert(vacancies)
     .values(
-      result.vacancies.map((vacancy) => ({
+      list.map((vacancy) => ({
         sourceId,
         key: vacancyKey(vacancy),
         title: vacancy.title,
@@ -54,4 +72,38 @@ export async function syncSourceVacancies(
         lastSeenAt: checkedAt,
       },
     });
+}
+
+/**
+ * Зниклі вакансії - ті, яких ця перевірка не бачила: після `upsertSeen` у них
+ * `last_seen_at` раніше за `checkedAt`. Звичайні видаляються, з Favorites -
+ * отримують позначку Closed.
+ *
+ * Одна команда, а не «прочитати, а тоді видалити» (розділ 7, «Одночасні
+ * зміни»): умова `NOT is_favorite` перевіряється в момент видалення. Якщо
+ * користувач саме додає вакансію у Favorites, PostgreSQL чекає на його
+ * транзакцію і перевіряє умову на оновленому рядку, тож вакансія не губиться
+ * (https://www.postgresql.org/docs/current/transaction-iso.html#XACT-READ-COMMITTED).
+ *
+ * Обидві частини команди бачать один знімок бази
+ * (https://www.postgresql.org/docs/current/queries-with.html#QUERIES-WITH-MODIFYING),
+ * тож така вакансія в цю перевірку ще й не отримає Closed - лише в наступну.
+ * Головне - вона лишається.
+ */
+async function removeGone(
+  db: Executor,
+  sourceId: string,
+  checkedAt: Date,
+): Promise<void> {
+  const gone = sql`${vacancies.sourceId} = ${sourceId} and ${vacancies.lastSeenAt} < ${checkedAt}`;
+
+  await db.execute(sql`
+    with deleted as (
+      delete from ${vacancies}
+      where ${gone} and not ${vacancies.isFavorite}
+    )
+    update ${vacancies}
+    set ${sql.identifier(vacancies.closedAt.name)} = ${checkedAt}
+    where ${gone} and ${vacancies.isFavorite} and ${vacancies.closedAt} is null
+  `);
 }
