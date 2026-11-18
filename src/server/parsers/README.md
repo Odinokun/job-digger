@@ -12,7 +12,7 @@
 | `greenhouse.ts`      | Greenhouse: `readGreenhouse(sourceUrl, client)` і його частини |
 | `greenhouse.test.ts` | Юніт-тести парсера Greenhouse                     |
 | `greenhouse.integration.test.ts` | `readGreenhouse` через фейковий вебсервер |
-| `shared.ts`          | Спільне для парсерів: `collectVacancies` (правило кривих записів), `fetchJson` (запит → статус → JSON), `UNREADABLE`, `isRecord`, `isWebUrl` |
+| `shared.ts`          | Спільне для парсерів: `collectVacancies` (правило кривих записів), `fetchJson` і `postJson` (запит → статус → JSON), `UNREADABLE`, `isRecord`, `isWebUrl` |
 | `shared.test.ts`     | Юніт-тести `collectVacancies`                     |
 | `lever.ts`           | Lever: `readLever(sourceUrl, client)`, `leverSite`, `parseLeverPostings` |
 | `lever.test.ts`      | Юніт-тести парсера Lever                          |
@@ -22,6 +22,7 @@
 | `ashby.integration.test.ts` | `readAshby` через фейковий вебсервер, зокрема відповідь понад 5 МБ |
 | `workday.ts`         | Workday: `readWorkday(sourceUrl, client)`, `workdaySite`, `parseWorkdayJobs` |
 | `workday.test.ts`    | Юніт-тести парсера Workday                        |
+| `workday.integration.test.ts` | `readWorkday` через фейковий вебсервер і сервер зі сторінками |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
 
 ## Спільний формат

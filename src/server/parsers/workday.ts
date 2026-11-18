@@ -6,8 +6,8 @@
 import type { HttpClient } from "../http/client.ts";
 import {
   collectVacancies,
-  fetchJson,
   isRecord,
+  postJson,
   UNREADABLE,
   type ReadVacancy,
 } from "./shared.ts";
@@ -124,4 +124,80 @@ function readerFor(jobBase: string): ReadVacancy {
       location: location === "" ? null : location,
     };
   };
+}
+
+/**
+ * Скільки вакансій просити за раз. Це найбільше, що Workday приймає: на
+ * `limit: 50` він відповідає 400 (перевірено на NVIDIA 18.11.2026).
+ */
+export const WORKDAY_PAGE_SIZE = 20;
+
+/**
+ * Скільки сторінок читати щонайбільше. Досягнення ліміту - нормальне
+ * завершення (задача 3.12, де ліміт стане налаштуванням через ENV).
+ */
+export const WORKDAY_MAX_PAGES = 5;
+
+/**
+ * Вакансії кар'єрного джерела на Workday: сайт з адреси, сторінки списку через
+ * POST (`offset`/`limit`) і розбір кожної. Адреса не Workday - `unreadable` без
+ * жодного запиту.
+ *
+ * Кінець списку - за `total` першої сторінки або за неповною сторінкою. Просто
+ * «питати, доки не прийде порожня» не можна: на наступних сторінках `total`
+ * дорівнює 0, а з `offset` від 2000 Workday знову віддає першу сторінку.
+ *
+ * Збій будь-якої сторінки - збій усього джерела, як у Lever.
+ */
+export async function readWorkday(
+  sourceUrl: string,
+  client: HttpClient,
+  { maxPages = WORKDAY_MAX_PAGES }: { maxPages?: number } = {},
+): Promise<ParseResult> {
+  const site = workdaySite(sourceUrl);
+
+  if (site === null) {
+    return UNREADABLE;
+  }
+
+  const vacancies: ParsedVacancy[] = [];
+  let skipped = 0;
+  let total = Infinity;
+
+  for (let page = 0; page < maxPages; page += 1) {
+    const offset = page * WORKDAY_PAGE_SIZE;
+    const fetched = await postJson(client, site.api, {
+      appliedFacets: {},
+      limit: WORKDAY_PAGE_SIZE,
+      offset,
+      searchText: "",
+    });
+
+    if (!fetched.ok) {
+      return fetched;
+    }
+
+    const parsed = parseWorkdayJobs(fetched.answer, site.jobBase);
+
+    if (!parsed.ok) {
+      return parsed;
+    }
+
+    vacancies.push(...parsed.vacancies);
+    skipped += parsed.skipped;
+
+    if (page === 0 && isRecord(fetched.answer)) {
+      const { total: first } = fetched.answer;
+      total = typeof first === "number" ? first : Infinity;
+    }
+
+    // Пропущені записи теж займали місце на сторінці.
+    const read = parsed.vacancies.length + parsed.skipped;
+
+    if (read < WORKDAY_PAGE_SIZE || offset + read >= total) {
+      break;
+    }
+  }
+
+  return { ok: true, vacancies, skipped };
 }

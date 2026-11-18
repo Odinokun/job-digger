@@ -4,6 +4,7 @@
 import {
   HttpError,
   type HttpClient,
+  type HttpResponse,
   type RequestOptions,
 } from "../http/client.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
@@ -28,23 +29,39 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+type FetchedJson =
+  { ok: true; answer: unknown } | Extract<ParseResult, { ok: false }>;
+
 /**
  * Запит JSON через HTTP-клієнт: `{ ok: true, answer }` з уже розібраним тілом
  * або помилка парсера - `not-found` на 404, `bad-status` на інший не-2xx,
  * `fetch-failed` на збій запиту, `unreadable` на тіло, що не JSON. `request` -
  * налаштування запиту для клієнта, зокрема власний ліміт розміру.
  */
-export async function fetchJson(
+export function fetchJson(
   client: HttpClient,
   url: string,
   request?: RequestOptions,
-): Promise<
-  { ok: true; answer: unknown } | Extract<ParseResult, { ok: false }>
-> {
+): Promise<FetchedJson> {
+  return answerOf(() => client.get(url, request));
+}
+
+/** Те саме, що `fetchJson`, але POST з тілом JSON (Workday). */
+export function postJson(
+  client: HttpClient,
+  url: string,
+  json: unknown,
+): Promise<FetchedJson> {
+  return answerOf(() => client.post(url, json));
+}
+
+async function answerOf(
+  send: () => Promise<HttpResponse>,
+): Promise<FetchedJson> {
   let response;
 
   try {
-    response = await client.get(url, request);
+    response = await send();
   } catch (error) {
     if (error instanceof HttpError) {
       return {
