@@ -26,9 +26,7 @@
       "Bash(npx eslint *)",
       "Bash(npx playwright *)",
       "Bash(docker compose ps*)",
-      "Bash(docker compose logs*)",
-      "mcp__trello__trelloRead*",
-      "mcp__trello__trelloWrite*"
+      "Bash(docker compose logs*)"
     ]
   },
   "hooks": {
