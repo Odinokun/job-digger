@@ -21,4 +21,8 @@
 Причини відмови:
 
 - `invalid-url` - рядок не розбирається як адреса;
-- `scheme` - схема не http і не https (`ftp:`, `file:` тощо).
+- `scheme` - схема не http і не https (`ftp:`, `file:` тощо);
+- `local-host` - `localhost` або його піддомен у будь-якому написанні
+  (`LOCALHOST.`, `api.localhost`). Відхиляється за іменем, ще до DNS
+  ([RFC 6761, розділ 6.3](https://www.rfc-editor.org/rfc/rfc6761.html#section-6.3)).
+  `localhost.example.com` - звичайний публічний домен і проходить.

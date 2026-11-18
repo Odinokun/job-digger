@@ -27,6 +27,23 @@ describe("checkUrl", () => {
     });
   });
 
+  it("refuses localhost in any spelling", () => {
+    for (const address of [
+      "http://localhost/",
+      "http://LOCALHOST./",
+      "http://api.localhost:3000/",
+    ]) {
+      expect(checkUrl(address), address).toEqual({
+        ok: false,
+        reason: "local-host",
+      });
+    }
+  });
+
+  it("allows a public domain that only starts with localhost", () => {
+    expect(checkUrl("http://localhost.example.com/").ok).toBe(true);
+  });
+
   it("refuses a string that is not an address", () => {
     expect(checkUrl("не адреса")).toEqual({
       ok: false,
