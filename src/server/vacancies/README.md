@@ -14,7 +14,7 @@
 | `lifecycle.integration.test.ts` | Інтеграційні тести життєвого циклу на справжній базі |
 | `list.ts` | `listVacancies` - порція вкладки Jobs; `hasAnyVacancy` - чи є в користувача вакансії взагалі |
 | `list.integration.test.ts` | Інтеграційні тести списків Jobs |
-| `marks.ts` | `findVacancy`, `setVacancyRead`, `setVacancyFavorite`, `countUnread`, `markAllRead` - позначки користувача |
+| `marks.ts` | `findVacancy`, `setVacancyRead`, `setVacancyFavorite`, `countUnread`, `markAllRead`, `setCompanyVacanciesRead` - позначки користувача |
 | `marks.integration.test.ts` | Інтеграційні тести позначок |
 
 ## Очищена адреса
@@ -162,3 +162,7 @@ id з клієнта не дає змінити чужу. Криве id (не UU
   `listVacancies`, - `tabCondition`) і межа - час бази; `markAllRead` - позначає
   прочитаними непрочитані, записані не пізніше межі, і повертає, скільки позначено.
   Разом - Mark all as read, див. «Одночасні зміни».
+- `setCompanyVacanciesRead` - Mark all as read / unread для компанії: `is_read` усіх
+  активних (не Closed) вакансій її джерел одним `UPDATE`. Межі, як у загальній дії,
+  тут немає свідомо: діалогу й числа немає, дію легко скасувати протилежною, а
+  гонитва можлива, лише якщо саме цю компанію в цей момент перевіряють.

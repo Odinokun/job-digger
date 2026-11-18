@@ -8,6 +8,7 @@ import {
   findVacancy,
   countUnread,
   markAllRead,
+  setCompanyVacanciesRead,
   setVacancyFavorite,
   setVacancyRead,
 } from "./marks.ts";
@@ -309,7 +310,11 @@ async function seedVacancies(
     )
     .returning();
 
-  return { userId: user.id, ids: rows.map((row) => row.id) };
+  return {
+    userId: user.id,
+    companyId: company.id,
+    ids: rows.map((row) => row.id),
+  };
 }
 
 describe("countUnread", () => {
@@ -397,6 +402,90 @@ describe("markAllRead", () => {
     for (const asOf of ["", "tomorrow", "2026-11-18", "2026-11-18T10:00:00Z"]) {
       expect(await markAllRead(testDb, { userId, asOf })).toBe(0);
     }
+    expect((await stored(ids[0])).isRead).toBe(false);
+  });
+});
+
+describe("setCompanyVacanciesRead", () => {
+  it("marks every active vacancy of the company and reports how many", async () => {
+    const { userId, companyId, ids } = await seedVacancies(
+      {},
+      { isRead: true },
+      {},
+    );
+
+    expect(
+      await setCompanyVacanciesRead(testDb, {
+        userId,
+        companyId,
+        isRead: true,
+      }),
+    ).toBe(3);
+    for (const id of ids) {
+      expect((await stored(id)).isRead).toBe(true);
+    }
+
+    expect(
+      await setCompanyVacanciesRead(testDb, {
+        userId,
+        companyId,
+        isRead: false,
+      }),
+    ).toBe(3);
+    for (const id of ids) {
+      expect((await stored(id)).isRead).toBe(false);
+    }
+  });
+
+  it("leaves closed vacancies as they are", async () => {
+    // Закрита живе лише у Favorites: «усі активні вакансії компанії» її не
+    // включають (docs/ui.md, розділ 4.2).
+    const { userId, companyId, ids } = await seedVacancies({
+      closedAt: DETECTED,
+      isFavorite: true,
+    });
+
+    expect(
+      await setCompanyVacanciesRead(testDb, {
+        userId,
+        companyId,
+        isRead: true,
+      }),
+    ).toBe(0);
+    expect((await stored(ids[0])).isRead).toBe(false);
+  });
+
+  it("does not touch other companies", async () => {
+    const first = await seedVacancies({});
+    const second = await seedVacancies({});
+
+    await setCompanyVacanciesRead(testDb, {
+      userId: first.userId,
+      companyId: first.companyId,
+      isRead: true,
+    });
+
+    expect((await stored(second.ids[0])).isRead).toBe(false);
+  });
+
+  it("does nothing for another user's company or an id that is not an id", async () => {
+    const { companyId, ids } = await seedVacancies({});
+    const userId = await stranger();
+
+    expect(
+      await setCompanyVacanciesRead(testDb, {
+        userId,
+        companyId,
+        isRead: true,
+      }),
+    ).toBe(0);
+    expect(
+      await setCompanyVacanciesRead(testDb, {
+        userId,
+        companyId: "not-a-uuid",
+        isRead: true,
+      }),
+    ).toBe(0);
     expect((await stored(ids[0])).isRead).toBe(false);
   });
 });

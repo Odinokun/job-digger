@@ -5,7 +5,7 @@
  * (README, «Одночасні зміни»). Вакансія шукається за користувачем через
  * компанію: id приходить із клієнта, і чужу змінити не вийде.
  */
-import { and, eq, inArray, isNotNull, lte, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, lte, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import type { VacancyListItem } from "../../lib/vacancies/vacancy-list.ts";
@@ -165,4 +165,40 @@ export async function markAllRead(
     .returning({ id: vacancies.id });
 
   return marked.length;
+}
+
+/**
+ * Mark all as read / Mark all as unread для компанії (docs/ui.md, розділ 4.2):
+ * змінює `is_read` усіх активних (не Closed) вакансій її джерел і повертає,
+ * скільки змінено. Діалогу й межі немає: дію легко скасувати протилежною.
+ * Чужа компанія або id не у формі UUID - нічого не змінюється.
+ */
+export async function setCompanyVacanciesRead(
+  db: NodePgDatabase,
+  {
+    userId,
+    companyId,
+    isRead,
+  }: { userId: string; companyId: string; isRead: boolean },
+): Promise<number> {
+  if (!UUID_PATTERN.test(companyId)) return 0;
+
+  const companySources = db
+    .select({ id: careerSources.id })
+    .from(careerSources)
+    .innerJoin(companies, eq(careerSources.companyId, companies.id))
+    .where(and(eq(companies.id, companyId), eq(companies.userId, userId)));
+
+  const changed = await db
+    .update(vacancies)
+    .set({ isRead })
+    .where(
+      and(
+        inArray(vacancies.sourceId, companySources),
+        isNull(vacancies.closedAt),
+      ),
+    )
+    .returning({ id: vacancies.id });
+
+  return changed.length;
 }
