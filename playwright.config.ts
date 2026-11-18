@@ -54,7 +54,24 @@ export default defineConfig({
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
 
   // Один браузер: застосунок персональний, кросбраузерність не мета.
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  //
+  // Два проєкти на тому самому браузері. `@pending` - критерій готовності
+  // поточного етапу, червоний, поки етап не зроблено (CLAUDE.md, «Тести і
+  // TDD»): `chromium` його пропускає, `pending` запускає лише його. Окремі
+  // проєкти, а не `grepInvert` у корені конфігу, бо `--grep` у консолі
+  // виключення з конфігу не скасовує - лише звужує вибір ще більше.
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+      grepInvert: /@pending/,
+    },
+    {
+      name: "pending",
+      use: { ...devices["Desktop Chrome"] },
+      grep: /@pending/,
+    },
+  ],
 
   // Playwright сам підіймає фейковий вебсервер і застосунок і чекає, поки
   // обидва будуть готові.

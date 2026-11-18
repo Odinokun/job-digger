@@ -1,4 +1,6 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+
+import { companyCard } from "./locators.ts";
 
 /**
  * Повний шлях компанії: додати, відредагувати, видалити.
@@ -13,14 +15,6 @@ import { expect, test, type Page } from "@playwright/test";
  * База E2E чиститься перед прогоном (`e2e/global-setup.ts`), тож Bosch тут
  * не зустрінеться з однойменною компанією і не викличе попередження про дублікат.
  */
-
-/** Картка компанії в списку - елемент списку з точно такою назвою. */
-function companyCard(page: Page, name: string) {
-  // `exact`, бо назва трапляється й в адресі джерела (`bosch.com/...`).
-  return page
-    .getByRole("listitem")
-    .filter({ has: page.getByText(name, { exact: true }) });
-}
 
 test("adds a company from one address, edits it and deletes it", async ({
   page,
