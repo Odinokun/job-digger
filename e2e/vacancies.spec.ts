@@ -44,6 +44,13 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   await card.getByRole("button", { name: "Check now" }).click();
   await expect(card.getByText(/Last checked/)).toBeVisible();
 
+  // Лічильник непрочитаних - у меню біля Jobs і в назві вкладки браузера.
+  const jobsLink = page
+    .getByRole("navigation", { name: "Main" })
+    .getByRole("link", { name: /^Jobs/ });
+  await expect(jobsLink).toContainText(`(${BOARD_SIZE})`);
+  await expect(page).toHaveTitle(`(${BOARD_SIZE}) Job Digger`);
+
   // Unread: уся дошка, кожна вакансія з назвою компанії.
   await page
     .getByRole("navigation", { name: "Main" })
@@ -70,6 +77,7 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
     .getByRole("button", { name: "Mark as read" })
     .click();
   await expect(vacancyRow(page, TITLE)).toHaveCount(0);
+  await expect(jobsLink).toContainText(`(${BOARD_SIZE - 1})`);
 
   await page.getByRole("link", { name: /^Read/ }).click();
   await expect(vacancyRow(page, TITLE)).toBeVisible();
@@ -96,6 +104,9 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   await confirmDialog.getByRole("button", { name: "Mark as read" }).click();
   await expect(confirmDialog).toBeHidden();
   await expect(page.getByText("Everything is read.")).toBeVisible();
+  // Непрочитаних немає - числа немає ні в меню, ні в назві вкладки.
+  await expect(jobsLink).toHaveText("Jobs");
+  await expect(page).toHaveTitle("Job Digger");
 
   await page.getByRole("link", { name: /^Read/ }).click();
   await expect(
