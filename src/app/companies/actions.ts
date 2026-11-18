@@ -15,6 +15,7 @@ import { updateCompany } from "@/server/companies/update";
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 import { httpClient } from "@/server/http/http-client";
+import { setCompanyVacanciesRead } from "@/server/vacancies/marks";
 
 import type {
   AddCareerSourceFormState,
@@ -365,4 +366,35 @@ function addedSource(
   return url === ""
     ? undefined
     : { url, label: readField(formData, "addSourceLabel") };
+}
+
+/**
+ * Mark all as read / Mark all as unread для компанії (docs/ui.md, розділ 4.2).
+ * Аргументи - недовірений ввід: id перевіряє `setCompanyVacanciesRead` (UUID і
+ * власник), а позначка має бути саме булевою. `revalidateUnreadCount` - заради
+ * лічильника в шапці і щоб Jobs, відкритий одразу після дії, не показав список
+ * до запису (задача 3.22).
+ */
+export async function setCompanyVacanciesReadAction(
+  companyId: unknown,
+  isRead: unknown,
+): Promise<{ ok: true; changed: number } | { ok: false }> {
+  if (typeof companyId !== "string" || typeof isRead !== "boolean") {
+    return { ok: false };
+  }
+
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return setCompanyVacanciesRead(db, { userId: user.id, companyId, isRead });
+  });
+
+  if (!outcome.ok) {
+    return { ok: false };
+  }
+
+  revalidateUnreadCount();
+
+  return { ok: true, changed: outcome.value };
 }

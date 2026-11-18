@@ -80,7 +80,7 @@ Tracked · Not tracked
 
 Check now і «Last checked» вже в коді, поки без черги - [`src/server/checks/README.md`](../src/server/checks/README.md) і [`src/app/README.md`](../src/app/README.md#відносний-час). Лишилося: Check now неактивна під час загальної перевірки ([розділ 8](checks-and-queue.md)) - разом із чергою на етапі 4.
 
-Mark all as read / Mark all as unread змінюють статус усіх активних вакансій цієї компанії. Діалогу підтвердження немає - дію легко скасувати протилежною.
+Mark all as read / Mark all as unread для компанії вже в коді - [`src/app/README.md`](../src/app/README.md) (`company-read-buttons.tsx`) і [`src/server/vacancies/README.md`](../src/server/vacancies/README.md#позначки-користувача).
 
 Delete і його діалог підтвердження вже в коді - [`src/app/README.md`](../src/app/README.md#рішення-щодо-heroui) і [`src/server/companies/README.md`](../src/server/companies/README.md#видалення-компанії). Діалог називає й числа вакансій («Разом із нею буде видалено 14 вакансій, з них 2 в обраному»). Лишилося незробленим: історична агрегована статистика має залишатися після видалення - вона чекає на таблицю `check_runs` (задача 4.01).
 

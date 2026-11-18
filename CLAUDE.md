@@ -25,6 +25,8 @@ Cache Components і React Compiler вимкнені свідомо. Playwright -
 
 Тема застосунку - «Ink»: токени в `src/app/globals.css`, шрифти в `src/app/layout.tsx`. Правила, обмеження на тон accent і рішення щодо бейджів - [src/app/README.md](src/app/README.md#тема-ink).
 
+**Кожна кнопка лише з іконкою має підказку при наведенні** - через `IconButton` із `src/app/components/icon-button.tsx`, а не `Button isIconOnly`. Деталі - [src/app/README.md](src/app/README.md#кнопки-лише-з-іконкою).
+
 Світла, темна чи системна - вибір у cookie `theme`, як і мова. Атрибутом `data-theme` володіє inline-скрипт, а не React: чому саме так і чим це загрожує при правках layout - [src/app/README.md](src/app/README.md#перемикання-теми).
 
 Next.js 16 має зміни проти тренувальних даних моделей: документація встановленої версії лежить у `node_modules/next/dist/docs/`, читай її перед написанням коду (про це ж нагадує `AGENTS.md`, який генерує `next dev`).
