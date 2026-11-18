@@ -2,13 +2,11 @@
  * Захист від SSRF: сервер ходить лише на публічні адреси http/https
  * (docs/security.md, розділ 13, пункт 3).
  */
-import { BlockList, isIP } from "node:net";
+import type { LookupAddress, LookupOptions } from "node:dns";
+import { lookup as dnsLookup } from "node:dns/promises";
+import { BlockList, isIP, type LookupFunction } from "node:net";
 
-export type UrlRefusal =
-  | "invalid-url"
-  | "scheme"
-  | "local-host"
-  | "private-ip";
+export type UrlRefusal = "invalid-url" | "scheme" | "local-host" | "private-ip";
 
 export type UrlCheck =
   { ok: true; url: URL } | { ok: false; reason: UrlRefusal };
@@ -131,3 +129,55 @@ export function isPublicIp(ip: string): boolean {
 
   return !BLOCKED_NETWORKS.check(ip, family === 4 ? "ipv4" : "ipv6");
 }
+
+/** Запит до DNS: усі адреси імені. У тестах підмінюється. */
+export type Resolve = (
+  hostname: string,
+  options: LookupOptions,
+) => Promise<LookupAddress[]>;
+
+const resolveWithDns: Resolve = (hostname, options) =>
+  dnsLookup(hostname, { ...options, all: true as const });
+
+/**
+ * Функція `lookup` для `http.request`, що відмовляє, коли домен веде на
+ * внутрішню адресу.
+ *
+ * Перевірка йде в момент зʼєднання, на тих самих адресах, до яких воно й
+ * піде. Окрема перевірка DNS до запиту лишала б вікно: між нею і запитом домен
+ * може почати вказувати вже на внутрішню адресу (DNS rebinding).
+ *
+ * Відмова - якщо внутрішня **хоч одна** адреса: інакше зʼєднання могло б
+ * потрапити саме на неї. Помилка DNS передається далі без змін.
+ * https://nodejs.org/api/net.html#socketconnectoptions-connectlistener
+ */
+export function createSafeLookup(resolve: Resolve): LookupFunction {
+  return (hostname, options, callback) => {
+    resolve(hostname, options).then(
+      (addresses) => {
+        const internal = addresses.find(({ address }) => !isPublicIp(address));
+
+        if (internal) {
+          const error: NodeJS.ErrnoException = new Error(
+            `Refused to connect to ${hostname}: it resolves to the internal address ${internal.address}`,
+          );
+          error.code = "ERR_SSRF_PRIVATE_ADDRESS";
+          callback(error, "");
+          return;
+        }
+
+        // З `all: true` Node чекає масив, інакше - одну адресу і її родину.
+        if (options.all) {
+          callback(null, addresses);
+        } else {
+          const [first] = addresses;
+          callback(null, first.address, first.family);
+        }
+      },
+      (error: NodeJS.ErrnoException) => callback(error, ""),
+    );
+  };
+}
+
+/** `lookup` зі справжнім DNS - для HTTP-модуля. */
+export const safeLookup = createSafeLookup(resolveWithDns);

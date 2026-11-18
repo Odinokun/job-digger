@@ -1,6 +1,8 @@
+import type { LookupAddress, LookupOptions } from "node:dns";
+
 import { describe, expect, it } from "vitest";
 
-import { checkUrl } from "./ssrf.ts";
+import { checkUrl, createSafeLookup, type Resolve } from "./ssrf.ts";
 
 describe("checkUrl", () => {
   it("allows a public https address and returns it parsed", () => {
@@ -87,5 +89,76 @@ describe("checkUrl", () => {
       ok: false,
       reason: "invalid-url",
     });
+  });
+});
+
+/** Резолвер, що завжди відповідає тими самими адресами, - замість DNS. */
+function resolvesTo(...addresses: string[]): Resolve {
+  return async () =>
+    addresses.map((address) => ({
+      address,
+      family: address.includes(":") ? 6 : 4,
+    }));
+}
+
+/** Викликає lookup у форматі Node і повертає те, що він передав у колбек. */
+function runLookup(
+  lookup: ReturnType<typeof createSafeLookup>,
+  options: LookupOptions,
+): Promise<{
+  error: NodeJS.ErrnoException | null;
+  address: string | LookupAddress[];
+  family?: number;
+}> {
+  return new Promise((done) => {
+    lookup("jobs.example.com", options, (error, address, family) =>
+      done({ error, address, family }),
+    );
+  });
+}
+
+describe("createSafeLookup", () => {
+  it("passes on every address when all of them are public", async () => {
+    const lookup = createSafeLookup(resolvesTo("8.8.8.8", "2606:4700::1111"));
+
+    expect(await runLookup(lookup, { all: true })).toEqual({
+      error: null,
+      address: [
+        { address: "8.8.8.8", family: 4 },
+        { address: "2606:4700::1111", family: 6 },
+      ],
+      family: undefined,
+    });
+  });
+
+  it("passes on the first address when a single one is asked for", async () => {
+    const lookup = createSafeLookup(resolvesTo("8.8.8.8", "8.8.4.4"));
+
+    expect(await runLookup(lookup, {})).toEqual({
+      error: null,
+      address: "8.8.8.8",
+      family: 4,
+    });
+  });
+
+  it("refuses the host when any of its addresses is internal", async () => {
+    const lookup = createSafeLookup(resolvesTo("8.8.8.8", "10.0.0.1"));
+
+    const { error } = await runLookup(lookup, { all: true });
+
+    expect(error?.code).toBe("ERR_SSRF_PRIVATE_ADDRESS");
+  });
+
+  it("passes a DNS failure on unchanged", async () => {
+    const notFound = Object.assign(new Error("getaddrinfo ENOTFOUND"), {
+      code: "ENOTFOUND",
+    });
+    const lookup = createSafeLookup(async () => {
+      throw notFound;
+    });
+
+    const { error } = await runLookup(lookup, { all: true });
+
+    expect(error).toBe(notFound);
   });
 });
