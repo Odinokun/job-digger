@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { runAction } from "@/app/action-result";
 import type { Cursor } from "@/lib/pagination/cursor";
+import { parseVacancyIds } from "@/lib/vacancies/mark-all";
 import {
   parseJobsTab,
   type VacancyListItem,
@@ -11,7 +12,12 @@ import {
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 import { listVacancies } from "@/server/vacancies/list";
-import { setVacancyFavorite, setVacancyRead } from "@/server/vacancies/marks";
+import {
+  listUnreadIds,
+  markVacanciesRead,
+  setVacancyFavorite,
+  setVacancyRead,
+} from "@/server/vacancies/marks";
 
 /** Наступна порція вкладки Jobs або факт збою - показати його нічим, крім toast. */
 export type LoadMoreVacanciesResult =
@@ -110,4 +116,51 @@ async function markResult(
   }
 
   return outcome.ok ? { ok: true, vacancy: outcome.value } : { ok: false };
+}
+
+/**
+ * Mark all as read, крок 1: знімок ID усіх непрочитаних. Діалог показує їх
+ * кількість, а крок 2 позначає рівно ці (`listUnreadIds`).
+ */
+export async function listUnreadIdsAction(): Promise<
+  { ok: true; ids: string[] } | { ok: false }
+> {
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return listUnreadIds(db, { userId: user.id });
+  });
+
+  return outcome.ok ? { ok: true, ids: outcome.value } : { ok: false };
+}
+
+/**
+ * Mark all as read, крок 2: одна порція знімка (`src/lib/vacancies/mark-all.ts`).
+ * Аргумент - недовірений ввід: не масив рядків чи завелика порція - відмова;
+ * чужі, зниклі й криві ID просто не збігаються (`markVacanciesRead`).
+ */
+export async function markVacanciesReadAction(
+  ids: unknown,
+): Promise<{ ok: true; marked: number } | { ok: false }> {
+  const batch = parseVacancyIds(ids);
+
+  if (batch === null) {
+    return { ok: false };
+  }
+
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return markVacanciesRead(db, { userId: user.id, ids: batch });
+  });
+
+  if (!outcome.ok) {
+    return { ok: false };
+  }
+
+  revalidatePath("/");
+
+  return { ok: true, marked: outcome.value };
 }

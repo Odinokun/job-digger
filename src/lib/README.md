@@ -11,6 +11,8 @@
 | `pagination/cursor.ts` | курсор keyset-пагінації та його розбір із недовіреного значення             |
 | `vacancies/vacancy-list.ts` | вкладки Jobs (`JOBS_TABS`, `parseJobsTab`, `belongsToJobsTab`), тип рядка `VacancyListItem` і `patchVacancy` для оптимістичних дій |
 | `vacancies/vacancy-list.test.ts` | юніт-тести вкладок і `patchVacancy`            |
+| `vacancies/mark-all.ts` | Mark all as read: порції знімка ID (`MARK_ALL_BATCH`, `toBatches`) і розбір порції з аргументу дії (`parseVacancyIds`) |
+| `vacancies/mark-all.test.ts` | юніт-тести порцій і розбору                  |
 | `theme.ts`             | вибір оформлення (Light / Dark / System), імʼя cookie і розбір її значення  |
 
 ## Курсор пагінації
