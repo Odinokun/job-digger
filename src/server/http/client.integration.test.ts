@@ -176,11 +176,18 @@ describe("createHttpClient", () => {
       respond = () => {
         // Мовчить: ні заголовків, ні тіла.
       };
-      const client = createHttpClient({ fakeOrigin: origin, timeoutMs: 100 });
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        timeoutMs: 100,
+        // Тайм-аут повторюється - без цього тест чекав би справжні 1 + 2 с.
+        sleep: async () => {},
+      });
 
       const error = await errorOf(client.get("https://site.test/slow"));
 
       expect(error).toMatchObject({ reason: "timeout" });
+      // Тайм-аут - збій, що може минути, тож повторюється, як і мережа.
+      expect(received).toHaveLength(3);
     });
 
     it("stops reading as soon as the body grows past the limit", async () => {
@@ -229,6 +236,114 @@ describe("createHttpClient", () => {
       const response = await client.get("https://site.test/edge");
 
       expect(response.body).toHaveLength(2048);
+    });
+  });
+
+  describe("retries", () => {
+    /** `sleep`, що не чекає, а записує, скільки його просили чекати. */
+    function recordingSleep() {
+      const pauses: number[] = [];
+      return {
+        pauses,
+        sleep: async (ms: number) => {
+          pauses.push(ms);
+        },
+      };
+    }
+
+    /** Відповідає статусами по черзі, останнім - на всі наступні запити. */
+    function statuses(...codes: number[]): typeof respond {
+      let call = 0;
+      return (_request, response) => {
+        const code = codes[Math.min(call, codes.length - 1)] ?? 200;
+        call += 1;
+        response.writeHead(code);
+        response.end(String(code));
+      };
+    }
+
+    it("retries a server error twice with a growing pause", async () => {
+      respond = statuses(500, 503, 200);
+      const { pauses, sleep } = recordingSleep();
+      const client = createHttpClient({ fakeOrigin: origin, sleep });
+
+      const response = await client.get("https://site.test/flaky");
+
+      expect(response.status).toBe(200);
+      expect(pauses).toEqual([1000, 2000]);
+    });
+
+    it("returns the last server error when it does not go away", async () => {
+      respond = statuses(500);
+      const { sleep } = recordingSleep();
+      const client = createHttpClient({ fakeOrigin: origin, sleep });
+
+      const response = await client.get("https://site.test/down");
+
+      expect(response.status).toBe(500);
+      expect(received).toHaveLength(3);
+    });
+
+    it("does not retry a missing page", async () => {
+      respond = statuses(404);
+      const { pauses, sleep } = recordingSleep();
+      const client = createHttpClient({ fakeOrigin: origin, sleep });
+
+      const response = await client.get("https://site.test/gone");
+
+      expect(response.status).toBe(404);
+      expect(received).toHaveLength(1);
+      expect(pauses).toEqual([]);
+    });
+
+    it("retries a dropped connection", async () => {
+      let call = 0;
+      respond = (_request, response) => {
+        call += 1;
+        if (call === 1) {
+          response.socket?.destroy();
+          return;
+        }
+        response.writeHead(200);
+        response.end("back");
+      };
+      const { sleep } = recordingSleep();
+      const client = createHttpClient({ fakeOrigin: origin, sleep });
+
+      const response = await client.get("https://site.test/dropped");
+
+      expect(response.body).toBe("back");
+    });
+
+    it("reports a network failure that does not go away", async () => {
+      respond = (_request, response) => {
+        response.socket?.destroy();
+      };
+      const { sleep } = recordingSleep();
+      const client = createHttpClient({ fakeOrigin: origin, sleep });
+
+      const error = await errorOf(client.get("https://site.test/dead"));
+
+      expect(error).toMatchObject({ reason: "network" });
+      expect(received).toHaveLength(3);
+    });
+
+    it("does not retry what a retry cannot fix", async () => {
+      respond = (_request, response) => {
+        response.writeHead(200, { "content-length": "10000" });
+        response.flushHeaders();
+      };
+      const { sleep } = recordingSleep();
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        maxBytes: 2048,
+        sleep,
+      });
+
+      const error = await errorOf(client.get("https://site.test/big"));
+
+      expect(error).toMatchObject({ reason: "too-large" });
+      expect(received).toHaveLength(1);
     });
   });
 

@@ -31,6 +31,8 @@ export interface HttpClientOptions {
   timeoutMs?: number;
   /** Найбільший розмір тіла в байтах. За замовчуванням `MAX_BYTES`. */
   maxBytes?: number;
+  /** Пауза між спробами. Тести передають свою, щоб не чекати справжні секунди. */
+  sleep?: (ms: number) => Promise<void>;
 }
 
 /** 20 с на весь запит - від зʼєднання до останнього байта. */
@@ -50,7 +52,9 @@ export type HttpErrorReason =
   /** Відповідь не прийшла повністю за `timeoutMs`. */
   | "timeout"
   /** Тіло більше за `maxBytes` - заявлене чи фактичне. */
-  | "too-large";
+  | "too-large"
+  /** Збій мережі (обрив, відмова в зʼєднанні), що не минув і після повторів. */
+  | "network";
 
 /** Запит не вдався. `reason` - щоб парсер міг відрізнити причини. */
 export class HttpError extends Error {
@@ -74,6 +78,15 @@ const MAX_REDIRECTS = 5;
 
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 
+/**
+ * Паузи перед повторами - що далі, то довші. Повторів стільки, скільки пауз:
+ * два, тобто до трьох спроб на адресу.
+ */
+const RETRY_PAUSES_MS = [1000, 2000];
+
+const realSleep = (ms: number) =>
+  new Promise<void>((done) => setTimeout(done, ms));
+
 export function createHttpClient(options: HttpClientOptions): HttpClient {
   return {
     async get(url) {
@@ -82,7 +95,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
       // Редиректи - вручну, а не силами транспорту: кожна нова адреса має
       // пройти захист від SSRF до того, як на неї піде запит.
       for (let redirects = 0; ; redirects += 1) {
-        const response = await send(current, options);
+        const response = await sendWithRetries(current, options);
         const location = response.headers.location;
 
         if (!REDIRECT_STATUSES.has(response.status) || !location) {
@@ -102,6 +115,57 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
       }
     },
   };
+}
+
+/**
+ * Запит із повторами: лише при збої мережі, тайм-ауті й помилці сервера (5xx) -
+ * тобто коли наступна спроба справді може вдатися. Відповідь 4xx (зокрема 404)
+ * повертається одразу: що з нею робити, вирішує парсер. Заборона SSRF, завелика
+ * відповідь і зациклені редиректи теж не повторюються - повтор їх не змінить.
+ */
+async function sendWithRetries(
+  url: URL,
+  options: HttpClientOptions,
+): Promise<HttpResponse> {
+  const sleep = options.sleep ?? realSleep;
+
+  for (let attempt = 0; ; attempt += 1) {
+    const pause = RETRY_PAUSES_MS[attempt];
+
+    try {
+      const response = await send(url, options);
+
+      if (response.status < 500 || pause === undefined) {
+        return response;
+      }
+    } catch (error) {
+      const failure = asHttpError(error, url);
+
+      if (!isRetryable(failure) || pause === undefined) {
+        throw failure;
+      }
+    }
+
+    await sleep(pause);
+  }
+}
+
+function isRetryable(error: HttpError): boolean {
+  return error.reason === "network" || error.reason === "timeout";
+}
+
+/** Збій транспорту стає `HttpError` "network", наші помилки лишаються як є. */
+function asHttpError(error: unknown, url: URL): HttpError {
+  if (error instanceof HttpError) {
+    return error;
+  }
+
+  const detail = error instanceof Error ? error.message : String(error);
+  return new HttpError(
+    "network",
+    url.toString(),
+    `Request to ${url} failed: ${detail}`,
+  );
 }
 
 /** Адреса, яку пропустив захист від SSRF, або `HttpError` "blocked". */
