@@ -2,10 +2,10 @@
  * Життєвий цикл вакансії: що одна перевірка джерела робить із його вакансіями в
  * базі. Правила й рішення - README.md поруч, розділ «Життєвий цикл».
  */
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { vacancies } from "../db/schema.ts";
+import { careerSources, vacancies } from "../db/schema.ts";
 import type { ParsedVacancy, ParseResult } from "../parsers/types.ts";
 import { vacancyKey } from "./key.ts";
 
@@ -27,6 +27,18 @@ export async function syncSourceVacancies(
   if (!result.ok) return;
 
   await db.transaction(async (tx) => {
+    // Джерело могли видалити, поки сайт відповідав, - тоді результат
+    // відкидається (docs/checks-and-queue.md, розділ 8). `FOR KEY SHARE` ще й
+    // не дає видалити джерело до кінця транзакції: видалення дочекається, і
+    // каскад прибере щойно записані вакансії разом зі старими
+    // (https://www.postgresql.org/docs/current/explicit-locking.html#LOCKING-ROWS).
+    const [source] = await tx
+      .select({ id: careerSources.id })
+      .from(careerSources)
+      .where(eq(careerSources.id, sourceId))
+      .for("key share");
+    if (source === undefined) return;
+
     await upsertSeen(tx, sourceId, result.vacancies, checkedAt);
     await removeGone(tx, sourceId, checkedAt);
   });
