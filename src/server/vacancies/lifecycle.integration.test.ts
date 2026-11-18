@@ -8,6 +8,7 @@ import type { ParsedVacancy, ParseResult } from "../parsers/types.ts";
 import { syncSourceVacancies } from "./lifecycle.ts";
 
 const FIRST_CHECK = new Date("2026-11-01T10:00:00Z");
+const SECOND_CHECK = new Date("2026-11-02T10:00:00Z");
 
 /** Компанія з одним джерелом Greenhouse - повертає id джерела. */
 async function greenhouseSource(board = "discord"): Promise<string> {
@@ -46,6 +47,10 @@ function ok(...list: ParsedVacancy[]): ParseResult {
   return { ok: true, vacancies: list };
 }
 
+function sync(sourceId: string, result: ParseResult, checkedAt: Date) {
+  return syncSourceVacancies(testDb, { sourceId, result, checkedAt });
+}
+
 async function rowsOf(sourceId: string) {
   return testDb
     .select()
@@ -58,11 +63,7 @@ describe("syncSourceVacancies", () => {
   it("creates a vacancy seen for the first time as unread", async () => {
     const sourceId = await greenhouseSource();
 
-    await syncSourceVacancies(testDb, {
-      sourceId,
-      result: ok(parsed("101")),
-      checkedAt: FIRST_CHECK,
-    });
+    await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
 
     expect(await rowsOf(sourceId)).toEqual([
       expect.objectContaining({
@@ -75,6 +76,27 @@ describe("syncSourceVacancies", () => {
         closedAt: null,
         firstDetectedAt: FIRST_CHECK,
         lastSeenAt: FIRST_CHECK,
+      }),
+    ]);
+  });
+
+  it("keeps read and favorite when the vacancy is found again", async () => {
+    const sourceId = await greenhouseSource();
+    await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
+    await testDb
+      .update(vacancies)
+      .set({ isRead: true, isFavorite: true })
+      .where(eq(vacancies.sourceId, sourceId));
+
+    await sync(sourceId, ok(parsed("101")), SECOND_CHECK);
+
+    expect(await rowsOf(sourceId)).toEqual([
+      expect.objectContaining({
+        key: "id:101",
+        isRead: true,
+        isFavorite: true,
+        firstDetectedAt: FIRST_CHECK,
+        lastSeenAt: SECOND_CHECK,
       }),
     ]);
   });

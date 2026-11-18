@@ -25,15 +25,23 @@ export async function syncSourceVacancies(
 ): Promise<void> {
   if (!result.ok) return;
 
-  await db.insert(vacancies).values(
-    result.vacancies.map((vacancy) => ({
-      sourceId,
-      key: vacancyKey(vacancy),
-      title: vacancy.title,
-      url: vacancy.url,
-      location: vacancy.location,
-      firstDetectedAt: checkedAt,
-      lastSeenAt: checkedAt,
-    })),
-  );
+  await db
+    .insert(vacancies)
+    .values(
+      result.vacancies.map((vacancy) => ({
+        sourceId,
+        key: vacancyKey(vacancy),
+        title: vacancy.title,
+        url: vacancy.url,
+        location: vacancy.location,
+        firstDetectedAt: checkedAt,
+        lastSeenAt: checkedAt,
+      })),
+    )
+    // Вакансія вже є - оновлюються лише поля перевірки. Read і Favorite належать
+    // користувачеві й сюди не потрапляють (розділ 7, «Одночасні зміни»).
+    .onConflictDoUpdate({
+      target: [vacancies.sourceId, vacancies.key],
+      set: { lastSeenAt: checkedAt },
+    });
 }
