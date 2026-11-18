@@ -23,6 +23,12 @@ export default defineConfig({
   // Окрема база E2E: створюється, мігрується й чиститься перед прогоном.
   globalSetup: "./e2e/global-setup.ts",
 
+  // Сценарії по черзі: усі пишуть в одну базу E2E, і паралельні копії бачили
+  // б дані одна одної (друга копія додавання Bosch отримувала «Already added»).
+  // Так само, як `fileParallelism: false` в інтеграційних тестів.
+  // https://playwright.dev/docs/test-parallel
+  workers: 1,
+
   // На CI: падати, якщо в коді лишився test.only, і давати одну спробу
   // повтору на нестабільний сценарій.
   forbidOnly: !!process.env.CI,
