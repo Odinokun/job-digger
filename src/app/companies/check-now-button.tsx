@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { Button, Spinner } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 
@@ -22,8 +22,9 @@ interface CheckNowButtonProps {
 /**
  * Check now у картці компанії (docs/ui.md, розділ 4.2): перевіряє всі її
  * джерела. Поки черги немає, дія чекає, доки прочитаються всі джерела, тож
- * кнопка весь цей час у стані `isPending`. Повніші стани завантаження -
- * задача 3.21.
+ * кнопка весь цей час у стані `isPending` зі спінером. Сам `isPending` у HeroUI
+ * лише вимикає кнопку, тож спінер малюємо самі (документація Button, приклад
+ * Loading).
  */
 export function CheckNowButton({
   companyId,
@@ -52,7 +53,12 @@ export function CheckNowButton({
         })
       }
     >
-      {t("checkNow")}
+      {({ isPending: isChecking }) => (
+        <>
+          {isChecking ? <Spinner color="current" size="sm" /> : null}
+          {t("checkNow")}
+        </>
+      )}
     </Button>
   );
 }

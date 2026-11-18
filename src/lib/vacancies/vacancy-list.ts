@@ -68,3 +68,21 @@ export function belongsToJobsTab(
       return isActive;
   }
 }
+
+/** Зміна позначок однієї вакансії - те, що дія Read чи Favorite обіцяє зробити. */
+export type VacancyPatch = {
+  id: string;
+  changes: Partial<Pick<VacancyListItem, "isRead" | "isFavorite">>;
+};
+
+/**
+ * Список із застосованою зміною позначок - оптимістичний стан сторінки Jobs
+ * (`useOptimistic`): дія видна одразу, ще до відповіді сервера. Чиста функція,
+ * як того вимагає React. Решта рядків лишаються тими самими обʼєктами.
+ */
+export function patchVacancy(
+  items: VacancyListItem[],
+  { id, changes }: VacancyPatch,
+): VacancyListItem[] {
+  return items.map((item) => (item.id === id ? { ...item, ...changes } : item));
+}
