@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { careerSources, companies, users, vacancies } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
 import { testDb } from "../db/testing/test-db.ts";
-import { findVacancy, setVacancyRead } from "./marks.ts";
+import { findVacancy, setVacancyFavorite, setVacancyRead } from "./marks.ts";
 
 const DETECTED = new Date("2026-11-18T10:00:00Z");
 
@@ -159,5 +159,105 @@ describe("vacancy id from the client", () => {
     expect(
       await setVacancyRead(testDb, { userId, vacancyId: "nope", isRead: true }),
     ).toBeNull();
+  });
+});
+
+const CLOSED = new Date("2026-11-18T12:00:00Z");
+
+describe("setVacancyFavorite", () => {
+  it("adds a vacancy to Favorites, returning the new row", async () => {
+    const { userId, vacancyId } = await seedVacancy({ isRead: true });
+
+    const row = await setVacancyFavorite(testDb, {
+      userId,
+      vacancyId,
+      isFavorite: true,
+    });
+
+    expect(row).toMatchObject({
+      id: vacancyId,
+      isFavorite: true,
+      isRead: true,
+    });
+  });
+
+  it("changes only the favorite mark", async () => {
+    const { userId, vacancyId } = await seedVacancy();
+    const before = await stored(vacancyId);
+
+    await setVacancyFavorite(testDb, { userId, vacancyId, isFavorite: true });
+
+    expect(await stored(vacancyId)).toEqual({ ...before, isFavorite: true });
+  });
+
+  it("removes an active vacancy from Favorites and keeps it", async () => {
+    const { userId, vacancyId } = await seedVacancy({ isFavorite: true });
+
+    const row = await setVacancyFavorite(testDb, {
+      userId,
+      vacancyId,
+      isFavorite: false,
+    });
+
+    expect(row).toMatchObject({ id: vacancyId, isFavorite: false });
+    expect(await stored(vacancyId)).toBeDefined();
+  });
+
+  it("deletes a closed vacancy once it leaves Favorites", async () => {
+    // Закрита вакансія жила лише заради Favorites: зник сайт - зникає й вона.
+    const { userId, vacancyId } = await seedVacancy({
+      isFavorite: true,
+      closedAt: CLOSED,
+    });
+
+    const row = await setVacancyFavorite(testDb, {
+      userId,
+      vacancyId,
+      isFavorite: false,
+    });
+
+    expect(row).toBeNull();
+    expect(await stored(vacancyId)).toBeUndefined();
+  });
+
+  it("keeps a vacancy the check has just reopened", async () => {
+    // Перевірка зняла Closed, бо вакансія повернулася на сайт, поки рядок ще
+    // висів у списку як закритий. Рішення - за станом у базі, а не в списку.
+    const { userId, vacancyId } = await seedVacancy({
+      isFavorite: true,
+      closedAt: CLOSED,
+    });
+    await testDb
+      .update(vacancies)
+      .set({ closedAt: null })
+      .where(eq(vacancies.id, vacancyId));
+
+    const row = await setVacancyFavorite(testDb, {
+      userId,
+      vacancyId,
+      isFavorite: false,
+    });
+
+    expect(row).toMatchObject({
+      id: vacancyId,
+      isFavorite: false,
+      closedAt: null,
+    });
+  });
+
+  it("does nothing to another user's vacancy", async () => {
+    const { vacancyId } = await seedVacancy({
+      isFavorite: true,
+      closedAt: CLOSED,
+    });
+
+    const row = await setVacancyFavorite(testDb, {
+      userId: await stranger(),
+      vacancyId,
+      isFavorite: false,
+    });
+
+    expect(row).toBeNull();
+    expect(await stored(vacancyId)).toMatchObject({ isFavorite: true });
   });
 });

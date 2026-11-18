@@ -5,7 +5,7 @@
  * (README, «Одночасні зміни»). Вакансія шукається за користувачем через
  * компанію: id приходить із клієнта, і чужу змінити не вийде.
  */
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import type { VacancyListItem } from "../../lib/vacancies/vacancy-list.ts";
@@ -72,4 +72,37 @@ export async function setVacancyRead(
     );
 
   return findVacancy(db, { userId, vacancyId });
+}
+
+/**
+ * Favorite / Remove from Favorites. Повертає оновлений рядок або `null`, якщо
+ * вакансії немає - зокрема коли вона щойно видалена.
+ *
+ * Закрита вакансія жила лише заради Favorites, тож прибрана звідти -
+ * видаляється (розділ 7 плану). Рішення ухвалює база за поточним станом
+ * рядка, а не клієнт за тим, що бачив у списку: `closed_at is not null` в умові
+ * `delete`. Якщо перевірка саме зняла Closed, бо вакансія повернулася на сайт,
+ * PostgreSQL перевірить умову на оновленому рядку, і вакансія лишиться - лише
+ * без Favorite (README, «Одночасні зміни»).
+ */
+export async function setVacancyFavorite(
+  db: NodePgDatabase,
+  { userId, vacancyId, isFavorite }: VacancyRef & { isFavorite: boolean },
+): Promise<VacancyListItem | null> {
+  if (!UUID_PATTERN.test(vacancyId)) return null;
+
+  return db.transaction(async (tx) => {
+    const own = and(
+      eq(vacancies.id, vacancyId),
+      inArray(vacancies.sourceId, ownSources(tx, userId)),
+    );
+
+    if (!isFavorite) {
+      await tx.delete(vacancies).where(and(own, isNotNull(vacancies.closedAt)));
+    }
+
+    await tx.update(vacancies).set({ isFavorite }).where(own);
+
+    return findVacancy(tx, { userId, vacancyId });
+  });
 }
