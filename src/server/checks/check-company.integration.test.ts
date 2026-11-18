@@ -151,10 +151,10 @@ describe("checkCompany", () => {
     });
   });
 
-  it("skips untracked sources and platforms without a parser yet", async () => {
+  it("skips untracked sources and pages nothing can read", async () => {
     const { userId, companyId, sourceIds } = await companyWith(
       { url: "job-boards.greenhouse.io/discord", isTracked: false },
-      { url: "acme.peopleforce.io/careers", platform: "peopleforce" },
+      { url: "acme.example/careers", platform: "unsupported" },
     );
 
     await check(userId, companyId);
