@@ -44,3 +44,27 @@ export function parseJobsTab(value: unknown): JobsTab {
     ? (value as JobsTab)
     : "unread";
 }
+
+/**
+ * Чи належить вакансія вкладці - та сама умова, що в запиті вкладок
+ * (`src/server/vacancies/list.ts`). Потрібна клієнтові: після Mark as read чи
+ * Favorite рядок або лишається у вкладці, або зникає з неї без перечитування
+ * списку.
+ */
+export function belongsToJobsTab(
+  vacancy: Pick<VacancyListItem, "isRead" | "isFavorite" | "closedAt">,
+  tab: JobsTab,
+): boolean {
+  const isActive = vacancy.closedAt === null;
+
+  switch (tab) {
+    case "unread":
+      return isActive && !vacancy.isRead;
+    case "read":
+      return isActive && vacancy.isRead;
+    case "favorites":
+      return vacancy.isFavorite;
+    case "all":
+      return isActive;
+  }
+}
