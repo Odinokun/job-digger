@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
 import { careerSources, companies, vacancies } from "../db/schema.ts";
@@ -50,6 +50,23 @@ function ok(...list: ParsedVacancy[]): ParseResult {
 
 function sync(sourceId: string, result: ParseResult, checkedAt: Date) {
   return syncSourceVacancies(testDb, { sourceId, result, checkedAt });
+}
+
+/**
+ * Чекає, поки якийсь запит у тестовій базі стане в чергу за блокуванням -
+ * так тест знає, що гонка справді сталася, а не що перевірка просто не встигла.
+ */
+async function untilSomeoneWaitsForLock(): Promise<void> {
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const { rows } = await testDb.execute<{ waiting: number }>(sql`
+      select count(*)::int as waiting from pg_stat_activity
+      where datname = current_database() and wait_event_type = 'Lock'
+    `);
+    if (rows[0].waiting > 0) return;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+
+  throw new Error("No query started waiting for a lock");
 }
 
 async function rowsOf(sourceId: string) {
@@ -296,6 +313,29 @@ describe("syncSourceVacancies", () => {
     );
 
     expect(await rowsOf(sourceId)).toEqual(before);
+  });
+
+  it("keeps a vacancy favorited while the check is removing it", async () => {
+    const sourceId = await greenhouseSource();
+    await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
+    let check: Promise<void> | undefined;
+
+    await testDb.transaction(async (user) => {
+      await user
+        .update(vacancies)
+        .set({ isFavorite: true })
+        .where(eq(vacancies.sourceId, sourceId));
+
+      // Перевірка стартує, поки Favorite ще не закомічений: вона бачить
+      // звичайну вакансію і впирається в блокування рядка.
+      check = sync(sourceId, ok(), SECOND_CHECK);
+      await untilSomeoneWaitsForLock();
+    });
+    await check;
+
+    expect(await rowsOf(sourceId)).toEqual([
+      expect.objectContaining({ key: "id:101", isFavorite: true }),
+    ]);
   });
 
   it("leaves vacancies of other sources alone", async () => {
