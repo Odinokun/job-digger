@@ -11,6 +11,7 @@ import {
   UNREADABLE,
   type ReadVacancy,
 } from "./shared.ts";
+import { PAGES_TO_CHECK } from "./pages-to-check.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 /** Регіон Lever: від нього залежить хост API (`api.lever.co` чи `api.eu.lever.co`). */
@@ -120,12 +121,6 @@ const API_HOSTS: Record<LeverRegion, string> = {
 export const LEVER_PAGE_SIZE = 100;
 
 /**
- * Скільки сторінок читати щонайбільше. Досягнення ліміту - нормальне
- * завершення (задача 3.12, де ліміт стане налаштуванням через ENV).
- */
-export const LEVER_MAX_PAGES = 5;
-
-/**
  * Вакансії кар'єрного джерела на Lever: сайт з адреси, сторінки API через
  * HTTP-клієнт (`skip`/`limit`) і розбір кожної. Адреса без сайту Lever -
  * `unreadable` без жодного запиту.
@@ -139,7 +134,7 @@ export async function readLever(
   client: HttpClient,
   {
     pageSize = LEVER_PAGE_SIZE,
-    maxPages = LEVER_MAX_PAGES,
+    maxPages = PAGES_TO_CHECK,
   }: { pageSize?: number; maxPages?: number } = {},
 ): Promise<ParseResult> {
   const found = leverSite(sourceUrl);

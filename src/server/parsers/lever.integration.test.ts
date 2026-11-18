@@ -12,6 +12,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createHttpClient } from "../http/client.ts";
 import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
+import { PAGES_TO_CHECK } from "./pages-to-check.ts";
 import { readLever } from "./lever.ts";
 
 /** Розклад запитів тут не перевіряється - він має власні тести. */
@@ -121,7 +122,7 @@ describe("readLever", () => {
       const result = await readLever(
         "https://jobs.lever.co/acme",
         clientFor(origin),
-        { pageSize: 100 },
+        { pageSize: 100, maxPages: 5 },
       );
 
       expect(result.ok && result.vacancies).toHaveLength(250);
@@ -140,7 +141,7 @@ describe("readLever", () => {
       const result = await readLever(
         "https://jobs.lever.co/acme",
         clientFor(origin),
-        { pageSize: 100 },
+        { pageSize: 100, maxPages: 5 },
       );
 
       expect(result.ok && result.vacancies).toHaveLength(200);
@@ -161,6 +162,16 @@ describe("readLever", () => {
 
       expect(result.ok && result.vacancies).toHaveLength(200);
       expect(requested).toHaveLength(2);
+    });
+  });
+
+  it("reads Pages to check pages by default", async () => {
+    const requested: string[] = [];
+
+    await withServer(pagedSite(10_000, requested), async (origin) => {
+      await readLever("https://jobs.lever.co/acme", clientFor(origin));
+
+      expect(requested).toHaveLength(PAGES_TO_CHECK);
     });
   });
 

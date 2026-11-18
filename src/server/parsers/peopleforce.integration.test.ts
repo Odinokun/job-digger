@@ -12,6 +12,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createHttpClient } from "../http/client.ts";
 import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
+import { PAGES_TO_CHECK } from "./pages-to-check.ts";
 import { readPeopleForce } from "./peopleforce.ts";
 
 /** Розклад запитів тут не перевіряється - він має власні тести. */
@@ -132,7 +133,10 @@ describe("readPeopleForce", () => {
     const requested: string[] = [];
 
     await withServer(pagedSite(23, requested), async (origin) => {
-      const result = await readPeopleForce(ACME, clientFor(origin));
+      // Ліміт задано явно: значення з `.env` автора тут ні до чого.
+      const result = await readPeopleForce(ACME, clientFor(origin), {
+        maxPages: 5,
+      });
 
       expect(result.ok && result.vacancies).toHaveLength(23);
       expect(requested).toEqual([
@@ -164,6 +168,16 @@ describe("readPeopleForce", () => {
 
       expect(result.ok && result.vacancies).toHaveLength(20);
       expect(requested).toHaveLength(2);
+    });
+  });
+
+  it("reads Pages to check pages by default", async () => {
+    const requested: string[] = [];
+
+    await withServer(pagedSite(1000, requested), async (origin) => {
+      await readPeopleForce(ACME, clientFor(origin));
+
+      expect(requested).toHaveLength(PAGES_TO_CHECK);
     });
   });
 
