@@ -94,7 +94,13 @@ export default defineConfig({
       // «Concurrent dev and build»). Заодно локальний прогін поводиться так само,
       // як на CI.
       command: `npm run build && npm start -- -p ${PORT}`,
-      url: baseURL,
+      // Готовність - за відкритим портом, а не за url. Вебсервери Playwright
+      // підіймає ДО `globalSetup` (playwright 1.65, runner/index.js,
+      // `createGlobalSetupTasks`), а базу E2E створює саме він. Сторінка `/`
+      // (Jobs) читає базу, тож на чистій машині перевірка url отримувала 500,
+      // поки бази немає, і чекала б вічно. `next start` відкриває порт, коли
+      // готовий, а база зʼявиться до першого тесту.
+      port: PORT,
       // Змінні тут додаються поверх process.env, а process.env у Next має
       // перевагу над .env - тож сервер піде в базу E2E, а не в базу розробки.
       // FAKE_WEB_ORIGIN читає src/server/http/http-client.ts: з ним усі зовнішні
