@@ -160,9 +160,16 @@ export const vacancies = pgTable(
     url: text("url").notNull(),
     // Необовʼязкова: якщо джерело її не дало, у списку стоїть «—».
     location: text("location"),
-    // Дата виявлення: за нею сортується список Jobs, і вона ж - межа для
-    // «Mark all as read» (docs/ui.md, розділ 4.1).
+    // Дата виявлення: за нею сортується список Jobs. Це момент старту
+    // перевірки, що знайшла вакансію (`checkedAt`), а не момент запису рядка.
     firstDetectedAt: timestamp("first_detected_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    // Момент запису рядка - годинник бази, а не перевірки. Межа для «Mark all
+    // as read»: перевірка, що йде, поки відкритий діалог, пише вакансії з
+    // ранішим `first_detected_at`, а `created_at` у них пізніший за межу
+    // (src/server/vacancies/README.md, «Одночасні зміни»).
+    createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
     // Коли перевірка бачила вакансію востаннє («last checked» у плані).
