@@ -2,6 +2,7 @@
  * Парсер Greenhouse: вакансії з публічного Job Board API
  * (https://docs.greenhouse.io/job-board.html).
  */
+import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 /**
  * Хости, на яких Greenhouse показує дошки. Регіону ЄС тут немає свідомо:
@@ -37,4 +38,77 @@ export function greenhouseBoardToken(sourceUrl: string): string | null {
   }
 
   return first ?? null;
+}
+
+const UNREADABLE: ParseResult = { ok: false, error: { reason: "unreadable" } };
+
+/**
+ * Вакансії з відповіді `GET /v1/boards/{board_token}/jobs`.
+ *
+ * `externalId` - поле `id`: за документацією це ID оголошення, той самий, що в
+ * посиланні на вакансію (`internal_job_id` - ID самої посади, в оголошень-
+ * «prospect» він `null`).
+ *
+ * Крива хоч одна вакансія - невдала вся відповідь, а не пропуск цієї вакансії:
+ * якби змінився формат, пропущеними виявились би всі, і порожній список закрив
+ * би всі вакансії джерела. Невдала перевірка вакансій не чіпає.
+ */
+export function parseGreenhouseJobs(answer: unknown): ParseResult {
+  if (!isRecord(answer) || !Array.isArray(answer.jobs)) {
+    return UNREADABLE;
+  }
+
+  const vacancies: ParsedVacancy[] = [];
+
+  for (const job of answer.jobs) {
+    const vacancy = isRecord(job) ? toVacancy(job) : null;
+
+    if (vacancy === null) {
+      return UNREADABLE;
+    }
+
+    vacancies.push(vacancy);
+  }
+
+  return { ok: true, vacancies };
+}
+
+function toVacancy(job: Record<string, unknown>): ParsedVacancy | null {
+  const { id, title, absolute_url: url, location } = job;
+
+  if (
+    (typeof id !== "number" && typeof id !== "string") ||
+    typeof title !== "string" ||
+    title.trim() === "" ||
+    typeof url !== "string" ||
+    !isWebUrl(url)
+  ) {
+    return null;
+  }
+
+  const place =
+    isRecord(location) && typeof location.name === "string"
+      ? location.name.trim()
+      : "";
+
+  return {
+    externalId: String(id),
+    title: title.trim(),
+    url,
+    location: place === "" ? null : place,
+  };
+}
+
+/** Лише http і https: посилання з іншою схемою (`javascript:`) у UI - діра. */
+function isWebUrl(value: string): boolean {
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "https:" || protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

@@ -8,8 +8,23 @@
 
 | Файл                 | Роль                                             |
 | -------------------- | ------------------------------------------------ |
-| `greenhouse.ts`      | Greenhouse: `greenhouseBoardToken(sourceUrl)`     |
+| `types.ts`           | Спільний формат: `ParsedVacancy`, `ParseResult`, `ParserError` |
+| `greenhouse.ts`      | Greenhouse: `greenhouseBoardToken(sourceUrl)`, `parseGreenhouseJobs(answer)` |
 | `greenhouse.test.ts` | Юніт-тести парсера Greenhouse                     |
+
+## Спільний формат
+
+Парсер повертає `{ ok: true, vacancies }` або `{ ok: false, error }` (`types.ts`).
+
+- **Вакансія** - `externalId` (ID на платформі, з нього складається ключ), `title`,
+  `url` (лише http/https) і `location` (може бути `null` - тоді в списку «—»).
+- **Помилки:** `not-found` (сторінки чи дошки немає, 404), `unreadable` (відповідь не
+  того формату), `fetch-failed` (збій запиту, з причиною `HttpError`).
+- **Крива хоч одна вакансія - невдала вся відповідь.** Не пропускаємо її поодинці:
+  якби змінився формат, пропущеними виявились би всі, і порожній список закрив би
+  всі вакансії джерела. Невдала перевірка вакансій не чіпає.
+- Парсер лише читає, що є на платформі зараз. Дата виявлення, Read/Unread, ключ і
+  очищення URL - життєвий цикл (задачі 3.13 і 3.05).
 
 ## Greenhouse
 
@@ -22,3 +37,8 @@ API - `https://boards-api.greenhouse.io/v1/boards/{board_token}/jobs`, без
 вакансію (`.../discord/jobs/123`), вбудована дошка (`/embed/job_board?for=discord`).
 Не дошка Greenhouse - `null`. Хост ЄС (`job-boards.eu.greenhouse.io`) не
 підтримується: підтвердженого API для нього немає.
+
+`parseGreenhouseJobs` бере з кожної вакансії `id` (ID оголошення, той самий, що в
+посиланні; `internal_job_id` - ID посади, і в оголошень-«prospect» він `null`),
+`title`, `absolute_url` і `location.name`. Тест читає справжню відповідь дошки
+Discord зі збережених відповідей фейкового вебсервера.
