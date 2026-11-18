@@ -1,6 +1,8 @@
 # src/server/db/testing - тестова база
 
 Обвʼязка для інтеграційних тестів: справжній PostgreSQL замість моків бази.
+`database.ts` спільний ще й з E2E: їхня окрема база готується тим самим кодом
+([README](../../../../README.md#e2e-тести)).
 Рівні тестів і правила TDD - [CLAUDE.md](../../../../CLAUDE.md#тести-і-tdd).
 
 ## Файли
@@ -8,8 +10,9 @@
 | Файл              | Роль                                                                  |
 | ----------------- | --------------------------------------------------------------------- |
 | `env.ts`          | Читає `TEST_DATABASE_URL` і не дає переплутати її з базою розробки     |
+| `database.ts`     | `createDatabaseIfMissing`, `migrateDatabase`, `truncateAll` для бази за адресою - спільне з E2E |
 | `global-setup.ts` | Один раз на прогін: створює базу, якщо немає, і проганяє міграції       |
-| `test-db.ts`      | Підключення `testDb` і `truncateAll()`                                 |
+| `test-db.ts`      | Підключення `testDb` і `truncateAll()` саме тестової бази               |
 | `setup.ts`        | `beforeEach(truncateAll)` і закриття пулу після файлу тестів            |
 | `career-source-values.ts` | `normalizedSourceUrl` - очищена адреса для прямої вставки джерела в тестах |
 

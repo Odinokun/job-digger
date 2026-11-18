@@ -40,7 +40,7 @@ PR: #57
 
 | Задача | Статус |
 | --- | --- |
-| [2.08 E2E: додавання, редагування, видалення компанії](2.08-e2e-company-crud.md) | todo |
+| [2.08 E2E: додавання, редагування, видалення компанії](2.08-e2e-company-crud.md) | done |
 | [3.01 Фейковий сервер із відповідями платформ](3.01-fake-platform-server.md) | backlog |
 | [3.02 Модуль HTTP-запитів з ввічливістю](3.02-polite-http-client.md) | backlog |
 | [3.03 Захист від SSRF](3.03-ssrf-protection.md) | backlog |
