@@ -11,6 +11,7 @@ import {
   UNREADABLE,
   type ReadVacancy,
 } from "./shared.ts";
+import { PAGES_TO_CHECK } from "./pages-to-check.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 /** Куди йти по вакансії сайту і звідки будувати посилання на неї. */
@@ -133,12 +134,6 @@ function readerFor(jobBase: string): ReadVacancy {
 export const WORKDAY_PAGE_SIZE = 20;
 
 /**
- * Скільки сторінок читати щонайбільше. Досягнення ліміту - нормальне
- * завершення (задача 3.12, де ліміт стане налаштуванням через ENV).
- */
-export const WORKDAY_MAX_PAGES = 5;
-
-/**
  * Вакансії кар'єрного джерела на Workday: сайт з адреси, сторінки списку через
  * POST (`offset`/`limit`) і розбір кожної. Адреса не Workday - `unreadable` без
  * жодного запиту.
@@ -152,7 +147,7 @@ export const WORKDAY_MAX_PAGES = 5;
 export async function readWorkday(
   sourceUrl: string,
   client: HttpClient,
-  { maxPages = WORKDAY_MAX_PAGES }: { maxPages?: number } = {},
+  { maxPages = PAGES_TO_CHECK }: { maxPages?: number } = {},
 ): Promise<ParseResult> {
   const site = workdaySite(sourceUrl);
 

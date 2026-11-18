@@ -13,6 +13,7 @@ import {
   UNREADABLE,
   type ReadVacancy,
 } from "./shared.ts";
+import { PAGES_TO_CHECK } from "./pages-to-check.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 /**
@@ -160,12 +161,6 @@ function readerFor(pageUrl: string): ReadVacancy {
 }
 
 /**
- * Скільки сторінок читати щонайбільше. Досягнення ліміту - нормальне
- * завершення (задача 3.12, де ліміт стане налаштуванням через ENV).
- */
-export const PEOPLEFORCE_MAX_PAGES = 5;
-
-/**
  * Вакансії кар'єрного джерела на PeopleForce: сайт компанії з адреси,
  * сторінки `/careers?page=N` через HTTP-клієнт і розбір кожної. Адреса не
  * PeopleForce - `unreadable` без жодного запиту.
@@ -177,7 +172,7 @@ export const PEOPLEFORCE_MAX_PAGES = 5;
 export async function readPeopleForce(
   sourceUrl: string,
   client: HttpClient,
-  { maxPages = PEOPLEFORCE_MAX_PAGES }: { maxPages?: number } = {},
+  { maxPages = PAGES_TO_CHECK }: { maxPages?: number } = {},
 ): Promise<ParseResult> {
   const site = peopleforceSite(sourceUrl);
 

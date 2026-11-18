@@ -12,6 +12,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createHttpClient } from "../http/client.ts";
 import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
+import { PAGES_TO_CHECK } from "./pages-to-check.ts";
 import { readWorkday } from "./workday.ts";
 
 /** Розклад запитів тут не перевіряється - він має власні тести. */
@@ -134,7 +135,10 @@ describe("readWorkday", () => {
     const received: Received[] = [];
 
     await withServer(pagedSite(45, received), async (origin) => {
-      const result = await readWorkday(ACME, clientFor(origin));
+      // Ліміт задано явно: значення з `.env` автора тут ні до чого.
+      const result = await readWorkday(ACME, clientFor(origin), {
+        maxPages: 5,
+      });
 
       expect(result.ok && result.vacancies).toHaveLength(45);
       expect(received).toEqual(
@@ -171,6 +175,16 @@ describe("readWorkday", () => {
 
       expect(result.ok && result.vacancies).toHaveLength(60);
       expect(received).toHaveLength(3);
+    });
+  });
+
+  it("reads Pages to check pages by default", async () => {
+    const received: Received[] = [];
+
+    await withServer(pagedSite(2000, received), async (origin) => {
+      await readWorkday(ACME, clientFor(origin));
+
+      expect(received).toHaveLength(PAGES_TO_CHECK);
     });
   });
 
