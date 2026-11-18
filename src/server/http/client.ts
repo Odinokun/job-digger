@@ -107,7 +107,20 @@ export interface RequestOptions {
 
 export interface HttpClient {
   get(url: string, request?: RequestOptions): Promise<HttpResponse>;
+  /**
+   * POST з тілом JSON - для API, що віддають дані лише так (Workday). Редирект
+   * не виконується, а повертається як відповідь: що він означає для API,
+   * вирішує парсер. Решта - як у `get`: захист від SSRF, ліміти, повтори.
+   */
+  post(
+    url: string,
+    json: unknown,
+    request?: RequestOptions,
+  ): Promise<HttpResponse>;
 }
+
+/** Тіло запиту JSON; без нього запит - GET. */
+type JsonBody = string | undefined;
 
 /** Скільки переходів поспіль дозволено, перш ніж здатися. */
 const MAX_REDIRECTS = 5;
@@ -143,14 +156,27 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
       sleep: options.sleep ?? realSleep,
     });
 
+  /** Ліміт окремого запиту замість спільного. */
+  function withRequest(request: RequestOptions): HttpClientOptions {
+    return request.maxBytes === undefined
+      ? options
+      : { ...options, maxBytes: request.maxBytes };
+  }
+
   return {
+    async post(url, json, request = {}) {
+      return sendWithRetries(
+        allowedUrl(url),
+        withRequest(request),
+        limiter,
+        JSON.stringify(json),
+      );
+    },
+
     async get(url, request = {}) {
       let current = allowedUrl(url);
       // Ліміт запиту діє й на редиректи - це та сама відповідь.
-      const requestOptions =
-        request.maxBytes === undefined
-          ? options
-          : { ...options, maxBytes: request.maxBytes };
+      const requestOptions = withRequest(request);
 
       // Редиректи - вручну, а не силами транспорту: кожна нова адреса має
       // пройти захист від SSRF до того, як на неї піде запит.
@@ -191,6 +217,7 @@ async function sendWithRetries(
   url: URL,
   options: HttpClientOptions,
   limiter: HostLimiter,
+  json?: JsonBody,
 ): Promise<HttpResponse> {
   const sleep = options.sleep ?? realSleep;
   const now = options.now ?? Date.now;
@@ -204,7 +231,7 @@ async function sendWithRetries(
       // Через обмежувач іде кожна спроба, а не лише перша: інакше повтор
       // після 500 одразу вдарив би по сайту вдруге.
       const response = await limiter.run(url.hostname, () =>
-        send(url, options),
+        send(url, options, json),
       );
 
       // 429 - окремо від звичайних повторів: сайт сам каже, скільки чекати,
@@ -323,8 +350,12 @@ function assertLoopback(fakeOrigin: string): void {
   }
 }
 
-/** Один запит, без редиректів. */
-function send(logical: URL, options: HttpClientOptions): Promise<HttpResponse> {
+/** Один запит, без редиректів: GET або, з тілом `json`, POST. */
+function send(
+  logical: URL,
+  options: HttpClientOptions,
+  json?: JsonBody,
+): Promise<HttpResponse> {
   // З фейковим вебсервером - на нього, домен стає частиною шляху. Без нього -
   // на справжню адресу, і `safeLookup` перевіряє адреси з DNS у момент
   // зʼєднання. Фейковий сервер - loopback, тож `safeLookup` його б відхилив:
@@ -360,7 +391,16 @@ function send(logical: URL, options: HttpClientOptions): Promise<HttpResponse> {
     const request = transport(
       target,
       {
-        headers: { "user-agent": USER_AGENT },
+        method: json === undefined ? "GET" : "POST",
+        headers: {
+          "user-agent": USER_AGENT,
+          ...(json === undefined
+            ? {}
+            : {
+                "content-type": "application/json",
+                "content-length": Buffer.byteLength(json),
+              }),
+        },
         ...(fake ? {} : { lookup: options.lookup ?? safeLookup }),
       },
       (res) => {
@@ -416,7 +456,7 @@ function send(logical: URL, options: HttpClientOptions): Promise<HttpResponse> {
       clearTimeout(timer);
       fail(error);
     });
-    request.end();
+    request.end(json);
   });
 }
 
