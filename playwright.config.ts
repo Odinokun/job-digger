@@ -11,6 +11,11 @@ import { e2eDatabaseUrl } from "./e2e/env.ts";
 const PORT = 3001;
 const baseURL = `http://127.0.0.1:${PORT}`;
 
+// Фейковий вебсервер замість справжніх платформ: тести ніколи не ходять на
+// справжні сайти. Схема адрес і збережені відповіді -
+// src/server/http/testing/README.md.
+const FAKE_WEB_PORT = 4010;
+
 /**
  * Playwright Test - лише інструмент E2E, у продакшн-код не потрапляє.
  * https://playwright.dev/docs/test-configuration
@@ -51,24 +56,41 @@ export default defineConfig({
   // Один браузер: застосунок персональний, кросбраузерність не мета.
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 
-  // Playwright сам підіймає застосунок і чекає, поки url відповість.
+  // Playwright сам підіймає фейковий вебсервер і застосунок і чекає, поки
+  // обидва будуть готові.
   // https://playwright.dev/docs/test-webserver
-  webServer: {
-    // Завжди продакшн-збірка, і локально, і на CI. Другий `next dev` поруч із
-    // запущеним не стартує: у Next 16 lockfile не дає двом `next dev` працювати
-    // в одному проєкті, а `next build` пише в окрему теку і з dev уживається
-    // (node_modules/next/dist/docs/01-app/02-guides/upgrading/version-16.md,
-    // «Concurrent dev and build»). Заодно локальний прогін поводиться так само,
-    // як на CI.
-    command: `npm run build && npm start -- -p ${PORT}`,
-    url: baseURL,
-    // Змінні тут додаються поверх process.env, а process.env у Next має
-    // перевагу над .env - тож сервер піде в базу E2E, а не в базу розробки.
-    env: { DATABASE_URL: e2eDatabaseUrl },
-    // Не перевикористовувати чужий сервер: якщо на порту вже щось відповідає,
-    // невідомо, з якою базою воно працює. Тоді прогін падає з помилкою.
-    reuseExistingServer: false,
-    // Холодна збірка довша за теплу - типових 60 с не завжди досить.
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      name: "FakeWeb",
+      command: `node src/server/http/testing/serve-fake-web.ts ${FAKE_WEB_PORT}`,
+      // Готовність - за відкритим портом, а не за url: Playwright приймає лише
+      // статуси до 403, а на корінь фейковий сервер відповідає 404.
+      port: FAKE_WEB_PORT,
+      reuseExistingServer: false,
+    },
+    {
+      name: "App",
+      // Завжди продакшн-збірка, і локально, і на CI. Другий `next dev` поруч із
+      // запущеним не стартує: у Next 16 lockfile не дає двом `next dev` працювати
+      // в одному проєкті, а `next build` пише в окрему теку і з dev уживається
+      // (node_modules/next/dist/docs/01-app/02-guides/upgrading/version-16.md,
+      // «Concurrent dev and build»). Заодно локальний прогін поводиться так само,
+      // як на CI.
+      command: `npm run build && npm start -- -p ${PORT}`,
+      url: baseURL,
+      // Змінні тут додаються поверх process.env, а process.env у Next має
+      // перевагу над .env - тож сервер піде в базу E2E, а не в базу розробки.
+      // FAKE_WEB_ORIGIN читає HTTP-модуль (задача 3.02): з ним усі зовнішні запити
+      // застосунку йдуть на фейковий вебсервер.
+      env: {
+        DATABASE_URL: e2eDatabaseUrl,
+        FAKE_WEB_ORIGIN: `http://127.0.0.1:${FAKE_WEB_PORT}`,
+      },
+      // Не перевикористовувати чужий сервер: якщо на порту вже щось відповідає,
+      // невідомо, з якою базою воно працює. Тоді прогін падає з помилкою.
+      reuseExistingServer: false,
+      // Холодна збірка довша за теплу - типових 60 с не завжди досить.
+      timeout: 120_000,
+    },
+  ],
 });
