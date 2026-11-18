@@ -11,8 +11,6 @@ import { expect, test, type BrowserContext, type Page } from "@playwright/test";
  * рендера. Перевірка «на кінцевий стан» усе це пропускала.
  */
 
-const APP_URL = "http://127.0.0.1:3000";
-
 /** Починає стежити за змінами `data-theme` на `<html>`. */
 async function watchThemeChanges(page: Page): Promise<void> {
   await page.evaluate(() => {
@@ -42,7 +40,14 @@ async function storeTheme(
   context: BrowserContext,
   value: string,
 ): Promise<void> {
-  await context.addCookies([{ name: "theme", value, url: APP_URL }]);
+  // Адреса застосунку - з `use.baseURL` конфігу, щоб порт жив в одному місці.
+  const url = test.info().project.use.baseURL;
+
+  if (!url) {
+    throw new Error("baseURL is not set in playwright.config.ts");
+  }
+
+  await context.addCookies([{ name: "theme", value, url }]);
 }
 
 /**

@@ -73,6 +73,9 @@ jobs:
       # тут не задається - інтеграційним тестам він не потрібен, а запобіжник в
       # env.ts вимагає лише, щоб адреси не збігалися.
       TEST_DATABASE_URL: postgres://postgres:${{ github.run_id }}@127.0.0.1:5432/job_digger_test
+      # Окрема база E2E у тому самому контейнері. Її створює e2e/global-setup.ts,
+      # а playwright.config.ts передає застосунку як DATABASE_URL.
+      E2E_DATABASE_URL: postgres://postgres:${{ github.run_id }}@127.0.0.1:5432/job_digger_e2e
 
     steps:
       - uses: actions/checkout@v7
@@ -86,10 +89,6 @@ jobs:
 
       - run: npm run test:unit
       - run: npm run test:integration
-
-      # E2E працюють на продакшн-збірці: під CI playwright.config.ts запускає
-      # `npm start`, а не dev-сервер, тому збірка потрібна до них.
-      - run: npm run build
 
       # Браузери не кешуємо. Документація Playwright: «Caching browser binaries
       # is not recommended» - відновлення кешу триває приблизно стільки ж, скільки
