@@ -4,7 +4,13 @@ import { describe, expect, it } from "vitest";
 import { careerSources, companies, users, vacancies } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
 import { testDb } from "../db/testing/test-db.ts";
-import { findVacancy, setVacancyFavorite, setVacancyRead } from "./marks.ts";
+import {
+  findVacancy,
+  countUnread,
+  markAllRead,
+  setVacancyFavorite,
+  setVacancyRead,
+} from "./marks.ts";
 
 const DETECTED = new Date("2026-11-18T10:00:00Z");
 
@@ -259,5 +265,138 @@ describe("setVacancyFavorite", () => {
 
     expect(row).toBeNull();
     expect(await stored(vacancyId)).toMatchObject({ isFavorite: true });
+  });
+});
+
+/**
+ * Кілька вакансій в одному джерелі однієї компанії системного користувача -
+ * по одній на кожен набір позначок.
+ */
+async function seedVacancies(
+  ...marks: Array<{ isRead?: boolean; isFavorite?: boolean; closedAt?: Date }>
+) {
+  const user = await seedSystemUser(testDb);
+  const [company] = await testDb
+    .insert(companies)
+    .values({
+      userId: user.id,
+      name: "Discord",
+      url: null,
+      normalizedUrl: null,
+    })
+    .returning();
+  const [source] = await testDb
+    .insert(careerSources)
+    .values({
+      companyId: company.id,
+      url: "https://job-boards.greenhouse.io/discord",
+      normalizedUrl: "job-boards.greenhouse.io/discord",
+      platform: "greenhouse",
+    })
+    .returning();
+  const rows = await testDb
+    .insert(vacancies)
+    .values(
+      marks.map((mark, index) => ({
+        sourceId: source.id,
+        key: `id:${index + 1}`,
+        title: `Job ${index + 1}`,
+        url: `https://job-boards.greenhouse.io/discord/jobs/${index + 1}`,
+        firstDetectedAt: DETECTED,
+        lastSeenAt: DETECTED,
+        ...mark,
+      })),
+    )
+    .returning();
+
+  return { userId: user.id, ids: rows.map((row) => row.id) };
+}
+
+describe("countUnread", () => {
+  it("counts every vacancy of the Unread tab, not just a loaded page", async () => {
+    const { userId } = await seedVacancies(
+      {},
+      { isFavorite: true },
+      { isRead: true },
+      // Закрита живе лише у Favorites, у вкладці Unread її немає.
+      { closedAt: DETECTED, isFavorite: true },
+      {},
+    );
+
+    const { count, asOf } = await countUnread(testDb, { userId });
+
+    expect(count).toBe(3);
+    // Межа - час бази з мікросекундами: JS Date обрізав би їх.
+    expect(asOf).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/);
+  });
+
+  it("does not count another user's vacancies", async () => {
+    await seedVacancies({}, {});
+
+    expect(
+      (await countUnread(testDb, { userId: await stranger() })).count,
+    ).toBe(0);
+  });
+});
+
+describe("markAllRead", () => {
+  it("marks the unread vacancies written up to the boundary", async () => {
+    const { userId, ids } = await seedVacancies({}, {});
+    const { asOf } = await countUnread(testDb, { userId });
+
+    expect(await markAllRead(testDb, { userId, asOf })).toBe(2);
+    expect((await stored(ids[0])).isRead).toBe(true);
+    expect((await stored(ids[1])).isRead).toBe(true);
+  });
+
+  it("leaves unread a vacancy written after the boundary", async () => {
+    // Перевірка, що йшла, поки був відкритий діалог: дата виявлення в неї
+    // давня (момент старту перевірки), а записана вона вже після межі.
+    const { userId, ids } = await seedVacancies({});
+    const { asOf } = await countUnread(testDb, { userId });
+    const [late] = await testDb
+      .insert(vacancies)
+      .values({
+        sourceId: (await stored(ids[0])).sourceId,
+        key: "id:late",
+        title: "Found during the dialog",
+        url: "https://job-boards.greenhouse.io/discord/jobs/late",
+        firstDetectedAt: DETECTED,
+        lastSeenAt: DETECTED,
+      })
+      .returning();
+
+    expect(await markAllRead(testDb, { userId, asOf })).toBe(1);
+    expect((await stored(late.id)).isRead).toBe(false);
+  });
+
+  it("changes only the read mark", async () => {
+    const { userId, ids } = await seedVacancies({ isFavorite: true });
+    const before = await stored(ids[0]);
+    const { asOf } = await countUnread(testDb, { userId });
+
+    await markAllRead(testDb, { userId, asOf });
+
+    expect(await stored(ids[0])).toEqual({ ...before, isRead: true });
+  });
+
+  it("does not touch another user's vacancies", async () => {
+    const { userId, ids } = await seedVacancies({});
+    const { asOf } = await countUnread(testDb, { userId });
+
+    expect(await markAllRead(testDb, { userId: await stranger(), asOf })).toBe(
+      0,
+    );
+    expect((await stored(ids[0])).isRead).toBe(false);
+  });
+
+  it("does nothing for a boundary that is not a database time", async () => {
+    // Межа приходить аргументом Server Action - недовірений ввід.
+    const { userId, ids } = await seedVacancies({});
+
+    for (const asOf of ["", "tomorrow", "2026-11-18", "2026-11-18T10:00:00Z"]) {
+      expect(await markAllRead(testDb, { userId, asOf })).toBe(0);
+    }
+    expect((await stored(ids[0])).isRead).toBe(false);
   });
 });

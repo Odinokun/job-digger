@@ -11,7 +11,12 @@ import {
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 import { listVacancies } from "@/server/vacancies/list";
-import { setVacancyFavorite, setVacancyRead } from "@/server/vacancies/marks";
+import {
+  countUnread,
+  markAllRead,
+  setVacancyFavorite,
+  setVacancyRead,
+} from "@/server/vacancies/marks";
 
 /** Наступна порція вкладки Jobs або факт збою - показати його нічим, крім toast. */
 export type LoadMoreVacanciesResult =
@@ -110,4 +115,48 @@ async function markResult(
   }
 
   return outcome.ok ? { ok: true, vacancy: outcome.value } : { ok: false };
+}
+
+/**
+ * Mark all as read, крок 1: скільки непрочитаних і межа дії. Діалог показує
+ * число, а крок 2 позначає записані не пізніше межі (`countUnread`).
+ */
+export async function countUnreadAction(): Promise<
+  { ok: true; count: number; asOf: string } | { ok: false }
+> {
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return countUnread(db, { userId: user.id });
+  });
+
+  return outcome.ok ? { ok: true, ...outcome.value } : { ok: false };
+}
+
+/**
+ * Mark all as read, крок 2. Межа - недовірений ввід: не рядок - відмова, а
+ * рядок не у формі часу бази `markAllRead` просто не виконує.
+ */
+export async function markAllReadAction(
+  asOf: unknown,
+): Promise<{ ok: true; marked: number } | { ok: false }> {
+  if (typeof asOf !== "string") {
+    return { ok: false };
+  }
+
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return markAllRead(db, { userId: user.id, asOf });
+  });
+
+  if (!outcome.ok) {
+    return { ok: false };
+  }
+
+  revalidatePath("/");
+
+  return { ok: true, marked: outcome.value };
 }

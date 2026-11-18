@@ -25,6 +25,7 @@ import {
   setVacancyFavoriteAction,
   setVacancyReadAction,
 } from "./actions";
+import { MarkAllRead } from "./mark-all-read";
 import { VacancyRow } from "./vacancy-row";
 
 interface JobsBoardProps {
@@ -136,6 +137,16 @@ export function JobsBoard({
     });
   }, [cursor, tab, showActionFailed]);
 
+  /**
+   * Після Mark all as read непрочитаних, що були в списку, більше немає: усі
+   * показані рядки записані до межі дії. Знайдені пізніше зʼявляться при
+   * наступному відкритті вкладки.
+   */
+  const clearList = useCallback(() => {
+    setItems([]);
+    setCursor(null);
+  }, []);
+
   return (
     <>
       <h1 className="font-display text-3xl font-semibold tracking-tight">
@@ -143,6 +154,12 @@ export function JobsBoard({
       </h1>
 
       <div className="mt-4">{tabs}</div>
+
+      {tab === "unread" && visible.length > 0 ? (
+        <div className="mt-4 flex justify-end">
+          <MarkAllRead onMarked={clearList} />
+        </div>
+      ) : null}
 
       {visible.length === 0 ? (
         <div className="mt-6 flex flex-col items-start gap-3">

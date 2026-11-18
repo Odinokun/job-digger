@@ -1,7 +1,15 @@
 /**
  * Списки вакансій для сторінки Jobs (docs/ui.md, розділ 4.1).
  */
-import { and, desc, eq, isNull, sql, type SQL } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  isNull,
+  sql,
+  type AnyColumn,
+  type SQL,
+} from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import type {
@@ -41,20 +49,28 @@ export type VacancyListPage = {
 };
 
 /**
- * Ключ курсора - дата виявлення точно так, як її зберігає база: ISO з
- * мікросекундами. JS `Date` тримає лише мілісекунди, тож курсор, зібраний з
- * нього, губив би мікросекунди, і рядок на межі порції приходив би вдруге.
+ * Момент часу точно так, як його зберігає база: ISO з мікросекундами. JS
+ * `Date` тримає лише мілісекунди, тож межа, зібрана з нього, губила б
+ * мікросекунди - рядок на межі опинявся б не з того боку.
  */
-const CURSOR_KEY = sql<string>`to_char(${vacancies.firstDetectedAt} at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`;
+export function dbTimeText(time: SQL | AnyColumn): SQL<string> {
+  return sql<string>`to_char(${time} at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`;
+}
 
-/** Форма ключа, яку дає `CURSOR_KEY`: усе інше - непридатний курсор. */
-const CURSOR_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/;
+/** Форма, яку дає `dbTimeText`: усе інше - не час бази. */
+export const DB_TIME_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/;
+
+/**
+ * Ключ курсора - дата виявлення з мікросекундами: курсор, зібраний з JS
+ * `Date`, приводив би рядок на межі порції вдруге.
+ */
+const CURSOR_KEY = dbTimeText(vacancies.firstDetectedAt);
 
 /**
  * Умова вкладки. Активна вакансія - без позначки Closed; Closed буває лише у
  * Favorites, бо звичайна зникла вакансія видаляється (README, «Життєвий цикл»).
  */
-function tabCondition(tab: JobsTab): SQL | undefined {
+export function tabCondition(tab: JobsTab): SQL | undefined {
   switch (tab) {
     case "unread":
       return and(isNull(vacancies.closedAt), eq(vacancies.isRead, false));
@@ -91,7 +107,7 @@ export async function listVacancies(
 ): Promise<VacancyListPage> {
   const parsed = parseCursor(after);
   const cursor =
-    parsed !== null && CURSOR_KEY_PATTERN.test(parsed.key) ? parsed : null;
+    parsed !== null && DB_TIME_PATTERN.test(parsed.key) ? parsed : null;
 
   const rows = await db
     .select({ ...VACANCY_ROW, cursorKey: CURSOR_KEY })

@@ -50,6 +50,13 @@
       "when": 1795014823911,
       "tag": "0006_source_last_checked",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795035304112,
+      "tag": "0007_vacancy_created_at",
+      "breakpoints": true
     }
   ]
 }

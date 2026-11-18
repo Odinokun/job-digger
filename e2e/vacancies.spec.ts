@@ -81,4 +81,24 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
 
   await page.getByRole("link", { name: /^Favorites/ }).click();
   await expect(vacancyRow(page, TITLE)).toBeVisible();
+
+  // Mark all as read: діалог називає, скільки вакансій позначить, - усі
+  // непрочитані, крім уже прочитаної вище.
+  await page.getByRole("link", { name: /^Unread/ }).click();
+  await page.getByRole("button", { name: "Mark all as read" }).click();
+  const confirmDialog = page.getByRole("alertdialog", {
+    name: "Mark all as read?",
+  });
+  await expect(confirmDialog).toContainText(
+    `Mark ${BOARD_SIZE - 1} vacancies in all companies as read?`,
+  );
+
+  await confirmDialog.getByRole("button", { name: "Mark as read" }).click();
+  await expect(confirmDialog).toBeHidden();
+  await expect(page.getByText("Everything is read.")).toBeVisible();
+
+  await page.getByRole("link", { name: /^Read/ }).click();
+  await expect(
+    page.locator('a[href^="https://job-boards.greenhouse.io/discord/jobs/"]'),
+  ).toHaveCount(BOARD_SIZE);
 });
