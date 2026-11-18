@@ -1,6 +1,6 @@
 /**
  * Життєвий цикл вакансії: що одна перевірка джерела робить із його вакансіями в
- * базі (docs/discovery-and-parsing.md, розділ 7).
+ * базі. Правила й рішення - README.md поруч, розділ «Життєвий цикл».
  */
 import { sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -58,7 +58,7 @@ async function upsertSeen(
       })),
     )
     // Вакансія вже є - оновлюються лише поля перевірки. Read і Favorite належать
-    // користувачеві й сюди не потрапляють (розділ 7, «Одночасні зміни»).
+    // користувачеві й сюди не потрапляють (README, «Одночасні зміни»).
     .onConflictDoUpdate({
       target: [vacancies.sourceId, vacancies.key],
       set: {
@@ -102,7 +102,7 @@ function uniqueByKey(list: ParsedVacancy[]): [string, ParsedVacancy][] {
  * `last_seen_at` раніше за `checkedAt`. Звичайні видаляються, з Favorites -
  * отримують позначку Closed.
  *
- * Одна команда, а не «прочитати, а тоді видалити» (розділ 7, «Одночасні
+ * Одна команда, а не «прочитати, а тоді видалити» (README, «Одночасні
  * зміни»): умова `NOT is_favorite` перевіряється в момент видалення. Якщо
  * користувач саме додає вакансію у Favorites, PostgreSQL чекає на його
  * транзакцію і перевіряє умову на оновленому рядку, тож вакансія не губиться
