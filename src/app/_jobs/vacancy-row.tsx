@@ -3,7 +3,10 @@
 import { Chip } from "@heroui/react";
 import { useFormatter, useTranslations } from "next-intl";
 
-import type { VacancyListItem } from "@/lib/vacancies/vacancy-list";
+import type {
+  VacancyListItem,
+  VacancyPatch,
+} from "@/lib/vacancies/vacancy-list";
 
 import { VacancyActions } from "./vacancy-actions";
 
@@ -19,10 +22,10 @@ import { VacancyActions } from "./vacancy-actions";
  */
 interface VacancyRowProps {
   vacancy: VacancyListItem;
-  onChanged: (vacancyId: string, changed: VacancyListItem | null) => void;
+  onMark: (patch: VacancyPatch) => void;
 }
 
-export function VacancyRow({ vacancy, onChanged }: VacancyRowProps) {
+export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
   const t = useTranslations("JobsPage");
   const format = useFormatter();
 
@@ -64,7 +67,7 @@ export function VacancyRow({ vacancy, onChanged }: VacancyRowProps) {
         >
           {format.dateTime(vacancy.firstDetectedAt, { dateStyle: "medium" })}
         </time>
-        <VacancyActions vacancy={vacancy} onChanged={onChanged} />
+        <VacancyActions vacancy={vacancy} onMark={onMark} />
       </div>
     </div>
   );

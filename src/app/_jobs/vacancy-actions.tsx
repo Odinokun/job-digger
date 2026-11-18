@@ -3,21 +3,16 @@
 import { Check, Envelope, Star, StarFill } from "@gravity-ui/icons";
 import { Button } from "@heroui/react";
 import { useTranslations } from "next-intl";
-import { useTransition } from "react";
 
-import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
-import type { VacancyListItem } from "@/lib/vacancies/vacancy-list";
-
-import {
-  setVacancyFavoriteAction,
-  setVacancyReadAction,
-  type VacancyMarkResult,
-} from "./actions";
+import type {
+  VacancyListItem,
+  VacancyPatch,
+} from "@/lib/vacancies/vacancy-list";
 
 interface VacancyActionsProps {
   vacancy: VacancyListItem;
-  /** Рядок після дії або `null`, якщо вакансії вже немає. */
-  onChanged: (vacancyId: string, changed: VacancyListItem | null) => void;
+  /** Дія над рядком: застосовує її сторінка - одразу й оптимістично. */
+  onMark: (patch: VacancyPatch) => void;
 }
 
 /**
@@ -25,25 +20,14 @@ interface VacancyActionsProps {
  *
  * Кнопки лише з іконкою, тож `aria-label` обовʼязковий - як у кнопок Edit і
  * Delete в картці компанії. Підпис каже, що станеться, а не який стан зараз:
- * «Mark as read» на непрочитаній. Поки дія йде, кнопка в `isPending`;
- * оптимістичне оновлення з відкатом - задача 3.21.
+ * «Mark as read» на непрочитаній. Стан і запит до сервера тримає
+ * [`jobs-board.tsx`](./jobs-board.tsx): дія видна одразу й відкочується при
+ * збої, тож окремого очікування в кнопці немає.
  *
  * Відкриття оригіналу - саме посилання в назві, і воно Read не змінює.
  */
-export function VacancyActions({ vacancy, onChanged }: VacancyActionsProps) {
+export function VacancyActions({ vacancy, onMark }: VacancyActionsProps) {
   const t = useTranslations("JobsPage");
-  const showActionFailed = useActionFailedToast();
-  const [isReadPending, startRead] = useTransition();
-  const [isFavoritePending, startFavorite] = useTransition();
-
-  function apply(result: VacancyMarkResult) {
-    if (!result.ok) {
-      showActionFailed();
-      return;
-    }
-
-    onChanged(vacancy.id, result.vacancy);
-  }
 
   return (
     <div className="flex items-center gap-1">
@@ -52,11 +36,8 @@ export function VacancyActions({ vacancy, onChanged }: VacancyActionsProps) {
         size="sm"
         variant="tertiary"
         aria-label={vacancy.isRead ? t("markAsUnread") : t("markAsRead")}
-        isPending={isReadPending}
         onPress={() =>
-          startRead(async () => {
-            apply(await setVacancyReadAction(vacancy.id, !vacancy.isRead));
-          })
+          onMark({ id: vacancy.id, changes: { isRead: !vacancy.isRead } })
         }
       >
         {vacancy.isRead ? <Envelope /> : <Check />}
@@ -68,12 +49,10 @@ export function VacancyActions({ vacancy, onChanged }: VacancyActionsProps) {
         // Без `aria-pressed`: підпис уже змінюється разом зі станом, і читач
         // екрана почув би стан двічі. Зрячому стан показує заповнена зірка.
         aria-label={vacancy.isFavorite ? t("unfavorite") : t("favorite")}
-        isPending={isFavoritePending}
         onPress={() =>
-          startFavorite(async () => {
-            apply(
-              await setVacancyFavoriteAction(vacancy.id, !vacancy.isFavorite),
-            );
+          onMark({
+            id: vacancy.id,
+            changes: { isFavorite: !vacancy.isFavorite },
           })
         }
       >

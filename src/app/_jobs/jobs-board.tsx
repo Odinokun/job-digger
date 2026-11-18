@@ -1,18 +1,30 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { Button, Spinner } from "@heroui/react";
 import Link from "next/link";
-import { useCallback, useState, useTransition, type ReactNode } from "react";
+import {
+  useCallback,
+  useOptimistic,
+  useState,
+  useTransition,
+  type ReactNode,
+} from "react";
 
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import type { Cursor } from "@/lib/pagination/cursor";
 import {
   belongsToJobsTab,
+  patchVacancy,
   type JobsTab,
   type VacancyListItem,
+  type VacancyPatch,
 } from "@/lib/vacancies/vacancy-list";
 
-import { loadMoreVacanciesAction } from "./actions";
+import {
+  loadMoreVacanciesAction,
+  setVacancyFavoriteAction,
+  setVacancyReadAction,
+} from "./actions";
 import { VacancyRow } from "./vacancy-row";
 
 interface JobsBoardProps {
@@ -49,7 +61,19 @@ export function JobsBoard({
   const [items, setItems] = useState(initialItems);
   const [cursor, setCursor] = useState(initialCursor);
   const [isPending, startTransition] = useTransition();
+  // Окремий перехід для Read і Favorite: інакше кнопка Load more крутилася б,
+  // поки йде дія над рядком.
+  const [, startMark] = useTransition();
   const showActionFailed = useActionFailedToast();
+
+  /**
+   * Оптимістичний список: дія Read чи Favorite видна одразу, ще до відповіді
+   * сервера (docs/ui.md, розділ 4, «Очікування»). Поки дія триває, React
+   * показує `items` з накладеною зміною; коли вона завершується - знову сам
+   * `items`. Тож при збої рядок повертається сам, бо `items` оновлюється лише
+   * при успіху (https://react.dev/reference/react/useOptimistic).
+   */
+  const [shown, addPatch] = useOptimistic(items, patchVacancy);
 
   /**
    * Рядок після дії заміщає свій попередній на тому самому місці - дата
@@ -67,6 +91,32 @@ export function JobsBoard({
     },
     [tab],
   );
+
+  /** Read або Favorite для рядка: одразу в інтерфейсі, потім на сервері. */
+  const mark = useCallback(
+    (patch: VacancyPatch) => {
+      startMark(async () => {
+        addPatch(patch);
+
+        const { isRead, isFavorite } = patch.changes;
+        const result =
+          isRead !== undefined
+            ? await setVacancyReadAction(patch.id, isRead)
+            : await setVacancyFavoriteAction(patch.id, isFavorite);
+
+        if (!result.ok) {
+          showActionFailed();
+          return;
+        }
+
+        applyRow(patch.id, result.vacancy);
+      });
+    },
+    [addPatch, applyRow, showActionFailed],
+  );
+
+  // Рядок, який дія вивела з вкладки, зникає одразу, ще до відповіді сервера.
+  const visible = shown.filter((vacancy) => belongsToJobsTab(vacancy, tab));
 
   const loadMore = useCallback(() => {
     if (!cursor) {
@@ -94,7 +144,7 @@ export function JobsBoard({
 
       <div className="mt-4">{tabs}</div>
 
-      {items.length === 0 ? (
+      {visible.length === 0 ? (
         <div className="mt-6 flex flex-col items-start gap-3">
           <p className="text-sm text-muted">{emptyLabel}</p>
           {addCompanyLabel === null ? null : (
@@ -111,9 +161,9 @@ export function JobsBoard({
       ) : (
         <>
           <ul className="mt-2 divide-y">
-            {items.map((vacancy) => (
+            {visible.map((vacancy) => (
               <li key={vacancy.id}>
-                <VacancyRow vacancy={vacancy} onChanged={applyRow} />
+                <VacancyRow vacancy={vacancy} onMark={mark} />
               </li>
             ))}
           </ul>
@@ -125,7 +175,14 @@ export function JobsBoard({
                 isPending={isPending}
                 onPress={loadMore}
               >
-                {loadMoreLabel}
+                {/* `isPending` у HeroUI лише вимикає кнопку - спінер малюємо
+                    самі, як у прикладі Loading документації Button. */}
+                {({ isPending: isLoading }) => (
+                  <>
+                    {isLoading ? <Spinner color="current" size="sm" /> : null}
+                    {loadMoreLabel}
+                  </>
+                )}
               </Button>
             </div>
           )}
