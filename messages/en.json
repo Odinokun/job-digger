@@ -25,7 +25,14 @@
     "markAsUnread": "Mark as unread",
     "favorite": "Favorite",
     "unfavorite": "Remove from Favorites",
-    "loading": "Loading vacancies…"
+    "loading": "Loading vacancies…",
+    "markAllRead": {
+      "open": "Mark all as read",
+      "title": "Mark all as read?",
+      "body": "{count, plural, one {Mark # vacancy in all companies as read?} other {Mark # vacancies in all companies as read?}} Vacancies found after this stay unread.",
+      "confirm": "Mark as read",
+      "cancel": "Cancel"
+    }
   },
   "CompaniesPage": {
     "title": "Companies",

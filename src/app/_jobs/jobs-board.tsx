@@ -25,6 +25,7 @@ import {
   setVacancyFavoriteAction,
   setVacancyReadAction,
 } from "./actions";
+import { MarkAllRead } from "./mark-all-read";
 import { VacancyRow } from "./vacancy-row";
 
 interface JobsBoardProps {
@@ -136,6 +137,20 @@ export function JobsBoard({
     });
   }, [cursor, tab, showActionFailed]);
 
+  /**
+   * Після Mark all as read зі списку йдуть позначені рядки. Порожній знімок
+   * означає, що непрочитаних уже немає зовсім, - тоді й решта порцій порожня.
+   */
+  const removeMarked = useCallback((ids: ReadonlySet<string>) => {
+    if (ids.size === 0) {
+      setItems([]);
+      setCursor(null);
+      return;
+    }
+
+    setItems((shown) => shown.filter((item) => !ids.has(item.id)));
+  }, []);
+
   return (
     <>
       <h1 className="font-display text-3xl font-semibold tracking-tight">
@@ -143,6 +158,12 @@ export function JobsBoard({
       </h1>
 
       <div className="mt-4">{tabs}</div>
+
+      {tab === "unread" && visible.length > 0 ? (
+        <div className="mt-4 flex justify-end">
+          <MarkAllRead onMarked={removeMarked} />
+        </div>
+      ) : null}
 
       {visible.length === 0 ? (
         <div className="mt-6 flex flex-col items-start gap-3">
