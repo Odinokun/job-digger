@@ -129,6 +129,9 @@ export const careerSources = pgTable(
     consecutiveFailures: integer("consecutive_failures").notNull().default(0),
     // Час останньої успішної перевірки: показ «Last ok: 12 days ago» - задача 4.09.
     lastSuccessAt: timestamp("last_success_at", { withTimezone: true }),
+    // Час останньої перевірки, успішної чи ні: «Last checked: 5 min ago» у
+    // картці компанії (docs/ui.md, розділ 4.2). `null` - ще не перевірялося.
+    lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

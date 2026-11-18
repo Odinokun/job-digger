@@ -1,0 +1,1 @@
+ALTER TABLE "career_sources" ADD COLUMN "last_checked_at" timestamp with time zone;
