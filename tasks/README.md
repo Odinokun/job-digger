@@ -47,19 +47,19 @@ PR: #57
 | [3.04 Схема vacancies](3.04-vacancies-schema.md)                                                 | done    |
 | [3.05 Очищення URL і внутрішній ключ вакансії](3.05-url-cleanup-vacancy-key.md)                  | done    |
 | [3.06 Парсер Greenhouse](3.06-greenhouse-parser.md)                                              | done    |
-| [3.07 Парсер Lever](3.07-lever-parser.md)                                                        | backlog |
-| [3.08 Парсер Ashby](3.08-ashby-parser.md)                                                        | backlog |
-| [3.09 Парсер Workday](3.09-workday-parser.md)                                                    | backlog |
-| [3.10 Парсер PeopleForce](3.10-peopleforce-parser.md)                                            | backlog |
-| [3.11 Парсер schema.org JobPosting](3.11-schema-org-jobposting-parser.md)                        | backlog |
-| [3.12 Пагінація з лімітом 5 сторінок](3.12-pagination-limit.md)                                  | backlog |
+| [3.07 Парсер Lever](3.07-lever-parser.md)                                                        | todo    |
+| [3.08 Парсер Ashby](3.08-ashby-parser.md)                                                        | todo    |
+| [3.09 Парсер Workday](3.09-workday-parser.md)                                                    | todo    |
+| [3.10 Парсер PeopleForce](3.10-peopleforce-parser.md)                                            | todo    |
+| [3.11 Парсер schema.org JobPosting](3.11-schema-org-jobposting-parser.md)                        | todo    |
+| [3.12 Пагінація з лімітом 5 сторінок](3.12-pagination-limit.md)                                  | todo    |
 | [3.13 Життєвий цикл вакансії](3.13-vacancy-lifecycle.md)                                         | done    |
 | [3.14 Check now для однієї компанії](3.14-check-now-company.md)                                  | done    |
 | [3.15 Сторінка Jobs з чотирма вкладками](3.15-jobs-page-tabs.md)                                 | done    |
 | [3.16 Дії над вакансією](3.16-vacancy-actions.md)                                                | done    |
-| [3.17 Mark all as read у вкладці Unread](3.17-mark-all-read-unread-tab.md)                       | backlog |
-| [3.18 Mark all as read / unread для компанії](3.18-mark-company-read-unread.md)                  | backlog |
-| [3.19 Лічильник непрочитаних вакансій](3.19-unread-counter.md)                                   | backlog |
+| [3.17 Mark all as read у вкладці Unread](3.17-mark-all-read-unread-tab.md)                       | todo    |
+| [3.18 Mark all as read / unread для компанії](3.18-mark-company-read-unread.md)                  | todo    |
+| [3.19 Лічильник непрочитаних вакансій](3.19-unread-counter.md)                                   | todo    |
 | [3.20 E2E: від URL до вакансій в Unread](3.20-e2e-url-to-unread.md)                              | done    |
 | [3.21 Стани завантаження й оптимістичні дії](3.21-loading-states-optimistic.md)                  | done    |
 | [4.01 Схема check_runs + check_tasks](4.01-check-runs-tasks-schema.md)                           | backlog |
