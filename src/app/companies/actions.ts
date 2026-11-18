@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { runAction } from "@/app/action-result";
+import { revalidateUnreadCount } from "@/app/components/unread-count";
 import { parseCompaniesTab } from "@/lib/companies/company-list";
 import type { Cursor } from "@/lib/pagination/cursor";
 import { checkCompany } from "@/server/checks/check-company";
@@ -163,6 +164,9 @@ export async function checkCompanyNowAction(
     return { ok: false };
   }
 
+  // Перевірка додає й прибирає вакансії - лічильник непрочитаних у шапці.
+  revalidateUnreadCount();
+
   return { ok: true, company: outcome.value };
 }
 
@@ -220,8 +224,9 @@ export async function updateCompanyAction(
   }
 
   // Рядок список оновить сам, а от лічильники вкладок рендерить сервер:
-  // компанія без джерел переїжджає між Tracked і Not tracked.
-  revalidatePath("/companies");
+  // компанія без джерел переїжджає між Tracked і Not tracked. Прибране джерело
+  // забирає свої вакансії - тож і лічильник непрочитаних у шапці.
+  revalidateUnreadCount();
 
   return { status: "saved", company: result.company };
 }
@@ -257,8 +262,9 @@ export async function deleteCompanyAction(
     return { status: "failed", result };
   }
 
-  // Рядок список прибере сам, а лічильники вкладок рендерить сервер.
-  revalidatePath("/companies");
+  // Рядок список прибере сам, а лічильники вкладок рендерить сервер. Разом із
+  // компанією зникають її вакансії - тож і лічильник непрочитаних у шапці.
+  revalidateUnreadCount();
 
   return { status: "deleted" };
 }
@@ -365,8 +371,9 @@ function addedSource(
 /**
  * Mark all as read / Mark all as unread для компанії (docs/ui.md, розділ 4.2).
  * Аргументи - недовірений ввід: id перевіряє `setCompanyVacanciesRead` (UUID і
- * власник), а позначка має бути саме булевою. `revalidatePath("/")` - щоб Jobs,
- * відкритий одразу після дії, не показав список до запису (задача 3.22).
+ * власник), а позначка має бути саме булевою. `revalidateUnreadCount` - заради
+ * лічильника в шапці і щоб Jobs, відкритий одразу після дії, не показав список
+ * до запису (задача 3.22).
  */
 export async function setCompanyVacanciesReadAction(
   companyId: unknown,
@@ -387,7 +394,7 @@ export async function setCompanyVacanciesReadAction(
     return { ok: false };
   }
 
-  revalidatePath("/");
+  revalidateUnreadCount();
 
   return { ok: true, changed: outcome.value };
 }

@@ -59,7 +59,7 @@ PR: #57
 | [3.16 Дії над вакансією](3.16-vacancy-actions.md)                                                | done    |
 | [3.17 Mark all as read у вкладці Unread](3.17-mark-all-read-unread-tab.md)                       | done    |
 | [3.18 Mark all as read / unread для компанії](3.18-mark-company-read-unread.md)                  | done    |
-| [3.19 Лічильник непрочитаних вакансій](3.19-unread-counter.md)                                   | todo    |
+| [3.19 Лічильник непрочитаних вакансій](3.19-unread-counter.md)                                   | done    |
 | [3.20 E2E: від URL до вакансій в Unread](3.20-e2e-url-to-unread.md)                              | done    |
 | [3.21 Стани завантаження й оптимістичні дії](3.21-loading-states-optimistic.md)                  | done    |
 | [3.22 Перехід на вкладку під час дії над рядком](3.22-mark-then-switch-tab.md)                  | done    |

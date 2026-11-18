@@ -11,6 +11,7 @@ import { getLocale } from "next-intl/server";
 
 import "./globals.css";
 import { AppHeader } from "./components/app-header";
+import { getUnreadCount } from "./components/unread-count";
 import { ThemeScript } from "./theme-script";
 
 // Тема «Ink»: Instrument Sans у тілі, Space Grotesk на заголовках і назвах
@@ -44,10 +45,18 @@ const appMono = IBM_Plex_Mono({
   weight: ["400", "500"],
 });
 
-export const metadata: Metadata = {
-  title: "Job Digger",
-  description: "Career pages and vacancy monitoring",
-};
+/**
+ * Назва вкладки браузера з кількістю непрочитаних: «(12) Job Digger»
+ * (docs/ui.md, розділ 4.1). Без непрочитаних - просто назва застосунку.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const unread = await getUnreadCount();
+
+  return {
+    title: unread > 0 ? `(${unread}) Job Digger` : "Job Digger",
+    description: "Career pages and vacancy monitoring",
+  };
+}
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   // Мова запиту - з `src/i18n/request.ts`. У `lang` вона потрібна для

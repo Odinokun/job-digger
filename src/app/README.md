@@ -54,6 +54,12 @@ Companies) і Check now. Кнопки модалок (Save, Delete) поки б�
 - `icon-button.tsx` - `IconButton` (кнопка лише з іконкою з підказкою) і
   `WithTooltip` (підказка над кнопкою, яку малює HeroUI) - див. «Кнопки лише з
   іконкою».
+- `unread-count.ts` - лічильник непрочитаних для меню біля Jobs і назви вкладки
+  браузера («(12) Job Digger»): `getUnreadCount` (один запит на рендер через
+  `cache` React) і `revalidateUnreadCount`. Шапка живе в кореневому layout, а
+  його Next між переходами не перерендерює, тож **кожна дія, що змінює кількість
+  непрочитаних** (позначки вакансій, Mark all, позначки компанії, Check now,
+  видалення компанії чи джерела), викликає `revalidateUnreadCount` - `revalidatePath("/", "layout")`.
 - `nav-link.tsx` - одне посилання меню з підсвіткою активного розділу.
   Клієнтський (`"use client"`) тому, що поточний шлях читає
   [`usePathname`](https://nextjs.org/docs/app/api-reference/functions/use-pathname),
