@@ -10,7 +10,7 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import type { VacancyListItem } from "../../lib/vacancies/vacancy-list.ts";
 import { careerSources, companies, vacancies } from "../db/schema.ts";
-import { VACANCY_ROW } from "./list.ts";
+import { tabCondition, VACANCY_ROW } from "./list.ts";
 
 /**
  * Форма UUID. Id приходить аргументом Server Action, а криве значення в
@@ -105,4 +105,30 @@ export async function setVacancyFavorite(
 
     return findVacancy(tx, { userId, vacancyId });
   });
+}
+
+/**
+ * ID усіх вакансій вкладки Unread користувача - не лише завантаженої порції.
+ *
+ * Це знімок для Mark all as read (docs/ui.md, розділ 4.1): діалог показує,
+ * скільки їх, а дія позначає рівно ці. Межа - саме перелік, а не дата
+ * виявлення: `first_detected_at` - момент старту перевірки, і перевірка, що
+ * йде під час діалогу, вставила б нові вакансії «заднім числом» - вони мовчки
+ * стали б прочитаними (README, «Одночасні зміни»).
+ */
+export async function listUnreadIds(
+  db: NodePgDatabase,
+  { userId }: { userId: string },
+): Promise<string[]> {
+  const rows = await db
+    .select({ id: vacancies.id })
+    .from(vacancies)
+    .where(
+      and(
+        inArray(vacancies.sourceId, ownSources(db, userId)),
+        tabCondition("unread"),
+      ),
+    );
+
+  return rows.map((row) => row.id);
 }

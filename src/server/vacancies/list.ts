@@ -54,7 +54,7 @@ const CURSOR_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/;
  * Умова вкладки. Активна вакансія - без позначки Closed; Closed буває лише у
  * Favorites, бо звичайна зникла вакансія видаляється (README, «Життєвий цикл»).
  */
-function tabCondition(tab: JobsTab): SQL | undefined {
+export function tabCondition(tab: JobsTab): SQL | undefined {
   switch (tab) {
     case "unread":
       return and(isNull(vacancies.closedAt), eq(vacancies.isRead, false));

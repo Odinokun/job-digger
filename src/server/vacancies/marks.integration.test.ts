@@ -4,7 +4,12 @@ import { describe, expect, it } from "vitest";
 import { careerSources, companies, users, vacancies } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
 import { testDb } from "../db/testing/test-db.ts";
-import { findVacancy, setVacancyFavorite, setVacancyRead } from "./marks.ts";
+import {
+  findVacancy,
+  listUnreadIds,
+  setVacancyFavorite,
+  setVacancyRead,
+} from "./marks.ts";
 
 const DETECTED = new Date("2026-11-18T10:00:00Z");
 
@@ -259,5 +264,74 @@ describe("setVacancyFavorite", () => {
 
     expect(row).toBeNull();
     expect(await stored(vacancyId)).toMatchObject({ isFavorite: true });
+  });
+});
+
+/**
+ * Кілька вакансій в одному джерелі однієї компанії системного користувача -
+ * по одній на кожен набір позначок.
+ */
+async function seedVacancies(
+  ...marks: Array<{ isRead?: boolean; isFavorite?: boolean; closedAt?: Date }>
+) {
+  const user = await seedSystemUser(testDb);
+  const [company] = await testDb
+    .insert(companies)
+    .values({
+      userId: user.id,
+      name: "Discord",
+      url: null,
+      normalizedUrl: null,
+    })
+    .returning();
+  const [source] = await testDb
+    .insert(careerSources)
+    .values({
+      companyId: company.id,
+      url: "https://job-boards.greenhouse.io/discord",
+      normalizedUrl: "job-boards.greenhouse.io/discord",
+      platform: "greenhouse",
+    })
+    .returning();
+  const rows = await testDb
+    .insert(vacancies)
+    .values(
+      marks.map((mark, index) => ({
+        sourceId: source.id,
+        key: `id:${index + 1}`,
+        title: `Job ${index + 1}`,
+        url: `https://job-boards.greenhouse.io/discord/jobs/${index + 1}`,
+        firstDetectedAt: DETECTED,
+        lastSeenAt: DETECTED,
+        ...mark,
+      })),
+    )
+    .returning();
+
+  return { userId: user.id, ids: rows.map((row) => row.id) };
+}
+
+describe("listUnreadIds", () => {
+  it("lists every vacancy of the Unread tab, not just a loaded page", async () => {
+    const { userId, ids } = await seedVacancies(
+      {},
+      { isFavorite: true },
+      { isRead: true },
+      // Закрита живе лише у Favorites, у вкладці Unread її немає.
+      { closedAt: DETECTED, isFavorite: true },
+      {},
+    );
+
+    expect((await listUnreadIds(testDb, { userId })).sort()).toEqual(
+      [ids[0], ids[1], ids[4]].sort(),
+    );
+  });
+
+  it("does not list another user's vacancies", async () => {
+    await seedVacancies({}, {});
+
+    expect(await listUnreadIds(testDb, { userId: await stranger() })).toEqual(
+      [],
+    );
   });
 });
