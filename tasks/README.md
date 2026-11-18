@@ -61,7 +61,7 @@ PR: #57
 | [3.18 Mark all as read / unread для компанії](3.18-mark-company-read-unread.md)                  | backlog |
 | [3.19 Лічильник непрочитаних вакансій](3.19-unread-counter.md)                                   | backlog |
 | [3.20 E2E: від URL до вакансій в Unread](3.20-e2e-url-to-unread.md)                              | done    |
-| [3.21 Стани завантаження й оптимістичні дії](3.21-loading-states-optimistic.md)                  | todo    |
+| [3.21 Стани завантаження й оптимістичні дії](3.21-loading-states-optimistic.md)                  | done    |
 | [4.01 Схема check_runs + check_tasks](4.01-check-runs-tasks-schema.md)                           | backlog |
 | [4.02 Захоплення завдань і повернення завислих](4.02-task-claiming-stale-recovery.md)            | backlog |
 | [4.03 Обробник черги як фоновий цикл](4.03-queue-background-loop.md)                             | backlog |
