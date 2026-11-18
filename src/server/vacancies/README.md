@@ -14,6 +14,8 @@
 | `lifecycle.integration.test.ts` | Інтеграційні тести життєвого циклу на справжній базі |
 | `list.ts` | `listVacancies` - порція вкладки Jobs; `hasAnyVacancy` - чи є в користувача вакансії взагалі |
 | `list.integration.test.ts` | Інтеграційні тести списків Jobs |
+| `marks.ts` | `findVacancy`, `setVacancyRead`, `setVacancyFavorite` - позначки користувача |
+| `marks.integration.test.ts` | Інтеграційні тести позначок |
 
 ## Очищена адреса
 
