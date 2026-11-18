@@ -24,7 +24,8 @@
     "markAsRead": "Mark as read",
     "markAsUnread": "Mark as unread",
     "favorite": "Favorite",
-    "unfavorite": "Remove from Favorites"
+    "unfavorite": "Remove from Favorites",
+    "loading": "Loading vacancies…"
   },
   "CompaniesPage": {
     "title": "Companies",
@@ -114,7 +115,8 @@
         "addressRequired": "Enter a company website or a career page."
       }
     },
-    "sourceTaken": "This career page already belongs to {name}."
+    "sourceTaken": "This career page already belongs to {name}.",
+    "loading": "Loading companies…"
   },
   "Errors": {
     "actionFailed": "The action could not be completed. Try again."

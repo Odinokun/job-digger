@@ -20,6 +20,30 @@
 Спільна шапка й обгортка `<main>` - у `layout.tsx`, тому сторінка містить лише
 власний вміст без повторення відступів.
 
+## Очікування
+
+Поки сторінка читає дані, на її місці - заготовки (docs/ui.md, розділ 4,
+«Очікування»):
+
+- `loading.tsx` - заготовка Jobs: справжній заголовок, вкладки й вісім рядків
+  HeroUI `Skeleton` в обрисах `_jobs/vacancy-row.tsx`;
+- `companies/loading.tsx` - те саме для Companies: чотири картки.
+
+Next показує `loading.tsx` одразу при переході й підміняє сторінкою, коли та
+готова (`node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/loading.md`).
+Для читачів екрана - `aria-busy` і прихований `role="status"` із текстом.
+History заготовки не має: поки вона не читає даних (задача 4.10).
+
+**Спінер у кнопці малюємо самі.** `isPending` у HeroUI `Button` лише вимикає
+натискання (`status-pending` = `pointer-events-none`), спінера не додає - як у
+прикладі Loading документації Button, кнопка отримує render-prop із
+`<Spinner color="current" size="sm" />`. Так зроблено в Load more (Jobs і
+Companies) і Check now. Кнопки модалок (Save, Delete) поки без спінера.
+
+**Read і Favorite не чекають сервера** - вони оптимістичні, див. `_jobs/vacancy-actions.tsx`
+нижче. Перевірено вручну: при недоступній базі рядок повертається в попередній
+стан, і зʼявляється сповіщення про збій.
+
 ## Компоненти
 
 Лежать у `components/`. Поки що це головне меню:
