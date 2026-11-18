@@ -20,7 +20,11 @@
     "emptyUnread": "Everything is read.",
     "emptyRead": "Nothing read yet.",
     "emptyFavorites": "No favorites yet.",
-    "emptyAll": "No active vacancies."
+    "emptyAll": "No active vacancies.",
+    "markAsRead": "Mark as read",
+    "markAsUnread": "Mark as unread",
+    "favorite": "Favorite",
+    "unfavorite": "Remove from Favorites"
   },
   "CompaniesPage": {
     "title": "Companies",

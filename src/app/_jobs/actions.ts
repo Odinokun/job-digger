@@ -9,6 +9,7 @@ import {
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 import { listVacancies } from "@/server/vacancies/list";
+import { setVacancyFavorite, setVacancyRead } from "@/server/vacancies/marks";
 
 /** Наступна порція вкладки Jobs або факт збою - показати його нічим, крім toast. */
 export type LoadMoreVacanciesResult =
@@ -42,4 +43,56 @@ export async function loadMoreVacanciesAction(
   }
 
   return { ok: true, ...outcome.value };
+}
+
+/**
+ * Рядок вакансії після дії або факт збою. `vacancy: null` - вакансії вже немає
+ * (зникла з сайту чи видалена разом із закритою позначкою), і список її прибирає.
+ */
+export type VacancyMarkResult =
+  { ok: true; vacancy: VacancyListItem | null } | { ok: false };
+
+/**
+ * Mark as read / Mark as unread. Аргументи - недовірений ввід: id перевіряє
+ * `setVacancyRead` (UUID і власник), а позначка має бути саме булевою.
+ */
+export async function setVacancyReadAction(
+  vacancyId: unknown,
+  isRead: unknown,
+): Promise<VacancyMarkResult> {
+  if (typeof vacancyId !== "string" || typeof isRead !== "boolean") {
+    return { ok: false };
+  }
+
+  return markResult(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return setVacancyRead(db, { userId: user.id, vacancyId, isRead });
+  });
+}
+
+/** Favorite / Remove from Favorites - те саме, що з Read. */
+export async function setVacancyFavoriteAction(
+  vacancyId: unknown,
+  isFavorite: unknown,
+): Promise<VacancyMarkResult> {
+  if (typeof vacancyId !== "string" || typeof isFavorite !== "boolean") {
+    return { ok: false };
+  }
+
+  return markResult(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return setVacancyFavorite(db, { userId: user.id, vacancyId, isFavorite });
+  });
+}
+
+async function markResult(
+  work: () => Promise<VacancyListItem | null>,
+): Promise<VacancyMarkResult> {
+  const outcome = await runAction(work);
+
+  return outcome.ok ? { ok: true, vacancy: outcome.value } : { ok: false };
 }
