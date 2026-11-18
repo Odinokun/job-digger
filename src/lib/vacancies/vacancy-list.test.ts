@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   belongsToJobsTab,
   parseJobsTab,
+  patchVacancy,
   type VacancyListItem,
 } from "./vacancy-list";
 
@@ -77,5 +78,32 @@ describe("parseJobsTab", () => {
     expect(parseJobsTab("Read")).toBe("unread");
     expect(parseJobsTab(["read"])).toBe("unread");
     expect(parseJobsTab(42)).toBe("unread");
+  });
+});
+
+describe("patchVacancy", () => {
+  const first = vacancy({ isRead: false, isFavorite: false, closedAt: null });
+  const second = {
+    ...vacancy({ isRead: false, isFavorite: false, closedAt: null }),
+    id: "00000000-0000-4000-8000-000000000002",
+  };
+
+  it("changes the marks of one vacancy and keeps its place", () => {
+    const patched = patchVacancy([first, second], {
+      id: second.id,
+      changes: { isRead: true },
+    });
+
+    expect(patched.map((item) => item.id)).toEqual([first.id, second.id]);
+    expect(patched[1]).toEqual({ ...second, isRead: true });
+    expect(patched[0]).toBe(first);
+  });
+
+  it("leaves the list as it is when the vacancy is not shown", () => {
+    const list = [first];
+
+    expect(
+      patchVacancy(list, { id: second.id, changes: { isFavorite: true } }),
+    ).toEqual(list);
   });
 });
