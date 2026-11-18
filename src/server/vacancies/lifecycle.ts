@@ -47,9 +47,9 @@ async function upsertSeen(
   await db
     .insert(vacancies)
     .values(
-      list.map((vacancy) => ({
+      uniqueByKey(list).map(([key, vacancy]) => ({
         sourceId,
-        key: vacancyKey(vacancy),
+        key,
         title: vacancy.title,
         url: vacancy.url,
         location: vacancy.location,
@@ -78,6 +78,23 @@ async function upsertSeen(
         closedAt: null,
       },
     });
+}
+
+/**
+ * Вакансії з різними ключами, з кожного ключа - перша. Повторів усередині
+ * джерела не створюємо (розділ 7), а `ON CONFLICT DO UPDATE` і не дає двічі
+ * змінити один рядок однією командою - падає з cardinality violation
+ * (https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT).
+ */
+function uniqueByKey(list: ParsedVacancy[]): [string, ParsedVacancy][] {
+  const byKey = new Map<string, ParsedVacancy>();
+
+  for (const vacancy of list) {
+    const key = vacancyKey(vacancy);
+    if (!byKey.has(key)) byKey.set(key, vacancy);
+  }
+
+  return [...byKey];
 }
 
 /**

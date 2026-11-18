@@ -267,6 +267,23 @@ describe("syncSourceVacancies", () => {
     ]);
   });
 
+  it("keeps the first of vacancies that share a key in one response", async () => {
+    const sourceId = await greenhouseSource();
+
+    await sync(
+      sourceId,
+      ok(
+        parsed("101", { title: "Designer" }),
+        parsed("101", { title: "Designer (copy)" }),
+      ),
+      FIRST_CHECK,
+    );
+
+    expect(await rowsOf(sourceId)).toEqual([
+      expect.objectContaining({ key: "id:101", title: "Designer" }),
+    ]);
+  });
+
   it("changes nothing when the check failed", async () => {
     const sourceId = await greenhouseSource();
     await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
