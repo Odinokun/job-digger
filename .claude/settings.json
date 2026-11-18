@@ -21,6 +21,7 @@
       "Bash(npm run format:check*)",
       "Bash(npm run build*)",
       "Bash(npm run db:check*)",
+      "Bash(npx vitest *)",
       "Bash(npx tsc *)",
       "Bash(npx prettier *)",
       "Bash(npx eslint *)",

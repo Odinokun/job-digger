@@ -139,7 +139,7 @@ E2E живуть окремо від Vitest: тека `e2e/`, файли `*.spec
 
 Permissions живуть у `.claude/settings.json` поруч із хуками - у git, бо це правило проєкту, а не особиста звичка. Переглянути й змінити інтерактивно - команда `/permissions`.
 
-- **`allow`** - те, що Claude виконує без питання: прогін тестів, лінт, `format:check`, `build`, `db:check`, `tsc`, `prettier`, `eslint`, `playwright`, `docker compose ps/logs` і `git commit`.
+- **`allow`** - те, що Claude виконує без питання: прогін тестів (і через `npm`, і точковий `npx vitest`), лінт, `format:check`, `build`, `db:check`, `tsc`, `prettier`, `eslint`, `playwright`, `docker compose ps/logs` і `git commit`.
 - **`ask`** - дії назовні, на яких Claude зупиняється й питає автора: `git push`, `gh pr create`, `gh pr merge`.
 - **`deny`** - заборонено повністю: `rm -rf`, `git push --force`, `git reset --hard`, `git clean`, `git commit --amend`, `docker compose down -v` (стирає том із локальною базою) і читання `.env` та `.env.*`, крім `.env.example`.
 
