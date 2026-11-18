@@ -5,6 +5,7 @@ import { AlertDialog, Button, useOverlayState } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { useActionState, useEffect, useTransition } from "react";
 
+import { IconButton, WithTooltip } from "@/app/components/icon-button";
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import type { CompanyListItem } from "@/lib/companies/company-list";
 
@@ -37,6 +38,7 @@ export function DeleteCompanyDialog({
   onDeleted,
 }: DeleteCompanyDialogProps) {
   const t = useTranslations("CompaniesPage.deleteCompany");
+  const tCommon = useTranslations("Common");
   const showActionFailed = useActionFailedToast();
   const overlay = useOverlayState();
   const [state, submit, isPending] = useActionState(
@@ -70,18 +72,17 @@ export function DeleteCompanyDialog({
 
   return (
     <>
-      {/* Кнопка лише з іконкою, тому `aria-label` обовʼязковий: без нього
-          кнопка не має доступної назви. Розмір іконки задає сам `Button`
+      {/* Кнопка лише з іконкою: назву дає `IconButton` - і для читалок
+          екрана, і підказкою при наведенні. Розмір іконки задає сам `Button`
           (документація HeroUI, Button - Icon Only). */}
-      <Button
-        isIconOnly
+      <IconButton
         size="sm"
         variant="tertiary"
-        aria-label={t("open")}
+        label={t("open")}
         onPress={overlay.open}
       >
         <TrashBin />
-      </Button>
+      </IconButton>
 
       <AlertDialog.Backdrop
         isOpen={overlay.isOpen}
@@ -89,7 +90,9 @@ export function DeleteCompanyDialog({
       >
         <AlertDialog.Container>
           <AlertDialog.Dialog className="sm:max-w-100">
-            <AlertDialog.CloseTrigger />
+            <WithTooltip label={tCommon("close")}>
+              <AlertDialog.CloseTrigger aria-label={tCommon("close")} />
+            </WithTooltip>
             <AlertDialog.Header>
               <AlertDialog.Icon status="danger" />
               <AlertDialog.Heading>{t("title")}</AlertDialog.Heading>

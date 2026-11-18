@@ -101,4 +101,33 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   await expect(
     page.locator('a[href^="https://job-boards.greenhouse.io/discord/jobs/"]'),
   ).toHaveCount(BOARD_SIZE);
+
+  // Mark all as unread у картці компанії повертає всі її вакансії в Unread.
+  await page
+    .getByRole("navigation", { name: "Main" })
+    .getByRole("link", { name: /^Companies/ })
+    .click();
+  await page
+    .getByRole("navigation", { name: "Company lists" })
+    .getByRole("link", { name: /^Tracked/ })
+    .click();
+  // Кнопка лише з іконкою називає дію підказкою при наведенні.
+  const markUnread = companyCard(page, "Discord").getByRole("button", {
+    name: "Mark all as unread",
+  });
+  await markUnread.hover();
+  await expect(page.getByRole("tooltip")).toHaveText("Mark all as unread");
+
+  await markUnread.click();
+  await expect(
+    page.getByText(`${BOARD_SIZE} vacancies of Discord marked as unread.`),
+  ).toBeVisible();
+
+  await page
+    .getByRole("navigation", { name: "Main" })
+    .getByRole("link", { name: /^Jobs/ })
+    .click();
+  await expect(
+    page.locator('a[href^="https://job-boards.greenhouse.io/discord/jobs/"]'),
+  ).toHaveCount(BOARD_SIZE);
 });

@@ -1,8 +1,9 @@
 "use client";
 
 import { Check, Envelope, Star, StarFill } from "@gravity-ui/icons";
-import { Button } from "@heroui/react";
 import { useTranslations } from "next-intl";
+
+import { IconButton } from "@/app/components/icon-button";
 
 import type {
   VacancyListItem,
@@ -18,8 +19,7 @@ interface VacancyActionsProps {
 /**
  * Дії рядка Jobs (docs/ui.md, розділ 4.1): перемикачі Read і Favorite.
  *
- * Кнопки лише з іконкою, тож `aria-label` обовʼязковий - як у кнопок Edit і
- * Delete в картці компанії. Підпис каже, що станеться, а не який стан зараз:
+ * Кнопки лише з іконкою - `IconButton`, з підказкою при наведенні. Підпис каже, що станеться, а не який стан зараз:
  * «Mark as read» на непрочитаній. Стан і запит до сервера тримає
  * [`jobs-board.tsx`](./jobs-board.tsx): дія видна одразу й відкочується при
  * збої, тож окремого очікування в кнопці немає.
@@ -31,24 +31,22 @@ export function VacancyActions({ vacancy, onMark }: VacancyActionsProps) {
 
   return (
     <div className="flex items-center gap-1">
-      <Button
-        isIconOnly
+      <IconButton
         size="sm"
         variant="tertiary"
-        aria-label={vacancy.isRead ? t("markAsUnread") : t("markAsRead")}
+        label={vacancy.isRead ? t("markAsUnread") : t("markAsRead")}
         onPress={() =>
           onMark({ id: vacancy.id, changes: { isRead: !vacancy.isRead } })
         }
       >
         {vacancy.isRead ? <Envelope /> : <Check />}
-      </Button>
-      <Button
-        isIconOnly
+      </IconButton>
+      <IconButton
         size="sm"
         variant="tertiary"
         // Без `aria-pressed`: підпис уже змінюється разом зі станом, і читач
         // екрана почув би стан двічі. Зрячому стан показує заповнена зірка.
-        aria-label={vacancy.isFavorite ? t("unfavorite") : t("favorite")}
+        label={vacancy.isFavorite ? t("unfavorite") : t("favorite")}
         onPress={() =>
           onMark({
             id: vacancy.id,
@@ -57,7 +55,7 @@ export function VacancyActions({ vacancy, onMark }: VacancyActionsProps) {
         }
       >
         {vacancy.isFavorite ? <StarFill /> : <Star />}
-      </Button>
+      </IconButton>
     </div>
   );
 }

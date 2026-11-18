@@ -13,6 +13,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useActionState, useEffect, useState, useTransition } from "react";
 
+import { IconButton, WithTooltip } from "@/app/components/icon-button";
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import { prepareCareerSource } from "@/lib/companies/career-source";
 import type {
@@ -67,6 +68,7 @@ export function EditCompanyDialog({
   // Підпис джерела й текст про дублікат задаються у двох модалках, тому їхні
   // тексти лежать рівнем вище, поряд із `urlErrors`.
   const tShared = useTranslations("CompaniesPage");
+  const tCommon = useTranslations("Common");
   const showActionFailed = useActionFailedToast();
   const overlay = useOverlayState();
   const [state, submit, isPending] = useActionState(
@@ -211,16 +213,15 @@ export function EditCompanyDialog({
   return (
     <>
       {/* Лише іконка, як і кошик поруч: текст «Edit» у картці нічого не
-          додавав, а `aria-label` лишає кнопку названою для читалок екрана. */}
-      <Button
-        isIconOnly
+          додавав. Назву дії дає підказка при наведенні. */}
+      <IconButton
         size="sm"
         variant="secondary"
-        aria-label={t("open")}
+        label={t("open")}
         onPress={openDialog}
       >
         <PencilToSquare />
-      </Button>
+      </IconButton>
 
       <Modal.Backdrop isOpen={overlay.isOpen} onOpenChange={overlay.setOpen}>
         {/* Довгий вміст скролиться всередині вікна: без цього
@@ -229,7 +230,9 @@ export function EditCompanyDialog({
                   межею вікна - до них не було як дотягнутися. */}
         <Modal.Container scroll="inside">
           <Modal.Dialog>
-            <Modal.CloseTrigger />
+            <WithTooltip label={tCommon("close")}>
+              <Modal.CloseTrigger aria-label={tCommon("close")} />
+            </WithTooltip>
             <Modal.Header>
               <Modal.Heading>{t("title")}</Modal.Heading>
             </Modal.Header>

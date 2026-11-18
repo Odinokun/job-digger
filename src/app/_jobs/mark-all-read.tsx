@@ -4,6 +4,7 @@ import { AlertDialog, Button, useOverlayState } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
+import { WithTooltip } from "@/app/components/icon-button";
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 
 import { countUnreadAction, markAllReadAction } from "./actions";
@@ -27,6 +28,7 @@ interface MarkAllReadProps {
  */
 export function MarkAllRead({ onMarked }: MarkAllReadProps) {
   const t = useTranslations("JobsPage.markAllRead");
+  const tCommon = useTranslations("Common");
   const showActionFailed = useActionFailedToast();
   const overlay = useOverlayState();
   const [found, setFound] = useState<{ count: number; asOf: string } | null>(
@@ -89,7 +91,9 @@ export function MarkAllRead({ onMarked }: MarkAllReadProps) {
       >
         <AlertDialog.Container>
           <AlertDialog.Dialog className="sm:max-w-100">
-            <AlertDialog.CloseTrigger />
+            <WithTooltip label={tCommon("close")}>
+              <AlertDialog.CloseTrigger aria-label={tCommon("close")} />
+            </WithTooltip>
             <AlertDialog.Header>
               <AlertDialog.Icon status="accent" />
               <AlertDialog.Heading>{t("title")}</AlertDialog.Heading>
