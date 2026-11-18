@@ -111,9 +111,14 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
     .getByRole("navigation", { name: "Company lists" })
     .getByRole("link", { name: /^Tracked/ })
     .click();
-  await companyCard(page, "Discord")
-    .getByRole("button", { name: "Mark all as unread" })
-    .click();
+  // Кнопка лише з іконкою називає дію підказкою при наведенні.
+  const markUnread = companyCard(page, "Discord").getByRole("button", {
+    name: "Mark all as unread",
+  });
+  await markUnread.hover();
+  await expect(page.getByRole("tooltip")).toHaveText("Mark all as unread");
+
+  await markUnread.click();
   await expect(
     page.getByText(`${BOARD_SIZE} vacancies of Discord marked as unread.`),
   ).toBeVisible();
