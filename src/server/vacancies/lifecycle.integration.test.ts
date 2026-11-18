@@ -45,7 +45,7 @@ function parsed(
 }
 
 function ok(...list: ParsedVacancy[]): ParseResult {
-  return { ok: true, vacancies: list };
+  return { ok: true, vacancies: list, skipped: 0 };
 }
 
 function sync(sourceId: string, result: ParseResult, checkedAt: Date) {

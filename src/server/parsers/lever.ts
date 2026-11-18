@@ -3,7 +3,14 @@
  * (https://github.com/lever/postings-api).
  */
 import type { HttpClient } from "../http/client.ts";
-import { fetchJson, isRecord, isWebUrl, UNREADABLE } from "./shared.ts";
+import {
+  collectVacancies,
+  fetchJson,
+  isRecord,
+  isWebUrl,
+  UNREADABLE,
+  type ReadVacancy,
+} from "./shared.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 /** Регіон Lever: від нього залежить хост API (`api.lever.co` чи `api.eu.lever.co`). */
@@ -44,41 +51,31 @@ export function leverSite(
  * `text`, посилання - `hostedUrl`. Локація - усі з `categories.allLocations`
  * через кому (основна там теж є), а без них - `categories.location`.
  *
- * Крива хоч одна вакансія - невдала вся відповідь, як у Greenhouse
- * (README, «Спільний формат»).
+ * Зламана структура - невдала вся відповідь, вада даних - пропуск вакансії
+ * (`collectVacancies`, README «Спільний формат»).
  */
 export function parseLeverPostings(answer: unknown): ParseResult {
   if (!Array.isArray(answer)) {
     return UNREADABLE;
   }
 
-  const vacancies: ParsedVacancy[] = [];
-
-  for (const item of answer) {
-    const vacancy = isRecord(item) ? toVacancy(item) : null;
-
-    if (vacancy === null) {
-      return UNREADABLE;
-    }
-
-    vacancies.push(vacancy);
-  }
-
-  return { ok: true, vacancies };
+  return collectVacancies(answer, toVacancy);
 }
 
-function toVacancy(posting: Record<string, unknown>): ParsedVacancy | null {
+const toVacancy: ReadVacancy = (posting) => {
   const { id, text, hostedUrl, categories } = posting;
 
   if (
     typeof id !== "string" ||
     id.trim() === "" ||
     typeof text !== "string" ||
-    text.trim() === "" ||
-    typeof hostedUrl !== "string" ||
-    !isWebUrl(hostedUrl)
+    typeof hostedUrl !== "string"
   ) {
-    return null;
+    return "broken";
+  }
+
+  if (text.trim() === "" || !isWebUrl(hostedUrl)) {
+    return "skip";
   }
 
   return {
@@ -87,7 +84,7 @@ function toVacancy(posting: Record<string, unknown>): ParsedVacancy | null {
     url: hostedUrl,
     location: isRecord(categories) ? locationOf(categories) : null,
   };
-}
+};
 
 function locationOf(categories: Record<string, unknown>): string | null {
   const { allLocations, location } = categories;
@@ -153,6 +150,7 @@ export async function readLever(
 
   const base = `https://${API_HOSTS[found.region]}/v0/postings/${encodeURIComponent(found.site)}`;
   const vacancies: ParsedVacancy[] = [];
+  let skipped = 0;
 
   for (let page = 0; page < maxPages; page += 1) {
     const fetched = await fetchJson(
@@ -171,13 +169,14 @@ export async function readLever(
     }
 
     vacancies.push(...parsed.vacancies);
+    skipped += parsed.skipped;
 
     // Неповна сторінка - остання. Повна може бути й останньою: тоді наступна
-    // прийде порожньою.
-    if (parsed.vacancies.length < pageSize) {
+    // прийде порожньою. Пропущені записи теж займали місце на сторінці.
+    if (parsed.vacancies.length + parsed.skipped < pageSize) {
       break;
     }
   }
 
-  return { ok: true, vacancies };
+  return { ok: true, vacancies, skipped };
 }

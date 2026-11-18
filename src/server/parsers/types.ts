@@ -23,7 +23,10 @@ export interface ParsedVacancy {
 export type ParserError =
   /** Сторінки чи дошки немає: сайт відповів 404. */
   | { reason: "not-found" }
-  /** Відповідь не того формату - зокрема хоч одна вакансія в ній крива. */
+  /**
+   * Відповідь не того формату: зламана структура хоч одного запису або всі
+   * записи з вадою даних (README, «Спільний формат»).
+   */
   | { reason: "unreadable" }
   /** Сайт відповів не 2xx і не 404 (наприклад 403 чи 500 після повторів). */
   | { reason: "bad-status"; status: number }
@@ -31,4 +34,14 @@ export type ParserError =
   | { reason: "fetch-failed"; cause: HttpErrorReason };
 
 export type ParseResult =
-  { ok: true; vacancies: ParsedVacancy[] } | { ok: false; error: ParserError };
+  | {
+      ok: true;
+      vacancies: ParsedVacancy[];
+      /**
+       * Скільки записів пропущено через ваду даних - порожню назву чи адресу
+       * не http(s) (docs/discovery-and-parsing.md, розділ 6). Сигнал «парсер
+       * чи сайт треба глянути» - parse warning у деталях завдання (4.01).
+       */
+      skipped: number;
+    }
+  | { ok: false; error: ParserError };

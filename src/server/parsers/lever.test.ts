@@ -81,6 +81,7 @@ describe("parseLeverPostings", () => {
           location: "Kyiv",
         },
       ],
+      skipped: 0,
     });
   });
 
@@ -110,7 +111,11 @@ describe("parseLeverPostings", () => {
   });
 
   it("reads an empty site as no vacancies", () => {
-    expect(parseLeverPostings([])).toEqual({ ok: true, vacancies: [] });
+    expect(parseLeverPostings([])).toEqual({
+      ok: true,
+      vacancies: [],
+      skipped: 0,
+    });
   });
 
   it("fails the whole response when it is not a list", () => {
@@ -120,15 +125,26 @@ describe("parseLeverPostings", () => {
     });
   });
 
-  it("fails the whole response on one broken posting", () => {
+  it("skips a posting with an empty title or a non-web address and counts it", () => {
+    const result = parseLeverPostings([
+      posting({}),
+      posting({ id: "b", text: " " }),
+      posting({ id: "c", hostedUrl: "javascript:alert(1)" }),
+    ]);
+
+    expect(result.ok && result.vacancies).toHaveLength(1);
+    expect(result.ok && result.skipped).toBe(2);
+  });
+
+  it("fails the whole response on one posting with a broken structure", () => {
     const unreadable = { ok: false, error: { reason: "unreadable" } };
 
-    expect(parseLeverPostings([posting({}), posting({ text: " " })])).toEqual(
+    expect(parseLeverPostings([posting({}), posting({ text: 7 })])).toEqual(
       unreadable,
     );
     expect(parseLeverPostings([posting({ id: 42 })])).toEqual(unreadable);
-    expect(
-      parseLeverPostings([posting({ hostedUrl: "javascript:alert(1)" })]),
-    ).toEqual(unreadable);
+    expect(parseLeverPostings([posting({ hostedUrl: null })])).toEqual(
+      unreadable,
+    );
   });
 });

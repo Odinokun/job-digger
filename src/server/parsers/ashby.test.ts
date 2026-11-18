@@ -76,6 +76,7 @@ describe("parseAshbyJobs", () => {
           location: "Kyiv",
         },
       ],
+      skipped: 0,
     });
   });
 
@@ -115,7 +116,11 @@ describe("parseAshbyJobs", () => {
   });
 
   it("reads an empty board as no vacancies", () => {
-    expect(parseAshbyJobs({ jobs: [] })).toEqual({ ok: true, vacancies: [] });
+    expect(parseAshbyJobs({ jobs: [] })).toEqual({
+      ok: true,
+      vacancies: [],
+      skipped: 0,
+    });
   });
 
   it("fails the whole response when it is not a board", () => {
@@ -123,13 +128,36 @@ describe("parseAshbyJobs", () => {
     expect(parseAshbyJobs({ apiVersion: "1" })).toEqual(UNREADABLE);
   });
 
-  it("fails the whole response on one broken job", () => {
-    expect(parseAshbyJobs({ jobs: [job({}), job({ title: " " })] })).toEqual(
+  it("skips a job with an empty title or a non-web address and counts it", () => {
+    // Справжній випадок: у дошці OpenAI одна з 839 вакансій - з порожньою
+    // назвою (18.11.2026). Через неї не мала б зникати вся дошка.
+    const result = parseAshbyJobs({
+      jobs: [
+        job({}),
+        job({ id: "b", title: "" }),
+        job({ id: "c", jobUrl: "javascript:alert(1)" }),
+      ],
+    });
+
+    expect(result.ok && result.vacancies).toHaveLength(1);
+    expect(result.ok && result.skipped).toBe(2);
+  });
+
+  it("does not count unlisted jobs as skipped", () => {
+    const result = parseAshbyJobs({
+      jobs: [job({}), job({ id: "hidden", isListed: false })],
+    });
+
+    expect(result.ok && result.skipped).toBe(0);
+  });
+
+  it("fails the whole response on one job with a broken structure", () => {
+    expect(parseAshbyJobs({ jobs: [job({}), job({ title: 5 })] })).toEqual(
       UNREADABLE,
     );
     expect(parseAshbyJobs({ jobs: [job({ id: 7 })] })).toEqual(UNREADABLE);
-    expect(
-      parseAshbyJobs({ jobs: [job({ jobUrl: "javascript:alert(1)" })] }),
-    ).toEqual(UNREADABLE);
+    expect(parseAshbyJobs({ jobs: [job({ jobUrl: null })] })).toEqual(
+      UNREADABLE,
+    );
   });
 });

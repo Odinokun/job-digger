@@ -1,8 +1,12 @@
 /**
  * Дрібниці, спільні для парсерів платформ.
  */
-import { HttpError, type HttpClient } from "../http/client.ts";
-import type { ParseResult } from "./types.ts";
+import {
+  HttpError,
+  type HttpClient,
+  type RequestOptions,
+} from "../http/client.ts";
+import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 /** Відповідь не того формату - зокрема коли крива хоч одна вакансія. */
 export const UNREADABLE: Extract<ParseResult, { ok: false }> = {
@@ -27,18 +31,20 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
 /**
  * Запит JSON через HTTP-клієнт: `{ ok: true, answer }` з уже розібраним тілом
  * або помилка парсера - `not-found` на 404, `bad-status` на інший не-2xx,
- * `fetch-failed` на збій запиту, `unreadable` на тіло, що не JSON.
+ * `fetch-failed` на збій запиту, `unreadable` на тіло, що не JSON. `request` -
+ * налаштування запиту для клієнта, зокрема власний ліміт розміру.
  */
 export async function fetchJson(
   client: HttpClient,
   url: string,
+  request?: RequestOptions,
 ): Promise<
   { ok: true; answer: unknown } | Extract<ParseResult, { ok: false }>
 > {
   let response;
 
   try {
-    response = await client.get(url);
+    response = await client.get(url, request);
   } catch (error) {
     if (error instanceof HttpError) {
       return {
@@ -65,4 +71,53 @@ export async function fetchJson(
   } catch {
     return UNREADABLE;
   }
+}
+
+/**
+ * Що читач платформи зробив з одним записом: вакансія, `"skip"` - вада даних
+ * (порожня назва, адреса не http(s)), `"broken"` - зламана структура (id чи
+ * назва не того типу).
+ */
+export type ReadVacancy = (
+  item: Record<string, unknown>,
+) => ParsedVacancy | "skip" | "broken";
+
+/**
+ * Вакансії зі списку записів платформи (docs/discovery-and-parsing.md,
+ * розділ 6, «Довіряємо лише цілим відповідям»):
+ *
+ * - зламана структура хоч одного запису - невдала вся відповідь: це сигнал
+ *   зміни формату, і якби такі записи пропускалися, пропущеними виявились би
+ *   всі, а порожній список видалив би всі вакансії джерела;
+ * - вада даних - запис пропускається й рахується в `skipped`;
+ * - пропущені всі записи непорожнього списку - теж невдала відповідь: нуль
+ *   вакансій через криві дані - не «вакансій немає».
+ */
+export function collectVacancies(
+  items: unknown[],
+  read: ReadVacancy,
+): ParseResult {
+  const vacancies: ParsedVacancy[] = [];
+  let skipped = 0;
+
+  for (const item of items) {
+    const result = isRecord(item) ? read(item) : "broken";
+
+    if (result === "broken") {
+      return UNREADABLE;
+    }
+
+    if (result === "skip") {
+      skipped += 1;
+      continue;
+    }
+
+    vacancies.push(result);
+  }
+
+  if (vacancies.length === 0 && skipped > 0) {
+    return UNREADABLE;
+  }
+
+  return { ok: true, vacancies, skipped };
 }

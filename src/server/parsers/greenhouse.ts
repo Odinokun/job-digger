@@ -3,8 +3,15 @@
  * (https://docs.greenhouse.io/job-board.html).
  */
 import type { HttpClient } from "../http/client.ts";
-import { fetchJson, isRecord, isWebUrl, UNREADABLE } from "./shared.ts";
-import type { ParsedVacancy, ParseResult } from "./types.ts";
+import {
+  collectVacancies,
+  fetchJson,
+  isRecord,
+  isWebUrl,
+  UNREADABLE,
+  type ReadVacancy,
+} from "./shared.ts";
+import type { ParseResult } from "./types.ts";
 
 /**
  * Хости, на яких Greenhouse показує дошки. Регіону ЄС тут немає свідомо:
@@ -49,41 +56,31 @@ export function greenhouseBoardToken(sourceUrl: string): string | null {
  * посиланні на вакансію (`internal_job_id` - ID самої посади, в оголошень-
  * «prospect» він `null`).
  *
- * Крива хоч одна вакансія - невдала вся відповідь, а не пропуск цієї вакансії:
- * якби змінився формат, пропущеними виявились би всі, і порожній список закрив
- * би всі вакансії джерела. Невдала перевірка вакансій не чіпає.
+ * Зламана структура хоч одного запису - невдала вся відповідь, вада даних -
+ * пропуск цієї вакансії (`collectVacancies`, README «Спільний формат»).
  */
 export function parseGreenhouseJobs(answer: unknown): ParseResult {
   if (!isRecord(answer) || !Array.isArray(answer.jobs)) {
     return UNREADABLE;
   }
 
-  const vacancies: ParsedVacancy[] = [];
-
-  for (const job of answer.jobs) {
-    const vacancy = isRecord(job) ? toVacancy(job) : null;
-
-    if (vacancy === null) {
-      return UNREADABLE;
-    }
-
-    vacancies.push(vacancy);
-  }
-
-  return { ok: true, vacancies };
+  return collectVacancies(answer.jobs, toVacancy);
 }
 
-function toVacancy(job: Record<string, unknown>): ParsedVacancy | null {
+const toVacancy: ReadVacancy = (job) => {
   const { id, title, absolute_url: url, location } = job;
 
   if (
     (typeof id !== "number" && typeof id !== "string") ||
+    String(id).trim() === "" ||
     typeof title !== "string" ||
-    title.trim() === "" ||
-    typeof url !== "string" ||
-    !isWebUrl(url)
+    typeof url !== "string"
   ) {
-    return null;
+    return "broken";
+  }
+
+  if (title.trim() === "" || !isWebUrl(url)) {
+    return "skip";
   }
 
   const place =
@@ -97,7 +94,7 @@ function toVacancy(job: Record<string, unknown>): ParsedVacancy | null {
     url,
     location: place === "" ? null : place,
   };
-}
+};
 
 /**
  * Вакансії кар'єрного джерела на Greenhouse: назва дошки з адреси, запит до
