@@ -53,7 +53,7 @@ PR: #57
 | [3.10 Парсер PeopleForce](3.10-peopleforce-parser.md)                                            | backlog |
 | [3.11 Парсер schema.org JobPosting](3.11-schema-org-jobposting-parser.md)                        | backlog |
 | [3.12 Пагінація з лімітом 5 сторінок](3.12-pagination-limit.md)                                  | backlog |
-| [3.13 Життєвий цикл вакансії](3.13-vacancy-lifecycle.md)                                         | todo    |
+| [3.13 Життєвий цикл вакансії](3.13-vacancy-lifecycle.md)                                         | done    |
 | [3.14 Check now для однієї компанії](3.14-check-now-company.md)                                  | todo    |
 | [3.15 Сторінка Jobs з чотирма вкладками](3.15-jobs-page-tabs.md)                                 | todo    |
 | [3.16 Дії над вакансією](3.16-vacancy-actions.md)                                                | todo    |
