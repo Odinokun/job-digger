@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- HTML Meta Tags -->
+  <title>Webellian - Job openings</title>
+  <meta name="description" content="">
+
+  <!-- Facebook Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Webellian - Job openings">
+  <meta property="og:description" content="">
+  <meta property="og:image" content="https://cdn.peopleforce.io/assets/blankslates/career_site_social-0db56df357a45ce6f284a2e95338063324f6f9d11b2f463f2a6ce1ccc1890778.png">
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="twitter:domain" content="webellian.peopleforce.io">
+  <meta name="twitter:title" content="Webellian - Job openings">
+  <meta name="twitter:description" content="">
+  <meta name="twitter:image" content="https://cdn.peopleforce.io/assets/blankslates/career_site_social-0db56df357a45ce6f284a2e95338063324f6f9d11b2f463f2a6ce1ccc1890778.png">
+
+    <!-- Facebook Meta Tags -->
+  <meta property="og:url" content="https://webellian.peopleforce.io/careers">
+
+  <!-- Twitter Meta Tags -->
+  <meta property="twitter:url" content="https://webellian.peopleforce.io/careers">
+
+  
+  
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://cdn.peopleforce.io/assets/favicon-32x32-b78b2d2b6dbbd6adaa8c71ba95765ac63cde72d1d0e8e20247e0e878b92e3c70.png">
+
+  <meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="t-m5h49eBiSSK-81StGEkUatUP58-oGbD4_yoJ74pNYDGJ2Zy9MorE1eFom8oWjDoLQABUw38C4mbwfkdjWKxg" />
+  
+  <link rel="stylesheet" href="https://cdn.peopleforce.io/vite/assets/entrypoints/inertia-CznUhODk-T4hp5LdF.css" data-turbo-track="reload" />
+<link rel="stylesheet" href="https://cdn.peopleforce.io/vite/assets/entrypoints/careers-V1rVTyTc-T4hp5LdF.css" data-turbo-track="reload" />
+<link rel="stylesheet" href="https://cdn.peopleforce.io/vite/assets/entrypoints/application-CPzaA_fV-T4hp5LdF.css" data-turbo-track="reload" />
+
+  <script src="https://cdn.peopleforce.io/vite/entrypoints/careers.ts-WjB1uL1a-T4hp5LdF.js" crossorigin="" type="module" data-turbo-track="reload"></script><link rel="modulepreload" href="https://cdn.peopleforce.io/vite/turbo.es2017-esm-DFp9aU59-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/preload-helper-Dp1pzeXC-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/alpine-turbo-drive-adapter.esm-Ctb35nOj-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload"><link rel="stylesheet" crossorigin="" href="https://cdn.peopleforce.io/vite/assets/careers-DknsONTs-T4hp5LdF.css" data-turbo-track="reload" />
+
+  <script type="text/javascript" nonce="">
+    var LOCALE = "en";
+    var DATE_FORMAT = "YYYY-MM-DD";
+  </script>
+
+  <script src="https://cdn.peopleforce.io/vite/entrypoints/turbo_vue_mount.ts-CD_Zj9VN-T4hp5LdF.js" crossorigin="" type="module" data-turbo-track="reload"></script><link rel="modulepreload" href="https://cdn.peopleforce.io/vite/preload-helper-Dp1pzeXC-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/activestorage.esm-C8SuVFk6-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/stimulus-CZA9Too6-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/query-client-opkrjc8l-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload"><link rel="stylesheet" crossorigin="" href="https://cdn.peopleforce.io/vite/assets/turbo_vue_mount-aRHcEb9G-T4hp5LdF.css" data-turbo-track="reload" />
+<link rel="stylesheet" crossorigin="" href="https://cdn.peopleforce.io/vite/assets/query-client-p05Wh1pL-T4hp5LdF.css" data-turbo-track="reload" />
+  <script src="https://cdn.peopleforce.io/vite/entrypoints/application.ts-BN1LvD2s-T4hp5LdF.js" crossorigin="" type="module" data-turbo-track="reload"></script><link rel="modulepreload" href="https://cdn.peopleforce.io/vite/preload-helper-Dp1pzeXC-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/activestorage.esm-C8SuVFk6-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/print-CbByBbZ1-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/turbo.es2017-esm-DFp9aU59-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/alpine-turbo-drive-adapter.esm-Ctb35nOj-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/stimulus-CZA9Too6-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/_commonjsHelpers-Cpj98o6Y-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+
+  
+
+  <style>
+      .breadcrumb {
+          background-color: #ff623f;
+          padding: 10px;
+          border-radius: .25rem;
+
+          /* Bootstrap defaults both of these to #6c757d, which lands at ~1.6:1
+             against a saturated brand colour — the current-page crumb and the
+             divider were effectively invisible. Reuse the brand's own readable
+             foreground token so light primaries get dark text and dark ones white. */
+          --bs-breadcrumb-divider-color: var(--main-primary-text-color);
+          --bs-breadcrumb-item-active-color: var(--main-primary-text-color);
+      }
+  </style>
+
+  <style>
+    :root {
+        --main-primary-color: #ff623f;
+        --main-primary-color-transparent: #ff623f50;
+        --main-primary-text-color: #FFFFFF;
+        --swiper-theme-color: var(--main-primary-color);
+
+        --form-check-input-background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='%23FFFFFF' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/></svg>");
+        --form-radio-input-background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='2' fill='%23FFFFFF'/></svg>");
+        --form-check-indeterminate-background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='%23FFFFFF' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10h8'/></svg>");
+    }
+
+    .text-alt-primary {
+        color: var(--main-primary-text-color);
+    }
+
+    .form-check-input[type='radio']:checked {
+        background-image: var(--form-radio-input-background-image) !important;
+    }
+
+    .form-check:not(.form-switch) .form-check-input[type='checkbox']:checked {
+        background-image: var(--form-check-input-background-image) !important;
+    }
+
+    .form-check-input[type='checkbox']:indeterminate {
+        background-image: var(--form-check-indeterminate-background-image) !important;
+    }
+
+    .form-check-input:checked, .form-check-input[type='checkbox']:indeterminate {
+        border-color: var(--main-primary-color) !important;
+        background-color: var(--main-primary-color) !important;
+    }
+
+    .btn-primary:not([disabled]):not(.disabled):hover {
+        background-color: #ff623fCC !important;
+        border-color: #ff623fCC !important;
+    }
+
+    .wizard > .steps > ul > li.current .number {
+        border-color: var(--main-primary-color);
+        color: var(--main-primary-color);
+    }
+
+    .wizard > .steps > ul > li.done .number {
+        border-color: var(--main-primary-color);
+        background-color: var(--main-primary-color);
+    }
+
+    .wizard > .steps > ul > li:after, .wizard > .steps > ul > li:before {
+        background-color: var(--main-primary-color);
+    }
+
+    .choices__list--multiple .choices__item {
+        background-color: var(--main-primary-color);
+        border: 1px solid var(--main-primary-color);
+    }
+
+    .choices__list--multiple .choices__item.is-highlighted {
+        background-color: #ff623fCC;
+        border: 1px solid #ff623fCC;
+    }
+
+    .swiper-pagination-bullet-active {
+        background-color: var(--main-primary-color);
+    }
+
+    .e-control .e-primary {
+        background-color: var(--main-primary-color) !important;
+    }
+
+    .e-control .e-primary:hover {
+        background-color: #ff623fCC !important;
+    }
+
+    .e-today span {
+        border: 1px solid #ff623fCC !important;
+        color: var(--main-primary-color) !important;
+    }
+
+    .e-selected span {
+        background-color: #ff623fCC !important;
+        border: 1px solid #ff623fCC !important;
+        color: var(--main-primary-color) !important;
+    }
+</style>
+
+
+  <!-- Custom CSS -->
+
+  <!-- Custom HEAD -->
+</head>
+
+<body class="tw-flex tw-min-h-screen tw-flex-col">
+
+<nav data-navbar class="tw-flex tw-flex-wrap min-[992px]:tw-flex-nowrap tw-items-center tw-justify-between min-[992px]:tw-justify-start !tw-sticky tw-top-0 tw-z-[1020] !tw-bg-white tw-border-b tw-border-neutral-light-60 !tw-px-0 !tw-py-3 !tw-mb-6 tw-shadow-[0px_1px_0px_#dce5ef,0px_1px_4px_rgba(9,8,61,0.08)] print:!tw-static">
+  <div class="tw-container-md tw-flex tw-flex-wrap min-[992px]:tw-flex-nowrap tw-items-center tw-justify-between">
+
+    <!-- Logo -->
+    <a class="tw-me-4 tw-text-[1.25rem] tw-text-[rgba(0,0,0,0.9)] hover:tw-text-[rgba(0,0,0,0.9)] tw-no-underline tw-whitespace-nowrap" href="/careers">
+        <img class="logo !tw-mt-2" style="max-width: 220px; max-height: 35px;" src="https://cdn.peopleforce.io/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsiZGF0YSI6NTAwNzQ0MTQsInB1ciI6ImJsb2JfaWQifX0=--6e3fe6d12dc0cb416060da2fea0106f13cffff5a/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJwbmciLCJyZXNpemVfdG9fbGltaXQiOltudWxsLDgwXX0sInB1ciI6InZhcmlhdGlvbiJ9fQ==--fcf762d8c43b0fe87c0aa67413af73e37af25e26/logo-wide.png" />
+
+    </a>
+
+    <div>
+      <nav class="tw-my-2" data-turbo="false">
+
+
+
+
+
+      </nav>
+
+    </div>
+
+  </div>
+</nav>
+
+<div class="tw-container-md tw-flex-1">
+  <div class="!tw-mb-4">
+    
+  </div>
+
+  
+
+<h1 class="!tw-pt-4 !tw-text-3xl !tw-mb-10">
+  Job openings
+</h1>
+
+
+
+
+<div class="tw-row !tw-mt-6">
+  <div class="tw-col-sm-12 tw-col-lg-8 !tw-order-2 min-[992px]:!tw-order-1">
+    <div id="results">
+    <p class="!tw-mb-2 tw-text-xs">
+      
+<div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
+  <div>
+    <div class="tw-text-neutral-dark-80 tw-text-xs">
+      Displaying <strong>1 - 10</strong> of <strong>23</strong> in total
+      <i class="turbo-spinner !tw-ms-2 fas fa-spinner fa-spin fa-lg"></i>
+    </div>
+  </div>
+
+</div>
+
+    </p>
+
+    <div class="tw-row tw-gy-3">
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/253153-senior-full-stack-engineer">Senior Full Stack Engineer</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/250558-receptionist">Receptionist</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/249218-data-analyst-senior">Data Analyst, Senior</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/249037-business-analyst-senior">Business Analyst, Senior</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/248432-database-administrator-senior">Database Administrator, Senior</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/248422-data-engineer-dbx-dbt-junior">Data Engineer (DBX, dbt), Junior</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/248180-data-engineer-dbx-dbt-regular">Data Engineer (DBX, dbt), Regular</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/246615-devops-engineer">DevOps Engineer</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/242242-full-stack-engineer-ai-experiences-python-react-senior">Full Stack Engineer (AI Experiences, Python + React), Senior</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/240892-project-manager-business-analyst-with-german-regular">Project Manager / Business Analyst with German, Regular</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+    </div>
+
+    <div class="!tw-mt-12">
+        
+
+  <nav aria-label="pager" class="tw-flex tw-font-semibold" role="navigation">
+    <ul class="tw-flex tw-ps-0 tw-mb-0 tw-list-none">
+
+        <li><a href="#" class="tw-relative tw-block tw-border tw-border-solid tw-no-underline tw-transition-colors tw-px-2 tw-py-1 tw-text-sm tw-leading-normal tw-pointer-events-none tw-bg-neutral-light-20 tw-text-neutral-dark-60 tw-border-neutral-light-80 tw-rounded-l-sm"><i class="fas fa-caret-left"></i></a></li>
+
+          <li><a href="/careers?page=1" data-action="post-pagy-filter#submitForm" data-turbo-action="replace" aria-current="page" class="tw-relative tw-block tw-border tw-border-solid tw-no-underline tw-transition-colors tw-px-2 tw-py-1 tw-text-sm tw-leading-normal tw-z-[3] tw-bg-white tw-text-black tw-border-neutral-light-80 focus:tw-outline-none focus:tw-shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)] -tw-ml-px">1</a></li>
+          <li><a href="/careers?page=2" data-action="post-pagy-filter#submitForm" data-turbo-action="replace" class="tw-relative tw-block tw-border tw-border-solid tw-no-underline tw-transition-colors tw-px-2 tw-py-1 tw-text-sm tw-leading-normal tw-bg-white tw-text-neutral-dark-60 tw-border-table-border hover:tw-z-[2] hover:tw-bg-disabled focus:tw-z-[3] focus:tw-bg-disabled focus:tw-outline-none focus:tw-shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)] -tw-ml-px" rel="next">2</a></li>
+          <li><a href="/careers?page=3" data-action="post-pagy-filter#submitForm" data-turbo-action="replace" class="tw-relative tw-block tw-border tw-border-solid tw-no-underline tw-transition-colors tw-px-2 tw-py-1 tw-text-sm tw-leading-normal tw-bg-white tw-text-neutral-dark-60 tw-border-table-border hover:tw-z-[2] hover:tw-bg-disabled focus:tw-z-[3] focus:tw-bg-disabled focus:tw-outline-none focus:tw-shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)] -tw-ml-px">3</a></li>
+
+        <li>
+          <a href="/careers?page=2" data-action="post-pagy-filter#submitForm" data-turbo-action="replace" data-cy="pagination_next_action" class="tw-relative tw-block tw-border tw-border-solid tw-no-underline tw-transition-colors tw-px-2 tw-py-1 tw-text-sm tw-leading-normal tw-bg-white tw-text-neutral-dark-60 tw-border-table-border hover:tw-z-[2] hover:tw-bg-disabled focus:tw-z-[3] focus:tw-bg-disabled focus:tw-outline-none focus:tw-shadow-[0_0_0_0.25rem_rgba(13,110,253,0.25)] -tw-ml-px tw-rounded-r-sm" rel="next" aria-label="next"><i class="fas fa-caret-right"></i></a>
+        </li>
+    </ul>
+  </nav>
+
+    </div>
+</div>
+  </div>
+
+  <div class="tw-col-sm-12 tw-col-lg-4 !tw-mb-6 !tw-order-1 min-[992px]:!tw-order-2">
+    <div class="tw-sticky tw-top-[84px] tw-z-10">
+
+        <div class="tw-bg-white tw-shadow  tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 ">            <form data-turbo-stream="true" data-controller="form" action="/careers/v" accept-charset="UTF-8" method="get">
+              <input class="form-control form-control" placeholder="Search..." data-action="debounced:input-&gt;form#submit" autocomplete="off" type="search" name="query" id="query" />
+</form></div>
+
+</div>
+
+    </div>
+  </div>
+</div>
+
+</div>
+
+<footer class="tw-text-neutral-dark-60 tw-text-xs tw-mb-3 tw-mt-6">
+  <hr>
+  <div class="tw-container-md">
+    <div class="!tw-flex tw-items-center">
+        <div class="credit">
+          Powered by <a target="_blank" href="https://peopleforce.io">PeopleForce</a>
+        </div>
+      <div class="!tw-ms-auto">
+        <div x-data="{}"><select name="locale" id="career_locale" class="form-select " x-on:change="window.location = &#39;?locale=&#39; + $event.target.value;"><option selected="selected" value="en">English</option>
+<option value="uk">Українська</option>
+<option value="pl">Polski</option>
+<option value="es">Español</option>
+<option value="pt-BR">Português</option>
+<option value="de-DE">Deutsch</option>
+<option value="sk-SK">Slovenčina</option>
+<option value="hu-HU">Magyar</option></select></div>
+      </div>
+    </div>
+  </div>
+</footer>
+</body>
+
+</html>

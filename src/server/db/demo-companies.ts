@@ -116,7 +116,9 @@ export const DEMO_COMPANIES: DemoCompany[] = [
     url: "https://peopleforce.io",
     sources: [
       {
-        url: "https://careers.peopleforce.io",
+        // Сама PeopleForce: `careers.peopleforce.io` веде на 404, сторінка
+        // кар'єри - на субдомені `team` (перевірено 18.11.2026).
+        url: "https://team.peopleforce.io/careers",
         platform: "peopleforce",
         lastSuccessDaysAgo: 1,
       },

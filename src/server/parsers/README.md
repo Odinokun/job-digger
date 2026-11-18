@@ -12,7 +12,7 @@
 | `greenhouse.ts`      | Greenhouse: `readGreenhouse(sourceUrl, client)` і його частини |
 | `greenhouse.test.ts` | Юніт-тести парсера Greenhouse                     |
 | `greenhouse.integration.test.ts` | `readGreenhouse` через фейковий вебсервер |
-| `shared.ts`          | Спільне для парсерів: `collectVacancies` (правило кривих записів), `fetchJson` і `postJson` (запит → статус → JSON), `UNREADABLE`, `isRecord`, `isWebUrl` |
+| `shared.ts`          | Спільне для парсерів: `collectVacancies` (правило кривих записів), `fetchJson` і `postJson` (запит → статус → JSON), `fetchText` (те саме для HTML), `UNREADABLE`, `isRecord`, `isWebUrl` |
 | `shared.test.ts`     | Юніт-тести `collectVacancies`                     |
 | `lever.ts`           | Lever: `readLever(sourceUrl, client)`, `leverSite`, `parseLeverPostings` |
 | `lever.test.ts`      | Юніт-тести парсера Lever                          |
@@ -23,6 +23,9 @@
 | `workday.ts`         | Workday: `readWorkday(sourceUrl, client)`, `workdaySite`, `parseWorkdayJobs` |
 | `workday.test.ts`    | Юніт-тести парсера Workday                        |
 | `workday.integration.test.ts` | `readWorkday` через фейковий вебсервер і сервер зі сторінками |
+| `peopleforce.ts`     | PeopleForce: `readPeopleForce(sourceUrl, client)`, `peopleforceSite`, `parsePeopleForcePage` |
+| `peopleforce.test.ts` | Юніт-тести парсера PeopleForce                   |
+| `peopleforce.integration.test.ts` | `readPeopleForce` через фейковий вебсервер і сервер зі сторінками |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
 
 ## Спільний формат
@@ -163,3 +166,34 @@ Workday у браузері: `POST https://{host}/wday/cxs/{tenant}/{site}/jobs`
 Перевірено на справжній мережі (вручну, 18.11.2026): NVIDIA на обох доменах і сам
 Workday - по 100 вакансій за 5 сторінок (близько 9 с через паузу 2 с між запитами),
 усі ID різні; невідомий сайт - `not-found`, невідомий tenant - `bad-status` 422.
+
+## PeopleForce
+
+**HTML, а не API.** Careers API PeopleForce вимагає ключ компанії
+([документація](https://developer.peopleforce.io/careers/v1/getting-started)), тож
+парсер читає публічну сторінку `https://{company}.peopleforce.io/careers` - так, як
+її бачить відвідувач. Розмітку розбирає Cheerio. Формат перевірено справжніми
+сторінками 18.11.2026 (PeopleForce, Webellian, V2Cloud), документації в нього немає.
+
+- **Адреса.** `peopleforceSite` бере субдомен компанії; сам `peopleforce.io` і `www` -
+  сайт платформи, не компанії. Посилання на вакансію теж годиться.
+- **Картка вакансії** - посилання в `h4` всередині `#results`: шлях
+  `/careers/v/{ID}-{slug}`, `externalId` - числовий ID (slug зі зміною назви
+  зміниться, ID - ні). Локація - текст поруч з іконкою `fa-map-marker-alt`; є не в
+  усіх компаній (у Webellian на картках немає нічого, крім назви), тоді `null`.
+- **Нуль довіряємо лише разом з лічильником.** Це HTML, і змінена верстка легко дала
+  б «нуль вакансій» - видалення всіх. Над картками PeopleForce пише «Displaying
+  X - Y of N in total»: текст перекладається («Відображено ... з ...»), числа в
+  `<strong>` - ні. Карток має бути рівно Y - X + 1. Немає ні лічильника, ні карток -
+  вакансій справді немає («There are currently no vacancies.»). Будь-яке інше
+  поєднання, як і сторінка без `#results`, - `unreadable`.
+- **Сторінки по 10**, `?page=N`, до 5 сторінок - щонайбільше 50 вакансій (ліміт
+  стане налаштуванням у задачі 3.12). Наступна - лише за посиланням `rel="next"`
+  у `nav[aria-label="pager"]`: номер за межею списку PeopleForce не відхиляє, а
+  віддає останню сторінку ще раз.
+- **Помилки:** невідома компанія - 404; компанія без сторінки кар'єри - 302 на
+  `/404`, а та - 404. Обидва випадки - `not-found`.
+
+Перевірено на справжній мережі (вручну, 18.11.2026): PeopleForce - 6 вакансій,
+Webellian - 23 за 3 сторінки, V2Cloud - 3; компанія без сторінки кар'єри (`macpaw`) і
+неіснуюча - `not-found`.

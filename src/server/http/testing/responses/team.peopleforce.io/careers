@@ -1,0 +1,1418 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- HTML Meta Tags -->
+  <title>PeopleForce - Job openings</title>
+  <meta name="description" content="Welcome to PeopleForce, your gateway to exciting career opportunities! We are a pioneering HR platform that transforms the way businesses manage their entire employee experience. Our mission is to ...">
+
+  <!-- Facebook Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="PeopleForce - Job openings">
+  <meta property="og:description" content="Welcome to PeopleForce, your gateway to exciting career opportunities! We are a pioneering HR platform that transforms the way businesses manage their entire employee experience. Our mission is to ...">
+  <meta property="og:image" content="https://cdn.peopleforce.io/assets/blankslates/career_site_social-0db56df357a45ce6f284a2e95338063324f6f9d11b2f463f2a6ce1ccc1890778.png">
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="twitter:domain" content="careers.peopleforce.io">
+  <meta name="twitter:title" content="PeopleForce - Job openings">
+  <meta name="twitter:description" content="Welcome to PeopleForce, your gateway to exciting career opportunities! We are a pioneering HR platform that transforms the way businesses manage their entire employee experience. Our mission is to ...">
+  <meta name="twitter:image" content="https://cdn.peopleforce.io/assets/blankslates/career_site_social-0db56df357a45ce6f284a2e95338063324f6f9d11b2f463f2a6ce1ccc1890778.png">
+
+    <!-- Facebook Meta Tags -->
+  <meta property="og:url" content="https://careers.peopleforce.io">
+
+  <!-- Twitter Meta Tags -->
+  <meta property="twitter:url" content="https://careers.peopleforce.io">
+
+  
+  
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://app.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MjM5NjE4NywicHVyIjoiYmxvYl9pZCJ9fQ==--64a3e4e0f17a05dcd6fbd6965c27db3c6cc27d0a/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJwbmciLCJyZXNpemVfdG9fbGltaXQiOltudWxsLDMyXX0sInB1ciI6InZhcmlhdGlvbiJ9fQ==--7063b337c0051660b3c4eab7f1fe1dd417270901/%D0%A4%D0%B0%D0%B2%D1%96%D0%BA%D0%BE%D0%BD_small.png?hosts=team.peopleforce.io">
+
+  <meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="ojYf2SaJumqAoj9dbw16GRRMF9K4G6TbqiNmiQpXHxXPD-5I7D1eZUNZJ46IkPueyg6XlVpcm9ncNGteXXDtTg" />
+  
+  <link rel="stylesheet" href="https://cdn.peopleforce.io/vite/assets/entrypoints/inertia-CznUhODk-T4hp5LdF.css" data-turbo-track="reload" />
+<link rel="stylesheet" href="https://cdn.peopleforce.io/vite/assets/entrypoints/careers-V1rVTyTc-T4hp5LdF.css" data-turbo-track="reload" />
+<link rel="stylesheet" href="https://cdn.peopleforce.io/vite/assets/entrypoints/application-CPzaA_fV-T4hp5LdF.css" data-turbo-track="reload" />
+
+  <script src="https://cdn.peopleforce.io/vite/entrypoints/careers.ts-WjB1uL1a-T4hp5LdF.js" crossorigin="" type="module" data-turbo-track="reload"></script><link rel="modulepreload" href="https://cdn.peopleforce.io/vite/turbo.es2017-esm-DFp9aU59-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/preload-helper-Dp1pzeXC-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/alpine-turbo-drive-adapter.esm-Ctb35nOj-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload"><link rel="stylesheet" crossorigin="" href="https://cdn.peopleforce.io/vite/assets/careers-DknsONTs-T4hp5LdF.css" data-turbo-track="reload" />
+
+  <script type="text/javascript" nonce="">
+    var LOCALE = "en";
+    var DATE_FORMAT = "DD.MM.YYYY";
+  </script>
+
+  <script src="https://cdn.peopleforce.io/vite/entrypoints/turbo_vue_mount.ts-CD_Zj9VN-T4hp5LdF.js" crossorigin="" type="module" data-turbo-track="reload"></script><link rel="modulepreload" href="https://cdn.peopleforce.io/vite/preload-helper-Dp1pzeXC-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/activestorage.esm-C8SuVFk6-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/stimulus-CZA9Too6-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/query-client-opkrjc8l-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload"><link rel="stylesheet" crossorigin="" href="https://cdn.peopleforce.io/vite/assets/turbo_vue_mount-aRHcEb9G-T4hp5LdF.css" data-turbo-track="reload" />
+<link rel="stylesheet" crossorigin="" href="https://cdn.peopleforce.io/vite/assets/query-client-p05Wh1pL-T4hp5LdF.css" data-turbo-track="reload" />
+  <script src="https://cdn.peopleforce.io/vite/entrypoints/application.ts-BN1LvD2s-T4hp5LdF.js" crossorigin="" type="module" data-turbo-track="reload"></script><link rel="modulepreload" href="https://cdn.peopleforce.io/vite/preload-helper-Dp1pzeXC-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/activestorage.esm-C8SuVFk6-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/print-CbByBbZ1-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/turbo.es2017-esm-DFp9aU59-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/alpine-turbo-drive-adapter.esm-Ctb35nOj-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/stimulus-CZA9Too6-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+<link rel="modulepreload" href="https://cdn.peopleforce.io/vite/_commonjsHelpers-Cpj98o6Y-T4hp5LdF.js" as="script" crossorigin="" data-turbo-track="reload">
+
+    <script nonce="">
+    window.SENTRY_CONFIG = {"dsn":"https://4c3e607f2202d450acd64dda706d2e7e@o437710.ingest.us.sentry.io/4511734075555840","environment":"prod-eu","release":"2.51.8","tracePropagationTargets":["team.peopleforce.io","app.peopleforce.io","cdn.peopleforce.io"],"tenant":{"id":"6","domain":"team"}};
+  </script>
+
+
+  <style>
+      .breadcrumb {
+          background-color: #2eaa4d;
+          padding: 10px;
+          border-radius: .25rem;
+
+          /* Bootstrap defaults both of these to #6c757d, which lands at ~1.6:1
+             against a saturated brand colour — the current-page crumb and the
+             divider were effectively invisible. Reuse the brand's own readable
+             foreground token so light primaries get dark text and dark ones white. */
+          --bs-breadcrumb-divider-color: var(--main-primary-text-color);
+          --bs-breadcrumb-item-active-color: var(--main-primary-text-color);
+      }
+  </style>
+
+  <style>
+    :root {
+        --main-primary-color: #2eaa4d;
+        --main-primary-color-transparent: #2eaa4d50;
+        --main-primary-text-color: #FFFFFF;
+        --swiper-theme-color: var(--main-primary-color);
+
+        --form-check-input-background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='%23FFFFFF' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/></svg>");
+        --form-radio-input-background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='2' fill='%23FFFFFF'/></svg>");
+        --form-check-indeterminate-background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='%23FFFFFF' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10h8'/></svg>");
+    }
+
+    .text-alt-primary {
+        color: var(--main-primary-text-color);
+    }
+
+    .form-check-input[type='radio']:checked {
+        background-image: var(--form-radio-input-background-image) !important;
+    }
+
+    .form-check:not(.form-switch) .form-check-input[type='checkbox']:checked {
+        background-image: var(--form-check-input-background-image) !important;
+    }
+
+    .form-check-input[type='checkbox']:indeterminate {
+        background-image: var(--form-check-indeterminate-background-image) !important;
+    }
+
+    .form-check-input:checked, .form-check-input[type='checkbox']:indeterminate {
+        border-color: var(--main-primary-color) !important;
+        background-color: var(--main-primary-color) !important;
+    }
+
+    .btn-primary:not([disabled]):not(.disabled):hover {
+        background-color: #2eaa4dCC !important;
+        border-color: #2eaa4dCC !important;
+    }
+
+    .wizard > .steps > ul > li.current .number {
+        border-color: var(--main-primary-color);
+        color: var(--main-primary-color);
+    }
+
+    .wizard > .steps > ul > li.done .number {
+        border-color: var(--main-primary-color);
+        background-color: var(--main-primary-color);
+    }
+
+    .wizard > .steps > ul > li:after, .wizard > .steps > ul > li:before {
+        background-color: var(--main-primary-color);
+    }
+
+    .choices__list--multiple .choices__item {
+        background-color: var(--main-primary-color);
+        border: 1px solid var(--main-primary-color);
+    }
+
+    .choices__list--multiple .choices__item.is-highlighted {
+        background-color: #2eaa4dCC;
+        border: 1px solid #2eaa4dCC;
+    }
+
+    .swiper-pagination-bullet-active {
+        background-color: var(--main-primary-color);
+    }
+
+    .e-control .e-primary {
+        background-color: var(--main-primary-color) !important;
+    }
+
+    .e-control .e-primary:hover {
+        background-color: #2eaa4dCC !important;
+    }
+
+    .e-today span {
+        border: 1px solid #2eaa4dCC !important;
+        color: var(--main-primary-color) !important;
+    }
+
+    .e-selected span {
+        background-color: #2eaa4dCC !important;
+        border: 1px solid #2eaa4dCC !important;
+        color: var(--main-primary-color) !important;
+    }
+</style>
+
+
+  <!-- Custom CSS -->
+
+  <!-- Custom HEAD -->
+</head>
+
+<body class="tw-flex tw-min-h-screen tw-flex-col">
+
+<nav data-navbar class="tw-flex tw-flex-wrap min-[992px]:tw-flex-nowrap tw-items-center tw-justify-between min-[992px]:tw-justify-start !tw-sticky tw-top-0 tw-z-[1020] !tw-bg-white tw-border-b tw-border-neutral-light-60 !tw-px-0 !tw-py-3 !tw-mb-6 tw-shadow-[0px_1px_0px_#dce5ef,0px_1px_4px_rgba(9,8,61,0.08)] print:!tw-static">
+  <div class="tw-container-md tw-flex tw-flex-wrap min-[992px]:tw-flex-nowrap tw-items-center tw-justify-between">
+
+    <!-- Logo -->
+    <a class="tw-me-4 tw-text-[1.25rem] tw-text-[rgba(0,0,0,0.9)] hover:tw-text-[rgba(0,0,0,0.9)] tw-no-underline tw-whitespace-nowrap" href="/careers">
+        <img class="logo !tw-mt-2" src="https://cdn.peopleforce.io/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsiZGF0YSI6MTM4MjQ5OSwicHVyIjoiYmxvYl9pZCJ9fQ==--30ddf6e91ae85ebd37dbc7f2bdc087082d790eb4/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJwbmciLCJyZXNpemVfdG9fbGltaXQiOltudWxsLDgwXX0sInB1ciI6InZhcmlhdGlvbiJ9fQ==--fcf762d8c43b0fe87c0aa67413af73e37af25e26/logo%20(1).png" />
+    </a>
+
+    <div>
+      <nav class="tw-my-2" data-turbo="false">
+          <a target="_blank" class="!tw-m-2 tw-text-neutral-dark-60 hover:tw-text-black" href="https://www.peopleforce.io"><i class='fas fa-lg fa-globe'></i></a>
+
+          <a target="_blank" class="!tw-m-2 tw-text-neutral-dark-60 hover:tw-text-black" href="https://www.facebook.com/peopleforceapp"><i class='fab fa-lg fa-facebook'></i></a>
+
+          <a target="_blank" class="!tw-m-2 tw-text-neutral-dark-60 hover:tw-text-black" href="https://www.instagram.com/peopleforce.ua?igsh=cmdhejAxYTBvd3Mx"><i class='fab fa-lg fa-instagram'></i></a>
+
+          <a target="_blank" class="!tw-m-2 tw-text-neutral-dark-60 hover:tw-text-black" href="https://www.linkedin.com/company/peopleforceapp/"><i class='fab fa-lg fa-linkedin'></i></a>
+
+
+      </nav>
+
+    </div>
+
+  </div>
+</nav>
+
+<div class="tw-container-md tw-flex-1">
+  <div class="!tw-mb-4">
+    
+  </div>
+
+  
+
+<h1 class="!tw-pt-4 !tw-text-3xl !tw-mb-2">
+  Job Openings
+</h1>
+
+  <h4 class="!tw-mb-10">PeopleForce is a single HR platform that manages your entire employee experience. Loved by tech companies. </h4>
+
+
+  <div class="!tw-mt-6 !tw-mb-6">
+    <strong>Welcome to PeopleForce, your gateway to exciting career opportunities!</strong> We are a pioneering HR platform that transforms the way businesses manage their entire employee experience. Our mission is to empower organizations around the world with innovative HR solutions.<br><br><strong>Who We Are:</strong><br><ul>
+<li>
+<strong>Global Reach:</strong> Operating in over 25 countries and serving over 80,000 employees, we are committed to making a global impact.</li>
+<li>
+<strong>Trusted Partners:</strong> We collaborate with renowned brands like Rakuten, ROOM8, Deloitte, Reply.io, merXu, eSky, SE Ranking, ROOSH, BMW, Robota.ua, Ajax Systems, and many more.</li>
+<li>
+<strong>High-Performance Culture:</strong> We believe in creating a high-performance culture within our teams, and we start by fostering it within our own company.</li>
+</ul><strong>Why PeopleForce:</strong><br>If you're driven, passionate, and ready to make your mark in a dynamic, fast-growing company, PeopleForce is the place for you. We're at the forefront of HR technology, setting ambitious goals and providing ample opportunities for your personal and professional development.<br><br><strong>Join us in driving the future of HR tech and become a part of our global success story. Your</strong><strong> next adventure begins here!</strong><br><br>Check out our current job openings and apply today to be part of the PeopleForce team!
+  </div>
+
+  <!-- Slider main container -->
+  <div class="swiper">
+    <!-- Additional required wrapper -->
+    <div class="swiper-wrapper">
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzQyNjgzNiwicHVyIjoiYmxvYl9pZCJ9fQ==--c834e4dfb0637a29dfa6873b12f1833efc01e38f/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/DSC_4724.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzQyNjgzOSwicHVyIjoiYmxvYl9pZCJ9fQ==--c79aa65a82cf503615a5075c035b99526f196a59/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/DSC_2689.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzQyNjg0MiwicHVyIjoiYmxvYl9pZCJ9fQ==--8e3691c0fc95b162f72dfb07a403126c1794a24d/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/DSC_3030.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzQyNjg0NywicHVyIjoiYmxvYl9pZCJ9fQ==--703b357a20bdc72f17eae06c21353f3e25c8a46c/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/DSC_3823.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzQyNjg2OSwicHVyIjoiYmxvYl9pZCJ9fQ==--bca6f1e7f429c4bbe159d5ad3e903a214d55dbed/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/DSC_4163.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzQyNjk3MiwicHVyIjoiYmxvYl9pZCJ9fQ==--07d4df948abeea72eb605e81d162581af0c37931/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/DSC_2825.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzQyNjk3MywicHVyIjoiYmxvYl9pZCJ9fQ==--2b791eaf5ebc5628c0ff620dfa8354b6b39f11f3/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/DSC_3006.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzQyNjk3OCwicHVyIjoiYmxvYl9pZCJ9fQ==--bd8663e72b84ad490c9660c73cc899674c722b19/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/DSC_3125.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzQyNjk4MiwicHVyIjoiYmxvYl9pZCJ9fQ==--5284292da062c90047cc2586e771583a9b164212/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/DSC_3762.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzQyNjk4NSwicHVyIjoiYmxvYl9pZCJ9fQ==--c4caf50c11c183e9b10b3ff4115ad6c9b78f1186/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/DSC_3751.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzQyNjk5NiwicHVyIjoiYmxvYl9pZCJ9fQ==--3d57f67e322cc573a934e3f1d58f806ef88e9f98/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/DSC_4741.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzkyODE5MiwicHVyIjoiYmxvYl9pZCJ9fQ==--415fb9412c4673f4a7097f20a8401867cb624635/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/PeopleForce_Fot.Jacek_Waszkiewicz-002.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzkyODI0NCwicHVyIjoiYmxvYl9pZCJ9fQ==--f31ea4fe34023f2dcb5f37510397ba6617901770/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/PeopleForce_Fot.Jacek_Waszkiewicz-009.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzkyODMyMCwicHVyIjoiYmxvYl9pZCJ9fQ==--0b12e90e23361eab7e74de7fe46623ca50e3b769/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/PeopleForce_Fot.Jacek_Waszkiewicz-004.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzkyODU4NCwicHVyIjoiYmxvYl9pZCJ9fQ==--d912e55c238b41d5720927518fb71817f4d4ee8b/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/PeopleForce_Fot.Jacek_Waszkiewicz-012.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzkyODU4NywicHVyIjoiYmxvYl9pZCJ9fQ==--9557782c757b0d3d1a7b8b7e3fab2af666eaf5af/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/PeopleForce_Fot.Jacek_Waszkiewicz-016.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzkyODU4OSwicHVyIjoiYmxvYl9pZCJ9fQ==--3aa80dabe113f72bbf9c152839a0369580789096/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/PeopleForce_Fot.Jacek_Waszkiewicz-032.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzkyODU5MSwicHVyIjoiYmxvYl9pZCJ9fQ==--ba3c1c6a76b7ae4272b59648242bb3a53ccd8a7e/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/PeopleForce_Fot.Jacek_Waszkiewicz-034.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzkyODU5MywicHVyIjoiYmxvYl9pZCJ9fQ==--0b3b0665106a82a4de331b9345fba4e6390150c7/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/PeopleForce_Fot.Jacek_Waszkiewicz-035.jpg" /></div>
+        <div class="swiper-slide"><img src="https://team.peopleforce.io/rails/active_storage/representations/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NzkyODU5NSwicHVyIjoiYmxvYl9pZCJ9fQ==--ef6b4dcd724abcd5c80d22a01d1b4346099ed995/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAwLDEwMDBdfSwicHVyIjoidmFyaWF0aW9uIn19--1c63b3867f889a469d95190654d413fe90e5320a/PeopleForce_Fot.Jacek_Waszkiewicz-037.jpg" /></div>
+    </div>
+    <!-- If we need pagination -->
+    <div class="swiper-pagination"></div>
+
+    <!-- If we need navigation buttons -->
+    <div class="swiper-button-prev"></div>
+    <div class="swiper-button-next"></div>
+  </div>
+
+<div class="tw-row !tw-mt-6">
+  <div class="tw-col-sm-12 tw-col-lg-8 !tw-order-2 min-[992px]:!tw-order-1">
+    <div id="results">
+    <p class="!tw-mb-2 tw-text-xs">
+      
+<div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
+  <div>
+    <div class="tw-text-neutral-dark-80 tw-text-xs">
+      Displaying <strong>1 - 6</strong> of <strong>6</strong> in total
+      <i class="turbo-spinner !tw-ms-2 fas fa-spinner fa-spin fa-lg"></i>
+    </div>
+  </div>
+
+</div>
+
+    </p>
+
+    <div class="tw-row tw-gy-3">
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/253193-integration-engineer-polish-erp-connectors">Integration Engineer, Polish ERP Connectors</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-briefcase fa-fw tw-me-1" aria-hidden="true"></i>Product
+
+
+        <span class="tw-px-1 tw-select-none" aria-hidden="true">&middot;</span>
+    </div>
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-clock fa-fw tw-me-1" aria-hidden="true"></i>Full Time
+
+
+        <span class="tw-px-1 tw-select-none" aria-hidden="true">&middot;</span>
+    </div>
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-map-marker-alt fa-fw tw-me-1" aria-hidden="true"></i>Poland
+
+
+    </div>
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/248089-senior-product-marketing-manager">Senior Product Marketing Manager</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-briefcase fa-fw tw-me-1" aria-hidden="true"></i>Global Marketing
+
+
+        <span class="tw-px-1 tw-select-none" aria-hidden="true">&middot;</span>
+    </div>
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-sitemap fa-fw tw-me-1" aria-hidden="true"></i>PeopleForce UA
+
+
+        <span class="tw-px-1 tw-select-none" aria-hidden="true">&middot;</span>
+    </div>
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-clock fa-fw tw-me-1" aria-hidden="true"></i>Full Time
+
+
+        <span class="tw-px-1 tw-select-none" aria-hidden="true">&middot;</span>
+    </div>
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-map-marker-alt fa-fw tw-me-1" aria-hidden="true"></i>Ukraine
+
+
+    </div>
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/239914-financial-controller">Financial Controller</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-briefcase fa-fw tw-me-1" aria-hidden="true"></i>Operations
+
+
+        <span class="tw-px-1 tw-select-none" aria-hidden="true">&middot;</span>
+    </div>
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-clock fa-fw tw-me-1" aria-hidden="true"></i>Full Time
+
+
+        <span class="tw-px-1 tw-select-none" aria-hidden="true">&middot;</span>
+    </div>
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-map-marker-alt fa-fw tw-me-1" aria-hidden="true"></i>Ukraine
+
+
+    </div>
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/239536-senior-security-engineer-security-owner-hands-on">Senior Security Engineer / Security Owner (Hands-on)</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-briefcase fa-fw tw-me-1" aria-hidden="true"></i>Product Management
+
+
+        <span class="tw-px-1 tw-select-none" aria-hidden="true">&middot;</span>
+    </div>
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-clock fa-fw tw-me-1" aria-hidden="true"></i>Full Time
+
+
+        <span class="tw-px-1 tw-select-none" aria-hidden="true">&middot;</span>
+    </div>
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-map-marker-alt fa-fw tw-me-1" aria-hidden="true"></i>Europe
+
+
+    </div>
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/235980-head-of-engineering">Head of Engineering</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-briefcase fa-fw tw-me-1" aria-hidden="true"></i>Engineering
+
+
+        <span class="tw-px-1 tw-select-none" aria-hidden="true">&middot;</span>
+    </div>
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-sitemap fa-fw tw-me-1" aria-hidden="true"></i>PeopleForce EU
+
+
+        <span class="tw-px-1 tw-select-none" aria-hidden="true">&middot;</span>
+    </div>
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-clock fa-fw tw-me-1" aria-hidden="true"></i>Full Time
+
+
+        <span class="tw-px-1 tw-select-none" aria-hidden="true">&middot;</span>
+    </div>
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-map-marker-alt fa-fw tw-me-1" aria-hidden="true"></i>Europe
+
+
+    </div>
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+        <div class="tw-col-12">
+          <div class="tw-bg-white tw-shadow hover:tw-shadow-lg tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+
+    <div class="tw-p-4 tw-relative">              <h4 class="tw-text-medium tw-mb-2">
+                <a class="tw-stretched-link tw-text-black" data-turbo-frame="_top" href="/careers/v/157473-senior-product-manager-product-builder">Senior Product Manager | Product Builder</a>
+              </h4>
+
+              <div class="tw-text-neutral-dark-60 tw-text-xs">
+                
+<div class="tw-flex tw-flex-wrap tw-items-center">
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-briefcase fa-fw tw-me-1" aria-hidden="true"></i>Product Management
+
+
+        <span class="tw-px-1 tw-select-none" aria-hidden="true">&middot;</span>
+    </div>
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-clock fa-fw tw-me-1" aria-hidden="true"></i>Full Time
+
+
+        <span class="tw-px-1 tw-select-none" aria-hidden="true">&middot;</span>
+    </div>
+    <div class="tw-flex tw-items-center">
+            <i class="fas fa-map-marker-alt fa-fw tw-me-1" aria-hidden="true"></i>Europe
+
+
+    </div>
+</div>
+
+              </div>
+</div>
+
+</div>
+        </div>
+    </div>
+
+    <div class="!tw-mt-12">
+        
+
+
+    </div>
+</div>
+  </div>
+
+  <div class="tw-col-sm-12 tw-col-lg-4 !tw-mb-6 !tw-order-1 min-[992px]:!tw-order-2">
+    <div class="tw-sticky tw-top-[84px] tw-z-10">
+
+        <div class="tw-bg-white tw-shadow  tw-relative tw-border tw-rounded tw-flex tw-flex-col  tw-divide-y [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_a:not(.tw-stretched-link)]:tw-z-[11] [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-relative [&:has(.tw-stretched-link:not(.tw-relative>.tw-stretched-link))_button]:tw-z-[11]">
+
+    <div class="tw-bg-neutral-light-10 tw-rounded-t tw-p-3">
+      <div class="tw-flex tw-items-center tw-gap-2">
+        <div class="tw-font-medium">
+          Filter
+        </div>
+      </div>
+    </div>
+
+    <div class="tw-p-4 ">            <form data-turbo-stream="true" data-controller="form" action="/careers/v" accept-charset="UTF-8" method="get">
+              <div class="tw-mb-3">
+                <input class="form-control form-control" placeholder="Search..." data-action="debounced:input-&gt;form#submit" autocomplete="off" type="search" name="query" id="query" />
+              </div>
+
+                <div class="tw-mb-3">
+                  <div class="tw-flex tw-w-full tw-h-full" >
+  <div class="input-control tw-w-full "
+      x-data="selectComponentController"
+      data-multiple=""
+      data-max-selected-items=""
+      data-value=''
+  >
+    
+
+
+    <div class="tw-relative"
+         data-cy="_employment_type_id_select"
+         x-ref="tooltipTarget"
+         title=""
+         x-init="$watch('value', () => $refs.tooltipTarget.title = $refs.control.title)">
+      <div class="tw-flex tw-items-center tw-gap-2 tw-h-[38px] tw-select-none tw-cursor-pointer tw-bg-neutral-light-20 tw-border tw-border-neutral-light-60 tw-rounded-md tw-text-sm tw-block tw-w-full tw-py-1.5 tw-px-3 hover:tw-bg-neutral-light-40 hover:tw-b-neutral-light-100   "
+          onfocus="this.blur();"
+          @click="toggle()"
+          @mousedown.outside="close()"
+          x-ref="wrapper">
+
+
+
+        <input placeholder="Work type"
+              
+              class="tw-cursor-pointer tw-select-none tw-pointer-events-none tw-w-full !tw-outline-none tw-bg-transparent tw-truncate placeholder:tw-text-neutral-dark-80 hover:tw-bg-neutral-light-20"
+              value=""
+              title=""
+              type="text"
+              x-ref="control"
+              readonly />
+
+        <div class="tw-flex tw-items-center tw-gap-2">
+          <div class="tw-cursor-pointer tw-text-neutral-dark-80" data-cy="_employment_type_id_select_clear_action"
+              x-cloak
+              x-show="multiple ? (selectedCount > 0) : (value)"
+              @click.stop="clear()"
+              >
+                  <i class="far fa-times hover:tw-text-black"></i>
+          </div>
+
+          <div class="tw-text-neutral-dark-80 tw-pointer-events-none" x-cloak>
+            <i class="fa-fw far fa-angle-down"></i>
+          </div>
+        </div>
+      </div>
+
+      <div data-select-menu
+          class="tw-absolute tw-z-[1021] tw-min-w-[10rem] tw-text-left tw-text-[14px] tw-text-[#212529] tw-bg-white tw-bg-clip-padding tw-border tw-border-neutral-light-100 tw-rounded-md tw-shadow-[0px_2px_8px_rgba(9,8,61,0.08)] tw-outline-none data-[popper-reference-hidden]:tw-invisible"
+          x-cloak
+          x-show="opened"
+          x-ref="dropdown"
+          x-transition
+          x-bind:style="{ width: width + 'px' }"
+          @mousedown.stop="">
+
+
+        <div class="!tw-p-0 !tw-outline-none tw-rounded-b-md tw-rounded-t-md"
+            tabindex="-1"
+            x-ref="items"
+            @keydown.escape.stop="close()"
+            @keydown.up.stop=""
+            @keydown.down.stop=""
+            style="max-height: 260px; overflow-y: auto;">
+            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="22" data-text="Full Time" data-cy="_employment_type_id_select_22_option" title="Full Time" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Full Time</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="24" data-text="Part Time" data-cy="_employment_type_id_select_24_option" title="Part Time" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Part Time</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="38328" data-text="Повна зайнятість (повна ставка)" data-cy="_employment_type_id_select_38328_option" title="Повна зайнятість (повна ставка)" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Повна зайнятість (повна ставка)</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="38326" data-text="Часткова зайнятість (0,25 ставки)" data-cy="_employment_type_id_select_38326_option" title="Часткова зайнятість (0,25 ставки)" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Часткова зайнятість (0,25 ставки)</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="38325" data-text="Часткова зайнятість (0,5 ставки)" data-cy="_employment_type_id_select_38325_option" title="Часткова зайнятість (0,5 ставки)" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Часткова зайнятість (0,5 ставки)</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2  " data-value="38327" data-text="Часткова зайнятість (0,75 ставки)" data-cy="_employment_type_id_select_38327_option" title="Часткова зайнятість (0,75 ставки)" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Часткова зайнятість (0,75 ставки)</div>
+                </div>
+              </div>
+</div>          <template x-if="count == 0">
+            <div class="tw-p-2 tw-text-neutral-dark-40">No results found</div>
+          </template>
+        </div>
+      </div>
+
+          <input x-ref="hiddenField" data-action="change-&gt;form#submit" type="hidden" name="employment_type_id" id="employment_type_id" />
+    </div>
+
+  </div>
+</div>
+
+                </div>
+
+                <div class="tw-mb-3">
+                  <div class="tw-flex tw-w-full tw-h-full" >
+  <div class="input-control tw-w-full "
+      x-data="selectComponentController"
+      data-multiple=""
+      data-max-selected-items=""
+      data-value=''
+  >
+    
+
+
+    <div class="tw-relative"
+         data-cy="_location_id_select"
+         x-ref="tooltipTarget"
+         title=""
+         x-init="$watch('value', () => $refs.tooltipTarget.title = $refs.control.title)">
+      <div class="tw-flex tw-items-center tw-gap-2 tw-h-[38px] tw-select-none tw-cursor-pointer tw-bg-neutral-light-20 tw-border tw-border-neutral-light-60 tw-rounded-md tw-text-sm tw-block tw-w-full tw-py-1.5 tw-px-3 hover:tw-bg-neutral-light-40 hover:tw-b-neutral-light-100   "
+          onfocus="this.blur();"
+          @click="toggle()"
+          @mousedown.outside="close()"
+          x-ref="wrapper">
+
+
+
+        <input placeholder="Location"
+              
+              class="tw-cursor-pointer tw-select-none tw-pointer-events-none tw-w-full !tw-outline-none tw-bg-transparent tw-truncate placeholder:tw-text-neutral-dark-80 hover:tw-bg-neutral-light-20"
+              value=""
+              title=""
+              type="text"
+              x-ref="control"
+              readonly />
+
+        <div class="tw-flex tw-items-center tw-gap-2">
+          <div class="tw-cursor-pointer tw-text-neutral-dark-80" data-cy="_location_id_select_clear_action"
+              x-cloak
+              x-show="multiple ? (selectedCount > 0) : (value)"
+              @click.stop="clear()"
+              >
+                  <i class="far fa-times hover:tw-text-black"></i>
+          </div>
+
+          <div class="tw-text-neutral-dark-80 tw-pointer-events-none" x-cloak>
+            <i class="fa-fw far fa-angle-down"></i>
+          </div>
+        </div>
+      </div>
+
+      <div data-select-menu
+          class="tw-absolute tw-z-[1021] tw-min-w-[10rem] tw-text-left tw-text-[14px] tw-text-[#212529] tw-bg-white tw-bg-clip-padding tw-border tw-border-neutral-light-100 tw-rounded-md tw-shadow-[0px_2px_8px_rgba(9,8,61,0.08)] tw-outline-none data-[popper-reference-hidden]:tw-invisible"
+          x-cloak
+          x-show="opened"
+          x-ref="dropdown"
+          x-transition
+          x-bind:style="{ width: width + 'px' }"
+          @mousedown.stop="">
+          <div class="!tw-p-2 tw-border-b shadow-bottom">
+            <input type="search"
+                  class="form-control form-control-sm"
+                  placeholder="&#xf002;&nbsp;&nbsp;Search..."
+                  x-ref="selectSearch"
+                  @keydown.enter.prevent="selectFirst()"
+                  @keyup.enter.prevent=""
+                  @keydown.escape.stop="close()"
+                  @keydown.up.stop="focusItems()"
+                  @keydown.down.stop="focusItems()"
+                  x-on:input="search()"
+                  x-model="query" />
+          </div>
+
+
+        <div class="!tw-p-0 !tw-outline-none tw-rounded-b-md "
+            tabindex="-1"
+            x-ref="items"
+            @keydown.escape.stop="close()"
+            @keydown.up.stop=""
+            @keydown.down.stop=""
+            style="max-height: 260px; overflow-y: auto;">
+            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="43758" data-text="Argentina" data-cy="_location_id_select_43758_option" title="Argentina" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Argentina</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="71548" data-text="Colombia" data-cy="_location_id_select_71548_option" title="Colombia" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Colombia</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="72505" data-text="Croatia" data-cy="_location_id_select_72505_option" title="Croatia" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Croatia</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="37801" data-text="Europe" data-cy="_location_id_select_37801_option" title="Europe" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Europe</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="105145" data-text="Lithuania" data-cy="_location_id_select_105145_option" title="Lithuania" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Lithuania</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="70001" data-text="Mexico" data-cy="_location_id_select_70001_option" title="Mexico" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Mexico</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="66603" data-text="Moldova" data-cy="_location_id_select_66603_option" title="Moldova" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Moldova</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="25486" data-text="Poland" data-cy="_location_id_select_25486_option" title="Poland" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Poland</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="48580" data-text="Romania" data-cy="_location_id_select_48580_option" title="Romania" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Romania</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="72821" data-text="Serbia" data-cy="_location_id_select_72821_option" title="Serbia" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Serbia</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="30345" data-text="Spain" data-cy="_location_id_select_30345_option" title="Spain" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Spain</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="53505" data-text="Switzerland" data-cy="_location_id_select_53505_option" title="Switzerland" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Switzerland</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="6" data-text="Ukraine" data-cy="_location_id_select_6_option" title="Ukraine" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Ukraine</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2  " data-value="34045" data-text="United Kingdom" data-cy="_location_id_select_34045_option" title="United Kingdom" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">United Kingdom</div>
+                </div>
+              </div>
+</div>          <template x-if="count == 0">
+            <div class="tw-p-2 tw-text-neutral-dark-40">No results found</div>
+          </template>
+        </div>
+      </div>
+
+          <input x-ref="hiddenField" data-action="change-&gt;form#submit" type="hidden" name="location_id" id="location_id" />
+    </div>
+
+  </div>
+</div>
+
+                </div>
+
+                <div class="tw-mb-3">
+                  <div class="tw-flex tw-w-full tw-h-full" >
+  <div class="input-control tw-w-full "
+      x-data="selectComponentController"
+      data-multiple=""
+      data-max-selected-items=""
+      data-value=''
+  >
+    
+
+
+    <div class="tw-relative"
+         data-cy="_division_id_select"
+         x-ref="tooltipTarget"
+         title=""
+         x-init="$watch('value', () => $refs.tooltipTarget.title = $refs.control.title)">
+      <div class="tw-flex tw-items-center tw-gap-2 tw-h-[38px] tw-select-none tw-cursor-pointer tw-bg-neutral-light-20 tw-border tw-border-neutral-light-60 tw-rounded-md tw-text-sm tw-block tw-w-full tw-py-1.5 tw-px-3 hover:tw-bg-neutral-light-40 hover:tw-b-neutral-light-100   "
+          onfocus="this.blur();"
+          @click="toggle()"
+          @mousedown.outside="close()"
+          x-ref="wrapper">
+
+
+
+        <input placeholder="Division"
+              
+              class="tw-cursor-pointer tw-select-none tw-pointer-events-none tw-w-full !tw-outline-none tw-bg-transparent tw-truncate placeholder:tw-text-neutral-dark-80 hover:tw-bg-neutral-light-20"
+              value=""
+              title=""
+              type="text"
+              x-ref="control"
+              readonly />
+
+        <div class="tw-flex tw-items-center tw-gap-2">
+          <div class="tw-cursor-pointer tw-text-neutral-dark-80" data-cy="_division_id_select_clear_action"
+              x-cloak
+              x-show="multiple ? (selectedCount > 0) : (value)"
+              @click.stop="clear()"
+              >
+                  <i class="far fa-times hover:tw-text-black"></i>
+          </div>
+
+          <div class="tw-text-neutral-dark-80 tw-pointer-events-none" x-cloak>
+            <i class="fa-fw far fa-angle-down"></i>
+          </div>
+        </div>
+      </div>
+
+      <div data-select-menu
+          class="tw-absolute tw-z-[1021] tw-min-w-[10rem] tw-text-left tw-text-[14px] tw-text-[#212529] tw-bg-white tw-bg-clip-padding tw-border tw-border-neutral-light-100 tw-rounded-md tw-shadow-[0px_2px_8px_rgba(9,8,61,0.08)] tw-outline-none data-[popper-reference-hidden]:tw-invisible"
+          x-cloak
+          x-show="opened"
+          x-ref="dropdown"
+          x-transition
+          x-bind:style="{ width: width + 'px' }"
+          @mousedown.stop="">
+
+
+        <div class="!tw-p-0 !tw-outline-none tw-rounded-b-md tw-rounded-t-md"
+            tabindex="-1"
+            x-ref="items"
+            @keydown.escape.stop="close()"
+            @keydown.up.stop=""
+            @keydown.down.stop=""
+            style="max-height: 260px; overflow-y: auto;">
+            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="66483" data-text="Kadry" data-cy="_division_id_select_66483_option" title="Kadry" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">Kadry</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="6632" data-text="PeopleForce EU" data-cy="_division_id_select_6632_option" title="PeopleForce EU" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">PeopleForce EU</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="30509" data-text="PeopleForce LATAM" data-cy="_division_id_select_30509_option" title="PeopleForce LATAM" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">PeopleForce LATAM</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2 tw-border-b " data-value="23187" data-text="PeopleForce PL" data-cy="_division_id_select_23187_option" title="PeopleForce PL" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">PeopleForce PL</div>
+                </div>
+              </div>
+</div>            <div class="item tw-text-neutral-dark-100 tw-cursor-pointer hover:tw-bg-neutral-light-20 tw-p-2  " data-value="1968" data-text="PeopleForce UA" data-cy="_division_id_select_1968_option" title="PeopleForce UA" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-10 tw-text-black&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @click="select($el)" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @keydown.enter.stop="select($el)">
+              <div class="tw-flex tw-gap-2 tw-items-center">
+                <div class="tw-w-full">
+                  <div class="tw-truncate">PeopleForce UA</div>
+                </div>
+              </div>
+</div>          <template x-if="count == 0">
+            <div class="tw-p-2 tw-text-neutral-dark-40">No results found</div>
+          </template>
+        </div>
+      </div>
+
+          <input x-ref="hiddenField" data-action="change-&gt;form#submit" type="hidden" name="division_id" id="division_id" />
+    </div>
+
+  </div>
+</div>
+
+                </div>
+
+                <div>
+                  <div class="tw-w-full "
+     x-data="selectTreeComponentController"
+     data-multiple=""
+     data-value=""
+>
+  
+
+  <div class="!tw-relative" data-cy="_department_id_select">
+    <input placeholder="Department"
+           
+           readonly
+           style="padding-right: 4.5em"
+           class=" !tw-select-none tw-truncate  tw-cursor-pointer form-control"
+           value=""
+           type="text"
+           x-ref="control"
+           onfocus="this.blur();"
+           @click="toggle()"
+           @mousedown.outside="close()"/>
+
+      <div class="tw-cursor-pointer tw-text-neutral-dark-80"
+           x-cloak
+           x-show="multiple ? (selectedCount > 0) : (value)"
+           @click="clear()"
+           data-cy="_department_id_select_clear_action"
+           style="position: absolute; right: 40px; bottom: 8px;">
+          <i class="far fa-times hover:tw-text-black"></i>
+      </div>
+
+    <div class="tw-text-neutral-dark-80"
+         x-cloak
+         style="position: absolute; right: 13px; bottom: 8px; pointer-events: none;">
+      <i class="fa-fw far fa-angle-down"></i>
+    </div>
+
+    <div data-select-menu
+         class="tw-absolute tw-z-[1021] tw-min-w-[10rem] tw-text-left tw-text-[14px] tw-text-[#212529] tw-bg-white tw-bg-clip-padding tw-border tw-border-neutral-light-100 tw-rounded-md tw-shadow-[0px_2px_8px_rgba(9,8,61,0.08)] data-[popper-reference-hidden]:tw-invisible"
+         @keydown.up.stop=""
+         @keydown.down.stop=""
+         @keydown.escape.stop=""
+         x-cloak
+         x-show="opened"
+         x-ref="dropdown"
+         x-transition
+         x-bind:style="{ width: width + 'px' }"
+         @mousedown.stop="">
+        <div class="!tw-p-2 tw-border-b">
+          <input type="search"
+                 class="form-control form-control-sm"
+                 placeholder="&#xf002;&nbsp;&nbsp;Search..."
+                 x-ref="selectSearch"
+                 @keydown.enter.prevent="selectFirst()"
+                 @keyup.enter.prevent=""
+                 @keydown.escape.stop="close()"
+                 @keydown.up.stop="focusItems()"
+                 @keydown.down.stop="focusItems()"
+                 x-on:input="search()"
+                 x-model="query"/>
+        </div>
+
+
+      <div class="!tw-p-0" tabindex="-1" x-ref="items" @keydown.escape.stop="close()" style="max-height: 300px; overflow-y: auto;">
+          <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="61" data-text="Customer Success" data-cy="_department_id_select_61_option" title="Customer Success" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 10px">
+            <i class="tw-text-neutral-dark-80 far fa-fw fa-angle-down" x-transition :class="{ 'fa-angle-down' : expanded, 'fa-angle-right' : !expanded }" @click.prevent.stop="expanded = !expanded"></i>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Customer Success
+        </div>
+      </div>
+</div>
+      <div x-transition x-cloak x-show="expanded">
+          <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="74407" data-text="Customer Success" data-cy="_department_id_select_74407_option" title="Customer Success" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <i class="tw-text-neutral-dark-80 far fa-fw fa-angle-down" x-transition :class="{ 'fa-angle-down' : expanded, 'fa-angle-right' : !expanded }" @click.prevent.stop="expanded = !expanded"></i>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Customer Success
+        </div>
+      </div>
+</div>
+      <div x-transition x-cloak x-show="expanded">
+          <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="92882" data-text="CS LATAM" data-cy="_department_id_select_92882_option" title="CS LATAM" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 30px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          CS LATAM
+        </div>
+      </div>
+</div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="97823" data-text="CS Operations" data-cy="_department_id_select_97823_option" title="CS Operations" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 30px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          CS Operations
+        </div>
+      </div>
+</div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="92881" data-text="CS PL" data-cy="_department_id_select_92881_option" title="CS PL" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 30px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          CS PL
+        </div>
+      </div>
+</div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="92880" data-text="CS UA" data-cy="_department_id_select_92880_option" title="CS UA" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 30px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          CS UA
+        </div>
+      </div>
+</div>
+  </div>
+
+      </div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="74406" data-text="Customer Support" data-cy="_department_id_select_74406_option" title="Customer Support" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Customer Support
+        </div>
+      </div>
+</div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="74409" data-text="Documentation" data-cy="_department_id_select_74409_option" title="Documentation" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Documentation
+        </div>
+      </div>
+</div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="74408" data-text="Onboarding" data-cy="_department_id_select_74408_option" title="Onboarding" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Onboarding
+        </div>
+      </div>
+</div>
+  </div>
+
+      </div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="31107" data-text="Finance" data-cy="_department_id_select_31107_option" title="Finance" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 10px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Finance
+        </div>
+      </div>
+</div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="56" data-text="Marketing" data-cy="_department_id_select_56_option" title="Marketing" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 10px">
+            <i class="tw-text-neutral-dark-80 far fa-fw fa-angle-down" x-transition :class="{ 'fa-angle-down' : expanded, 'fa-angle-right' : !expanded }" @click.prevent.stop="expanded = !expanded"></i>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Marketing
+        </div>
+      </div>
+</div>
+      <div x-transition x-cloak x-show="expanded">
+          <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="89094" data-text="Global Marketing" data-cy="_department_id_select_89094_option" title="Global Marketing" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Global Marketing
+        </div>
+      </div>
+</div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="89093" data-text="Marketing Design" data-cy="_department_id_select_89093_option" title="Marketing Design" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Marketing Design
+        </div>
+      </div>
+</div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="89095" data-text="Regional Marketing" data-cy="_department_id_select_89095_option" title="Regional Marketing" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Regional Marketing
+        </div>
+      </div>
+</div>
+  </div>
+
+      </div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="14641" data-text="Operations" data-cy="_department_id_select_14641_option" title="Operations" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 10px">
+            <i class="tw-text-neutral-dark-80 far fa-fw fa-angle-down" x-transition :class="{ 'fa-angle-down' : expanded, 'fa-angle-right' : !expanded }" @click.prevent.stop="expanded = !expanded"></i>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Operations
+        </div>
+      </div>
+</div>
+      <div x-transition x-cloak x-show="expanded">
+          <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="59" data-text="Human Resources" data-cy="_department_id_select_59_option" title="Human Resources" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Human Resources
+        </div>
+      </div>
+</div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="86735" data-text="Legal &amp; Compliance" data-cy="_department_id_select_86735_option" title="Legal &amp; Compliance" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Legal &amp; Compliance
+        </div>
+      </div>
+</div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="130342" data-text="Talent Acquisition" data-cy="_department_id_select_130342_option" title="Talent Acquisition" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Talent Acquisition
+        </div>
+      </div>
+</div>
+  </div>
+
+      </div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="55" data-text="Product" data-cy="_department_id_select_55_option" title="Product" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 10px">
+            <i class="tw-text-neutral-dark-80 far fa-fw fa-angle-down" x-transition :class="{ 'fa-angle-down' : expanded, 'fa-angle-right' : !expanded }" @click.prevent.stop="expanded = !expanded"></i>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Product
+        </div>
+      </div>
+</div>
+      <div x-transition x-cloak x-show="expanded">
+          <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="66342" data-text="Design" data-cy="_department_id_select_66342_option" title="Design" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Design
+        </div>
+      </div>
+</div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="66343" data-text="Engineering" data-cy="_department_id_select_66343_option" title="Engineering" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Engineering
+        </div>
+      </div>
+</div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="76501" data-text="Product Management" data-cy="_department_id_select_76501_option" title="Product Management" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Product Management
+        </div>
+      </div>
+</div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="66344" data-text="QA" data-cy="_department_id_select_66344_option" title="QA" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          QA
+        </div>
+      </div>
+</div>
+  </div>
+
+      </div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="60" data-text="Sales" data-cy="_department_id_select_60_option" title="Sales" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 10px">
+            <i class="tw-text-neutral-dark-80 far fa-fw fa-angle-down" x-transition :class="{ 'fa-angle-down' : expanded, 'fa-angle-right' : !expanded }" @click.prevent.stop="expanded = !expanded"></i>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Sales
+        </div>
+      </div>
+</div>
+      <div x-transition x-cloak x-show="expanded">
+          <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="89091" data-text="Revenue Growth" data-cy="_department_id_select_89091_option" title="Revenue Growth" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Revenue Growth
+        </div>
+      </div>
+</div>
+  </div>
+  <div x-data="{ expanded: true }">
+    <div class="item !tw-p-2 hover:tw-bg-neutral-light-20 tw-text-neutral-dark-100 tw-cursor-pointer bg-hover" data-value="89090" data-text="Sales Development" data-cy="_department_id_select_89090_option" title="Sales Development" tabindex="-1" :class="{ &#39;tw-bg-neutral-light-40&#39;: (multiple ? (value.includes($el.dataset.value)) : (value == $el.dataset.value)) }" x-show="query === &#39;&#39; || ($el.dataset.text.toLowerCase().includes(query.toLowerCase()))" @keydown.up.stop="cycleUp($el)" @keydown.down.stop="cycleDown($el)" @click="select($el)" @keydown.enter.stop="select($el)">
+      <div class="!tw-flex !tw-items-center">
+        <div x-show="!isSearching()" style="margin-left: 20px">
+            <div style="width: 15px;"></div>
+        </div>
+
+
+        <div class="tw-truncate !tw-ms-2">
+          Sales Development
+        </div>
+      </div>
+</div>
+  </div>
+
+      </div>
+  </div>
+
+        <div x-cloak x-show="count == 0" class="!tw-p-2 tw-text-neutral-dark-80">No results found</div>
+      </div>
+    </div>
+
+      <input x-ref="hiddenField" data-action="change-&gt;form#submit" type="hidden" name="department_id" id="department_id" />
+  </div>
+
+</div>
+
+
+                </div>
+</form></div>
+
+</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<footer class="tw-text-neutral-dark-60 tw-text-xs tw-mb-3 tw-mt-6">
+  <hr>
+  <div class="tw-container-md">
+    <div class="!tw-flex tw-items-center">
+        <div class="credit">
+          Powered by <a target="_blank" href="https://peopleforce.io">PeopleForce</a>
+        </div>
+      <div class="!tw-ms-auto">
+        <div x-data="{}"><select name="locale" id="career_locale" class="form-select " x-on:change="window.location = &#39;?locale=&#39; + $event.target.value;"><option selected="selected" value="en">English</option>
+<option value="uk">Українська</option>
+<option value="pl">Polski</option>
+<option value="es">Español</option>
+<option value="pt-BR">Português</option>
+<option value="de-DE">Deutsch</option>
+<option value="sk-SK">Slovenčina</option>
+<option value="hu-HU">Magyar</option></select></div>
+      </div>
+    </div>
+  </div>
+</footer>
+</body>
+
+</html>
