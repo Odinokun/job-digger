@@ -153,5 +153,8 @@
       "system": "System",
       "systemHint": "System follows the setting of your device."
     }
+  },
+  "Common": {
+    "close": "Close"
   }
 }

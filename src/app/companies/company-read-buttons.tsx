@@ -1,10 +1,11 @@
 "use client";
 
 import { CheckDouble, Envelope } from "@gravity-ui/icons";
-import { Button, toast } from "@heroui/react";
+import { toast } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 
+import { IconButton } from "@/app/components/icon-button";
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 
 import { setCompanyVacanciesReadAction } from "./actions";
@@ -22,7 +23,7 @@ interface CompanyReadButtonsProps {
  * На сторінці Companies після дії нічого видимо не змінюється, тому результат
  * показує сповіщення з кількістю. Іконки - ті самі, що в рядку вакансії
  * (`_jobs/vacancy-actions.tsx`), лише прочитане - подвійна галочка. Кнопки лише
- * з іконкою, тож `aria-label` обовʼязковий, як у кошика.
+ * з іконкою - `IconButton`, з підказкою при наведенні.
  */
 export function CompanyReadButtons({
   companyId,
@@ -51,26 +52,24 @@ export function CompanyReadButtons({
 
   return (
     <>
-      <Button
-        isIconOnly
+      <IconButton
         size="sm"
         variant="tertiary"
-        aria-label={t("markRead")}
+        label={t("markRead")}
         isDisabled={isPending}
         onPress={() => mark(true)}
       >
         <CheckDouble />
-      </Button>
-      <Button
-        isIconOnly
+      </IconButton>
+      <IconButton
         size="sm"
         variant="tertiary"
-        aria-label={t("markUnread")}
+        label={t("markUnread")}
         isDisabled={isPending}
         onPress={() => mark(false)}
       >
         <Envelope />
-      </Button>
+      </IconButton>
     </>
   );
 }

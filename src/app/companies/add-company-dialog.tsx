@@ -12,6 +12,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useActionState, useEffect, useState, useTransition } from "react";
 
+import { WithTooltip } from "@/app/components/icon-button";
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import type {
   CompaniesTab,
@@ -73,6 +74,7 @@ export function AddCompanyDialog({
   // Підпис джерела й текст про дублікат задаються у двох модалках, тому їхні
   // тексти лежать рівнем вище, поряд із `urlErrors`.
   const tShared = useTranslations("CompaniesPage");
+  const tCommon = useTranslations("Common");
   const showActionFailed = useActionFailedToast();
   const overlay = useOverlayState();
   const [state, submit, isPending] = useActionState(
@@ -338,7 +340,9 @@ export function AddCompanyDialog({
                   межею вікна - до них не було як дотягнутися. */}
         <Modal.Container scroll="inside">
           <Modal.Dialog>
-            <Modal.CloseTrigger />
+            <WithTooltip label={tCommon("close")}>
+              <Modal.CloseTrigger aria-label={tCommon("close")} />
+            </WithTooltip>
             <Modal.Header>
               <Modal.Heading>{t("title")}</Modal.Heading>
             </Modal.Header>
