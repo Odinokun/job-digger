@@ -54,6 +54,17 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   ).toHaveCount(BOARD_SIZE);
   await expect(vacancyRow(page, TITLE)).toContainText("Discord");
 
+  // Дії над рядком доходять до сервера із запізненням: вкладку перемикаємо,
+  // поки дія ще не записала позначку в базу. Рядок зникає з Unread одразу
+  // (оптимістично), тож людина цілком може так зробити, - і на CI тест без
+  // затримки падав через ту саму гонитву (задача 3.22).
+  await page.route("**/*", async (route) => {
+    if (route.request().headers()["next-action"] !== undefined) {
+      await new Promise((done) => setTimeout(done, 1000));
+    }
+    await route.continue();
+  });
+
   // Mark as read переносить вакансію з Unread у Read.
   await vacancyRow(page, TITLE)
     .getByRole("button", { name: "Mark as read" })

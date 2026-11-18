@@ -62,6 +62,7 @@ PR: #57
 | [3.19 Лічильник непрочитаних вакансій](3.19-unread-counter.md)                                   | todo    |
 | [3.20 E2E: від URL до вакансій в Unread](3.20-e2e-url-to-unread.md)                              | done    |
 | [3.21 Стани завантаження й оптимістичні дії](3.21-loading-states-optimistic.md)                  | done    |
+| [3.22 Перехід на вкладку під час дії над рядком](3.22-mark-then-switch-tab.md)                  | done    |
 | [4.01 Схема check_runs + check_tasks](4.01-check-runs-tasks-schema.md)                           | backlog |
 | [4.02 Захоплення завдань і повернення завислих](4.02-task-claiming-stale-recovery.md)            | backlog |
 | [4.03 Обробник черги як фоновий цикл](4.03-queue-background-loop.md)                             | backlog |

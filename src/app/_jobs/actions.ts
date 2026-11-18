@@ -1,5 +1,7 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+
 import { runAction } from "@/app/action-result";
 import type { Cursor } from "@/lib/pagination/cursor";
 import {
@@ -89,10 +91,23 @@ export async function setVacancyFavoriteAction(
   });
 }
 
+/**
+ * Результат дії для рядка. Після успішного запису сторінка Jobs позначається
+ * застарілою (`revalidatePath`): рядок зникає з вкладки одразу, ще до запису,
+ * тож людина встигає перейти на іншу вкладку, поки дія триває, - і без цього
+ * бачила б там список, прочитаний до запису, без вакансії, яку щойно
+ * позначила (задача 3.22). `revalidatePath` у Server Function оновлює
+ * сторінку, яку зараз видно, і скидає клієнтський кеш
+ * (node_modules/next/dist/docs/01-app/03-api-reference/04-functions/revalidatePath.md).
+ */
 async function markResult(
   work: () => Promise<VacancyListItem | null>,
 ): Promise<VacancyMarkResult> {
   const outcome = await runAction(work);
+
+  if (outcome.ok) {
+    revalidatePath("/");
+  }
 
   return outcome.ok ? { ok: true, vacancy: outcome.value } : { ok: false };
 }
