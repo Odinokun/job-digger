@@ -16,6 +16,8 @@
 | `lever.ts`           | Lever: `readLever(sourceUrl, client)`, `leverSite`, `parseLeverPostings` |
 | `lever.test.ts`      | Юніт-тести парсера Lever                          |
 | `lever.integration.test.ts` | `readLever` через фейковий вебсервер і сервер зі сторінками |
+| `ashby.ts`           | Ashby: `readAshby(sourceUrl, client)`, `ashbyBoard`, `parseAshbyJobs` |
+| `ashby.test.ts`      | Юніт-тести парсера Ashby                          |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
 
 ## Спільний формат
