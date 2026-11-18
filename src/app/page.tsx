@@ -1,14 +1,57 @@
 import { getTranslations } from "next-intl/server";
 
-export default async function JobsPage() {
+import { parseJobsTab, type JobsTab } from "@/lib/vacancies/vacancy-list";
+import { getDb } from "@/server/db/client";
+import { getSystemUser } from "@/server/db/system-user";
+import { hasAnyVacancy, listVacancies } from "@/server/vacancies/list";
+
+import { JobsBoard } from "./_jobs/jobs-board";
+import { JobsTabs } from "./_jobs/jobs-tabs";
+
+export default async function JobsPage({ searchParams }: PageProps<"/">) {
   const t = await getTranslations("JobsPage");
+  const tab = parseJobsTab((await searchParams).tab);
+
+  const db = getDb();
+  const user = await getSystemUser(db);
+  const [{ items, nextCursor }, hasAny] = await Promise.all([
+    listVacancies(db, { userId: user.id, tab }),
+    hasAnyVacancy(db, user.id),
+  ]);
+
+  // Порожня вкладка пояснює причину (docs/ui.md, розділ 4.1): якщо вакансій
+  // немає зовсім - їх ще ніде шукати, і текст веде в Companies; інакше
+  // порожня саме ця вкладка.
+  const emptyByTab: Record<JobsTab, string> = {
+    unread: t("emptyUnread"),
+    read: t("emptyRead"),
+    favorites: t("emptyFavorites"),
+    all: t("emptyAll"),
+  };
 
   return (
-    <>
-      <h1 className="font-display text-3xl font-semibold tracking-tight">
-        {t("title")}
-      </h1>
-      <p className="mt-2 text-sm text-muted">{t("empty")}</p>
-    </>
+    <JobsBoard
+      // Ключ - вкладка: показані рядки однієї не мають перетікати в іншу.
+      key={tab}
+      tab={tab}
+      title={t("title")}
+      tabs={
+        <JobsTabs
+          current={tab}
+          label={t("tabsLabel")}
+          labels={{
+            unread: t("unread"),
+            read: t("read"),
+            favorites: t("favorites"),
+            all: t("all"),
+          }}
+        />
+      }
+      initialItems={items}
+      initialCursor={nextCursor}
+      emptyLabel={hasAny ? emptyByTab[tab] : t("emptyNoVacancies")}
+      addCompanyLabel={hasAny ? null : t("addCompany")}
+      loadMoreLabel={t("loadMore")}
+    />
   );
 }

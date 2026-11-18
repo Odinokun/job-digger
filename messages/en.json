@@ -8,7 +8,19 @@
   },
   "JobsPage": {
     "title": "Jobs",
-    "empty": "No vacancies yet."
+    "tabsLabel": "Job lists",
+    "unread": "Unread",
+    "read": "Read",
+    "favorites": "Favorites",
+    "all": "All",
+    "closed": "Closed",
+    "loadMore": "Load more",
+    "emptyNoVacancies": "No vacancies yet. Add a company with a career page, and its vacancies show up here after a check.",
+    "addCompany": "Go to Companies",
+    "emptyUnread": "Everything is read.",
+    "emptyRead": "Nothing read yet.",
+    "emptyFavorites": "No favorites yet.",
+    "emptyAll": "No active vacancies."
   },
   "CompaniesPage": {
     "title": "Companies",
