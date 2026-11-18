@@ -9,12 +9,18 @@ import { Pool } from "pg";
 export type Database = NodePgDatabase & { $client: Pool };
 
 // Пул зʼєднань: встановлення зʼєднання з PostgreSQL коштує часу, тому кілька
-// зʼєднань тримаються відкритими і перевикористовуються між запитами.
+// зʼєднань тримаються відкритими і перевикористовуються між запитами. Пул один
+// на процес - і в dev, і в продакшні.
 //
-// У dev-режимі Next перезавантажує серверні модулі після кожної зміни коду. Без
-// кешу нижче кожне перезавантаження створювало б новий пул, а старий лишався б
-// із відкритими зʼєднаннями, доки база не впреться в їхній ліміт. У продакшні
-// модуль виконується один раз, тому кеш там не потрібен.
+// Кеш на `globalThis`, а не в змінній модуля: у dev-режимі Next перезавантажує
+// серверні модулі після кожної зміни коду, і змінна модуля обнулялася б разом
+// із ним - новий пул на кожне перезавантаження, а старий лишався б із
+// відкритими зʼєднаннями.
+//
+// До 3.23 кеш вмикався лише поза продакшном, бо «модуль виконується один раз».
+// Модуль - так, але `getDb()` викликається на кожен запит, і `next start`
+// створював новий пул на кожен виклик, доки PostgreSQL не відповідав «too many
+// clients already».
 const globalForDb = globalThis as typeof globalThis & {
   jobDiggerPool?: Pool;
   jobDiggerDb?: Database;
@@ -44,10 +50,8 @@ export function getDb(): Database {
   const pool = globalForDb.jobDiggerPool ?? new Pool({ connectionString });
   const db = drizzle({ client: pool });
 
-  if (process.env.NODE_ENV !== "production") {
-    globalForDb.jobDiggerPool = pool;
-    globalForDb.jobDiggerDb = db;
-  }
+  globalForDb.jobDiggerPool = pool;
+  globalForDb.jobDiggerDb = db;
 
   return db;
 }
