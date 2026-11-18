@@ -34,3 +34,23 @@ export function cleanVacancyUrl(input: string): string {
 
   return `${url.origin}${path}${query === "" ? "" : `?${query}`}`;
 }
+
+/**
+ * Ключ вакансії в межах джерела: `id:<ID на платформі>`, а без ID -
+ * `url:<очищена адреса>`. З ID адреса на ключ не впливає: вона може змінитися,
+ * а вакансія лишиться тією самою (docs/discovery-and-parsing.md, розділ 7).
+ *
+ * Приймає лише два поля, а не тип парсера: у парсера schema.org (3.11) ID може
+ * не бути.
+ */
+export function vacancyKey({
+  externalId,
+  url,
+}: {
+  externalId: string | null;
+  url: string;
+}): string {
+  const id = externalId?.trim();
+
+  return id ? `id:${id}` : `url:${cleanVacancyUrl(url)}`;
+}
