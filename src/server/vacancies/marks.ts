@@ -132,3 +132,31 @@ export async function listUnreadIds(
 
   return rows.map((row) => row.id);
 }
+
+/**
+ * Mark all as read: позначає прочитаними вакансії зі знімка `listUnreadIds`
+ * і повертає, скільки позначено. Вакансії користувача поза знімком (знайдені,
+ * поки був відкритий діалог) лишаються Unread. Зниклі й чужі ID, як і рядки,
+ * що не схожі на UUID, просто не збігаються - без помилки (розділ 7 плану).
+ */
+export async function markVacanciesRead(
+  db: NodePgDatabase,
+  { userId, ids }: { userId: string; ids: string[] },
+): Promise<number> {
+  const valid = ids.filter((id) => UUID_PATTERN.test(id));
+
+  if (valid.length === 0) return 0;
+
+  const marked = await db
+    .update(vacancies)
+    .set({ isRead: true })
+    .where(
+      and(
+        inArray(vacancies.id, valid),
+        inArray(vacancies.sourceId, ownSources(db, userId)),
+      ),
+    )
+    .returning({ id: vacancies.id });
+
+  return marked.length;
+}

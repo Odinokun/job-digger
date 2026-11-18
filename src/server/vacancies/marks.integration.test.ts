@@ -7,6 +7,7 @@ import { testDb } from "../db/testing/test-db.ts";
 import {
   findVacancy,
   listUnreadIds,
+  markVacanciesRead,
   setVacancyFavorite,
   setVacancyRead,
 } from "./marks.ts";
@@ -333,5 +334,63 @@ describe("listUnreadIds", () => {
     expect(await listUnreadIds(testDb, { userId: await stranger() })).toEqual(
       [],
     );
+  });
+});
+
+describe("markVacanciesRead", () => {
+  it("marks exactly the given vacancies and reports how many", async () => {
+    const { userId, ids } = await seedVacancies({}, {}, {});
+
+    // Третя з'явилася після знімка - вона лишається Unread.
+    const marked = await markVacanciesRead(testDb, {
+      userId,
+      ids: [ids[0], ids[1]],
+    });
+
+    expect(marked).toBe(2);
+    expect((await stored(ids[0])).isRead).toBe(true);
+    expect((await stored(ids[1])).isRead).toBe(true);
+    expect((await stored(ids[2])).isRead).toBe(false);
+  });
+
+  it("changes only the read mark", async () => {
+    const { userId, ids } = await seedVacancies({ isFavorite: true });
+    const before = await stored(ids[0]);
+
+    await markVacanciesRead(testDb, { userId, ids });
+
+    expect(await stored(ids[0])).toEqual({ ...before, isRead: true });
+  });
+
+  it("does not touch another user's vacancies", async () => {
+    const { ids } = await seedVacancies({});
+
+    const marked = await markVacanciesRead(testDb, {
+      userId: await stranger(),
+      ids,
+    });
+
+    expect(marked).toBe(0);
+    expect((await stored(ids[0])).isRead).toBe(false);
+  });
+
+  it("skips vacancies that are gone and ids that are not ids", async () => {
+    // Перевірка видалила вакансію, поки був відкритий діалог, - без помилки.
+    const { userId, ids } = await seedVacancies({}, {});
+    await testDb.delete(vacancies).where(eq(vacancies.id, ids[1]));
+
+    const marked = await markVacanciesRead(testDb, {
+      userId,
+      ids: [ids[0], ids[1], "not-a-uuid"],
+    });
+
+    expect(marked).toBe(1);
+  });
+
+  it("does nothing for an empty list", async () => {
+    const { userId, ids } = await seedVacancies({});
+
+    expect(await markVacanciesRead(testDb, { userId, ids: [] })).toBe(0);
+    expect((await stored(ids[0])).isRead).toBe(false);
   });
 });
