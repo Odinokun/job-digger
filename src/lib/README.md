@@ -9,6 +9,8 @@
 | ---------------------- | --------------------------------------------------------------------------- |
 | `companies/`           | адреси й назви компаній, платформи, типи списку - [README](companies/README.md) |
 | `pagination/cursor.ts` | курсор keyset-пагінації та його розбір із недовіреного значення             |
+| `vacancies/vacancy-list.ts` | вкладки Jobs (`JOBS_TABS`, `parseJobsTab`) і тип рядка `VacancyListItem` |
+| `vacancies/vacancy-list.test.ts` | юніт-тести розбору вкладки                                      |
 | `theme.ts`             | вибір оформлення (Light / Dark / System), імʼя cookie і розбір її значення  |
 
 ## Курсор пагінації
