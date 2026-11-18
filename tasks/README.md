@@ -54,7 +54,7 @@ PR: #57
 | [3.11 Парсер schema.org JobPosting](3.11-schema-org-jobposting-parser.md)                        | backlog |
 | [3.12 Пагінація з лімітом 5 сторінок](3.12-pagination-limit.md)                                  | backlog |
 | [3.13 Життєвий цикл вакансії](3.13-vacancy-lifecycle.md)                                         | done    |
-| [3.14 Check now для однієї компанії](3.14-check-now-company.md)                                  | todo    |
+| [3.14 Check now для однієї компанії](3.14-check-now-company.md)                                  | done    |
 | [3.15 Сторінка Jobs з чотирма вкладками](3.15-jobs-page-tabs.md)                                 | todo    |
 | [3.16 Дії над вакансією](3.16-vacancy-actions.md)                                                | todo    |
 | [3.17 Mark all as read у вкладці Unread](3.17-mark-all-read-unread-tab.md)                       | backlog |
