@@ -8,6 +8,7 @@
  */
 import { request as httpRequest, type IncomingHttpHeaders } from "node:http";
 
+import { createHostLimiter, type HostLimiter } from "./host-limiter.ts";
 import { checkUrl } from "./ssrf.ts";
 
 /** Чесне представлення: хто ходить на сайт і навіщо. */
@@ -33,9 +34,21 @@ export interface HttpClientOptions {
   maxBytes?: number;
   /** Пауза між спробами. Тести передають свою, щоб не чекати справжні секунди. */
   sleep?: (ms: number) => Promise<void>;
-  /** Поточний час у мс - для `Retry-After` у форматі дати. */
+  /** Поточний час у мс - для `Retry-After` у форматі дати й обмежувача. */
   now?: () => number;
+  /**
+   * Розклад запитів до хостів. За замовчуванням - `MAX_PER_HOST` одночасно і
+   * `GAP_PER_HOST_MS` між стартами. Один клієнт - один розклад, тож ліміт діє на
+   * всі запити, що йдуть через нього.
+   */
+  limiter?: HostLimiter;
 }
+
+/** Не більше двох запитів одночасно до одного сайту. */
+export const MAX_PER_HOST = 2;
+
+/** Щонайменше 2 с між стартами запитів до одного сайту. */
+export const GAP_PER_HOST_MS = 2000;
 
 /** 20 с на весь запит - від зʼєднання до останнього байта. */
 export const TIMEOUT_MS = 20_000;
@@ -101,6 +114,15 @@ const realSleep = (ms: number) =>
   new Promise<void>((done) => setTimeout(done, ms));
 
 export function createHttpClient(options: HttpClientOptions): HttpClient {
+  const limiter =
+    options.limiter ??
+    createHostLimiter({
+      maxConcurrent: MAX_PER_HOST,
+      gapMs: GAP_PER_HOST_MS,
+      now: options.now ?? Date.now,
+      sleep: options.sleep ?? realSleep,
+    });
+
   return {
     async get(url) {
       let current = allowedUrl(url);
@@ -108,7 +130,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
       // Редиректи - вручну, а не силами транспорту: кожна нова адреса має
       // пройти захист від SSRF до того, як на неї піде запит.
       for (let redirects = 0; ; redirects += 1) {
-        const response = await sendWithRetries(current, options);
+        const response = await sendWithRetries(current, options, limiter);
         const location = response.headers.location;
 
         if (!REDIRECT_STATUSES.has(response.status) || !location) {
@@ -139,6 +161,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 async function sendWithRetries(
   url: URL,
   options: HttpClientOptions,
+  limiter: HostLimiter,
 ): Promise<HttpResponse> {
   const sleep = options.sleep ?? realSleep;
   const now = options.now ?? Date.now;
@@ -149,7 +172,11 @@ async function sendWithRetries(
     const pause = RETRY_PAUSES_MS[attempt];
 
     try {
-      const response = await send(url, options);
+      // Через обмежувач іде кожна спроба, а не лише перша: інакше повтор
+      // після 500 одразу вдарив би по сайту вдруге.
+      const response = await limiter.run(url.hostname, () =>
+        send(url, options),
+      );
 
       // 429 - окремо від звичайних повторів: сайт сам каже, скільки чекати,
       // і ці очікування не зʼїдають повтори на випадок збою.

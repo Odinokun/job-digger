@@ -9,6 +9,14 @@ import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { createHttpClient, HttpError, USER_AGENT } from "./client.ts";
+import type { HostLimiter } from "./host-limiter.ts";
+
+/**
+ * Обмежувач без обмежень: ці тести перевіряють редиректи, ліміти й повтори, а не
+ * розклад запитів - справжній додав би 2 с на кожен запит. Розклад має власні
+ * тести (host-limiter.test.ts), а підключення - тест «limiter» нижче.
+ */
+const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 /**
  * Локальний сервер, якому тест сам задає відповіді. Клієнт іде на нього через
@@ -89,7 +97,7 @@ async function errorOf(promise: Promise<unknown>): Promise<unknown> {
 
 describe("createHttpClient", () => {
   it("gets a page through the fake origin and reports the logical address", async () => {
-    const client = createHttpClient({ fakeOrigin: origin });
+    const client = createHttpClient({ fakeOrigin: origin, limiter: noLimits });
 
     const response = await client.get("https://site.test/careers?team=eng");
 
@@ -104,7 +112,7 @@ describe("createHttpClient", () => {
   });
 
   it("introduces itself with an honest User-Agent", async () => {
-    const client = createHttpClient({ fakeOrigin: origin });
+    const client = createHttpClient({ fakeOrigin: origin, limiter: noLimits });
 
     await client.get("https://site.test/");
 
@@ -118,7 +126,10 @@ describe("createHttpClient", () => {
         "/site.test/old": redirect("https://site.test/new", 301),
         "/site.test/new": ok("moved here"),
       });
-      const client = createHttpClient({ fakeOrigin: origin });
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+      });
 
       const response = await client.get("https://site.test/old");
 
@@ -134,7 +145,10 @@ describe("createHttpClient", () => {
         "/site.test/jobs/old": redirect("../careers"),
         "/site.test/careers": ok("relative"),
       });
-      const client = createHttpClient({ fakeOrigin: origin });
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+      });
 
       const response = await client.get("https://site.test/jobs/old");
 
@@ -145,7 +159,10 @@ describe("createHttpClient", () => {
       respond = routes({
         "/site.test/trap": redirect("http://127.0.0.1/admin"),
       });
-      const client = createHttpClient({ fakeOrigin: origin });
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+      });
 
       const error = await errorOf(client.get("https://site.test/trap"));
 
@@ -161,7 +178,10 @@ describe("createHttpClient", () => {
         const step = Number(request.url?.split("/").pop());
         redirect(`https://site.test/${step + 1}`)(response);
       };
-      const client = createHttpClient({ fakeOrigin: origin });
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+      });
 
       const error = await errorOf(client.get("https://site.test/0"));
 
@@ -178,6 +198,7 @@ describe("createHttpClient", () => {
       };
       const client = createHttpClient({
         fakeOrigin: origin,
+        limiter: noLimits,
         timeoutMs: 100,
         // Тайм-аут повторюється - без цього тест чекав би справжні 1 + 2 с.
         sleep: async () => {},
@@ -200,6 +221,7 @@ describe("createHttpClient", () => {
       };
       const client = createHttpClient({
         fakeOrigin: origin,
+        limiter: noLimits,
         maxBytes: 2048,
       });
 
@@ -215,6 +237,7 @@ describe("createHttpClient", () => {
       };
       const client = createHttpClient({
         fakeOrigin: origin,
+        limiter: noLimits,
         maxBytes: 2048,
       });
 
@@ -230,6 +253,7 @@ describe("createHttpClient", () => {
       };
       const client = createHttpClient({
         fakeOrigin: origin,
+        limiter: noLimits,
         maxBytes: 2048,
       });
 
@@ -265,7 +289,11 @@ describe("createHttpClient", () => {
     it("retries a server error twice with a growing pause", async () => {
       respond = statuses(500, 503, 200);
       const { pauses, sleep } = recordingSleep();
-      const client = createHttpClient({ fakeOrigin: origin, sleep });
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+        sleep,
+      });
 
       const response = await client.get("https://site.test/flaky");
 
@@ -276,7 +304,11 @@ describe("createHttpClient", () => {
     it("returns the last server error when it does not go away", async () => {
       respond = statuses(500);
       const { sleep } = recordingSleep();
-      const client = createHttpClient({ fakeOrigin: origin, sleep });
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+        sleep,
+      });
 
       const response = await client.get("https://site.test/down");
 
@@ -287,7 +319,11 @@ describe("createHttpClient", () => {
     it("does not retry a missing page", async () => {
       respond = statuses(404);
       const { pauses, sleep } = recordingSleep();
-      const client = createHttpClient({ fakeOrigin: origin, sleep });
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+        sleep,
+      });
 
       const response = await client.get("https://site.test/gone");
 
@@ -308,7 +344,11 @@ describe("createHttpClient", () => {
         response.end("back");
       };
       const { sleep } = recordingSleep();
-      const client = createHttpClient({ fakeOrigin: origin, sleep });
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+        sleep,
+      });
 
       const response = await client.get("https://site.test/dropped");
 
@@ -320,7 +360,11 @@ describe("createHttpClient", () => {
         response.socket?.destroy();
       };
       const { sleep } = recordingSleep();
-      const client = createHttpClient({ fakeOrigin: origin, sleep });
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+        sleep,
+      });
 
       const error = await errorOf(client.get("https://site.test/dead"));
 
@@ -336,6 +380,7 @@ describe("createHttpClient", () => {
       const { sleep } = recordingSleep();
       const client = createHttpClient({
         fakeOrigin: origin,
+        limiter: noLimits,
         maxBytes: 2048,
         sleep,
       });
@@ -376,7 +421,11 @@ describe("createHttpClient", () => {
     it("waits as many seconds as Retry-After asks", async () => {
       respond = limitedOnce({ "retry-after": "5" });
       const { pauses, sleep } = recordingSleep();
-      const client = createHttpClient({ fakeOrigin: origin, sleep });
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+        sleep,
+      });
 
       const response = await client.get("https://site.test/busy");
 
@@ -392,6 +441,7 @@ describe("createHttpClient", () => {
       const { pauses, sleep } = recordingSleep();
       const client = createHttpClient({
         fakeOrigin: origin,
+        limiter: noLimits,
         sleep,
         now: () => now,
       });
@@ -404,7 +454,11 @@ describe("createHttpClient", () => {
     it("gives up at once when the site asks to wait longer than a minute", async () => {
       respond = limitedOnce({ "retry-after": "120" });
       const { pauses, sleep } = recordingSleep();
-      const client = createHttpClient({ fakeOrigin: origin, sleep });
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+        sleep,
+      });
 
       const error = await errorOf(client.get("https://site.test/busy"));
 
@@ -415,7 +469,11 @@ describe("createHttpClient", () => {
     it("gives up when 429 comes without Retry-After", async () => {
       respond = limitedOnce({});
       const { sleep } = recordingSleep();
-      const client = createHttpClient({ fakeOrigin: origin, sleep });
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+        sleep,
+      });
 
       const error = await errorOf(client.get("https://site.test/busy"));
 
@@ -429,7 +487,11 @@ describe("createHttpClient", () => {
         response.end();
       };
       const { pauses, sleep } = recordingSleep();
-      const client = createHttpClient({ fakeOrigin: origin, sleep });
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+        sleep,
+      });
 
       const error = await errorOf(client.get("https://site.test/busy"));
 
@@ -439,8 +501,38 @@ describe("createHttpClient", () => {
     });
   });
 
+  it("sends every attempt through the host limiter", async () => {
+    let call = 0;
+    respond = (request, response) => {
+      call += 1;
+      if (request.url === "/site.test/old") {
+        redirect("https://jobs.test/new")(response);
+        return;
+      }
+      // Перша спроба нової адреси - 500, друга - успіх.
+      response.writeHead(call === 2 ? 500 : 200);
+      response.end();
+    };
+    const hosts: string[] = [];
+    const recording: HostLimiter = {
+      run: (host, task) => {
+        hosts.push(host);
+        return task();
+      },
+    };
+    const client = createHttpClient({
+      fakeOrigin: origin,
+      limiter: recording,
+      sleep: async () => {},
+    });
+
+    await client.get("https://site.test/old");
+
+    expect(hosts).toEqual(["site.test", "jobs.test", "jobs.test"]);
+  });
+
   it("does not touch the network for an address checkUrl refuses", async () => {
-    const client = createHttpClient({ fakeOrigin: origin });
+    const client = createHttpClient({ fakeOrigin: origin, limiter: noLimits });
 
     const error = await errorOf(client.get("http://192.168.1.1/router"));
 
