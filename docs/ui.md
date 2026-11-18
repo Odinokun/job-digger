@@ -44,7 +44,7 @@ Tracked · Not tracked
 
 Вкладки, рядок, порядок, Load more і порожні вкладки вже в коді - [`src/app/README.md`](../src/app/README.md#компоненти) і [`src/server/vacancies/README.md`](../src/server/vacancies/README.md#списки-jobs).
 
-Дії: Mark as Read / Mark as unread (перемикач), Favorite / Remove from Favorites, відкриття оригінальної вакансії в новій вкладці.
+Дії: Mark as Read / Mark as unread (перемикач), Favorite / Remove from Favorites, відкриття оригінальної вакансії в новій вкладці. Уже в коді - [`src/app/README.md`](../src/app/README.md#компоненти); оптимістичне оновлення з відкатом - задача 3.21.
 
 У вкладці Unread є кнопка **Mark all as read**. Вона позначає прочитаними всі вакансії у вкладці, по всіх компаніях. Перед виконанням показується діалог підтвердження з кількістю вакансій (наприклад, «Позначити 243 вакансії як прочитані?»). Діалог підтвердження є лише для цієї загальної дії.
 
