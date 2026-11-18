@@ -27,13 +27,30 @@ export interface HttpClientOptions {
    * йде на `{fakeOrigin}/host/path` (src/server/http/testing/README.md).
    */
   fakeOrigin?: string;
+  /** Скільки чекати на всю відповідь. За замовчуванням `TIMEOUT_MS`. */
+  timeoutMs?: number;
+  /** Найбільший розмір тіла в байтах. За замовчуванням `MAX_BYTES`. */
+  maxBytes?: number;
 }
+
+/** 20 с на весь запит - від зʼєднання до останнього байта. */
+export const TIMEOUT_MS = 20_000;
+
+/**
+ * 5 МБ. Найбільша відома дошка (Anthropic на Greenhouse, 658 вакансій) -
+ * 471 КБ; ліміт захищає від гігантських і нескінченних відповідей.
+ */
+export const MAX_BYTES = 5 * 1024 * 1024;
 
 export type HttpErrorReason =
   /** Захист від SSRF не пустив за адресою - на будь-якому кроці редиректу. */
   | "blocked"
   /** Більше ніж `MAX_REDIRECTS` переходів поспіль. */
-  | "too-many-redirects";
+  | "too-many-redirects"
+  /** Відповідь не прийшла повністю за `timeoutMs`. */
+  | "timeout"
+  /** Тіло більше за `maxBytes` - заявлене чи фактичне. */
+  | "too-large";
 
 /** Запит не вдався. `reason` - щоб парсер міг відрізнити причини. */
 export class HttpError extends Error {
@@ -108,22 +125,72 @@ function send(logical: URL, options: HttpClientOptions): Promise<HttpResponse> {
     `/${logical.host}${logical.pathname}${logical.search}`,
     options.fakeOrigin,
   );
+  const url = logical.toString();
+  const timeoutMs = options.timeoutMs ?? TIMEOUT_MS;
+  const maxBytes = options.maxBytes ?? MAX_BYTES;
 
   return new Promise((done, fail) => {
-    httpRequest(target, { headers: { "user-agent": USER_AGENT } }, (res) => {
-      const chunks: Buffer[] = [];
-      res.on("data", (chunk: Buffer) => chunks.push(chunk));
-      res.on("end", () =>
-        done({
-          status: res.statusCode ?? 0,
-          url: logical.toString(),
-          headers: res.headers,
-          body: Buffer.concat(chunks).toString("utf8"),
-        }),
+    const request = httpRequest(
+      target,
+      { headers: { "user-agent": USER_AGENT } },
+      (res) => {
+        // Заявлений розмір більший за ліміт - не читаємо тіло зовсім.
+        if (Number(res.headers["content-length"]) > maxBytes) {
+          request.destroy(tooLarge(url, maxBytes));
+          return;
+        }
+
+        const chunks: Buffer[] = [];
+        let size = 0;
+
+        res.on("data", (chunk: Buffer) => {
+          size += chunk.length;
+
+          // Обриваємо, щойно ліміт перевищено, а не після всього тіла:
+          // нескінченна відповідь інакше тримала б зʼєднання до тайм-ауту.
+          if (size > maxBytes) {
+            request.destroy(tooLarge(url, maxBytes));
+            return;
+          }
+
+          chunks.push(chunk);
+        });
+        res.on("end", () => {
+          clearTimeout(timer);
+          done({
+            status: res.statusCode ?? 0,
+            url,
+            headers: res.headers,
+            body: Buffer.concat(chunks).toString("utf8"),
+          });
+        });
+      },
+    );
+
+    // Тайм-аут на весь запит, а не на тишу в сокеті: сайт, що віддає по байту
+    // на секунду, інакше тримав би запит як завгодно довго.
+    const timer = setTimeout(() => {
+      request.destroy(
+        new HttpError(
+          "timeout",
+          url,
+          `No complete response from ${url} in ${timeoutMs} ms`,
+        ),
       );
-      res.on("error", fail);
-    })
-      .on("error", fail)
-      .end();
+    }, timeoutMs);
+
+    request.on("error", (error) => {
+      clearTimeout(timer);
+      fail(error);
+    });
+    request.end();
   });
+}
+
+function tooLarge(url: string, maxBytes: number): HttpError {
+  return new HttpError(
+    "too-large",
+    url,
+    `Response from ${url} is larger than ${maxBytes} bytes`,
+  );
 }

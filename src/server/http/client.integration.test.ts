@@ -33,6 +33,9 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  // Тести з тайм-аутом і лімітом лишають відповіді незавершеними - без цього
+  // `close` чекав би на них вічно.
+  server.closeAllConnections();
   await new Promise((done) => server.close(done));
 });
 
@@ -165,6 +168,67 @@ describe("createHttpClient", () => {
       expect(error).toMatchObject({ reason: "too-many-redirects" });
       // Початковий запит і пʼять переходів.
       expect(received).toHaveLength(6);
+    });
+  });
+
+  describe("limits", () => {
+    it("gives up when the site does not answer in time", async () => {
+      respond = () => {
+        // Мовчить: ні заголовків, ні тіла.
+      };
+      const client = createHttpClient({ fakeOrigin: origin, timeoutMs: 100 });
+
+      const error = await errorOf(client.get("https://site.test/slow"));
+
+      expect(error).toMatchObject({ reason: "timeout" });
+    });
+
+    it("stops reading as soon as the body grows past the limit", async () => {
+      respond = (_request, response) => {
+        response.writeHead(200);
+        // Шматки без кінця: якби клієнт чекав усе тіло, тест би завис.
+        response.write("x".repeat(1024));
+        response.write("x".repeat(1024));
+        response.write("x".repeat(1024));
+      };
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        maxBytes: 2048,
+      });
+
+      const error = await errorOf(client.get("https://site.test/huge"));
+
+      expect(error).toMatchObject({ reason: "too-large" });
+    });
+
+    it("refuses a declared Content-Length over the limit before the body", async () => {
+      respond = (_request, response) => {
+        response.writeHead(200, { "content-length": "10000" });
+        response.flushHeaders();
+      };
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        maxBytes: 2048,
+      });
+
+      const error = await errorOf(client.get("https://site.test/declared"));
+
+      expect(error).toMatchObject({ reason: "too-large" });
+    });
+
+    it("accepts a body exactly at the limit", async () => {
+      respond = (_request, response) => {
+        response.writeHead(200);
+        response.end("x".repeat(2048));
+      };
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        maxBytes: 2048,
+      });
+
+      const response = await client.get("https://site.test/edge");
+
+      expect(response.body).toHaveLength(2048);
     });
   });
 
