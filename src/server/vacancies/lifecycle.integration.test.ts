@@ -100,4 +100,39 @@ describe("syncSourceVacancies", () => {
       }),
     ]);
   });
+
+  it("updates title, url and location of a vacancy with a platform ID", async () => {
+    const sourceId = await greenhouseSource();
+    await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
+    await testDb
+      .update(vacancies)
+      .set({ isRead: true, isFavorite: true })
+      .where(eq(vacancies.sourceId, sourceId));
+    const [before] = await rowsOf(sourceId);
+
+    await sync(
+      sourceId,
+      ok(
+        parsed("101", {
+          title: "Senior Account Executive",
+          url: "https://job-boards.greenhouse.io/discord/jobs/101?gh_src=new",
+          location: null,
+        }),
+      ),
+      SECOND_CHECK,
+    );
+
+    expect(await rowsOf(sourceId)).toEqual([
+      expect.objectContaining({
+        id: before.id,
+        key: "id:101",
+        title: "Senior Account Executive",
+        url: "https://job-boards.greenhouse.io/discord/jobs/101?gh_src=new",
+        location: null,
+        isRead: true,
+        isFavorite: true,
+        firstDetectedAt: FIRST_CHECK,
+      }),
+    ]);
+  });
 });

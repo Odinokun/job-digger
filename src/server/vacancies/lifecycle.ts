@@ -2,6 +2,7 @@
  * Життєвий цикл вакансії: що одна перевірка джерела робить із його вакансіями в
  * базі (docs/discovery-and-parsing.md, розділ 7).
  */
+import { sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { vacancies } from "../db/schema.ts";
@@ -42,6 +43,15 @@ export async function syncSourceVacancies(
     // користувачеві й сюди не потрапляють (розділ 7, «Одночасні зміни»).
     .onConflictDoUpdate({
       target: [vacancies.sourceId, vacancies.key],
-      set: { lastSeenAt: checkedAt },
+      set: {
+        // `excluded` - рядок, який ми намагалися вставити
+        // (https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT).
+        // Нова адреса тут можлива лише для ключа з ID: без ID інша адреса дає
+        // інший ключ, тобто іншу вакансію (`key.ts`).
+        title: sql.raw(`excluded.${vacancies.title.name}`),
+        url: sql.raw(`excluded.${vacancies.url.name}`),
+        location: sql.raw(`excluded.${vacancies.location.name}`),
+        lastSeenAt: checkedAt,
+      },
     });
 }
