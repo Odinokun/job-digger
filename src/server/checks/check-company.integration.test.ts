@@ -154,7 +154,7 @@ describe("checkCompany", () => {
   it("skips untracked sources and platforms without a parser yet", async () => {
     const { userId, companyId, sourceIds } = await companyWith(
       { url: "job-boards.greenhouse.io/discord", isTracked: false },
-      { url: "jobs.lever.co/discord", platform: "lever" },
+      { url: "jobs.ashbyhq.com/discord", platform: "ashby" },
     );
 
     await check(userId, companyId);

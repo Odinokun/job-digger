@@ -5,6 +5,7 @@
 import type { CareerPlatform } from "../../lib/companies/platform.ts";
 import type { HttpClient } from "../http/client.ts";
 import { readGreenhouse } from "./greenhouse.ts";
+import { readLever } from "./lever.ts";
 import type { ParseResult } from "./types.ts";
 
 type Reader = (sourceUrl: string, client: HttpClient) => Promise<ParseResult>;
@@ -16,6 +17,7 @@ type Reader = (sourceUrl: string, client: HttpClient) => Promise<ParseResult>;
  */
 const READERS: Partial<Record<CareerPlatform, Reader>> = {
   greenhouse: readGreenhouse,
+  lever: (sourceUrl, client) => readLever(sourceUrl, client),
 };
 
 /**
