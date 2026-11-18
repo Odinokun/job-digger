@@ -12,6 +12,8 @@
 | `key.test.ts` | Юніт-тести ключа й очищення адреси                |
 | `lifecycle.ts` | `syncSourceVacancies(db, { sourceId, result, checkedAt })` - що одна перевірка джерела робить із його вакансіями |
 | `lifecycle.integration.test.ts` | Інтеграційні тести життєвого циклу на справжній базі |
+| `list.ts` | `listVacancies` - порція вкладки Jobs; `hasAnyVacancy` - чи є в користувача вакансії взагалі |
+| `list.integration.test.ts` | Інтеграційні тести списків Jobs |
 
 ## Очищена адреса
 
