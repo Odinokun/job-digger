@@ -96,8 +96,17 @@ export class HttpError extends Error {
   }
 }
 
+/** Налаштування одного запиту. */
+export interface RequestOptions {
+  /**
+   * Ліміт розміру саме цього запиту замість спільного. Для відомих API, що
+   * віддають усе одним запитом (Ashby), - не для довільних сайтів.
+   */
+  maxBytes?: number;
+}
+
 export interface HttpClient {
-  get(url: string): Promise<HttpResponse>;
+  get(url: string, request?: RequestOptions): Promise<HttpResponse>;
 }
 
 /** Скільки переходів поспіль дозволено, перш ніж здатися. */
@@ -135,13 +144,22 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
     });
 
   return {
-    async get(url) {
+    async get(url, request = {}) {
       let current = allowedUrl(url);
+      // Ліміт запиту діє й на редиректи - це та сама відповідь.
+      const requestOptions =
+        request.maxBytes === undefined
+          ? options
+          : { ...options, maxBytes: request.maxBytes };
 
       // Редиректи - вручну, а не силами транспорту: кожна нова адреса має
       // пройти захист від SSRF до того, як на неї піде запит.
       for (let redirects = 0; ; redirects += 1) {
-        const response = await sendWithRetries(current, options, limiter);
+        const response = await sendWithRetries(
+          current,
+          requestOptions,
+          limiter,
+        );
         const location = response.headers.location;
 
         if (!REDIRECT_STATUSES.has(response.status) || !location) {
@@ -325,6 +343,20 @@ function send(logical: URL, options: HttpClientOptions): Promise<HttpResponse> {
   const maxBytes = options.maxBytes ?? MAX_BYTES;
 
   return new Promise((done, fail) => {
+    let refused = false;
+
+    /**
+     * Відмова з нашого боку - завелика відповідь. Відмовляємо самі, а не
+     * чекаємо `error` від `request.destroy`: якщо відповідь уже прийшла
+     * повністю, Node його не видає, а видає `end`.
+     */
+    function refuse(error: HttpError) {
+      refused = true;
+      clearTimeout(timer);
+      request.destroy();
+      fail(error);
+    }
+
     const request = transport(
       target,
       {
@@ -334,7 +366,7 @@ function send(logical: URL, options: HttpClientOptions): Promise<HttpResponse> {
       (res) => {
         // Заявлений розмір більший за ліміт - не читаємо тіло зовсім.
         if (Number(res.headers["content-length"]) > maxBytes) {
-          request.destroy(tooLarge(url, maxBytes));
+          refuse(tooLarge(url, maxBytes));
           return;
         }
 
@@ -347,13 +379,16 @@ function send(logical: URL, options: HttpClientOptions): Promise<HttpResponse> {
           // Обриваємо, щойно ліміт перевищено, а не після всього тіла:
           // нескінченна відповідь інакше тримала б зʼєднання до тайм-ауту.
           if (size > maxBytes) {
-            request.destroy(tooLarge(url, maxBytes));
+            refuse(tooLarge(url, maxBytes));
             return;
           }
 
           chunks.push(chunk);
         });
         res.on("end", () => {
+          // Після відмови `end` усе одно приходить, якщо тіло вже доїхало, -
+          // і дав би успіх з обрізаним тілом.
+          if (refused) return;
           clearTimeout(timer);
           done({
             status: res.statusCode ?? 0,

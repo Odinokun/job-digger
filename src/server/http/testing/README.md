@@ -43,6 +43,7 @@ https://boards-api.greenhouse.io/v1/boards/acme/jobs
 | ---- | ------ | ---- |
 | `responses/boards-api.greenhouse.io/v1/boards/discord/jobs` | Greenhouse Job Board API, дошка Discord, без `content=true` (26 вакансій) | 18.11.2026 |
 | `responses/api.lever.co/v0/postings/leverdemo` | Lever Postings API, демо-сайт самого Lever, `mode=json` (10 вакансій, 83 КБ) | 18.11.2026 |
+| `responses/api.ashbyhq.com/posting-api/job-board/linear` | Ashby Job Postings API, дошка Linear (33 вакансії, 468 КБ - описи вакансій API віддає завжди) | 18.11.2026 |
 
 Оновити або додати відповідь - один запит до справжньої платформи, наприклад:
 

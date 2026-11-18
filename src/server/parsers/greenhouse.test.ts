@@ -104,15 +104,30 @@ describe("parseGreenhouseJobs", () => {
     }
   });
 
-  it("refuses the whole answer when one vacancy lacks a title or address", () => {
-    // Не відкидаємо криву вакансію поодинці: якщо зміниться формат, «відкинулись
-    // би» всі, і порожній список закрив би всі вакансії джерела (3.13).
+  it("skips a vacancy with an empty title or a non-web address and counts it", () => {
+    // Вада даних однієї вакансії, а не зміна формату (docs/discovery-and-
+    // parsing.md, розділ 6). Посилання в UI - лише http/https (docs/security.md).
+    for (const bad of [
+      job({ id: 2, title: "  " }),
+      job({ id: 2, absolute_url: "not an address" }),
+      job({ id: 2, absolute_url: "javascript:alert(1)" }),
+    ]) {
+      const result = parseGreenhouseJobs({ jobs: [job({}), bad] });
+
+      expect(result.ok && result.vacancies.map((v) => v.externalId)).toEqual([
+        "1",
+      ]);
+      expect(result.ok && result.skipped).toBe(1);
+    }
+  });
+
+  it("refuses the whole answer when one vacancy has a broken structure", () => {
+    // Поле не того типу чи без id - сигнал зміни формату: пропускати такі
+    // записи означало б пропустити всі й видалити вакансії джерела (3.13).
     for (const broken of [
-      job({ title: "" }),
       job({ title: undefined }),
-      job({ absolute_url: "not an address" }),
-      // Посилання в UI приймаються лише http/https (docs/security.md, пункт 4).
-      job({ absolute_url: "javascript:alert(1)" }),
+      job({ title: 42 }),
+      job({ absolute_url: undefined }),
       job({ id: undefined }),
     ]) {
       expect(parseGreenhouseJobs({ jobs: [job({}), broken] })).toEqual({
