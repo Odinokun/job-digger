@@ -8,8 +8,11 @@ import type { HttpErrorReason } from "../http/client.ts";
 
 /** Вакансія так, як її дало джерело. */
 export interface ParsedVacancy {
-  /** ID на платформі - з нього складається ключ вакансії. */
-  externalId: string;
+  /**
+   * ID на платформі - з нього складається ключ вакансії. `null`, якщо платформа
+   * його не дає (schema.org, задача 3.11): тоді ключ складається з адреси.
+   */
+  externalId: string | null;
   title: string;
   /** Посилання на оригінал; завжди http або https. */
   url: string;

@@ -194,6 +194,79 @@ describe("syncSourceVacancies", () => {
     ]);
   });
 
+  it("brings a deleted vacancy back as a new unread one", async () => {
+    const sourceId = await greenhouseSource();
+    await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
+    await testDb
+      .update(vacancies)
+      .set({ isRead: true })
+      .where(eq(vacancies.sourceId, sourceId));
+    await sync(sourceId, ok(), SECOND_CHECK);
+
+    await sync(sourceId, ok(parsed("101")), THIRD_CHECK);
+
+    expect(await rowsOf(sourceId)).toEqual([
+      expect.objectContaining({
+        key: "id:101",
+        isRead: false,
+        firstDetectedAt: THIRD_CHECK,
+      }),
+    ]);
+  });
+
+  it("replaces a vacancy without a platform ID when its url changes", async () => {
+    const sourceId = await greenhouseSource();
+    const oldUrl = "https://example.com/careers/designer";
+    const newUrl = "https://example.com/careers/product-designer";
+    await sync(
+      sourceId,
+      ok(parsed("", { externalId: null, url: oldUrl })),
+      FIRST_CHECK,
+    );
+    await testDb
+      .update(vacancies)
+      .set({ isRead: true })
+      .where(eq(vacancies.sourceId, sourceId));
+
+    await sync(
+      sourceId,
+      ok(parsed("", { externalId: null, url: newUrl })),
+      SECOND_CHECK,
+    );
+
+    expect(await rowsOf(sourceId)).toEqual([
+      expect.objectContaining({
+        key: `url:${newUrl}`,
+        url: newUrl,
+        isRead: false,
+        firstDetectedAt: SECOND_CHECK,
+      }),
+    ]);
+  });
+
+  it("reopens a closed favorite that came back, keeping the user's marks", async () => {
+    const sourceId = await greenhouseSource();
+    await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
+    await testDb
+      .update(vacancies)
+      .set({ isRead: true, isFavorite: true })
+      .where(eq(vacancies.sourceId, sourceId));
+    await sync(sourceId, ok(), SECOND_CHECK);
+
+    await sync(sourceId, ok(parsed("101")), THIRD_CHECK);
+
+    expect(await rowsOf(sourceId)).toEqual([
+      expect.objectContaining({
+        key: "id:101",
+        isRead: true,
+        isFavorite: true,
+        closedAt: null,
+        firstDetectedAt: FIRST_CHECK,
+        lastSeenAt: THIRD_CHECK,
+      }),
+    ]);
+  });
+
   it("changes nothing when the check failed", async () => {
     const sourceId = await greenhouseSource();
     await sync(sourceId, ok(parsed("101")), FIRST_CHECK);

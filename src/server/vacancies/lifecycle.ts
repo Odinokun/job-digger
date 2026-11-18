@@ -70,6 +70,12 @@ async function upsertSeen(
         url: sql.raw(`excluded.${vacancies.url.name}`),
         location: sql.raw(`excluded.${vacancies.location.name}`),
         lastSeenAt: checkedAt,
+        // Закрита вакансія з Favorites повернулася на сайт - позначка Closed
+        // знімається, а Read, Favorite і дата виявлення лишаються: користувач її
+        // уже бачив і зберіг. «Повернулася - нова Unread» з плану стосується
+        // видалених вакансій, і для них це виходить само - рядок створюється
+        // заново.
+        closedAt: null,
       },
     });
 }
