@@ -126,7 +126,7 @@ export async function listCompanies(
  */
 async function attachDetails(
   db: NodePgDatabase,
-  rows: Omit<CompanyListItem, "sources" | "vacancies">[],
+  rows: Omit<CompanyListItem, "sources" | "vacancies" | "lastCheckedAt">[],
 ): Promise<CompanyListItem[]> {
   if (rows.length === 0) {
     return [];
@@ -140,6 +140,7 @@ async function attachDetails(
       label: careerSources.label,
       platform: careerSources.platform,
       isTracked: careerSources.isTracked,
+      lastCheckedAt: careerSources.lastCheckedAt,
     })
     .from(careerSources)
     .where(
@@ -152,11 +153,21 @@ async function attachDetails(
     .orderBy(asc(careerSources.createdAt), asc(careerSources.id));
 
   const byCompany = new Map<string, CompanySource[]>();
+  // Остання перевірка компанії - найпізніша серед її джерел.
+  const lastChecked = new Map<string, Date>();
 
-  for (const { companyId, ...source } of sources) {
+  for (const { companyId, lastCheckedAt, ...source } of sources) {
     const list = byCompany.get(companyId) ?? [];
     list.push(source);
     byCompany.set(companyId, list);
+
+    const latest = lastChecked.get(companyId);
+    if (
+      lastCheckedAt !== null &&
+      (latest === undefined || lastCheckedAt > latest)
+    ) {
+      lastChecked.set(companyId, lastCheckedAt);
+    }
   }
 
   const counts = await countVacancies(
@@ -168,6 +179,7 @@ async function attachDetails(
     ...row,
     sources: byCompany.get(row.id) ?? [],
     vacancies: counts.get(row.id) ?? { total: 0, favorites: 0 },
+    lastCheckedAt: lastChecked.get(row.id) ?? null,
   }));
 }
 

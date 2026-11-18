@@ -20,5 +20,10 @@ export default getRequestConfig(async () => {
   return {
     locale,
     messages: (await import(`../../messages/${locale}.json`)).default,
+    // Спільне «зараз» для відносного часу («Last checked: 5 min ago»). Його
+    // успадковує `NextIntlClientProvider` у layout, тож клієнт стартує з того
+    // самого моменту, що й сервер, і текст при гідратації не розходиться.
+    // https://next-intl.dev/docs/usage/configuration#now
+    now: new Date(),
   };
 });

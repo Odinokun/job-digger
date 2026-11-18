@@ -380,6 +380,7 @@ describe("findCompanyInTab", () => {
         },
       ],
       vacancies: { total: 0, favorites: 0 },
+      lastCheckedAt: null,
     });
   });
 
@@ -481,5 +482,45 @@ describe("vacancy counts", () => {
     });
 
     expect(company?.vacancies).toEqual({ total: 2, favorites: 2 });
+  });
+});
+
+describe("last checked", () => {
+  it("is the latest check among the company's sources", async () => {
+    const user = await seedSystemUser(testDb);
+    const bosch = await insertTracked(user.id, "Bosch");
+    const earlier = new Date("2026-11-17T10:00:00Z");
+    const later = new Date("2026-11-18T10:00:00Z");
+    await testDb
+      .update(careerSources)
+      .set({ lastCheckedAt: earlier })
+      .where(eq(careerSources.companyId, bosch.id));
+    await testDb.insert(careerSources).values({
+      companyId: bosch.id,
+      url: "https://jobs.lever.co/bosch",
+      normalizedUrl: "jobs.lever.co/bosch",
+      platform: "lever",
+      lastCheckedAt: later,
+    });
+
+    const company = await findCompanyInTab(testDb, {
+      userId: user.id,
+      companyId: bosch.id,
+      tab: "tracked",
+    });
+
+    expect(company?.lastCheckedAt).toEqual(later);
+  });
+
+  it("is null while no source has been checked", async () => {
+    const user = await seedSystemUser(testDb);
+    await insertTracked(user.id, "Bosch");
+
+    const { items } = await listCompanies(testDb, {
+      userId: user.id,
+      tab: "tracked",
+    });
+
+    expect(items[0]?.lastCheckedAt).toBeNull();
   });
 });

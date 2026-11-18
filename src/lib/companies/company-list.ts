@@ -60,6 +60,12 @@ export type CompanyListItem = {
    * Їх називає діалог видалення - разом із компанією зникають і вони.
    */
   vacancies: { total: number; favorites: number };
+  /**
+   * Остання перевірка серед джерел компанії, успішна чи ні, або `null`, якщо
+   * жодне ще не перевірялося. Картка показує її відносно («Last checked: 5 min
+   * ago», docs/ui.md, розділ 4.2).
+   */
+  lastCheckedAt: Date | null;
 };
 
 /**

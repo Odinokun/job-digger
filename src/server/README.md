@@ -21,7 +21,8 @@
   Робота з самим рядком адреси - поза `src/server`, у
   [`lib/companies`](../lib/companies/README.md): вона потрібна й клієнтові.
 - [`parsers`](parsers/README.md) - парсери вакансій платформ.
-- [`vacancies`](vacancies/README.md) - ключ вакансії, а згодом її життєвий цикл.
+- [`vacancies`](vacancies/README.md) - ключ вакансії і її життєвий цикл.
+- [`checks`](checks/README.md) - перевірки джерел: поки Check now однієї компанії.
 - [`http`](http/README.md) - зовнішні запити: єдиний HTTP-клієнт із ввічливістю до
   сайтів, захист від SSRF і фейковий вебсервер для тестів.
 

@@ -6,8 +6,10 @@ import type {
   CompanySource,
 } from "@/lib/companies/company-list";
 
+import { CheckNowButton } from "./check-now-button";
 import { DeleteCompanyDialog } from "./delete-company-dialog";
 import { EditCompanyDialog } from "./edit-company-dialog";
+import { LastChecked } from "./last-checked";
 
 interface CompanyCardProps {
   company: CompanyListItem;
@@ -24,9 +26,9 @@ interface CompanyCardProps {
 /**
  * Один рядок списку компаній.
  *
- * Поля, даних для яких ще немає (кількість вакансій, час останньої перевірки,
- * статус перевірки), тут не показуються: вони приходять із задачами 3.04 і 4.01,
- * а порожнє «0 вакансій» ввело б в оману.
+ * Поля, даних для яких ще немає (кількість вакансій, статус перевірки), тут не
+ * показуються: вони приходять із задачами 3.04 і 4.01, а порожнє «0 вакансій»
+ * ввело б в оману. Час останньої перевірки зʼявляється після першого Check now.
  */
 export function CompanyCard({
   company,
@@ -102,11 +104,26 @@ export function CompanyCard({
         )}
       </Card.Content>
 
-      {/* Дії картки. Edit і Delete: Check now, Mark all as read і Mark all as
-          unread приходять із задачами 3.14 і 3.18 (docs/ui.md, розділ 4.2). */}
+      {/* Дії картки. Mark all as read і Mark all as unread приходять із задачею
+          3.18 (docs/ui.md, розділ 4.2). */}
       <Card.Footer className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-sm text-muted">{statusLabel}</span>
+        {/* Ліворуч - статус на Not tracked або час останньої перевірки на
+            Tracked: на Not tracked перевіряти нічого. */}
+        {statusLabel !== undefined ? (
+          <span className="text-sm text-muted">{statusLabel}</span>
+        ) : company.lastCheckedAt === null ? (
+          <span />
+        ) : (
+          <LastChecked at={company.lastCheckedAt} />
+        )}
         <div className="flex items-center gap-2">
+          {tab === "tracked" ? (
+            <CheckNowButton
+              companyId={company.id}
+              tab={tab}
+              onChecked={onSaved}
+            />
+          ) : null}
           <EditCompanyDialog
             company={company}
             tab={tab}

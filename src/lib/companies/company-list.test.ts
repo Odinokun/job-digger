@@ -30,6 +30,7 @@ describe("compareCompanyRows", () => {
     discoveryStatus: "not_checked",
     sources: [],
     vacancies: { total: 0, favorites: 0 },
+    lastCheckedAt: null,
   });
 
   it("orders by name the way the database does", () => {
