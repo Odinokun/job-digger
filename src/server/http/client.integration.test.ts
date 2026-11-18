@@ -121,6 +121,101 @@ describe("createHttpClient", () => {
     expect(USER_AGENT).toMatch(/^JobDigger\//);
   });
 
+  describe("post", () => {
+    /** Сервер, що відповідає тілом запиту, - щоб побачити, що саме дійшло. */
+    function echoBody(request: IncomingMessage, response: ServerResponse) {
+      const chunks: Buffer[] = [];
+      request.on("data", (chunk: Buffer) => chunks.push(chunk));
+      request.on("end", () => {
+        response.writeHead(200);
+        response.end(Buffer.concat(chunks).toString("utf8"));
+      });
+    }
+
+    it("sends a JSON body with POST and the same User-Agent", async () => {
+      // Workday віддає список вакансій лише на POST з JSON
+      // (src/server/parsers/README.md, «Workday»).
+      respond = echoBody;
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+      });
+
+      const response = await client.post("https://site.test/jobs", {
+        limit: 20,
+        searchText: "",
+      });
+
+      expect(response).toMatchObject({
+        status: 200,
+        url: "https://site.test/jobs",
+        body: '{"limit":20,"searchText":""}',
+      });
+      expect(received[0]).toMatchObject({
+        method: "POST",
+        url: "/site.test/jobs",
+      });
+      expect(received[0]?.headers).toMatchObject({
+        "content-type": "application/json",
+        "user-agent": USER_AGENT,
+      });
+    });
+
+    it("returns a redirect as it is instead of following it", async () => {
+      // За RFC 9110 (15.4) після 301/302/303 браузери повторюють запит як GET,
+      // а після 307/308 - як POST. Обидва варіанти для API, яке ми знаємо,
+      // означають, що воно змінилося, - хай це побачить парсер.
+      respond = routes({
+        "/site.test/jobs": redirect("https://site.test/new"),
+      });
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+      });
+
+      const response = await client.post("https://site.test/jobs", {});
+
+      expect(response.status).toBe(302);
+      expect(received).toHaveLength(1);
+    });
+
+    it("retries a server error like a GET", async () => {
+      // POST тут - читання (пошук вакансій), повтор нічого не змінює на сайті.
+      let attempts = 0;
+      respond = (request, response) => {
+        attempts += 1;
+        if (attempts === 1) {
+          response.writeHead(500);
+          response.end();
+          return;
+        }
+        echoBody(request, response);
+      };
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+        sleep: async () => {},
+      });
+
+      const response = await client.post("https://site.test/jobs", { a: 1 });
+
+      expect(response).toMatchObject({ status: 200, body: '{"a":1}' });
+      expect(received).toHaveLength(2);
+    });
+
+    it("does not send anything to an address checkUrl refuses", async () => {
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+      });
+
+      const error = await errorOf(client.post("http://10.0.0.1/jobs", {}));
+
+      expect(error).toMatchObject({ reason: "blocked" });
+      expect(received).toHaveLength(0);
+    });
+  });
+
   describe("redirects", () => {
     it("follows a redirect and reports the final address", async () => {
       respond = routes({

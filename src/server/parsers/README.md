@@ -1,6 +1,6 @@
 # src/server/parsers - парсери вакансій
 
-Читають вакансії з кар'єрних джерел: публічних API платформ (ATS), а згодом і
+Читають вакансії з кар'єрних джерел: API платформ (ATS), а згодом і
 розмітки schema.org JobPosting ([docs/discovery-and-parsing.md](../../../docs/discovery-and-parsing.md),
 розділ 6). Усі запити - через єдиний HTTP-клієнт ([`src/server/http`](../http/README.md)).
 
@@ -12,7 +12,7 @@
 | `greenhouse.ts`      | Greenhouse: `readGreenhouse(sourceUrl, client)` і його частини |
 | `greenhouse.test.ts` | Юніт-тести парсера Greenhouse                     |
 | `greenhouse.integration.test.ts` | `readGreenhouse` через фейковий вебсервер |
-| `shared.ts`          | Спільне для парсерів: `collectVacancies` (правило кривих записів), `fetchJson` (запит → статус → JSON), `UNREADABLE`, `isRecord`, `isWebUrl` |
+| `shared.ts`          | Спільне для парсерів: `collectVacancies` (правило кривих записів), `fetchJson` і `postJson` (запит → статус → JSON), `UNREADABLE`, `isRecord`, `isWebUrl` |
 | `shared.test.ts`     | Юніт-тести `collectVacancies`                     |
 | `lever.ts`           | Lever: `readLever(sourceUrl, client)`, `leverSite`, `parseLeverPostings` |
 | `lever.test.ts`      | Юніт-тести парсера Lever                          |
@@ -20,6 +20,9 @@
 | `ashby.ts`           | Ashby: `readAshby(sourceUrl, client)`, `ashbyBoard`, `parseAshbyJobs` |
 | `ashby.test.ts`      | Юніт-тести парсера Ashby                          |
 | `ashby.integration.test.ts` | `readAshby` через фейковий вебсервер, зокрема відповідь понад 5 МБ |
+| `workday.ts`         | Workday: `readWorkday(sourceUrl, client)`, `workdaySite`, `parseWorkdayJobs` |
+| `workday.test.ts`    | Юніт-тести парсера Workday                        |
+| `workday.integration.test.ts` | `readWorkday` через фейковий вебсервер і сервер зі сторінками |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
 
 ## Спільний формат
@@ -121,3 +124,42 @@ API - `https://api.ashbyhq.com/posting-api/job-board/{name}`, без автор�
 
 Перевірено на справжній мережі (вручну, 18.11.2026): Linear - 33 вакансії, Ashby -
 77, OpenAI - 838 і одна пропущена (порожня назва), неіснуюча дошка - `not-found`.
+
+## Workday
+
+**Публічної документації API немає.** Парсер ходить туди ж, куди й сам career site
+Workday у браузері: `POST https://{host}/wday/cxs/{tenant}/{site}/jobs` з тілом
+`{"appliedFacets":{},"limit":20,"offset":0,"searchText":""}`, без авторизації. Усе
+нижче перевірено справжніми запитами 18.11.2026 (NVIDIA, Salesforce, Workday) і
+може змінитися без попередження - тому зламана структура тут, як і всюди, валить
+усю відповідь, а не тихо дає нуль вакансій.
+
+- **Лише POST.** GET на ту саму адресу - 400. Тому в HTTP-клієнта є `post`
+  ([`src/server/http`](../http/README.md#модуль-запитів)).
+- **Адреса.** `workdaySite` розуміє обидва формати career site: `{tenant}.wd5.myworkdayjobs.com/{site}`
+  і `wd5.myworkdaysite.com/recruiting/{tenant}/{site}`; сегмент мови (`/en-US/`) і
+  посилання на вакансію теж. Той самий tenant відповідає на обох доменах.
+- **Сторінки по 20.** Більше Workday не приймає: `limit: 50` - 400. Ліміт - 5
+  сторінок, тобто **щонайбільше 100 вакансій** з джерела (у NVIDIA їх понад 2000).
+  Перша сторінка, схоже, починається з найновіших («Posted Today»), але порядок не
+  строгий і ніде не описаний. Ліміт сторінок стане налаштуванням у задачі 3.12.
+- **Кінець списку - за `total` першої сторінки** або за неповною сторінкою. На
+  наступних сторінках `total` дорівнює 0, а з `offset` від 2000 Workday знову віддає
+  першу сторінку - «питати, доки не прийде порожня» тут зациклилось би.
+- **ID - `externalPath`** (`/job/Poland-Warsaw/Engineer_JR2028965-1`). Окремого ID
+  у списку немає, а номер заявки з `bulletFields` не унікальний: в однієї заявки
+  буває кілька оголошень (`_JR2028965-1` при `bulletFields: ["JR2028965"]`). Ціна:
+  у шляху є назва вакансії, тож перейменована вакансія стане новою Unread, а стара
+  зникне. Справжній ID (`jobPostingInfo.id`) дає лише окремий запит на кожну
+  вакансію - 100 запитів з паузою 2 с замість 5.
+- **Посилання** - адреса career site плюс `externalPath`
+  (`nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/...`), відкривається.
+- **Локація** - `locationsText` як є. Для вакансії з кількома локаціями це
+  «2 Locations»: самі локації знову лише в окремому запиті на вакансію.
+- **Помилки:** невідомий сайт компанії - 404 `not found: Job_Posting_Site_ID`,
+  тобто `not-found`; невідомий tenant - 422, тобто `bad-status` 422 (що саме
+  означає 422, Workday не пояснює, тож у `not-found` не перетворюємо).
+
+Перевірено на справжній мережі (вручну, 18.11.2026): NVIDIA на обох доменах і сам
+Workday - по 100 вакансій за 5 сторінок (близько 9 с через паузу 2 с між запитами),
+усі ID різні; невідомий сайт - `not-found`, невідомий tenant - `bad-status` 422.

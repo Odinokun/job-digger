@@ -49,7 +49,7 @@ PR: #57
 | [3.06 Парсер Greenhouse](3.06-greenhouse-parser.md)                                              | done    |
 | [3.07 Парсер Lever](3.07-lever-parser.md)                                                        | done    |
 | [3.08 Парсер Ashby](3.08-ashby-parser.md)                                                        | done    |
-| [3.09 Парсер Workday](3.09-workday-parser.md)                                                    | todo    |
+| [3.09 Парсер Workday](3.09-workday-parser.md)                                                    | done    |
 | [3.10 Парсер PeopleForce](3.10-peopleforce-parser.md)                                            | todo    |
 | [3.11 Парсер schema.org JobPosting](3.11-schema-org-jobposting-parser.md)                        | todo    |
 | [3.12 Пагінація з лімітом 5 сторінок](3.12-pagination-limit.md)                                  | todo    |

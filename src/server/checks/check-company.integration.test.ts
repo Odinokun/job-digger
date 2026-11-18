@@ -154,7 +154,7 @@ describe("checkCompany", () => {
   it("skips untracked sources and platforms without a parser yet", async () => {
     const { userId, companyId, sourceIds } = await companyWith(
       { url: "job-boards.greenhouse.io/discord", isTracked: false },
-      { url: "acme.wd3.myworkdayjobs.com/External", platform: "workday" },
+      { url: "acme.peopleforce.io/careers", platform: "peopleforce" },
     );
 
     await check(userId, companyId);
@@ -209,6 +209,7 @@ describe("checkCompany", () => {
         await testDb.delete(companies).where(eq(companies.id, companyId));
         return real.get(url);
       },
+      post: (url, json) => real.post(url, json),
     };
 
     const result = await checkCompany(testDb, deletingClient, {
