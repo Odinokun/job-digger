@@ -97,8 +97,8 @@ export default defineConfig({
       url: baseURL,
       // Змінні тут додаються поверх process.env, а process.env у Next має
       // перевагу над .env - тож сервер піде в базу E2E, а не в базу розробки.
-      // FAKE_WEB_ORIGIN читає HTTP-модуль (задача 3.02): з ним усі зовнішні запити
-      // застосунку йдуть на фейковий вебсервер.
+      // FAKE_WEB_ORIGIN читає src/server/http/http-client.ts: з ним усі зовнішні
+      // запити застосунку йдуть на фейковий вебсервер.
       env: {
         DATABASE_URL: e2eDatabaseUrl,
         FAKE_WEB_ORIGIN: `http://127.0.0.1:${FAKE_WEB_PORT}`,

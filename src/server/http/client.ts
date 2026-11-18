@@ -7,9 +7,11 @@
  * зʼєднання (`safeLookup` у ssrf.ts).
  */
 import { request as httpRequest, type IncomingHttpHeaders } from "node:http";
+import { request as httpsRequest } from "node:https";
+import type { LookupFunction } from "node:net";
 
 import { createHostLimiter, type HostLimiter } from "./host-limiter.ts";
-import { checkUrl } from "./ssrf.ts";
+import { checkUrl, safeLookup } from "./ssrf.ts";
 
 /** Чесне представлення: хто ходить на сайт і навіщо. */
 export const USER_AGENT = "JobDigger/0.1 (personal job tracker)";
@@ -42,6 +44,11 @@ export interface HttpClientOptions {
    * всі запити, що йдуть через нього.
    */
   limiter?: HostLimiter;
+  /**
+   * DNS для справжніх запитів. За замовчуванням `safeLookup` - перевірка адрес у
+   * момент зʼєднання. Тести передають свій, щоб пройти справжнім шляхом без мережі.
+   */
+  lookup?: LookupFunction;
 }
 
 /** Не більше двох запитів одночасно до одного сайту. */
@@ -114,6 +121,10 @@ const realSleep = (ms: number) =>
   new Promise<void>((done) => setTimeout(done, ms));
 
 export function createHttpClient(options: HttpClientOptions): HttpClient {
+  if (options.fakeOrigin !== undefined) {
+    assertLoopback(options.fakeOrigin);
+  }
+
   const limiter =
     options.limiter ??
     createHostLimiter({
@@ -244,6 +255,12 @@ function asHttpError(error: unknown, url: URL): HttpError {
     return error;
   }
 
+  // Відмова `safeLookup`: домен веде на внутрішню адресу. Це заборона, а не
+  // збій мережі - повтор нічого не змінить і лише постукає туди ще раз.
+  if ((error as NodeJS.ErrnoException).code === "ERR_SSRF_PRIVATE_ADDRESS") {
+    return new HttpError("blocked", url.toString(), (error as Error).message);
+  }
+
   const detail = error instanceof Error ? error.message : String(error);
   return new HttpError(
     "network",
@@ -267,20 +284,53 @@ function allowedUrl(url: string): URL {
   return check.url;
 }
 
+/**
+ * Фейковий вебсервер дозволено лише на цій машині. Підміна пускає всі запити
+ * повз захист від SSRF на одну адресу - тож змінна, що випадково потрапила в
+ * продакшн, має зламати запуск, а не вести запити на чужий сервер.
+ */
+function assertLoopback(fakeOrigin: string): void {
+  let host: string;
+
+  try {
+    host = new URL(fakeOrigin).hostname;
+  } catch {
+    host = "";
+  }
+
+  if (!["127.0.0.1", "[::1]", "localhost"].includes(host)) {
+    throw new Error(
+      `FAKE_WEB_ORIGIN must point to this machine (127.0.0.1, ::1 or localhost), got: ${fakeOrigin}`,
+    );
+  }
+}
+
 /** Один запит, без редиректів. */
 function send(logical: URL, options: HttpClientOptions): Promise<HttpResponse> {
-  const target = new URL(
-    `/${logical.host}${logical.pathname}${logical.search}`,
-    options.fakeOrigin,
-  );
+  // З фейковим вебсервером - на нього, домен стає частиною шляху. Без нього -
+  // на справжню адресу, і `safeLookup` перевіряє адреси з DNS у момент
+  // зʼєднання. Фейковий сервер - loopback, тож `safeLookup` його б відхилив:
+  // для нього перевірка DNS не потрібна, адресу задає не сайт, а ми.
+  const fake = options.fakeOrigin !== undefined;
+  const target = fake
+    ? new URL(
+        `/${logical.host}${logical.pathname}${logical.search}`,
+        options.fakeOrigin,
+      )
+    : logical;
+  const transport =
+    !fake && target.protocol === "https:" ? httpsRequest : httpRequest;
   const url = logical.toString();
   const timeoutMs = options.timeoutMs ?? TIMEOUT_MS;
   const maxBytes = options.maxBytes ?? MAX_BYTES;
 
   return new Promise((done, fail) => {
-    const request = httpRequest(
+    const request = transport(
       target,
-      { headers: { "user-agent": USER_AGENT } },
+      {
+        headers: { "user-agent": USER_AGENT },
+        ...(fake ? {} : { lookup: options.lookup ?? safeLookup }),
+      },
       (res) => {
         // Заявлений розмір більший за ліміт - не читаємо тіло зовсім.
         if (Number(res.headers["content-length"]) > maxBytes) {

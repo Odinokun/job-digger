@@ -4,12 +4,13 @@ import {
   type Server,
   type ServerResponse,
 } from "node:http";
-import type { AddressInfo } from "node:net";
+import type { AddressInfo, LookupFunction } from "node:net";
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { createHttpClient, HttpError, USER_AGENT } from "./client.ts";
 import type { HostLimiter } from "./host-limiter.ts";
+import { createSafeLookup } from "./ssrf.ts";
 
 /**
  * Обмежувач без обмежень: ці тести перевіряють редиректи, ліміти й повтори, а не
@@ -529,6 +530,70 @@ describe("createHttpClient", () => {
     await client.get("https://site.test/old");
 
     expect(hosts).toEqual(["site.test", "jobs.test", "jobs.test"]);
+  });
+
+  describe("real transport", () => {
+    /** DNS, у якому `site.test` веде на задану адресу. */
+    function resolvingTo(address: string): LookupFunction {
+      return (_hostname, options, callback) => {
+        if (options.all) {
+          callback(null, [{ address, family: 4 }]);
+        } else {
+          callback(null, address, 4);
+        }
+      };
+    }
+
+    it("goes straight to the address without a fake origin", async () => {
+      const port = new URL(origin).port;
+      const client = createHttpClient({
+        limiter: noLimits,
+        lookup: resolvingTo("127.0.0.1"),
+      });
+
+      const response = await client.get(`http://site.test:${port}/direct`);
+
+      expect(response.body).toBe("hello");
+      expect(received.map((request) => request.url)).toEqual(["/direct"]);
+    });
+
+    it("treats a host the DNS check refuses as blocked and does not retry", async () => {
+      const pauses: number[] = [];
+      const client = createHttpClient({
+        limiter: noLimits,
+        lookup: createSafeLookup(async () => [
+          { address: "10.0.0.1", family: 4 },
+        ]),
+        sleep: async (ms) => {
+          pauses.push(ms);
+        },
+      });
+
+      const error = await errorOf(client.get("http://site.test/admin"));
+
+      expect(error).toMatchObject({ reason: "blocked" });
+      expect(pauses).toEqual([]);
+    });
+  });
+
+  it("accepts a fake origin only on this machine", () => {
+    for (const fakeOrigin of [
+      "http://10.0.0.1:4010",
+      "http://fake.example.com",
+      "not an address",
+    ]) {
+      expect(() => createHttpClient({ fakeOrigin }), fakeOrigin).toThrow(
+        /FAKE_WEB_ORIGIN/,
+      );
+    }
+
+    for (const fakeOrigin of [
+      "http://127.0.0.1:4010",
+      "http://[::1]:4010",
+      "http://localhost:4010",
+    ]) {
+      expect(() => createHttpClient({ fakeOrigin }), fakeOrigin).not.toThrow();
+    }
   });
 
   it("does not touch the network for an address checkUrl refuses", async () => {
