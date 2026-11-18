@@ -262,6 +262,47 @@ describe("createHttpClient", () => {
 
       expect(response.body).toHaveLength(2048);
     });
+
+    it("refuses a complete body over the limit instead of returning it empty", async () => {
+      // Тіло прийшло повністю й одним шматком: колись клієнт обривав запит, а
+      // подія `end` усе одно приходила й давала успіх із порожнім тілом - для
+      // парсера це «нуль вакансій», тобто видалення всіх.
+      respond = (_request, response) => {
+        response.writeHead(200);
+        response.end("x".repeat(3072));
+      };
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+        maxBytes: 2048,
+      });
+
+      const error = await errorOf(client.get("https://site.test/whole"));
+
+      expect(error).toMatchObject({ reason: "too-large" });
+    });
+
+    it("lets one request allow a larger body, leaving the rest limited", async () => {
+      // Парсер Ashby просить більше для свого API: дошки віддають усе разом з
+      // описами одним запитом (src/server/parsers/README.md, «Ashby»).
+      respond = (_request, response) => {
+        response.writeHead(200);
+        response.end("x".repeat(3072));
+      };
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+        maxBytes: 2048,
+      });
+
+      const allowed = await client.get("https://site.test/big", {
+        maxBytes: 4096,
+      });
+      const error = await errorOf(client.get("https://site.test/big"));
+
+      expect(allowed.body).toHaveLength(3072);
+      expect(error).toMatchObject({ reason: "too-large" });
+    });
   });
 
   describe("retries", () => {
