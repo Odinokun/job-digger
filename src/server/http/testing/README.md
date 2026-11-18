@@ -45,6 +45,8 @@ https://boards-api.greenhouse.io/v1/boards/acme/jobs
 | `responses/api.lever.co/v0/postings/leverdemo` | Lever Postings API, демо-сайт самого Lever, `mode=json` (10 вакансій, 83 КБ) | 18.11.2026 |
 | `responses/api.ashbyhq.com/posting-api/job-board/linear` | Ashby Job Postings API, дошка Linear (33 вакансії, 468 КБ - описи вакансій API віддає завжди) | 18.11.2026 |
 | `responses/nvidia.wd5.myworkdayjobs.com/wday/cxs/nvidia/NVIDIAExternalCareerSite/jobs` | Workday, сайт NVIDIA, POST з `searchText: "Warsaw"` - 11 вакансій, одна сторінка. Фейковий сервер тіло запиту не читає, тож на будь-який POST сюди віддає цей файл | 18.11.2026 |
+| `responses/team.peopleforce.io/careers` | Сторінка кар'єри самої PeopleForce, HTML (6 вакансій, одна сторінка) | 18.11.2026 |
+| `responses/webellian.peopleforce.io/careers` | Сторінка кар'єри Webellian на PeopleForce, `?page=1` - 10 вакансій з 23, є посилання на наступну сторінку | 18.11.2026 |
 
 Оновити або додати відповідь - один запит до справжньої платформи, наприклад:
 

@@ -1,0 +1,154 @@
+/**
+ * Парсер PeopleForce: вакансії з публічної сторінки кар'єри компанії
+ * (`{company}.peopleforce.io/careers`). Careers API PeopleForce вимагає ключ
+ * компанії (https://developer.peopleforce.io/careers/v1/getting-started), тож
+ * читаємо HTML - так, як його бачить відвідувач (README поруч, «PeopleForce»).
+ */
+import * as cheerio from "cheerio";
+
+import { collectVacancies, UNREADABLE, type ReadVacancy } from "./shared.ts";
+import type { ParseResult } from "./types.ts";
+
+/**
+ * Адреса сайту кар'єри компанії (`https://team.peopleforce.io`) або `null`, якщо
+ * адреса - не сайт компанії на PeopleForce. Компанія - єдиний субдомен перед
+ * `peopleforce.io`; сам `peopleforce.io` і `www` - сайт платформи, не компанії.
+ */
+export function peopleforceSite(sourceUrl: string): string | null {
+  let url: URL;
+
+  try {
+    url = new URL(sourceUrl);
+  } catch {
+    return null;
+  }
+
+  const labels = url.hostname.split(".");
+
+  if (
+    labels.length !== 3 ||
+    !url.hostname.endsWith(".peopleforce.io") ||
+    labels[0] === "www"
+  ) {
+    return null;
+  }
+
+  return `https://${url.hostname}`;
+}
+
+/** Сторінка списку: вакансії і чи є після неї ще одна. */
+export type PeopleForcePage =
+  | (Extract<ParseResult, { ok: true }> & { hasNext: boolean })
+  | Extract<ParseResult, { ok: false }>;
+
+/** Шлях вакансії: `/careers/v/{ID}-{slug}`, ID - число. */
+const VACANCY_PATH = /^\/careers\/v\/(\d+)(?:-|$)/;
+
+/** Лічильник «X - Y»: які за номером вакансії на цій сторінці. */
+const RANGE = /^(\d+)\s*-\s*(\d+)$/;
+
+/**
+ * Вакансії однієї сторінки списку `/careers?page=N`.
+ *
+ * Сторінка - HTML, тож довіра до нуля тут окрема (docs/discovery-and-parsing.md,
+ * розділ 6): над картками PeopleForce пише лічильник «Displaying X - Y of N»,
+ * і карток має бути рівно Y - X + 1. Числа в `<strong>` від мови не залежать,
+ * текст навколо - залежить («Відображено ... з ...»). Немає ні лічильника, ні
+ * карток - вакансій справді немає («There are currently no vacancies.»). Будь-
+ * яке інше поєднання - змінена верстка, і невдала вся відповідь.
+ *
+ * `externalId` - числовий ID зі шляху, посилання - шлях від адреси сторінки,
+ * локація - текст поруч з іконкою мітки на карті.
+ */
+export function parsePeopleForcePage(
+  html: string,
+  pageUrl: string,
+): PeopleForcePage {
+  const $ = cheerio.load(html);
+  const results = $("#results");
+
+  if (results.length !== 1) {
+    return UNREADABLE;
+  }
+
+  const cards = results
+    .find("h4 a")
+    .toArray()
+    .map((link) => {
+      const card = $(link).closest("h4").parent();
+      const place = card.find(".fa-map-marker-alt").first().parent();
+
+      return {
+        href: $(link).attr("href"),
+        title: $(link).text(),
+        location: place.length === 0 ? null : place.text(),
+      };
+    });
+
+  const counter = results
+    .find("strong")
+    .toArray()
+    .map((element) => $(element).text().trim());
+
+  if (counter.length === 0) {
+    return cards.length === 0
+      ? { ok: true, vacancies: [], skipped: 0, hasNext: false }
+      : UNREADABLE;
+  }
+
+  const range = RANGE.exec(counter[0] ?? "");
+
+  if (
+    counter.length !== 2 ||
+    range === null ||
+    cards.length !== Number(range[2]) - Number(range[1]) + 1
+  ) {
+    return UNREADABLE;
+  }
+
+  const result = collectVacancies(cards, readerFor(pageUrl));
+
+  if (!result.ok) {
+    return result;
+  }
+
+  return {
+    ...result,
+    hasNext: results.find('nav[aria-label="pager"] a[rel="next"]').length > 0,
+  };
+}
+
+function readerFor(pageUrl: string): ReadVacancy {
+  return ({ href, title, location }) => {
+    if (typeof href !== "string" || typeof title !== "string") {
+      return "broken";
+    }
+
+    let url: URL;
+
+    try {
+      url = new URL(href, pageUrl);
+    } catch {
+      return "broken";
+    }
+
+    const id = VACANCY_PATH.exec(url.pathname)?.[1];
+
+    if (id === undefined) {
+      return "broken";
+    }
+
+    if (title.trim() === "") {
+      return "skip";
+    }
+
+    const place = typeof location === "string" ? location.trim() : "";
+
+    return {
+      externalId: id,
+      title: title.trim(),
+      url: url.toString(),
+      location: place === "" ? null : place,
+    };
+  };
+}

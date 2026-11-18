@@ -23,6 +23,8 @@
 | `workday.ts`         | Workday: `readWorkday(sourceUrl, client)`, `workdaySite`, `parseWorkdayJobs` |
 | `workday.test.ts`    | Юніт-тести парсера Workday                        |
 | `workday.integration.test.ts` | `readWorkday` через фейковий вебсервер і сервер зі сторінками |
+| `peopleforce.ts`     | PeopleForce: `readPeopleForce(sourceUrl, client)`, `peopleforceSite`, `parsePeopleForcePage` |
+| `peopleforce.test.ts` | Юніт-тести парсера PeopleForce                   |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
 
 ## Спільний формат
