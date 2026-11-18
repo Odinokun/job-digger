@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { Button, Spinner } from "@heroui/react";
 
 import type {
   CompaniesTab,
@@ -86,7 +86,14 @@ export function CompaniesList({
         <div className="mt-6 flex justify-center">
           {/* Без `variant`: та сама основна кнопка, що Add company. */}
           <Button onPress={onLoadMore} isPending={isLoadingMore}>
-            {loadMoreLabel}
+            {/* `isPending` у HeroUI лише вимикає кнопку - спінер малюємо самі
+                (документація Button, приклад Loading). */}
+            {({ isPending }) => (
+              <>
+                {isPending ? <Spinner color="current" size="sm" /> : null}
+                {loadMoreLabel}
+              </>
+            )}
           </Button>
         </div>
       ) : null}
