@@ -1,8 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
 import { runAction } from "@/app/action-result";
+import { revalidateUnreadCount } from "@/app/components/unread-count";
 import type { Cursor } from "@/lib/pagination/cursor";
 import {
   parseJobsTab,
@@ -97,8 +96,9 @@ export async function setVacancyFavoriteAction(
 }
 
 /**
- * Результат дії для рядка. Після успішного запису сторінка Jobs позначається
- * застарілою (`revalidatePath`): рядок зникає з вкладки одразу, ще до запису,
+ * Результат дії для рядка. Після успішного запису застосунок позначається
+ * застарілим (`revalidateUnreadCount`) - заради лічильника в шапці і тому, що
+ * рядок зникає з вкладки одразу, ще до запису,
  * тож людина встигає перейти на іншу вкладку, поки дія триває, - і без цього
  * бачила б там список, прочитаний до запису, без вакансії, яку щойно
  * позначила (задача 3.22). `revalidatePath` у Server Function оновлює
@@ -111,7 +111,7 @@ async function markResult(
   const outcome = await runAction(work);
 
   if (outcome.ok) {
-    revalidatePath("/");
+    revalidateUnreadCount();
   }
 
   return outcome.ok ? { ok: true, vacancy: outcome.value } : { ok: false };
@@ -156,7 +156,7 @@ export async function markAllReadAction(
     return { ok: false };
   }
 
-  revalidatePath("/");
+  revalidateUnreadCount();
 
   return { ok: true, marked: outcome.value };
 }

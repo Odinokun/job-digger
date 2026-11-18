@@ -51,6 +51,12 @@ Companies) і Check now. Кнопки модалок (Save, Delete) поки б�
 - `app-header.tsx` - шапка з назвою застосунку й меню; серверний компонент.
 - `use-action-failed-toast.ts` - хук сповіщення про неочікуваний збій дії
   ([розділ «Помилки»](#помилки)).
+- `unread-count.ts` - лічильник непрочитаних для меню біля Jobs і назви вкладки
+  браузера («(12) Job Digger»): `getUnreadCount` (один запит на рендер через
+  `cache` React) і `revalidateUnreadCount`. Шапка живе в кореневому layout, а
+  його Next між переходами не перерендерює, тож **кожна дія, що змінює кількість
+  непрочитаних** (позначки вакансій, Mark all, Check now, видалення компанії чи
+  джерела), викликає `revalidateUnreadCount` - `revalidatePath("/", "layout")`.
 - `nav-link.tsx` - одне посилання меню з підсвіткою активного розділу.
   Клієнтський (`"use client"`) тому, що поточний шлях читає
   [`usePathname`](https://nextjs.org/docs/app/api-reference/functions/use-pathname),

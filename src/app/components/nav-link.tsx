@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 interface NavLinkProps {
   href: string;
   label: string;
+  /** Число біля назви - як у вкладках Companies: «Jobs (12)». */
+  count?: number;
 }
 
 /**
@@ -14,7 +16,7 @@ interface NavLinkProps {
  * компонентах, щоб стан layout зберігався між переходами.
  * https://nextjs.org/docs/app/api-reference/functions/use-pathname
  */
-export function NavLink({ href, label }: NavLinkProps) {
+export function NavLink({ href, label, count }: NavLinkProps) {
   const pathname = usePathname();
   const isActive = pathname === href;
 
@@ -29,6 +31,9 @@ export function NavLink({ href, label }: NavLinkProps) {
       }
     >
       {label}
+      {count === undefined ? null : (
+        <span className="ml-1 text-muted">({count})</span>
+      )}
     </Link>
   );
 }

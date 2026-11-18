@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { runAction } from "@/app/action-result";
+import { revalidateUnreadCount } from "@/app/components/unread-count";
 import { parseCompaniesTab } from "@/lib/companies/company-list";
 import type { Cursor } from "@/lib/pagination/cursor";
 import { checkCompany } from "@/server/checks/check-company";
@@ -162,6 +163,9 @@ export async function checkCompanyNowAction(
     return { ok: false };
   }
 
+  // Перевірка додає й прибирає вакансії - лічильник непрочитаних у шапці.
+  revalidateUnreadCount();
+
   return { ok: true, company: outcome.value };
 }
 
@@ -219,8 +223,9 @@ export async function updateCompanyAction(
   }
 
   // Рядок список оновить сам, а от лічильники вкладок рендерить сервер:
-  // компанія без джерел переїжджає між Tracked і Not tracked.
-  revalidatePath("/companies");
+  // компанія без джерел переїжджає між Tracked і Not tracked. Прибране джерело
+  // забирає свої вакансії - тож і лічильник непрочитаних у шапці.
+  revalidateUnreadCount();
 
   return { status: "saved", company: result.company };
 }
@@ -256,8 +261,9 @@ export async function deleteCompanyAction(
     return { status: "failed", result };
   }
 
-  // Рядок список прибере сам, а лічильники вкладок рендерить сервер.
-  revalidatePath("/companies");
+  // Рядок список прибере сам, а лічильники вкладок рендерить сервер. Разом із
+  // компанією зникають її вакансії - тож і лічильник непрочитаних у шапці.
+  revalidateUnreadCount();
 
   return { status: "deleted" };
 }
