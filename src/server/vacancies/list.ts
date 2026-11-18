@@ -11,6 +11,23 @@ import type {
 import { parseCursor, type Cursor } from "../../lib/pagination/cursor.ts";
 import { careerSources, companies, vacancies } from "../db/schema.ts";
 
+/**
+ * Поля рядка списку Jobs (`VacancyListItem`). Спільні для списку й для рядка,
+ * який повертає дія над вакансією (`marks.ts`): інакше два місця розходилися б.
+ * Назва компанії потребує join «вакансія → джерело → компанія».
+ */
+export const VACANCY_ROW = {
+  id: vacancies.id,
+  title: vacancies.title,
+  url: vacancies.url,
+  location: vacancies.location,
+  companyName: companies.name,
+  firstDetectedAt: vacancies.firstDetectedAt,
+  isRead: vacancies.isRead,
+  isFavorite: vacancies.isFavorite,
+  closedAt: vacancies.closedAt,
+};
+
 /** Скільки вакансій показуємо одразу. Далі - Load more тією самою порцією. */
 export const DEFAULT_LIMIT = 50;
 
@@ -77,18 +94,7 @@ export async function listVacancies(
     parsed !== null && CURSOR_KEY_PATTERN.test(parsed.key) ? parsed : null;
 
   const rows = await db
-    .select({
-      id: vacancies.id,
-      title: vacancies.title,
-      url: vacancies.url,
-      location: vacancies.location,
-      companyName: companies.name,
-      firstDetectedAt: vacancies.firstDetectedAt,
-      isRead: vacancies.isRead,
-      isFavorite: vacancies.isFavorite,
-      closedAt: vacancies.closedAt,
-      cursorKey: CURSOR_KEY,
-    })
+    .select({ ...VACANCY_ROW, cursorKey: CURSOR_KEY })
     .from(vacancies)
     // Користувач - лише через компанію: у вакансії власного `user_id` немає.
     .innerJoin(careerSources, eq(vacancies.sourceId, careerSources.id))

@@ -6,7 +6,11 @@ import { useCallback, useState, useTransition, type ReactNode } from "react";
 
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import type { Cursor } from "@/lib/pagination/cursor";
-import type { JobsTab, VacancyListItem } from "@/lib/vacancies/vacancy-list";
+import {
+  belongsToJobsTab,
+  type JobsTab,
+  type VacancyListItem,
+} from "@/lib/vacancies/vacancy-list";
 
 import { loadMoreVacanciesAction } from "./actions";
 import { VacancyRow } from "./vacancy-row";
@@ -46,6 +50,23 @@ export function JobsBoard({
   const [cursor, setCursor] = useState(initialCursor);
   const [isPending, startTransition] = useTransition();
   const showActionFailed = useActionFailedToast();
+
+  /**
+   * Рядок після дії заміщає свій попередній на тому самому місці - дата
+   * виявлення, за якою відсортовано список, від дій не змінюється. Якщо
+   * вакансія більше не належить вкладці (прочитана в Unread, прибрана з
+   * Favorites) або її вже немає - рядок прибирається.
+   */
+  const applyRow = useCallback(
+    (vacancyId: string, changed: VacancyListItem | null) => {
+      setItems((shown) =>
+        changed !== null && belongsToJobsTab(changed, tab)
+          ? shown.map((item) => (item.id === vacancyId ? changed : item))
+          : shown.filter((item) => item.id !== vacancyId),
+      );
+    },
+    [tab],
+  );
 
   const loadMore = useCallback(() => {
     if (!cursor) {
@@ -92,7 +113,7 @@ export function JobsBoard({
           <ul className="mt-2 divide-y">
             {items.map((vacancy) => (
               <li key={vacancy.id}>
-                <VacancyRow vacancy={vacancy} />
+                <VacancyRow vacancy={vacancy} onChanged={applyRow} />
               </li>
             ))}
           </ul>

@@ -42,9 +42,12 @@
 - `_jobs/jobs-board.tsx` - заголовок, вкладки, список і Load more; клієнтський,
   тримає показані рядки й курсор.
 - `_jobs/vacancy-row.tsx` - рядок вакансії: назва-посилання, компанія, локація
-  (або «—»), абсолютна дата виявлення, позначка Closed; клієнтський через
-  `useFormatter`.
-- `_jobs/actions.ts` - Server Action Load more.
+  (або «—»), абсолютна дата виявлення, позначка Closed, жирніша назва
+  непрочитаної; клієнтський через `useFormatter`.
+- `_jobs/vacancy-actions.tsx` - кнопки-іконки Mark as read / unread і Favorite /
+  Remove from Favorites у рядку; клієнтський. Рядок, що після дії перестав
+  належати вкладці (`belongsToJobsTab`), список прибирає.
+- `_jobs/actions.ts` - Server Actions сторінки: Load more, Read і Favorite.
 
 Порожня вкладка пояснює причину: вакансій немає зовсім - текст і посилання в
 Companies; інакше - текст самої вкладки («Усе прочитано», «В обраному поки
