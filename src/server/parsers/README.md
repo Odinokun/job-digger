@@ -20,6 +20,8 @@
 | `ashby.ts`           | Ashby: `readAshby(sourceUrl, client)`, `ashbyBoard`, `parseAshbyJobs` |
 | `ashby.test.ts`      | Юніт-тести парсера Ashby                          |
 | `ashby.integration.test.ts` | `readAshby` через фейковий вебсервер, зокрема відповідь понад 5 МБ |
+| `workday.ts`         | Workday: `readWorkday(sourceUrl, client)`, `workdaySite`, `parseWorkdayJobs` |
+| `workday.test.ts`    | Юніт-тести парсера Workday                        |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
 
 ## Спільний формат
