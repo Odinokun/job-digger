@@ -3,6 +3,7 @@
  * (https://docs.greenhouse.io/job-board.html).
  */
 import { HttpError, type HttpClient } from "../http/client.ts";
+import { isRecord, isWebUrl, UNREADABLE } from "./shared.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 /**
@@ -40,8 +41,6 @@ export function greenhouseBoardToken(sourceUrl: string): string | null {
 
   return first ?? null;
 }
-
-const UNREADABLE: ParseResult = { ok: false, error: { reason: "unreadable" } };
 
 /**
  * Вакансії з відповіді `GET /v1/boards/{board_token}/jobs`.
@@ -98,20 +97,6 @@ function toVacancy(job: Record<string, unknown>): ParsedVacancy | null {
     url,
     location: place === "" ? null : place,
   };
-}
-
-/** Лише http і https: посилання з іншою схемою (`javascript:`) у UI - діра. */
-function isWebUrl(value: string): boolean {
-  try {
-    const { protocol } = new URL(value);
-    return protocol === "https:" || protocol === "http:";
-  } catch {
-    return false;
-  }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 /**

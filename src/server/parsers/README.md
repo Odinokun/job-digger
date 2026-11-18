@@ -12,6 +12,9 @@
 | `greenhouse.ts`      | Greenhouse: `readGreenhouse(sourceUrl, client)` і його частини |
 | `greenhouse.test.ts` | Юніт-тести парсера Greenhouse                     |
 | `greenhouse.integration.test.ts` | `readGreenhouse` через фейковий вебсервер |
+| `shared.ts`          | Спільне для парсерів: `UNREADABLE`, `isRecord`, `isWebUrl` |
+| `lever.ts`           | Lever: `readLever(sourceUrl, client)`, `leverSite`, `parseLeverPostings` |
+| `lever.test.ts`      | Юніт-тести парсера Lever                          |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
 
 ## Спільний формат
