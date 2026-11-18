@@ -347,6 +347,98 @@ describe("createHttpClient", () => {
     });
   });
 
+  describe("429 Too Many Requests", () => {
+    /** Спершу 429 із заголовками, далі - 200. */
+    function limitedOnce(headers: Record<string, string>): typeof respond {
+      let call = 0;
+      return (_request, response) => {
+        call += 1;
+        if (call === 1) {
+          response.writeHead(429, headers);
+          response.end();
+          return;
+        }
+        response.writeHead(200);
+        response.end("ok");
+      };
+    }
+
+    function recordingSleep() {
+      const pauses: number[] = [];
+      return {
+        pauses,
+        sleep: async (ms: number) => {
+          pauses.push(ms);
+        },
+      };
+    }
+
+    it("waits as many seconds as Retry-After asks", async () => {
+      respond = limitedOnce({ "retry-after": "5" });
+      const { pauses, sleep } = recordingSleep();
+      const client = createHttpClient({ fakeOrigin: origin, sleep });
+
+      const response = await client.get("https://site.test/busy");
+
+      expect(response.status).toBe(200);
+      expect(pauses).toEqual([5000]);
+    });
+
+    it("waits until the date Retry-After names", async () => {
+      const now = Date.UTC(2026, 10, 18, 12, 0, 0);
+      respond = limitedOnce({
+        "retry-after": new Date(now + 7000).toUTCString(),
+      });
+      const { pauses, sleep } = recordingSleep();
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        sleep,
+        now: () => now,
+      });
+
+      await client.get("https://site.test/busy");
+
+      expect(pauses).toEqual([7000]);
+    });
+
+    it("gives up at once when the site asks to wait longer than a minute", async () => {
+      respond = limitedOnce({ "retry-after": "120" });
+      const { pauses, sleep } = recordingSleep();
+      const client = createHttpClient({ fakeOrigin: origin, sleep });
+
+      const error = await errorOf(client.get("https://site.test/busy"));
+
+      expect(error).toMatchObject({ reason: "rate-limited" });
+      expect(pauses).toEqual([]);
+    });
+
+    it("gives up when 429 comes without Retry-After", async () => {
+      respond = limitedOnce({});
+      const { sleep } = recordingSleep();
+      const client = createHttpClient({ fakeOrigin: origin, sleep });
+
+      const error = await errorOf(client.get("https://site.test/busy"));
+
+      expect(error).toMatchObject({ reason: "rate-limited" });
+      expect(received).toHaveLength(1);
+    });
+
+    it("stops waiting after the second 429 in a row", async () => {
+      respond = (_request, response) => {
+        response.writeHead(429, { "retry-after": "1" });
+        response.end();
+      };
+      const { pauses, sleep } = recordingSleep();
+      const client = createHttpClient({ fakeOrigin: origin, sleep });
+
+      const error = await errorOf(client.get("https://site.test/busy"));
+
+      expect(error).toMatchObject({ reason: "rate-limited" });
+      expect(pauses).toEqual([1000, 1000]);
+      expect(received).toHaveLength(3);
+    });
+  });
+
   it("does not touch the network for an address checkUrl refuses", async () => {
     const client = createHttpClient({ fakeOrigin: origin });
 

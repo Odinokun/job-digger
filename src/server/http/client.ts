@@ -33,6 +33,8 @@ export interface HttpClientOptions {
   maxBytes?: number;
   /** Пауза між спробами. Тести передають свою, щоб не чекати справжні секунди. */
   sleep?: (ms: number) => Promise<void>;
+  /** Поточний час у мс - для `Retry-After` у форматі дати. */
+  now?: () => number;
 }
 
 /** 20 с на весь запит - від зʼєднання до останнього байта. */
@@ -54,7 +56,12 @@ export type HttpErrorReason =
   /** Тіло більше за `maxBytes` - заявлене чи фактичне. */
   | "too-large"
   /** Збій мережі (обрив, відмова в зʼєднанні), що не минув і після повторів. */
-  | "network";
+  | "network"
+  /**
+   * Сайт відповів 429 і просить чекати довше за `MAX_RETRY_AFTER_MS`, не каже
+   * скільки, або відповідає 429 і після двох очікувань.
+   */
+  | "rate-limited";
 
 /** Запит не вдався. `reason` - щоб парсер міг відрізнити причини. */
 export class HttpError extends Error {
@@ -83,6 +90,12 @@ const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
  * два, тобто до трьох спроб на адресу.
  */
 const RETRY_PAUSES_MS = [1000, 2000];
+
+/** Найдовше очікування за `Retry-After`: на Vercel уся перевірка - 4,5 хв. */
+const MAX_RETRY_AFTER_MS = 60_000;
+
+/** Скільки разів поспіль на одну адресу чекаємо після 429. */
+const MAX_RATE_LIMIT_WAITS = 2;
 
 const realSleep = (ms: number) =>
   new Promise<void>((done) => setTimeout(done, ms));
@@ -128,12 +141,37 @@ async function sendWithRetries(
   options: HttpClientOptions,
 ): Promise<HttpResponse> {
   const sleep = options.sleep ?? realSleep;
+  const now = options.now ?? Date.now;
+  let attempt = 0;
+  let rateLimitWaits = 0;
 
-  for (let attempt = 0; ; attempt += 1) {
+  for (;;) {
     const pause = RETRY_PAUSES_MS[attempt];
 
     try {
       const response = await send(url, options);
+
+      // 429 - окремо від звичайних повторів: сайт сам каже, скільки чекати,
+      // і ці очікування не зʼїдають повтори на випадок збою.
+      if (response.status === 429) {
+        const wait = retryAfterMs(response.headers["retry-after"], now());
+
+        if (
+          wait === null ||
+          wait > MAX_RETRY_AFTER_MS ||
+          rateLimitWaits === MAX_RATE_LIMIT_WAITS
+        ) {
+          throw new HttpError(
+            "rate-limited",
+            url.toString(),
+            `${url} answered 429 (Retry-After: ${response.headers["retry-after"] ?? "none"})`,
+          );
+        }
+
+        rateLimitWaits += 1;
+        await sleep(wait);
+        continue;
+      }
 
       if (response.status < 500 || pause === undefined) {
         return response;
@@ -146,8 +184,27 @@ async function sendWithRetries(
       }
     }
 
+    attempt += 1;
     await sleep(pause);
   }
+}
+
+/**
+ * Скільки мс просить чекати `Retry-After`: число секунд або дата HTTP
+ * (https://www.rfc-editor.org/rfc/rfc9110#section-10.2.3). `null` - заголовка
+ * немає або його не розібрати.
+ */
+function retryAfterMs(header: string | undefined, now: number): number | null {
+  if (header === undefined) {
+    return null;
+  }
+
+  if (/^\d+$/.test(header.trim())) {
+    return Number(header.trim()) * 1000;
+  }
+
+  const date = Date.parse(header);
+  return Number.isNaN(date) ? null : Math.max(0, date - now);
 }
 
 function isRetryable(error: HttpError): boolean {
