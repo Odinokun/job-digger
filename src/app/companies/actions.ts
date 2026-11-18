@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { runAction } from "@/app/action-result";
 import { parseCompaniesTab } from "@/lib/companies/company-list";
 import type { Cursor } from "@/lib/pagination/cursor";
+import { checkCompany } from "@/server/checks/check-company";
 import { addCompany } from "@/server/companies/add";
 import { deleteCompany } from "@/server/companies/delete";
 import { findCompanyInTab, listCompanies } from "@/server/companies/list";
@@ -12,10 +13,12 @@ import { addCareerSource } from "@/server/companies/sources";
 import { updateCompany } from "@/server/companies/update";
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
+import { httpClient } from "@/server/http/http-client";
 
 import type {
   AddCareerSourceFormState,
   AddCompanyFormState,
+  CheckCompanyNowResult,
   DeleteCompanyFormState,
   EditCompanyFormState,
   LoadMoreCompaniesResult,
@@ -118,6 +121,48 @@ export async function loadMoreCompaniesAction(
   }
 
   return { ok: true, ...outcome.value };
+}
+
+/**
+ * Check now для однієї компанії: перевіряє її джерела й повертає оновлений
+ * рядок списку.
+ *
+ * Аргументи - недовірений ввід, як і в `loadMoreCompaniesAction`: компанія
+ * шукається за користувачем із сервера, тож чужу перевірити не вийде. Дія
+ * чекає, поки прочитаються всі джерела, - черги ще немає (етап 4).
+ */
+export async function checkCompanyNowAction(
+  companyId: unknown,
+  tab: unknown,
+): Promise<CheckCompanyNowResult> {
+  if (typeof companyId !== "string") {
+    return { ok: false };
+  }
+
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    const checked = await checkCompany(db, httpClient, {
+      userId: user.id,
+      companyId,
+      checkedAt: new Date(),
+    });
+
+    return checked.ok
+      ? findCompanyInTab(db, {
+          userId: user.id,
+          companyId,
+          tab: parseCompaniesTab(tab),
+        })
+      : null;
+  });
+
+  if (!outcome.ok) {
+    return { ok: false };
+  }
+
+  return { ok: true, company: outcome.value };
 }
 
 /**

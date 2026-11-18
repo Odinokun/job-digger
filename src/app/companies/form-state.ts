@@ -121,3 +121,11 @@ export type AddCareerSourceFormState =
 export type LoadMoreCompaniesResult =
   | { ok: true; items: CompanyListItem[]; nextCursor: Cursor | null }
   | { ok: false };
+
+/**
+ * Рядок компанії після Check now або факт збою. `company: null` - компанії вже
+ * немає у вкладці (її видалили в іншій вкладці браузера), і список її прибирає.
+ * Невдалі джерела - не збій: перевірка відбулася, а їхній стан у самому рядку.
+ */
+export type CheckCompanyNowResult =
+  { ok: true; company: CompanyListItem | null } | { ok: false };
