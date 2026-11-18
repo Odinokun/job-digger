@@ -12,9 +12,10 @@
 | `greenhouse.ts`      | Greenhouse: `readGreenhouse(sourceUrl, client)` і його частини |
 | `greenhouse.test.ts` | Юніт-тести парсера Greenhouse                     |
 | `greenhouse.integration.test.ts` | `readGreenhouse` через фейковий вебсервер |
-| `shared.ts`          | Спільне для парсерів: `UNREADABLE`, `isRecord`, `isWebUrl` |
+| `shared.ts`          | Спільне для парсерів: `fetchJson` (запит → статус → JSON), `UNREADABLE`, `isRecord`, `isWebUrl` |
 | `lever.ts`           | Lever: `readLever(sourceUrl, client)`, `leverSite`, `parseLeverPostings` |
 | `lever.test.ts`      | Юніт-тести парсера Lever                          |
+| `lever.integration.test.ts` | `readLever` через фейковий вебсервер і сервер зі сторінками |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
 
 ## Спільний формат
@@ -56,3 +57,30 @@ HTTP-клієнт → розбір. Адреса без дошки Greenhouse - 
 а для відповідей, яких там немає (не JSON, 403, мовчання), - на свій сервер.
 Перевірено й на справжній мережі (вручну, 18.11.2026): Discord - 26 вакансій,
 Figma - 144, неіснуюча дошка - `not-found`.
+
+## Lever
+
+API - `https://api.lever.co/v0/postings/{site}?mode=json` (дошки `jobs.lever.co`) і
+`https://api.eu.lever.co/...` (дошки `jobs.eu.lever.co`), без авторизації
+([документація](https://github.com/lever/postings-api)). Сайт - перший сегмент шляху
+дошки; `leverSite` розуміє й посилання на оголошення та форму відгуку.
+
+**Сторінками, а не одним запитом.** Без `limit` Lever віддає все одразу разом з
+описами: Palantir (306 вакансій) - 5,9 МБ, більше за `MAX_BYTES` клієнта (5 МБ), і
+джерело не читалося б зовсім. Тому `readLever` просить по 100 (`skip`/`limit`),
+близько 2 МБ за раз, до 5 сторінок. Неповна сторінка - остання; повна - ще один
+запит, що прийде порожнім. Досягнення ліміту сторінок - успіх (задача 3.12 зробить
+ліміт налаштуванням). Збій будь-якої сторінки - збій усього джерела.
+
+**Lever сортує не за датою** (перевірено на Palantir і демо-сайті), тож на сайті з
+понад 500 вакансіями ті, що за межею ліміту, щоразу випадатимуть - відомий і
+прийнятий ризик ліміту сторінок (задача 3.12).
+
+`parseLeverPostings`: `externalId` - `id` (UUID, він же в `hostedUrl`), назва -
+`text`, посилання - `hostedUrl`, локація - усі `categories.allLocations` через кому,
+а без них - `categories.location`. Невідомий сайт - 404 з
+`{"ok":false,"error":"Document not found"}`, тобто `not-found` (документація цього
+не описує, перевірено 18.11.2026).
+
+Перевірено на справжній мережі (вручну, 18.11.2026): Palantir - 306 вакансій за 4
+сторінки, демо-сайт - 10, неіснуючий сайт - `not-found`.

@@ -2,8 +2,8 @@
  * Парсер Greenhouse: вакансії з публічного Job Board API
  * (https://docs.greenhouse.io/job-board.html).
  */
-import { HttpError, type HttpClient } from "../http/client.ts";
-import { isRecord, isWebUrl, UNREADABLE } from "./shared.ts";
+import type { HttpClient } from "../http/client.ts";
+import { fetchJson, isRecord, isWebUrl, UNREADABLE } from "./shared.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 /**
@@ -114,40 +114,10 @@ export async function readGreenhouse(
     return UNREADABLE;
   }
 
-  let response;
+  const fetched = await fetchJson(
+    client,
+    `https://boards-api.greenhouse.io/v1/boards/${encodeURIComponent(board)}/jobs`,
+  );
 
-  try {
-    response = await client.get(
-      `https://boards-api.greenhouse.io/v1/boards/${encodeURIComponent(board)}/jobs`,
-    );
-  } catch (error) {
-    if (error instanceof HttpError) {
-      return {
-        ok: false,
-        error: { reason: "fetch-failed", cause: error.reason },
-      };
-    }
-    throw error;
-  }
-
-  if (response.status === 404) {
-    return { ok: false, error: { reason: "not-found" } };
-  }
-
-  if (response.status < 200 || response.status >= 300) {
-    return {
-      ok: false,
-      error: { reason: "bad-status", status: response.status },
-    };
-  }
-
-  let answer: unknown;
-
-  try {
-    answer = JSON.parse(response.body);
-  } catch {
-    return UNREADABLE;
-  }
-
-  return parseGreenhouseJobs(answer);
+  return fetched.ok ? parseGreenhouseJobs(fetched.answer) : fetched;
 }

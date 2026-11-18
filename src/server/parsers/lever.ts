@@ -2,8 +2,9 @@
  * Парсер Lever: вакансії з публічного Postings API
  * (https://github.com/lever/postings-api).
  */
+import type { HttpClient } from "../http/client.ts";
+import { fetchJson, isRecord, isWebUrl, UNREADABLE } from "./shared.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
-import { isRecord, isWebUrl, UNREADABLE } from "./shared.ts";
 
 /** Регіон Lever: від нього залежить хост API (`api.lever.co` чи `api.eu.lever.co`). */
 export type LeverRegion = "global" | "eu";
@@ -105,4 +106,78 @@ function locationOf(categories: Record<string, unknown>): string | null {
   const primary = typeof location === "string" ? location.trim() : "";
 
   return primary === "" ? null : primary;
+}
+
+/** API за регіоном дошки (документація Postings API, «global / EU»). */
+const API_HOSTS: Record<LeverRegion, string> = {
+  global: "api.lever.co",
+  eu: "api.eu.lever.co",
+};
+
+/**
+ * Скільки оголошень просити за раз. Без `limit` Lever віддає все одразу, а
+ * разом з описами це може бути більше за ліміт розміру відповіді: Palantir з
+ * 306 вакансіями - 5,9 МБ при `MAX_BYTES` 5 МБ (перевірено 18.11.2026). Сто
+ * оголошень - близько 2 МБ.
+ */
+export const LEVER_PAGE_SIZE = 100;
+
+/**
+ * Скільки сторінок читати щонайбільше. Досягнення ліміту - нормальне
+ * завершення (задача 3.12, де ліміт стане налаштуванням через ENV).
+ */
+export const LEVER_MAX_PAGES = 5;
+
+/**
+ * Вакансії кар'єрного джерела на Lever: сайт з адреси, сторінки API через
+ * HTTP-клієнт (`skip`/`limit`) і розбір кожної. Адреса без сайту Lever -
+ * `unreadable` без жодного запиту.
+ *
+ * Збій будь-якої сторінки - збій усього джерела: половина списку виглядала б як
+ * «решта вакансій зникла» і потягнула б їхнє видалення (docs/discovery-and-
+ * parsing.md, розділ 6).
+ */
+export async function readLever(
+  sourceUrl: string,
+  client: HttpClient,
+  {
+    pageSize = LEVER_PAGE_SIZE,
+    maxPages = LEVER_MAX_PAGES,
+  }: { pageSize?: number; maxPages?: number } = {},
+): Promise<ParseResult> {
+  const found = leverSite(sourceUrl);
+
+  if (found === null) {
+    return UNREADABLE;
+  }
+
+  const base = `https://${API_HOSTS[found.region]}/v0/postings/${encodeURIComponent(found.site)}`;
+  const vacancies: ParsedVacancy[] = [];
+
+  for (let page = 0; page < maxPages; page += 1) {
+    const fetched = await fetchJson(
+      client,
+      `${base}?mode=json&skip=${page * pageSize}&limit=${pageSize}`,
+    );
+
+    if (!fetched.ok) {
+      return fetched;
+    }
+
+    const parsed = parseLeverPostings(fetched.answer);
+
+    if (!parsed.ok) {
+      return parsed;
+    }
+
+    vacancies.push(...parsed.vacancies);
+
+    // Неповна сторінка - остання. Повна може бути й останньою: тоді наступна
+    // прийде порожньою.
+    if (parsed.vacancies.length < pageSize) {
+      break;
+    }
+  }
+
+  return { ok: true, vacancies };
 }
