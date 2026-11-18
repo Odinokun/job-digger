@@ -194,6 +194,20 @@ describe("syncSourceVacancies", () => {
     ]);
   });
 
+  it("changes nothing when the check failed", async () => {
+    const sourceId = await greenhouseSource();
+    await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
+    const before = await rowsOf(sourceId);
+
+    await sync(
+      sourceId,
+      { ok: false, error: { reason: "bad-status", status: 503 } },
+      SECOND_CHECK,
+    );
+
+    expect(await rowsOf(sourceId)).toEqual(before);
+  });
+
   it("leaves vacancies of other sources alone", async () => {
     const sourceId = await greenhouseSource("discord");
     const otherId = await greenhouseSource("linear");
