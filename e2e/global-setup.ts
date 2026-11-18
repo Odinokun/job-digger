@@ -7,28 +7,15 @@
  * залежить від того, що лежить у базі розробки, і не псує її.
  * https://playwright.dev/docs/test-global-setup-teardown
  */
-import { drizzle } from "drizzle-orm/node-postgres";
-
-import { seedSystemUser } from "../src/server/db/system-user.ts";
 import {
   createDatabaseIfMissing,
   migrateDatabase,
-  truncateAll,
 } from "../src/server/db/testing/database.ts";
+import { resetDatabase } from "./database.ts";
 import { e2eDatabaseUrl } from "./env.ts";
 
 export default async function globalSetup(): Promise<void> {
   await createDatabaseIfMissing(e2eDatabaseUrl);
   await migrateDatabase(e2eDatabaseUrl);
-
-  const db = drizzle(e2eDatabaseUrl);
-
-  try {
-    await truncateAll(db);
-    // Застосунок працює від імені системного користувача і сам його не
-    // створює (`getSystemUser` лише читає), тому без нього сторінки впадуть.
-    await seedSystemUser(db);
-  } finally {
-    await db.$client.end();
-  }
+  await resetDatabase();
 }

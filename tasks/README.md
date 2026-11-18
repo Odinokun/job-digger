@@ -64,18 +64,18 @@ PR: #57
 | [3.21 Стани завантаження й оптимістичні дії](3.21-loading-states-optimistic.md)                  | done    |
 | [3.22 Перехід на вкладку під час дії над рядком](3.22-mark-then-switch-tab.md)                  | done    |
 | [3.23 Один пул з'єднань з базою в продакшні](3.23-one-db-pool.md)                              | done    |
-| [4.01 Схема check_runs + check_tasks](4.01-check-runs-tasks-schema.md)                           | backlog |
-| [4.02 Захоплення завдань і повернення завислих](4.02-task-claiming-stale-recovery.md)            | backlog |
-| [4.03 Обробник черги як фоновий цикл](4.03-queue-background-loop.md)                             | backlog |
-| [4.04 Check all для всіх Tracked](4.04-check-all-tracked.md)                                     | backlog |
-| [4.05 Індикатор прогресу в шапці](4.05-header-progress.md)                                       | backlog |
-| [4.06 Підсумок після завершення перевірки](4.06-check-summary.md)                                | backlog |
-| [4.07 Failed Sources Drawer з Retry](4.07-failed-sources-drawer.md)                              | backlog |
-| [4.08 Правила перетину запусків](4.08-run-overlap-rules.md)                                      | backlog |
-| [4.09 Статуси компанії на вкладці Tracked](4.09-tracked-company-statuses.md)                     | backlog |
-| [4.10 Сторінка History з Load more](4.10-history-page.md)                                        | backlog |
-| [4.11 E2E: Check all від запуску до підсумку](4.11-e2e-check-all.md)                             | backlog |
-| [4.12 Polling-маршрут стану перевірки](4.12-check-status-polling.md)                             | backlog |
+| [4.01 Схема check_runs + check_tasks](4.01-check-runs-tasks-schema.md)                           | todo |
+| [4.02 Захоплення завдань і повернення завислих](4.02-task-claiming-stale-recovery.md)            | todo |
+| [4.03 Обробник черги як фоновий цикл](4.03-queue-background-loop.md)                             | todo |
+| [4.04 Check all для всіх Tracked](4.04-check-all-tracked.md)                                     | todo |
+| [4.05 Індикатор прогресу в шапці](4.05-header-progress.md)                                       | todo |
+| [4.06 Підсумок після завершення перевірки](4.06-check-summary.md)                                | todo |
+| [4.07 Failed Sources Drawer з Retry](4.07-failed-sources-drawer.md)                              | todo |
+| [4.08 Правила перетину запусків](4.08-run-overlap-rules.md)                                      | todo |
+| [4.09 Статуси компанії на вкладці Tracked](4.09-tracked-company-statuses.md)                     | todo |
+| [4.10 Сторінка History з Load more](4.10-history-page.md)                                        | todo |
+| [4.11 E2E: Check all від запуску до підсумку](4.11-e2e-check-all.md)                             | done |
+| [4.12 Polling-маршрут стану перевірки](4.12-check-status-polling.md)                             | todo |
 | [5.01 Визначення платформи за URL](5.01-platform-detection.md)                                   | backlog |
 | [5.02 Пошук: посилання з сайту компанії на ATS](5.02-discovery-site-ats-links.md)                | backlog |
 | [5.03 Пошук: кар'єрні сторінки на сайті компанії](5.03-discovery-site-career-pages.md)           | backlog |

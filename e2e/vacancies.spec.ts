@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 
+import { resetDatabase } from "./database.ts";
 import { companyCard, vacancyRow } from "./locators.ts";
 
 /**
@@ -17,6 +18,9 @@ import { companyCard, vacancyRow } from "./locators.ts";
 const BOARD_URL = "job-boards.greenhouse.io/discord";
 const BOARD_SIZE = 26;
 const TITLE = "Account Executive, Mobile Gaming & Apps";
+
+// Лічильник непрочитаних рахує всі компанії: чужі вакансії зіпсували б числа.
+test.beforeAll(resetDatabase);
 
 test("a Greenhouse board turns into unread vacancies that can be read and favorited", async ({
   page,
