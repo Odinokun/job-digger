@@ -7,6 +7,7 @@ import type {
 } from "@/lib/companies/company-list";
 
 import { CheckNowButton } from "./check-now-button";
+import { CompanyReadButtons } from "./company-read-buttons";
 import { DeleteCompanyDialog } from "./delete-company-dialog";
 import { EditCompanyDialog } from "./edit-company-dialog";
 import { LastChecked } from "./last-checked";
@@ -104,8 +105,7 @@ export function CompanyCard({
         )}
       </Card.Content>
 
-      {/* Дії картки. Mark all as read і Mark all as unread приходять із задачею
-          3.18 (docs/ui.md, розділ 4.2). */}
+      {/* Дії картки (docs/ui.md, розділ 4.2). */}
       <Card.Footer className="flex flex-wrap items-center justify-between gap-2">
         {/* Ліворуч - статус на Not tracked або час останньої перевірки на
             Tracked: на Not tracked перевіряти нічого. */}
@@ -122,6 +122,13 @@ export function CompanyCard({
               companyId={company.id}
               tab={tab}
               onChecked={onSaved}
+            />
+          ) : null}
+          {/* Mark all as read / unread - лише коли є що позначати. */}
+          {company.vacancies.total > 0 ? (
+            <CompanyReadButtons
+              companyId={company.id}
+              companyName={company.name}
             />
           ) : null}
           <EditCompanyDialog
