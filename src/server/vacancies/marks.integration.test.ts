@@ -6,8 +6,8 @@ import { seedSystemUser } from "../db/system-user.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import {
   findVacancy,
-  listUnreadIds,
-  markVacanciesRead,
+  countUnread,
+  markAllRead,
   setVacancyFavorite,
   setVacancyRead,
 } from "./marks.ts";
@@ -312,9 +312,9 @@ async function seedVacancies(
   return { userId: user.id, ids: rows.map((row) => row.id) };
 }
 
-describe("listUnreadIds", () => {
-  it("lists every vacancy of the Unread tab, not just a loaded page", async () => {
-    const { userId, ids } = await seedVacancies(
+describe("countUnread", () => {
+  it("counts every vacancy of the Unread tab, not just a loaded page", async () => {
+    const { userId } = await seedVacancies(
       {},
       { isFavorite: true },
       { isRead: true },
@@ -323,74 +323,80 @@ describe("listUnreadIds", () => {
       {},
     );
 
-    expect((await listUnreadIds(testDb, { userId })).sort()).toEqual(
-      [ids[0], ids[1], ids[4]].sort(),
-    );
+    const { count, asOf } = await countUnread(testDb, { userId });
+
+    expect(count).toBe(3);
+    // Межа - час бази з мікросекундами: JS Date обрізав би їх.
+    expect(asOf).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/);
   });
 
-  it("does not list another user's vacancies", async () => {
+  it("does not count another user's vacancies", async () => {
     await seedVacancies({}, {});
 
-    expect(await listUnreadIds(testDb, { userId: await stranger() })).toEqual(
-      [],
-    );
+    expect(
+      (await countUnread(testDb, { userId: await stranger() })).count,
+    ).toBe(0);
   });
 });
 
-describe("markVacanciesRead", () => {
-  it("marks exactly the given vacancies and reports how many", async () => {
-    const { userId, ids } = await seedVacancies({}, {}, {});
+describe("markAllRead", () => {
+  it("marks the unread vacancies written up to the boundary", async () => {
+    const { userId, ids } = await seedVacancies({}, {});
+    const { asOf } = await countUnread(testDb, { userId });
 
-    // Третя з'явилася після знімка - вона лишається Unread.
-    const marked = await markVacanciesRead(testDb, {
-      userId,
-      ids: [ids[0], ids[1]],
-    });
-
-    expect(marked).toBe(2);
+    expect(await markAllRead(testDb, { userId, asOf })).toBe(2);
     expect((await stored(ids[0])).isRead).toBe(true);
     expect((await stored(ids[1])).isRead).toBe(true);
-    expect((await stored(ids[2])).isRead).toBe(false);
+  });
+
+  it("leaves unread a vacancy written after the boundary", async () => {
+    // Перевірка, що йшла, поки був відкритий діалог: дата виявлення в неї
+    // давня (момент старту перевірки), а записана вона вже після межі.
+    const { userId, ids } = await seedVacancies({});
+    const { asOf } = await countUnread(testDb, { userId });
+    const [late] = await testDb
+      .insert(vacancies)
+      .values({
+        sourceId: (await stored(ids[0])).sourceId,
+        key: "id:late",
+        title: "Found during the dialog",
+        url: "https://job-boards.greenhouse.io/discord/jobs/late",
+        firstDetectedAt: DETECTED,
+        lastSeenAt: DETECTED,
+      })
+      .returning();
+
+    expect(await markAllRead(testDb, { userId, asOf })).toBe(1);
+    expect((await stored(late.id)).isRead).toBe(false);
   });
 
   it("changes only the read mark", async () => {
     const { userId, ids } = await seedVacancies({ isFavorite: true });
     const before = await stored(ids[0]);
+    const { asOf } = await countUnread(testDb, { userId });
 
-    await markVacanciesRead(testDb, { userId, ids });
+    await markAllRead(testDb, { userId, asOf });
 
     expect(await stored(ids[0])).toEqual({ ...before, isRead: true });
   });
 
   it("does not touch another user's vacancies", async () => {
-    const { ids } = await seedVacancies({});
+    const { userId, ids } = await seedVacancies({});
+    const { asOf } = await countUnread(testDb, { userId });
 
-    const marked = await markVacanciesRead(testDb, {
-      userId: await stranger(),
-      ids,
-    });
-
-    expect(marked).toBe(0);
+    expect(await markAllRead(testDb, { userId: await stranger(), asOf })).toBe(
+      0,
+    );
     expect((await stored(ids[0])).isRead).toBe(false);
   });
 
-  it("skips vacancies that are gone and ids that are not ids", async () => {
-    // Перевірка видалила вакансію, поки був відкритий діалог, - без помилки.
-    const { userId, ids } = await seedVacancies({}, {});
-    await testDb.delete(vacancies).where(eq(vacancies.id, ids[1]));
-
-    const marked = await markVacanciesRead(testDb, {
-      userId,
-      ids: [ids[0], ids[1], "not-a-uuid"],
-    });
-
-    expect(marked).toBe(1);
-  });
-
-  it("does nothing for an empty list", async () => {
+  it("does nothing for a boundary that is not a database time", async () => {
+    // Межа приходить аргументом Server Action - недовірений ввід.
     const { userId, ids } = await seedVacancies({});
 
-    expect(await markVacanciesRead(testDb, { userId, ids: [] })).toBe(0);
+    for (const asOf of ["", "tomorrow", "2026-11-18", "2026-11-18T10:00:00Z"]) {
+      expect(await markAllRead(testDb, { userId, asOf })).toBe(0);
+    }
     expect((await stored(ids[0])).isRead).toBe(false);
   });
 });

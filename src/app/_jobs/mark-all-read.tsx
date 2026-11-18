@@ -5,24 +5,22 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
-import { toBatches } from "@/lib/vacancies/mark-all";
 
-import { listUnreadIdsAction, markVacanciesReadAction } from "./actions";
+import { countUnreadAction, markAllReadAction } from "./actions";
 
 interface MarkAllReadProps {
-  /** Позначені вакансії: список прибирає їх зі вкладки Unread. */
-  onMarked: (ids: ReadonlySet<string>) => void;
+  /** Непрочитаних, які були в списку, більше немає: список порожніє. */
+  onMarked: () => void;
 }
 
 /**
  * Mark all as read у вкладці Unread і діалог підтвердження до неї
  * (docs/ui.md, розділ 4.1) - єдина дія над вакансіями з підтвердженням.
  *
- * Межа дії - знімок: натискання бере з сервера ID усіх непрочитаних (не лише
- * завантажених у списку), діалог показує їх кількість, а підтвердження
- * позначає рівно їх. Знайдені, поки діалог відкритий, лишаються Unread
- * (src/server/vacancies/README.md, «Одночасні зміни»). Знімок іде на сервер
- * порціями: тіло запиту Server Action обмежене (`src/lib/vacancies/mark-all.ts`).
+ * Натискання бере з сервера кількість непрочитаних (усіх, не лише завантажених
+ * у списку) і межу - час бази. Підтвердження позначає вакансії, записані не
+ * пізніше межі, одним запитом. Знайдені, поки діалог відкритий, лишаються Unread
+ * (src/server/vacancies/README.md, «Одночасні зміни»).
  *
  * `AlertDialog`, як у видаленні компанії: вікно вимагає рішення. Кнопка
  * підтвердження закриває його лише після успіху, а не натисканням.
@@ -31,13 +29,15 @@ export function MarkAllRead({ onMarked }: MarkAllReadProps) {
   const t = useTranslations("JobsPage.markAllRead");
   const showActionFailed = useActionFailedToast();
   const overlay = useOverlayState();
-  const [snapshot, setSnapshot] = useState<string[]>([]);
+  const [found, setFound] = useState<{ count: number; asOf: string } | null>(
+    null,
+  );
   const [isLoading, startLoading] = useTransition();
   const [isMarking, startMarking] = useTransition();
 
   const open = () => {
     startLoading(async () => {
-      const result = await listUnreadIdsAction();
+      const result = await countUnreadAction();
 
       if (!result.ok) {
         showActionFailed();
@@ -46,31 +46,28 @@ export function MarkAllRead({ onMarked }: MarkAllReadProps) {
 
       // Непрочитаних уже немає - прочитали в іншій вкладці. Питати нема про
       // що, а список має це показати.
-      if (result.ids.length === 0) {
-        onMarked(new Set());
+      if (result.count === 0) {
+        onMarked();
         return;
       }
 
-      setSnapshot(result.ids);
+      setFound({ count: result.count, asOf: result.asOf });
       overlay.open();
     });
   };
 
   const confirm = () => {
-    startMarking(async () => {
-      // Порції - послідовно: Next і так виконує дії однієї вкладки по черзі
-      // (node_modules/next/dist/docs/01-app/02-guides/server-actions.md,
-      // «Sequential dispatch on the client»).
-      for (const batch of toBatches(snapshot)) {
-        const result = await markVacanciesReadAction(batch);
+    if (found === null) return;
 
-        if (!result.ok) {
-          showActionFailed();
-          return;
-        }
+    startMarking(async () => {
+      const result = await markAllReadAction(found.asOf);
+
+      if (!result.ok) {
+        showActionFailed();
+        return;
       }
 
-      onMarked(new Set(snapshot));
+      onMarked();
       overlay.close();
     });
   };
@@ -99,7 +96,7 @@ export function MarkAllRead({ onMarked }: MarkAllReadProps) {
             </AlertDialog.Header>
 
             <AlertDialog.Body>
-              <p>{t("body", { count: snapshot.length })}</p>
+              <p>{t("body", { count: found?.count ?? 0 })}</p>
             </AlertDialog.Body>
 
             <AlertDialog.Footer>

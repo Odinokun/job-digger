@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 
 import { runAction } from "@/app/action-result";
 import type { Cursor } from "@/lib/pagination/cursor";
-import { parseVacancyIds } from "@/lib/vacancies/mark-all";
 import {
   parseJobsTab,
   type VacancyListItem,
@@ -13,8 +12,8 @@ import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 import { listVacancies } from "@/server/vacancies/list";
 import {
-  listUnreadIds,
-  markVacanciesRead,
+  countUnread,
+  markAllRead,
   setVacancyFavorite,
   setVacancyRead,
 } from "@/server/vacancies/marks";
@@ -119,33 +118,30 @@ async function markResult(
 }
 
 /**
- * Mark all as read, крок 1: знімок ID усіх непрочитаних. Діалог показує їх
- * кількість, а крок 2 позначає рівно ці (`listUnreadIds`).
+ * Mark all as read, крок 1: скільки непрочитаних і межа дії. Діалог показує
+ * число, а крок 2 позначає записані не пізніше межі (`countUnread`).
  */
-export async function listUnreadIdsAction(): Promise<
-  { ok: true; ids: string[] } | { ok: false }
+export async function countUnreadAction(): Promise<
+  { ok: true; count: number; asOf: string } | { ok: false }
 > {
   const outcome = await runAction(async () => {
     const db = getDb();
     const user = await getSystemUser(db);
 
-    return listUnreadIds(db, { userId: user.id });
+    return countUnread(db, { userId: user.id });
   });
 
-  return outcome.ok ? { ok: true, ids: outcome.value } : { ok: false };
+  return outcome.ok ? { ok: true, ...outcome.value } : { ok: false };
 }
 
 /**
- * Mark all as read, крок 2: одна порція знімка (`src/lib/vacancies/mark-all.ts`).
- * Аргумент - недовірений ввід: не масив рядків чи завелика порція - відмова;
- * чужі, зниклі й криві ID просто не збігаються (`markVacanciesRead`).
+ * Mark all as read, крок 2. Межа - недовірений ввід: не рядок - відмова, а
+ * рядок не у формі часу бази `markAllRead` просто не виконує.
  */
-export async function markVacanciesReadAction(
-  ids: unknown,
+export async function markAllReadAction(
+  asOf: unknown,
 ): Promise<{ ok: true; marked: number } | { ok: false }> {
-  const batch = parseVacancyIds(ids);
-
-  if (batch === null) {
+  if (typeof asOf !== "string") {
     return { ok: false };
   }
 
@@ -153,7 +149,7 @@ export async function markVacanciesReadAction(
     const db = getDb();
     const user = await getSystemUser(db);
 
-    return markVacanciesRead(db, { userId: user.id, ids: batch });
+    return markAllRead(db, { userId: user.id, asOf });
   });
 
   if (!outcome.ok) {

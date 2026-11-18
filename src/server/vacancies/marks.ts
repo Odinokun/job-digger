@@ -5,12 +5,17 @@
  * (README, «Одночасні зміни»). Вакансія шукається за користувачем через
  * компанію: id приходить із клієнта, і чужу змінити не вийде.
  */
-import { and, eq, inArray, isNotNull } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, lte, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import type { VacancyListItem } from "../../lib/vacancies/vacancy-list.ts";
 import { careerSources, companies, vacancies } from "../db/schema.ts";
-import { tabCondition, VACANCY_ROW } from "./list.ts";
+import {
+  DB_TIME_PATTERN,
+  dbTimeText,
+  tabCondition,
+  VACANCY_ROW,
+} from "./list.ts";
 
 /**
  * Форма UUID. Id приходить аргументом Server Action, а криве значення в
@@ -108,20 +113,22 @@ export async function setVacancyFavorite(
 }
 
 /**
- * ID усіх вакансій вкладки Unread користувача - не лише завантаженої порції.
+ * Mark all as read, крок 1: скільки вакансій у вкладці Unread (усіх, не лише
+ * завантаженої порції) і межа дії `asOf` - поточний час бази з мікросекундами.
  *
- * Це знімок для Mark all as read (docs/ui.md, розділ 4.1): діалог показує,
- * скільки їх, а дія позначає рівно ці. Межа - саме перелік, а не дата
- * виявлення: `first_detected_at` - момент старту перевірки, і перевірка, що
- * йде під час діалогу, вставила б нові вакансії «заднім числом» - вони мовчки
- * стали б прочитаними (README, «Одночасні зміни»).
+ * Межа - `created_at`, момент запису рядка, а не дата виявлення: та - момент
+ * старту перевірки, і перевірка, що йде, поки відкритий діалог, записала б
+ * нові вакансії «заднім числом» (README, «Одночасні зміни»).
  */
-export async function listUnreadIds(
+export async function countUnread(
   db: NodePgDatabase,
   { userId }: { userId: string },
-): Promise<string[]> {
-  const rows = await db
-    .select({ id: vacancies.id })
+): Promise<{ count: number; asOf: string }> {
+  const [row] = await db
+    .select({
+      count: sql<number>`count(*)::int`,
+      asOf: dbTimeText(sql`now()`),
+    })
     .from(vacancies)
     .where(
       and(
@@ -130,30 +137,29 @@ export async function listUnreadIds(
       ),
     );
 
-  return rows.map((row) => row.id);
+  return { count: row.count, asOf: row.asOf };
 }
 
 /**
- * Mark all as read: позначає прочитаними вакансії зі знімка `listUnreadIds`
- * і повертає, скільки позначено. Вакансії користувача поза знімком (знайдені,
- * поки був відкритий діалог) лишаються Unread. Зниклі й чужі ID, як і рядки,
- * що не схожі на UUID, просто не збігаються - без помилки (розділ 7 плану).
+ * Mark all as read, крок 2: позначає прочитаними вакансії вкладки Unread,
+ * записані не пізніше межі з `countUnread`, і повертає, скільки позначено.
+ * Записані пізніше - знайдені, поки був відкритий діалог, - лишаються Unread.
+ * Межа приходить із клієнта: не час бази - нічого не робимо.
  */
-export async function markVacanciesRead(
+export async function markAllRead(
   db: NodePgDatabase,
-  { userId, ids }: { userId: string; ids: string[] },
+  { userId, asOf }: { userId: string; asOf: string },
 ): Promise<number> {
-  const valid = ids.filter((id) => UUID_PATTERN.test(id));
-
-  if (valid.length === 0) return 0;
+  if (!DB_TIME_PATTERN.test(asOf)) return 0;
 
   const marked = await db
     .update(vacancies)
     .set({ isRead: true })
     .where(
       and(
-        inArray(vacancies.id, valid),
         inArray(vacancies.sourceId, ownSources(db, userId)),
+        tabCondition("unread"),
+        lte(vacancies.createdAt, sql`${asOf}::timestamptz`),
       ),
     )
     .returning({ id: vacancies.id });

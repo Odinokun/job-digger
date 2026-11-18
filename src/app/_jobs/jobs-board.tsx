@@ -138,17 +138,13 @@ export function JobsBoard({
   }, [cursor, tab, showActionFailed]);
 
   /**
-   * Після Mark all as read зі списку йдуть позначені рядки. Порожній знімок
-   * означає, що непрочитаних уже немає зовсім, - тоді й решта порцій порожня.
+   * Після Mark all as read непрочитаних, що були в списку, більше немає: усі
+   * показані рядки записані до межі дії. Знайдені пізніше зʼявляться при
+   * наступному відкритті вкладки.
    */
-  const removeMarked = useCallback((ids: ReadonlySet<string>) => {
-    if (ids.size === 0) {
-      setItems([]);
-      setCursor(null);
-      return;
-    }
-
-    setItems((shown) => shown.filter((item) => !ids.has(item.id)));
+  const clearList = useCallback(() => {
+    setItems([]);
+    setCursor(null);
   }, []);
 
   return (
@@ -161,7 +157,7 @@ export function JobsBoard({
 
       {tab === "unread" && visible.length > 0 ? (
         <div className="mt-4 flex justify-end">
-          <MarkAllRead onMarked={removeMarked} />
+          <MarkAllRead onMarked={clearList} />
         </div>
       ) : null}
 
