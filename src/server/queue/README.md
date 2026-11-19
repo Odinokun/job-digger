@@ -19,6 +19,8 @@
 | `finish.integration.test.ts`   | Лічильники запуску і відкинуті пізні результати              |
 | `finalize.ts`                  | `finalizeRuns(db, { now })` - закрити завершені й завислі запуски |
 | `finalize.integration.test.ts` | Обидва правила завершення і що вони не чіпають               |
+| `parallel-checks.ts`           | `parseParallelChecks` - ENV `PARALLEL_SOURCE_CHECKS`, ліміт одночасних джерел |
+| `parallel-checks.test.ts`      | Значення за замовчуванням, діапазон 1-10, хибні значення      |
 | `recover.ts`                   | `recoverStaleTasks(db, { now })` - повернути завислі в чергу  |
 | `recover.integration.test.ts`  | Завислі, свіжі й ті, в яких скінчилися спроби                |
 | `task-error.ts`                | `CheckTaskError` - що лежить у `check_tasks.error`           |
