@@ -161,5 +161,9 @@
   },
   "Common": {
     "close": "Close"
+  },
+  "CheckSummary": {
+    "title": "Check finished",
+    "description": "{checked, plural, one {# source} other {# sources}} checked: {ok} ok, {failed} failed. Vacancies: {newVacancies} new, {removedVacancies} removed."
   }
 }

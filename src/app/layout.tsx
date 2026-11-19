@@ -12,6 +12,7 @@ import { getLocale } from "next-intl/server";
 import "./globals.css";
 import { AppHeader } from "./components/app-header";
 import { CheckStatusProvider } from "./components/check-status-provider";
+import { CheckSummary } from "./components/check-summary";
 import { getUnreadCount } from "./components/unread-count";
 import { ThemeScript } from "./theme-script";
 
@@ -95,6 +96,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
                 перевизначати --container-5xl не стали, бо тоді клас max-w-5xl
                 означав би не 5xl. Хедер тримає ту саму ширину. */}
             <main className="mx-auto max-w-7xl px-6 py-8">{children}</main>
+            <CheckSummary />
           </CheckStatusProvider>
           {/* Регіон сповіщень. Без пропа `queue` він бере глобальну чергу -
               ту саму, у яку пише `toast` із будь-якого компонента. */}

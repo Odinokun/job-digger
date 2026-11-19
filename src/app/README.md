@@ -85,6 +85,11 @@ Companies) і Check now. Кнопки модалок (Save, Delete) поки б�
   перевірка; клієнтський, стан бере з `useCheckStatus`. Обгортка з `role="status"`
   існує завжди, а текст у ній зʼявляється: читалка екрана оголошує зміни лише в
   регіоні, що вже був на сторінці.
+- `check-summary.tsx` - підсумок загальної перевірки toast-ом «Check finished» з
+  числами, без автозакриття; клієнтський, у кореневому layout. Спливає один раз:
+  показаний одразу позначається Server Action з `check-actions.ts`
+  (`markCheckSummaryShownAction`), тож при наступному завантаженні не повторюється.
+  Правила, який підсумок пропонується - [`server/checks/README.md`](../server/checks/README.md#підсумок-перевірки).
 - `check-status-provider.tsx` - `CheckStatusProvider` у кореневому layout і хук
   `useCheckStatus`: стан загальної перевірки для шапки й сторінок. Опитує
   `/api/check-status` за правилами `lib/checks/status-poller.ts`. Check all передає
