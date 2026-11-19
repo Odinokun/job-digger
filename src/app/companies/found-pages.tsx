@@ -47,7 +47,7 @@ export function FoundPages({
               name="foundUrl"
               value={finding.url}
               isSelected={selected.includes(finding.url)}
-              isDisabled={finding.vacancies === null}
+              isDisabled={finding.trial.kind !== "read"}
               onChange={(isSelected) => onToggle(finding.url, isSelected)}
             >
               <Checkbox.Content>
@@ -56,13 +56,19 @@ export function FoundPages({
                 </Checkbox.Control>
                 <span className="flex min-w-0 flex-col">
                   <span className="flex flex-wrap items-center gap-2">
+                    {/* Власна сторінка - не платформа, тож і підпис свій:
+                        «Own page - not supported yet» (розділ 5, пункт 5). */}
                     <span className="font-medium">
-                      {platformLabels[finding.platform]}
+                      {finding.platform === "unsupported"
+                        ? t("ownPage")
+                        : platformLabels[finding.platform]}
                     </span>
                     <span className="text-sm text-muted">
-                      {finding.vacancies === null
-                        ? t("notReadable")
-                        : t("vacancies", { count: finding.vacancies })}
+                      {finding.trial.kind === "read"
+                        ? t("vacancies", { count: finding.trial.vacancies })
+                        : finding.trial.kind === "unsupported"
+                          ? t("notSupported")
+                          : t("readFailed")}
                     </span>
                     <OwnershipMark finding={finding} />
                   </span>
