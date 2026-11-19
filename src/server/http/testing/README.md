@@ -53,6 +53,8 @@ https://boards-api.greenhouse.io/v1/boards/acme/jobs
 | `responses/webellian.peopleforce.io/careers` | Сторінка кар'єри Webellian на PeopleForce, `?page=1` - 10 вакансій з 23, є посилання на наступну сторінку | 18.11.2026 |
 | `responses/breezy.breezy.hr/json` | Публічний JSON дошки самої Breezy HR (3 вакансії) | 19.11.2026 |
 | `responses/jobs.breezy.hr/json` | Публічний JSON другої дошки Breezy HR: одна віддалена вакансія (`is_remote: true`) | 19.11.2026 |
+| `responses/cleverstaff.net/hr/public/getAllOpenVacancy` | CleverStaff, дошка 8allocate (8 віддалених вакансій, з описами - 196 КБ). Рядок запиту сервер ігнорує, тож це відповідь на будь-який аліас | 19.11.2026 |
+| `responses/cleverstaff.net/hr/public/getVacancy` | CleverStaff, вакансія 8allocate `3ONpJV`: з неї парсер дізнається аліас компанії | 19.11.2026 |
 
 **Сайти компаній - синтетичні** (рішення автора 19.11.2026, задача 5.02). Пошук
 кар'єрних сторінок читає головні сторінки компаній, і справжня сторінка тягнула б

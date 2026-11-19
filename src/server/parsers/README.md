@@ -29,6 +29,9 @@
 | `breezy.ts`          | Breezy HR: `readBreezy(sourceUrl, client)`, `breezyCompany`, `parseBreezyPositions` |
 | `breezy.test.ts`     | Юніт-тести парсера Breezy HR                      |
 | `breezy.integration.test.ts` | `readBreezy` через фейковий вебсервер |
+| `cleverstaff.ts`     | CleverStaff: `readCleverStaff(sourceUrl, client)`, `cleverstaffSource`, `cleverstaffBoardUrl`, `parseCleverStaffVacancies` |
+| `cleverstaff.test.ts` | Юніт-тести парсера CleverStaff                  |
+| `cleverstaff.integration.test.ts` | `readCleverStaff` через фейковий вебсервер: дошка й посилання на вакансію |
 | `pages-to-check.ts`  | `PAGES_TO_CHECK` - спільний ліміт сторінок для парсерів, що читають сторінками; `parsePagesToCheck` |
 | `pages-to-check.test.ts` | Юніт-тести розбору змінної                   |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
