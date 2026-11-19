@@ -13,4 +13,6 @@ export type CheckTaskError =
    * Запуск закрився, бо довго стояв без руху, а завдання так і не дійшло до
    * перевірки (`finalize.ts`).
    */
-  | { reason: "abandoned" };
+  | { reason: "abandoned" }
+  /** Перевірка кинула виняток - помилка в нашому коді, а не на сайті (`run-task.ts`). */
+  | { reason: "crashed" };

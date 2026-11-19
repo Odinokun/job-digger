@@ -1,14 +1,15 @@
 # src/server/checks - перевірки джерел
 
 Перевірка джерела - прочитати його парсером і застосувати
-[життєвий цикл вакансій](../vacancies/README.md#життєвий-цикл). Поки тут лише Check
-now для однієї компанії, без черги: черга, Check all і автоперевірки - етап 4
-([docs/checks-and-queue.md](../../../docs/checks-and-queue.md)).
+[життєвий цикл вакансій](../vacancies/README.md#життєвий-цикл). Її робить
+`checkSource`, і ним користуються двоє: Check now для однієї компанії (поки
+синхронно, без черги) і [черга](../queue/README.md), що виконує завдання Check all.
 
 ## Файли
 
 | Файл                                | Роль                                                              |
 | ----------------------------------- | ----------------------------------------------------------------- |
+| `check-source.ts`                   | `checkSource(db, client, source, checkedAt)` - перевірка одного джерела і її підсумок |
 | `check-company.ts`                  | `checkCompany(db, client, { userId, companyId, checkedAt })` - Check now |
 | `check-company.integration.test.ts` | Інтеграційні тести на справжній базі й фейковому вебсервері        |
 
