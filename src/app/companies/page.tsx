@@ -35,6 +35,7 @@ export default async function CompaniesPage({
     peopleforce: t("platforms.peopleforce"),
     breezy: t("platforms.breezy"),
     cleverstaff: t("platforms.cleverstaff"),
+    hurma: t("platforms.hurma"),
     schema_org: t("platforms.schemaOrg"),
     unsupported: t("platforms.unsupported"),
   };

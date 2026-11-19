@@ -45,6 +45,13 @@ describe("detectPlatform", () => {
     );
   });
 
+  it("reads hurma", () => {
+    expect(detectPlatform("spribe.hurma.work/public-vacancies")).toBe("hurma");
+    expect(detectPlatform("spribe.hurma.work/public-vacancies/72")).toBe(
+      "hurma",
+    );
+  });
+
   it("falls back to unsupported for a page on the company's own domain", () => {
     expect(detectPlatform("www.lifeatspotify.com/jobs")).toBe("unsupported");
   });

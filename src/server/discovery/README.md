@@ -23,7 +23,7 @@
 | `career-pages.ts` | `careerPagesOnPage` - кар'єрні сторінки свого сайту за текстом посилання, шляхом або піддоменом; `careerPagesInSitemap` - те саме з адрес sitemap, лише за шляхом; `findSiteCareerPages` - кар'єрні сторінки сайту й дошки ATS на них |
 | `career-pages.test.ts` | Юніт-тести пошуку кар'єрних сторінок |
 | `career-pages.integration.test.ts` | `findSiteCareerPages` через фейковий вебсервер (синтетичні `globex`, `initech`, `umbrella`, `acme`) і свій сервер із редиректами |
-| `by-name.ts` | `nameSlugs` - варіанти назви дошки з назви компанії й домену; `findBoardsByName` - дошки під цими назвами на Greenhouse, Lever, Ashby, PeopleForce і Breezy HR |
+| `by-name.ts` | `nameSlugs` - варіанти назви дошки з назви компанії й домену; `findBoardsByName` - дошки під цими назвами на Greenhouse, Lever, Ashby, PeopleForce, Breezy HR і Hurma |
 | `by-name.test.ts` | Юніт-тести `nameSlugs` |
 | `by-name.integration.test.ts` | `findBoardsByName` через збережені справжні дошки фейкового вебсервера |
 
@@ -43,6 +43,7 @@
 | Workday     | адреса career site без мови й хвоста вакансії  |
 | PeopleForce | `https://{company}.peopleforce.io/careers`     |
 | Breezy HR   | `https://{company}.breezy.hr`                  |
+| Hurma       | `https://{company}.hurma.work/public-vacancies` |
 | CleverStaff | `https://cleverstaff.net/i/{alias}-vacancies`; посилання на вакансію `/i/vacancy-{id}` лишається як є - аліас компанії дізнається парсер окремим запитом |
 
 ## Відомі ATS без парсера
@@ -113,9 +114,11 @@ Unsupported. Без цього пошук мовчки пропускав би �
 `boschua`, `bosch-ua`, `bosch`. Діакритика знімається, а назва без латиниці
 варіантів не дає.
 
-Кожен варіант пробується на Greenhouse, Lever, Ashby, PeopleForce і Breezy HR.
-Перевірка «чи є дошка» - читання дошки тим самим парсером, що й у перевірці: на
-неіснуючу дошку всі п'ять платформ відповідають 404 (перевірено 19.11.2026).
+Кожен варіант пробується на Greenhouse, Lever, Ashby, PeopleForce, Breezy HR і
+Hurma. Перевірка «чи є дошка» - читання дошки тим самим парсером, що й у перевірці:
+на неіснуючу дошку всі шість платформ відповідають 404 (перевірено 19.11.2026).
+Сторінка Hurma сайту компанії не показує (лише назву й логотип), тож дошка Hurma,
+знайдена за назвою, завжди лишається «знайдено за назвою - перевір».
 CleverStaff за назвою не пробується: аліас чутливий до регістру (`MEV` існує,
 `mev` - ні), а варіанти назви завжди в нижньому регістрі. Заодно відомо,
 скільки на дошці вакансій. Workday не вгадується: в його адресі є номер кластера

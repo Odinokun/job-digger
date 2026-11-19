@@ -24,12 +24,6 @@ describe("knownAtsName", () => {
     expect(knownAtsName("https://join.com/en")).toBeNull();
   });
 
-  it("ignores the vendor's own services on its domain", () => {
-    expect(knownAtsName("https://acme.hurma.work/")).toBe("Hurma");
-    expect(knownAtsName("https://academy.hurma.work/hr-club")).toBeNull();
-    expect(knownAtsName("https://support.hurma.work/en")).toBeNull();
-  });
-
   it("reads a normalized address without a protocol", () => {
     expect(knownAtsName("acme.recruitee.com")).toBe("Recruitee");
   });
