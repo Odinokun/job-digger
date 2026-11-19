@@ -5,6 +5,7 @@ import type { AddCompanyResult } from "@/server/companies/add";
 import type { DeleteCompanyResult } from "@/server/companies/delete";
 import type { AddCareerSourceResult } from "@/server/companies/sources";
 import type { UpdateCompanyResult } from "@/server/companies/update";
+import type { CompanyWithSource } from "@/server/companies/source-duplicates";
 import type { Finding } from "@/server/discovery/discover";
 import type { UrlRefusalReason } from "@/lib/companies/url";
 
@@ -57,12 +58,19 @@ export type AddCompanyFormState =
   | { status: "failed-unexpectedly" };
 
 /**
+ * Знахідка в списку Find pages разом із тим, чи вже є це джерело в іншої
+ * компанії користувача (задача 5.08). Пошук сам бази не знає, тож це
+ * доповнює дія.
+ */
+export type FoundPage = Finding & { trackedIn: CompanyWithSource | null };
+
+/**
  * Відповідь Find pages: знахідки або чому пошук не почався.
  *
  * `address-required` - порожні і сайт, і назва: шукати нема за чим.
  */
 export type FindPagesResult =
-  | { ok: true; findings: Finding[] }
+  | { ok: true; findings: FoundPage[] }
   | { ok: false; problem: "address-required" }
   | { ok: false; problem: "company-url"; reason: UrlRefusalReason }
   | { ok: false; problem: "failed-unexpectedly" };

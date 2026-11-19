@@ -1,6 +1,7 @@
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, inArray, ne } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
+import { normalizeCompanyUrl } from "../../lib/companies/url.ts";
 import { careerSources, companies } from "../db/schema.ts";
 
 /** Компанія, яку треба назвати у відмові: більшого інтерфейсу не потрібно. */
@@ -62,4 +63,63 @@ export async function findCompanyWithSource(
     .limit(1);
 
   return row ?? null;
+}
+
+export type FindCompaniesWithSourcesInput = {
+  userId: string;
+  /** Адреси як є, наприклад знахідки Find pages: очищаються тут. */
+  urls: string[];
+};
+
+/**
+ * Для кожної адреси, яка вже є джерелом якоїсь компанії користувача, - ця
+ * компанія (задача 5.08: «вже відстежується в ...» у списку знахідок).
+ *
+ * Ключ - адреса так, як її передали, а не очищена: викликач шукає знахідку
+ * саме за нею. Один запит на весь список замість `findCompanyWithSource` на
+ * кожну адресу. Непридатна адреса просто не має пари - джерелом вона бути не
+ * може.
+ */
+export async function findCompaniesWithSources(
+  db: NodePgDatabase,
+  { userId, urls }: FindCompaniesWithSourcesInput,
+): Promise<Map<string, CompanyWithSource>> {
+  const byNormalized = new Map<string, string[]>();
+  for (const url of urls) {
+    const normalized = normalizeCompanyUrl(url);
+    if (normalized.ok) {
+      byNormalized.set(normalized.url, [
+        ...(byNormalized.get(normalized.url) ?? []),
+        url,
+      ]);
+    }
+  }
+
+  const found = new Map<string, CompanyWithSource>();
+  if (byNormalized.size === 0) {
+    return found;
+  }
+
+  const rows = await db
+    .select({
+      id: companies.id,
+      name: companies.name,
+      normalizedUrl: careerSources.normalizedUrl,
+    })
+    .from(careerSources)
+    .innerJoin(companies, eq(careerSources.companyId, companies.id))
+    .where(
+      and(
+        eq(companies.userId, userId),
+        inArray(careerSources.normalizedUrl, [...byNormalized.keys()]),
+      ),
+    );
+
+  for (const { id, name, normalizedUrl } of rows) {
+    for (const url of byNormalized.get(normalizedUrl) ?? []) {
+      found.set(url, { id, name });
+    }
+  }
+
+  return found;
 }

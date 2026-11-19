@@ -14,6 +14,7 @@ import { addCompany } from "@/server/companies/add";
 import { deleteCompany } from "@/server/companies/delete";
 import { findCompanyInTab, listCompanies } from "@/server/companies/list";
 import { addCareerSource } from "@/server/companies/sources";
+import { findCompaniesWithSources } from "@/server/companies/source-duplicates";
 import { updateCompany } from "@/server/companies/update";
 import { discoverSources } from "@/server/discovery/discover";
 import { getDb } from "@/server/db/client";
@@ -142,9 +143,23 @@ export async function findPagesAction(
     siteUrl = absoluteCompanyUrl(typedUrl);
   }
 
-  const outcome = await runAction(() =>
-    discoverSources({ siteUrl, name: typedName }, httpClient),
-  );
+  const outcome = await runAction(async () => {
+    const findings = await discoverSources(
+      { siteUrl, name: typedName },
+      httpClient,
+    );
+    const db = getDb();
+    const user = await getSystemUser(db);
+    const tracked = await findCompaniesWithSources(db, {
+      userId: user.id,
+      urls: findings.map((finding) => finding.url),
+    });
+
+    return findings.map((finding) => ({
+      ...finding,
+      trackedIn: tracked.get(finding.url) ?? null,
+    }));
+  });
 
   return outcome.ok
     ? { ok: true, findings: outcome.value }
