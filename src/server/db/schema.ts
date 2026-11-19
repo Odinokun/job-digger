@@ -4,6 +4,7 @@ import {
   check,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -14,6 +15,7 @@ import {
 
 import { DISCOVERY_STATUSES } from "../../lib/companies/company-list.ts";
 import { CAREER_PLATFORMS } from "../../lib/companies/platform.ts";
+import type { ParserError } from "../parsers/types.ts";
 
 /**
  * Єдиний користувач локальної версії. Значення технічне: пошта нікуди не йде,
@@ -232,5 +234,71 @@ export const checkRuns = pgTable(
       .where(sql`${table.finishedAt} is null`),
     // History: запуски користувача від найновішого.
     index("check_runs_user_started_idx").on(table.userId, table.startedAt),
+  ],
+);
+
+/**
+ * Пріоритет завдання. Порядок значень і є порядком захоплення: ручні дії, на
+ * результат яких дивиться користувач (Check now, Retry), беруться з черги
+ * раніше за фонові (docs/checks-and-queue.md, розділ 8).
+ */
+export const checkTaskPriority = pgEnum("check_task_priority", [
+  "manual",
+  "background",
+]);
+
+export const checkTaskStatus = pgEnum("check_task_status", [
+  "queued",
+  "running",
+  "succeeded",
+  "failed",
+]);
+
+/**
+ * Завдання черги: перевірка одного карʼєрного джерела. Одне джерело = одне
+ * завдання (docs/overview.md, розділ 3).
+ */
+export const checkTasks = pgTable(
+  "check_tasks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    // Видалення джерела забирає його завдання: незавершені так і скасовуються,
+    // а результат уже захопленого відкидає життєвий цикл (3.13).
+    sourceId: uuid("source_id")
+      .notNull()
+      .references(() => careerSources.id, { onDelete: "cascade" }),
+    // Загальна перевірка, що створила завдання. `null` - Check now чи Retry:
+    // вони в History не пишуться.
+    runId: uuid("run_id").references(() => checkRuns.id, {
+      onDelete: "cascade",
+    }),
+    priority: checkTaskPriority("priority").notNull().default("background"),
+    status: checkTaskStatus("status").notNull().default("queued"),
+    // Скільки разів завдання захоплювали: обмежує повтори після збою.
+    attempts: integer("attempts").notNull().default(0),
+    // Коли обробник захопив завдання. За ним завдання, що зависло в `running`,
+    // повертається в чергу (4.02).
+    lockedAt: timestamp("locked_at", { withTimezone: true }),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+    // Помилка парсера так, як він її повернув: причину показує Failed Sources
+    // Drawer. Технічна деталь - History її не показує.
+    error: jsonb("error").$type<ParserError>(),
+    // Parse warning: скільки записів парсер пропустив через ваду даних
+    // (docs/discovery-and-parsing.md, розділ 6).
+    skippedVacancies: integer("skipped_vacancies").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    // Захоплення: черга за пріоритетом і віком. Частковий - бо в черзі завжди
+    // жменя рядків, а завершених накопичуються тисячі.
+    index("check_tasks_queue_idx")
+      .on(table.priority, table.createdAt)
+      .where(sql`${table.status} = 'queued'`),
+    // Завершення запуску й прогрес рахуються по завданнях запуску.
+    index("check_tasks_run_idx").on(table.runId),
+    // Failed Sources Drawer і каскадне видалення джерела.
+    index("check_tasks_source_idx").on(table.sourceId),
   ],
 );
