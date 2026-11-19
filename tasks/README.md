@@ -62,35 +62,35 @@ PR: #57
 | [3.19 Лічильник непрочитаних вакансій](3.19-unread-counter.md)                                   | done    |
 | [3.20 E2E: від URL до вакансій в Unread](3.20-e2e-url-to-unread.md)                              | done    |
 | [3.21 Стани завантаження й оптимістичні дії](3.21-loading-states-optimistic.md)                  | done    |
-| [3.22 Перехід на вкладку під час дії над рядком](3.22-mark-then-switch-tab.md)                  | done    |
-| [3.23 Один пул з'єднань з базою в продакшні](3.23-one-db-pool.md)                              | done    |
-| [4.01 Схема check_runs + check_tasks](4.01-check-runs-tasks-schema.md)                           | done |
-| [4.02 Захоплення завдань і повернення завислих](4.02-task-claiming-stale-recovery.md)            | done |
-| [4.03 Обробник черги як фоновий цикл](4.03-queue-background-loop.md)                             | done |
-| [4.04 Check all для всіх Tracked](4.04-check-all-tracked.md)                                     | done |
-| [4.05 Індикатор прогресу в шапці](4.05-header-progress.md)                                       | done |
-| [4.06 Підсумок після завершення перевірки](4.06-check-summary.md)                                | done |
-| [4.07 Failed Sources Drawer з Retry](4.07-failed-sources-drawer.md)                              | done |
-| [4.08 Правила перетину запусків](4.08-run-overlap-rules.md)                                      | done |
-| [4.09 Статуси компанії на вкладці Tracked](4.09-tracked-company-statuses.md)                     | done |
-| [4.10 Сторінка History з Load more](4.10-history-page.md)                                        | done |
-| [4.11 E2E: Check all від запуску до підсумку](4.11-e2e-check-all.md)                             | done |
-| [4.12 Polling-маршрут стану перевірки](4.12-check-status-polling.md)                             | done |
-| [4.13 Сповіщення про нові вакансії на сторінці Jobs](4.13-new-vacancies-notice.md)            | done |
-| [4.14 Колір уваги в палітрі Ink](4.14-highlight-color.md) | done |
-| [5.01 Визначення платформи за URL](5.01-platform-detection.md)                                   | done |
-| [5.02 Пошук: посилання з сайту компанії на ATS](5.02-discovery-site-ats-links.md)                | done |
-| [5.03 Пошук: кар'єрні сторінки на сайті компанії](5.03-discovery-site-career-pages.md)           | done |
-| [5.04 Пошук: ATS за назвою компанії](5.04-discovery-ats-by-name.md)                              | done |
-| [5.05 Перевірка належності сторінки компанії](5.05-page-ownership-check.md)                      | todo |
-| [5.06 Пробне читання знахідок](5.06-trial-read.md)                                               | todo |
-| [5.07 Find pages у модалці Add company](5.07-find-pages-modal.md)                                | done |
-| [5.08 Позначки дублікатів у списку знахідок](5.08-discovery-duplicate-marks.md)                  | todo |
-| [5.09 Перша перевірка одразу після Save](5.09-first-check-after-save.md)                         | done |
-| [5.10 Find new pages для списку Not tracked](5.10-find-new-pages-not-tracked.md)                 | todo |
-| [5.11 Статуси вкладки Not tracked](5.11-not-tracked-statuses.md)                                 | todo |
-| [5.12 E2E: Find pages від URL до вакансій](5.12-e2e-find-pages.md)                               | done |
-| [5.13 ATS на домені компанії](5.13-ats-on-company-domain.md) | backlog |
+| [3.22 Перехід на вкладку під час дії над рядком](3.22-mark-then-switch-tab.md)                   | done    |
+| [3.23 Один пул з'єднань з базою в продакшні](3.23-one-db-pool.md)                                | done    |
+| [4.01 Схема check_runs + check_tasks](4.01-check-runs-tasks-schema.md)                           | done    |
+| [4.02 Захоплення завдань і повернення завислих](4.02-task-claiming-stale-recovery.md)            | done    |
+| [4.03 Обробник черги як фоновий цикл](4.03-queue-background-loop.md)                             | done    |
+| [4.04 Check all для всіх Tracked](4.04-check-all-tracked.md)                                     | done    |
+| [4.05 Індикатор прогресу в шапці](4.05-header-progress.md)                                       | done    |
+| [4.06 Підсумок після завершення перевірки](4.06-check-summary.md)                                | done    |
+| [4.07 Failed Sources Drawer з Retry](4.07-failed-sources-drawer.md)                              | done    |
+| [4.08 Правила перетину запусків](4.08-run-overlap-rules.md)                                      | done    |
+| [4.09 Статуси компанії на вкладці Tracked](4.09-tracked-company-statuses.md)                     | done    |
+| [4.10 Сторінка History з Load more](4.10-history-page.md)                                        | done    |
+| [4.11 E2E: Check all від запуску до підсумку](4.11-e2e-check-all.md)                             | done    |
+| [4.12 Polling-маршрут стану перевірки](4.12-check-status-polling.md)                             | done    |
+| [4.13 Сповіщення про нові вакансії на сторінці Jobs](4.13-new-vacancies-notice.md)               | done    |
+| [4.14 Колір уваги в палітрі Ink](4.14-highlight-color.md)                                        | done    |
+| [5.01 Визначення платформи за URL](5.01-platform-detection.md)                                   | done    |
+| [5.02 Пошук: посилання з сайту компанії на ATS](5.02-discovery-site-ats-links.md)                | done    |
+| [5.03 Пошук: кар'єрні сторінки на сайті компанії](5.03-discovery-site-career-pages.md)           | done    |
+| [5.04 Пошук: ATS за назвою компанії](5.04-discovery-ats-by-name.md)                              | done    |
+| [5.05 Перевірка належності сторінки компанії](5.05-page-ownership-check.md)                      | done    |
+| [5.06 Пробне читання знахідок](5.06-trial-read.md)                                               | todo    |
+| [5.07 Find pages у модалці Add company](5.07-find-pages-modal.md)                                | done    |
+| [5.08 Позначки дублікатів у списку знахідок](5.08-discovery-duplicate-marks.md)                  | todo    |
+| [5.09 Перша перевірка одразу після Save](5.09-first-check-after-save.md)                         | done    |
+| [5.10 Find new pages для списку Not tracked](5.10-find-new-pages-not-tracked.md)                 | todo    |
+| [5.11 Статуси вкладки Not tracked](5.11-not-tracked-statuses.md)                                 | todo    |
+| [5.12 E2E: Find pages від URL до вакансій](5.12-e2e-find-pages.md)                               | done    |
+| [5.13 ATS на домені компанії](5.13-ats-on-company-domain.md)                                     | backlog |
 | [6.01 Таблиця settings і сторінка Settings](6.01-settings-page.md)                               | backlog |
 | [6.02 Розрахунок часу наступної автоперевірки](6.02-next-auto-check-time.md)                     | backlog |
 | [6.03 Автоперевірка локально і перевірка на старті](6.03-auto-check-local.md)                    | backlog |
@@ -109,6 +109,6 @@ PR: #57
 | [7.09 Пін GitHub Actions і Dependabot](7.09-pin-actions-dependabot.md)                           | backlog |
 | [7.10 Підключати CSS лише тих компонентів HeroUI, які використовуємо](7.10-heroui-css-subset.md) | backlog |
 | [Лічильник проблемних джерел у меню](failing-sources-counter.md)                                 | analyze |
-| [Ручні перевірки лише по перших сторінках](first-page-only-manual-checks.md) | analyze |
+| [Ручні перевірки лише по перших сторінках](first-page-only-manual-checks.md)                     | analyze |
 | [Розібратися з уразливостями у npm audit](npm-audit-vulnerabilities.md)                          | backlog |
 | [Розкласти документацію за частинами застосунку](split-docs-by-app-part.md)                      | analyze |

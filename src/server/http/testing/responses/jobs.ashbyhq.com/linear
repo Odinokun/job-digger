@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="theme-color" content="#473BCE">
+    <meta name="csp-nonce" id="csp-nonce" content="PL06IzASCYsvsi3bRcC8E1q-FvsL0xvysWLFhJeXHw4">
+    <link rel="icon" type="image/svg+xml" href="https://cdn.ashbyprd.com/cdn_assets/370c18a1f9864c324cbec476c374b4b19c8d04be/favicon.svg">
+    <link rel="icon" type="image/png" href="https://cdn.ashbyprd.com/cdn_assets/370c18a1f9864c324cbec476c374b4b19c8d04be/favicon.png" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://cdn.ashbyprd.com/cdn_assets/370c18a1f9864c324cbec476c374b4b19c8d04be/apple-touch-icon.png" />
+    <title>Linear Jobs</title><meta name="title" content="Linear Jobs" />
+    
+  
+  <meta name="description" content="Linear Jobs" />
+  <meta name="twitter:card" content="summary" />
+  <meta property="og:url" content="https://jobs.ashbyhq.com/linear" />
+  <meta property="og:type" content="website" />
+  
+  <meta property="og:title" content="Linear Jobs" />
+  <meta property="og:description" content="Linear Jobs" />
+  
+  <meta name="twitter:title" content="Linear Jobs" />
+  <meta name="twitter:description" content="Linear Jobs" />
+  <link rel="preload" as="image" href="https://app.ashbyhq.com/api/images/org-theme-wordmark/3287cc87-df80-4a67-ab05-1a50f6dec2bc/6f220629-4c89-45dd-8390-2064b32f25d0/d0603617-186a-4b5c-b533-a826bf01e45e.png">
+
+    <link id="vite-preload" rel="preload" as="fetch" href="https://cdn.ashbyprd.com/frontend_non_user/370c18a1f9864c324cbec476c374b4b19c8d04be/.vite/manifest.json" crossorigin>    <link rel="preload" href="https://cdn.ashbyprd.com/cdn_assets/370c18a1f9864c324cbec476c374b4b19c8d04be/fonts/WhitneySSm/woff2/WhitneySSm-Book_Web.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+    <link rel="preload" href="https://cdn.ashbyprd.com/cdn_assets/370c18a1f9864c324cbec476c374b4b19c8d04be/fonts/WhitneySSm/woff2/WhitneySSm-Medium_Web.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+    <link rel="preload" href="https://cdn.ashbyprd.com/cdn_assets/370c18a1f9864c324cbec476c374b4b19c8d04be/fonts/WhitneySSm/woff2/WhitneySSm-Semibold_Web.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+    <link rel="stylesheet" href="https://cdn.ashbyprd.com/cdn_assets/370c18a1f9864c324cbec476c374b4b19c8d04be/fonts/WhitneySSm/WhitneySSm.css" />
+    <style>
+      .grecaptcha-badge {
+        visibility: hidden;
+      }
+
+      body > div > div:not([class]):has(> iframe[src*="/recaptcha/"]) {
+        box-sizing: content-box;
+      }
+    </style>
+
+
+  </head>
+  <body>
+    <noscript>
+      You need to enable JavaScript to run this app.
+    </noscript>
+    <div id="root">
+      <style>
+        body {
+          overflow: hidden;
+        }
+      
+        .center {
+          align-items: center;
+          display: flex;
+          flex-direction: column;
+          height: 100vh;
+          justify-content: center;
+          width: 100vw;
+        }
+      
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      
+        .fade-in {
+          animation-delay: 750ms;
+          animation-direction: normal;
+          animation-duration: 500ms;
+          animation-fill-mode: forwards;
+          animation-iteration-count: 1;
+          animation-name: fade-in;
+          animation-timing-function: ease-in-out;
+          opacity: 0;
+        }
+      
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      
+        .spinner {
+          animation-duration: var(--transitionDurationSlow, 600ms);
+          animation-iteration-count: infinite;
+          animation-name: spin;
+          animation-timing-function: linear;
+          border-color: var(--colorNeutral600Transparent, rgba(125, 134, 153, 0.25));
+          border-radius: 100%;
+          border-style: solid;
+          border-top-color: rgba(125, 134, 153, 0.9);
+          border-width: var(--borderWidthHeavy, 3px);
+          display: block;
+          height: var(--spacingXxlarge, 48px);
+          width: var(--spacingXxlarge, 48px);
+        }
+      </style>
+      <div class="center">
+        <div class="fade-in">
+          <div class="spinner"></div>
+        </div>
+      </div>    </div>
+    <script nonce="PL06IzASCYsvsi3bRcC8E1q-FvsL0xvysWLFhJeXHw4">
+      window.__appData = {"ddRumApplicationId":"80e0bf43-e772-45ac-858b-1e6dc0f1f415","ddRumClientToken":"pub1a87c7036063ee7d4b7914b397e6324e","environment":"production","maintenanceMode":false,"schedulingMaintenanceMode":false,"organization":{"organizationId":"3287cc87-df80-4a67-ab05-1a50f6dec2bc","name":"Linear","publicWebsite":"https://linear.app/","customJobsPageUrl":"https://linear.app/careers","hostedJobsPageSlug":"linear","allowJobPostIndexing":true,"isDemoOrg":false,"theme":{"colors":{"version":"1","colorPrimary600":"#6059b2","colorPrimary900":"#1d1b3e"},"showJobFilters":true,"showLocationAddress":false,"showTeams":false,"showAutofillApplicationsBox":true,"logoWordmarkImageUrl":"https://app.ashbyhq.com/api/images/org-theme-wordmark/3287cc87-df80-4a67-ab05-1a50f6dec2bc/6f220629-4c89-45dd-8390-2064b32f25d0/d0603617-186a-4b5c-b533-a826bf01e45e.png","logoSquareImageUrl":null,"applicationSubmittedSuccessMessage":"Thank you — your application was successfully submitted. We appreciate your patience as your application is under review. ","jobBoardTopDescriptionHtml":null,"jobBoardBottomDescriptionHtml":null,"jobPostingBackUrl":null,"__typename":"Theme"},"appConfirmationTrackingPixelHtml":null,"recruitingPrivacyPolicyUrl":null,"activeFeatureFlags":["AiInterviewer","AiInterviewerUpdatedTimeEstimates","AiNotetakerCandidateConsentPolicies","ApprovalNotesFromEmail","BookingLinkRescheduleLimits","CanonicalizeSchools","CoreMultipleBrands","DemoOrgBanners","EducationHistoryFormField","ExplicitAutomatedProcessingOptOutConfirmation","JobBoardCookieConsentControls","JobBoardEtagValidation","JobPostingApplicationDeadlines","JobPostingListV2","JobPostingWorkplaceTypeOverrideSecondaryLocationsToo","LinkedInIntegrationRequireCompanyId","LinkedInTOSUpdate","LocationExternalName","MigrateGoogleRecaptchaAutomatedLegal","RejectBase64EncodedResumesFrontEnd","RejectBase64EncodedResumesThrowErrorFrontEnd","RejectInvalidFileTypeOnUpload","RejectUrlsInCandidateName","SchedulingDirectBookingLogDirectBookingEventsJson","SchedulingGCalSendUpdatesForCancelEvents","SchedulingRescheduleAndCancellationReasonsNonUser","SchedulingUseLocaleInTimeFormatting","ShowCountsOnJobBoardFilterOptions","SocialSharingHtmlMetaSettings","UseGoogleRecaptchaUniversalKey","ValidateFileTypeOnUpload"],"timezone":"America/New_York","candidateScheduleCancellationReasonRequirementStatus":"Off","showCookieBanner":false,"__typename":"Organization"},"posting":null,"jobBoard":{"stealthAccess":false,"teams":[{"id":"7ab28977-580c-4732-9089-19b91ff74d76","name":"GTM","externalName":null,"parentTeamId":null,"__typename":"Team"},{"id":"5051511e-6326-4e9b-93d3-aecf92f71ffe","name":"Sales","externalName":null,"parentTeamId":"7ab28977-580c-4732-9089-19b91ff74d76","__typename":"Team"},{"id":"cfb7eff4-f699-4576-b620-452ef574fc52","name":"Operations","externalName":null,"parentTeamId":null,"__typename":"Team"},{"id":"a9e9fa39-f1b6-4827-bcd0-17a4b2d9a20c","name":"Creative Studio","externalName":null,"parentTeamId":"7ab28977-580c-4732-9089-19b91ff74d76","__typename":"Team"},{"id":"ec72b633-de62-4595-8604-feda97a7ea6b","name":"Marketing","externalName":null,"parentTeamId":"7ab28977-580c-4732-9089-19b91ff74d76","__typename":"Team"},{"id":"1cb81034-b288-4ce3-82f0-3acc9f735436","name":"Product","externalName":null,"parentTeamId":null,"__typename":"Team"},{"id":"1da67f55-43f9-4b87-b5b6-d79204ab0594","name":"Design","externalName":null,"parentTeamId":"1cb81034-b288-4ce3-82f0-3acc9f735436","__typename":"Team"},{"id":"ca523293-3f63-439a-954a-c47bbfb72ed2","name":"Engineering","externalName":null,"parentTeamId":"1cb81034-b288-4ce3-82f0-3acc9f735436","__typename":"Team"},{"id":"832d3bbb-b2f1-4ad0-9f6b-a27831e91501","name":"Product Management","externalName":null,"parentTeamId":"1cb81034-b288-4ce3-82f0-3acc9f735436","__typename":"Team"},{"id":"556ab30e-382c-4014-8111-870e1a737049","name":"Customer Experience","externalName":null,"parentTeamId":"7ab28977-580c-4732-9089-19b91ff74d76","__typename":"Team"}],"jobPostings":[{"id":"6dd5500a-4bd4-4f57-ba09-7b07acefecf4","title":"Account Executive, Enterprise","teamId":"5051511e-6326-4e9b-93d3-aecf92f71ffe","locationId":"f0ca8a90-a5b1-4e8f-a448-74ca3ebe39c3","locationName":"Singapore","workplaceType":"Hybrid","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"cb8e77a6-4316-45c6-ac8d-7ade980cd65e","title":"Account Executive, Growth ","teamId":"5051511e-6326-4e9b-93d3-aecf92f71ffe","locationId":"f0ca8a90-a5b1-4e8f-a448-74ca3ebe39c3","locationName":"Singapore","workplaceType":"Hybrid","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"7ee0355b-85dd-4019-8e7f-8f3f38dc17cb","title":"Account Executive, Growth (EMEA)","teamId":"5051511e-6326-4e9b-93d3-aecf92f71ffe","locationId":"fb698c92-9515-41a1-a6ae-132967fc6401","locationName":"London","workplaceType":"Hybrid","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"c21af93e-210f-4969-8eaa-90fb16a5b720","title":"Account Executive, Startups","teamId":"5051511e-6326-4e9b-93d3-aecf92f71ffe","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"f272fc4a-91a7-4dcf-9cb5-3600ebaf14e1","title":"Analytics Engineer","teamId":"cfb7eff4-f699-4576-b620-452ef574fc52","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"f16dd5e9-ed10-4b8e-b5d7-1b8b5e3f002f","title":"Creative Producer","teamId":"a9e9fa39-f1b6-4827-bcd0-17a4b2d9a20c","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[{"locationId":"d6c36a8f-b8ba-4dd0-8b70-ecda4d6705ef","locationName":"Europe","__typename":"JobPostingSecondaryLocation"}],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"c97e034e-19a8-4ec7-89a5-c81987451da8","title":"Creative Producer","teamId":"a9e9fa39-f1b6-4827-bcd0-17a4b2d9a20c","locationId":"d6c36a8f-b8ba-4dd0-8b70-ecda4d6705ef","locationName":"Europe","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"0dbd1790-2652-49fc-861f-7451ae4eb1cf","title":"Customer Success Manager, APAC","teamId":"5051511e-6326-4e9b-93d3-aecf92f71ffe","locationId":"f0ca8a90-a5b1-4e8f-a448-74ca3ebe39c3","locationName":"Singapore","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[{"locationId":"213b5edb-e7a4-4287-a2ff-2c3133c80e1f","locationName":"Australia","__typename":"JobPostingSecondaryLocation"}],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"1aa6f672-5917-49aa-b015-70ebff901923","title":"Deal Desk","teamId":"cfb7eff4-f699-4576-b620-452ef574fc52","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"62a4524c-75da-499e-b150-7f68ce9f2da3","title":"Developer Relations","teamId":"ec72b633-de62-4595-8604-feda97a7ea6b","locationId":"d6c36a8f-b8ba-4dd0-8b70-ecda4d6705ef","locationName":"Europe","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"1d652292-04d9-405c-8101-578efd020e94","title":"Developer Relations","teamId":"ec72b633-de62-4595-8604-feda97a7ea6b","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[{"locationId":"d6c36a8f-b8ba-4dd0-8b70-ecda4d6705ef","locationName":"Europe","__typename":"JobPostingSecondaryLocation"}],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"4c4f5bf5-0628-4145-b211-eb533edab8d1","title":"Field Marketing Manager","teamId":"ec72b633-de62-4595-8604-feda97a7ea6b","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"af8d37e8-624a-4f2c-af53-c599b97192a3","title":"Field Marketing Manager, Europe","teamId":"ec72b633-de62-4595-8604-feda97a7ea6b","locationId":"d6c36a8f-b8ba-4dd0-8b70-ecda4d6705ef","locationName":"Europe","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"eac7f181-d658-4943-9430-51bae2bcd110","title":"Mobile Product Designer","teamId":"1da67f55-43f9-4b87-b5b6-d79204ab0594","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"0c7c2e26-0a98-42cf-a47c-9a3999fb513b","title":"Product Engineer","teamId":"ca523293-3f63-439a-954a-c47bbfb72ed2","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"b32de590-06ce-47d4-8994-66b936df908d","title":"Production Designer","teamId":"a9e9fa39-f1b6-4827-bcd0-17a4b2d9a20c","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[{"locationId":"d6c36a8f-b8ba-4dd0-8b70-ecda4d6705ef","locationName":"Europe","__typename":"JobPostingSecondaryLocation"}],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"5b9997fd-7507-4437-8fd7-14178c99ab5d","title":"Production Designer","teamId":"a9e9fa39-f1b6-4827-bcd0-17a4b2d9a20c","locationId":"d6c36a8f-b8ba-4dd0-8b70-ecda4d6705ef","locationName":"Europe","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"86abcce0-04b2-405c-9a8e-e0ca84813914","title":"Product Manager","teamId":"832d3bbb-b2f1-4ad0-9f6b-a27831e91501","locationId":"d6c36a8f-b8ba-4dd0-8b70-ecda4d6705ef","locationName":"Europe","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"b7669c4b-eeca-421d-ba9a-d90203f6fcb2","title":"Product Manager","teamId":"832d3bbb-b2f1-4ad0-9f6b-a27831e91501","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"c0abc97e-b4d7-4ad7-bd13-bc40f4023227","title":"Product Marketing Manager","teamId":"832d3bbb-b2f1-4ad0-9f6b-a27831e91501","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"b3346acf-44be-4565-b1c0-10d482d3ad4e","title":"Product Marketing Manager","teamId":"832d3bbb-b2f1-4ad0-9f6b-a27831e91501","locationId":"fb698c92-9515-41a1-a6ae-132967fc6401","locationName":"London","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"41b3ed5c-f7a0-40b7-8a77-4952868c3d47","title":"Product Support Specialist, APAC","teamId":"556ab30e-382c-4014-8111-870e1a737049","locationId":"f0ca8a90-a5b1-4e8f-a448-74ca3ebe39c3","locationName":"Singapore","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[{"locationId":"213b5edb-e7a4-4287-a2ff-2c3133c80e1f","locationName":"Australia","__typename":"JobPostingSecondaryLocation"}],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"aa0673c5-9e06-42f8-a720-6c2e43930c5a","title":"Product Support Specialist, APAC","teamId":"556ab30e-382c-4014-8111-870e1a737049","locationId":"213b5edb-e7a4-4287-a2ff-2c3133c80e1f","locationName":"Australia","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[{"locationId":"f0ca8a90-a5b1-4e8f-a448-74ca3ebe39c3","locationName":"Singapore","__typename":"JobPostingSecondaryLocation"}],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"b4df9dbe-618e-4a3b-874c-c9abf87ca5c0","title":"Product Support Specialist, Eastern/Central Time","teamId":"556ab30e-382c-4014-8111-870e1a737049","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"d062065e-05bb-42ce-a430-ec205695cc2e","title":"Product Support Specialist, Pacific/Mountain Time","teamId":"556ab30e-382c-4014-8111-870e1a737049","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"d3bc1ced-3ce4-4086-a050-555055dbb1ff","title":"Senior / Staff Fullstack Engineer","teamId":"ca523293-3f63-439a-954a-c47bbfb72ed2","locationId":"d6c36a8f-b8ba-4dd0-8b70-ecda4d6705ef","locationName":"Europe","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"cd5ae036-0223-427a-b038-ba16ef9dcb32","title":"Senior / Staff Fullstack Engineer","teamId":"ca523293-3f63-439a-954a-c47bbfb72ed2","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"a264869e-f058-487c-ab7f-9b77dffa427c","title":"Senior / Staff Product Designer","teamId":"1da67f55-43f9-4b87-b5b6-d79204ab0594","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"069c4628-88d7-4e4d-b393-c996fc7f3076","title":"Senior / Staff Product Engineer","teamId":"ca523293-3f63-439a-954a-c47bbfb72ed2","locationId":"d6c36a8f-b8ba-4dd0-8b70-ecda4d6705ef","locationName":"Europe","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"12f8f208-0b9c-4569-bb3d-41c8a197029e","title":"Senior / Staff Product Engineer","teamId":"ca523293-3f63-439a-954a-c47bbfb72ed2","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"b4a7764e-c680-4bdf-9956-dc78f2ca94d5","title":"Senior / Staff Product Engineer, Applied AI","teamId":"ca523293-3f63-439a-954a-c47bbfb72ed2","locationId":"8cc8d396-27e7-4432-b401-636e37434304","locationName":"North America","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"},{"id":"d8890a6d-ce76-4c3d-aacc-34c1ed150d91","title":"Solutions Engineer, APAC","teamId":"5051511e-6326-4e9b-93d3-aecf92f71ffe","locationId":"f0ca8a90-a5b1-4e8f-a448-74ca3ebe39c3","locationName":"Singapore","workplaceType":"Remote","employmentType":"FullTime","secondaryLocations":[{"locationId":"213b5edb-e7a4-4287-a2ff-2c3133c80e1f","locationName":"Australia","__typename":"JobPostingSecondaryLocation"}],"compensationTierSummary":null,"__typename":"JobPostingBriefsWithIdsAndTeamId"}],"__typename":"JobBoard"},"routerPrefix":"/","recaptchaUniversalPublicSiteKey":"6LezdY0tAAAAAEnollNLCAI0z1VDGwM7AzGrU4XZ"};
+      // A Vite manifest key: the entry's HTML filename relative to the build root.
+      // Single-entry apps leave entryHtml unset.
+      const ENTRY_KEY = "index.html";
+      fetch("https://cdn.ashbyprd.com/frontend_non_user/370c18a1f9864c324cbec476c374b4b19c8d04be/.vite/manifest.json").then(function (res) { return res.json() }).then(function (manifest) {
+        const entryData = manifest[ENTRY_KEY];
+        if (entryData == null) {
+          throw new Error("Vite manifest is missing entry: " + ENTRY_KEY);
+        }
+    
+        // Walk the entry's static imports transitively. Both the CSS and the JS a
+        // page needs can sit on shared chunks rather than on the entry record, and
+        // the manifest lists only each chunk's direct imports -- so reading the
+        // entry alone silently drops stylesheets and preloads. Depth-first
+        // post-order puts a dependency's CSS ahead of its importer's, which is the
+        // cascade order Vite uses in the HTML it generates for the same entry.
+        const chunks = [];
+        const visited = {};
+        function collectChunks(key) {
+          if (visited[key] === true) {
+            return;
+          }
+          visited[key] = true;
+          const chunk = manifest[key];
+          if (chunk == null) {
+            return;
+          }
+          (chunk.imports ?? []).forEach(collectChunks);
+          chunks.push(chunk);
+        }
+        collectChunks(ENTRY_KEY);
+    
+        // css[] holds output paths, not digests, but every manifest record carries
+        // an integrity for its own file -- so a stylesheet Vite emitted as its own
+        // record can be matched by path. The entry's CSS has no record and loads
+        // unhashed.
+        const integrityByFile = {};
+        Object.keys(manifest).forEach(function (key) {
+          const record = manifest[key];
+          if (record != null && record.file != null && record.integrity != null) {
+            integrityByFile[record.file] = record.integrity;
+          }
+        });
+    
+        const sheets = [];
+        const seenSheets = {};
+        chunks.forEach(function (chunk) {
+          (chunk.css ?? []).forEach(function (sheet) {
+            if (seenSheets[sheet] === true) {
+              return;
+            }
+            seenSheets[sheet] = true;
+            sheets.push(sheet);
+          });
+        });
+    
+        let bundleLoaded = false;
+        function loadBundle() {
+          if (bundleLoaded === true) {
+            return;
+          }
+    
+          const el = document.createElement("script");
+          el.setAttribute("type", "module");
+          el.setAttribute("crossorigin", "");
+          el.setAttribute("integrity", entryData.integrity);
+          el.setAttribute("src", "https://cdn.ashbyprd.com/frontend_non_user/370c18a1f9864c324cbec476c374b4b19c8d04be/" + entryData.file);
+          document.head.appendChild(el);
+          bundleLoaded = true;
+        }
+    
+        chunks.forEach(function (chunk) {
+          const preload = document.createElement("link");
+          preload.rel = "modulepreload";
+          preload.href = "https://cdn.ashbyprd.com/frontend_non_user/370c18a1f9864c324cbec476c374b4b19c8d04be/" + chunk.file;
+          // Carry the SRI hash on the preload too: Chrome/Firefox reuse the
+          // preloaded bytes for the integrity-bearing script tag, so an integrity-less
+          // preload silently bypasses the SRI check. Without it here, SRI is never
+          // enforced on the code-split chunks (the bulk of the app), in any browser.
+          preload.setAttribute("integrity", chunk.integrity);
+          preload.setAttribute("crossorigin", "");
+          document.head.appendChild(preload);
+        });
+    
+        if (sheets.length > 0) {
+          const loadedSheets = [];
+          sheets.forEach(function (sheet) {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.type = "text/css";
+            link.href = "https://cdn.ashbyprd.com/frontend_non_user/370c18a1f9864c324cbec476c374b4b19c8d04be/" + sheet;
+            link.media = "all";
+            const sheetIntegrity = integrityByFile[sheet];
+            if (sheetIntegrity != null) {
+              link.setAttribute("integrity", sheetIntegrity);
+              // SRI on a cross-origin stylesheet requires CORS mode; the CDN sends
+              // access-control-allow-origin: *.
+              link.setAttribute("crossorigin", "");
+            }
+            link.onload = function () {
+              loadedSheets.push(sheet);
+              if (loadedSheets.length === sheets.length) {
+                loadBundle();
+              }
+            };
+            link.onerror = loadBundle;
+            document.head.insertBefore(link, document.getElementById("vite-preload"));
+          });
+        } else {
+          loadBundle();
+        }
+      });
+    </script>  </body>
+</html>

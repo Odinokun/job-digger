@@ -46,6 +46,7 @@ describe("discoverSources", () => {
         platform: "lever",
         via: "site",
         vacancies: 10,
+        ownership: null,
       },
     ]);
   });
@@ -62,6 +63,7 @@ describe("discoverSources", () => {
         platform: "unsupported",
         via: "site",
         vacancies: null,
+        ownership: null,
       },
     ]);
   });
@@ -79,11 +81,13 @@ describe("discoverSources", () => {
         platform: "lever",
         via: "site",
         vacancies: 10,
+        ownership: null,
       },
     ]);
   });
 
   it("searches by name alone when there is no site", async () => {
+    // Без сайту підтверджувати належність нема чим.
     expect(
       await discoverSources({ siteUrl: null, name: "Linear" }, client()),
     ).toEqual([
@@ -92,11 +96,33 @@ describe("discoverSources", () => {
         platform: "ashby",
         via: "name",
         vacancies: 33,
+        ownership: { kind: "unknown" },
+      },
+    ]);
+  });
+
+  it("confirms a board found by name that links to the company site", async () => {
+    // Сторінка дошки Ashby `linear` називає сайт `linear.app`
+    // (src/server/http/testing/README.md). Головної linear.app на фейковому
+    // сервері немає - лишається пошук за назвою.
+    expect(
+      await discoverSources(
+        { siteUrl: "https://linear.app", name: "Linear" },
+        client(),
+      ),
+    ).toEqual([
+      {
+        url: "https://jobs.ashbyhq.com/linear",
+        platform: "ashby",
+        via: "name",
+        vacancies: 33,
+        ownership: { kind: "confirmed" },
       },
     ]);
   });
 
   it("still searches by name when the site does not answer", async () => {
+    // Дошка `linear` називає своїм інший сайт - схоже, інша компанія.
     expect(
       await discoverSources(
         { siteUrl: "https://linear.example", name: "Linear" },
@@ -108,6 +134,7 @@ describe("discoverSources", () => {
         platform: "ashby",
         via: "name",
         vacancies: 33,
+        ownership: { kind: "other", site: "linear.app" },
       },
     ]);
   });
