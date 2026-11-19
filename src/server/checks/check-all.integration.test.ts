@@ -11,6 +11,7 @@ import {
 } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
 import { testDb } from "../db/testing/test-db.ts";
+import { finalizeRuns, IDLE_RUN_MS } from "../queue/finalize.ts";
 import { startCheckAll } from "./check-all.ts";
 
 const now = new Date("2026-11-19T10:00:00Z");
@@ -156,5 +157,25 @@ describe("startCheckAll", () => {
     expect(await startCheckAll(testDb, { userId: user.id, now })).toMatchObject(
       { ok: true },
     );
+  });
+
+  it("is not blocked forever by a run that stopped moving", async () => {
+    // Перевірку перервали сон компʼютера чи вбитий сервер: без закриття
+    // завислого запуску Check all і автоперевірки були б заблоковані назавжди
+    // (docs/checks-and-queue.md, розділ 8).
+    const user = await seedSystemUser(testDb);
+    await companyWith(user.id, { board: "discord" });
+    await startCheckAll(testDb, { userId: user.id, now });
+    const later = new Date(now.getTime() + IDLE_RUN_MS + 60_000);
+
+    expect(
+      await startCheckAll(testDb, { userId: user.id, now: later }),
+    ).toEqual({ ok: false, reason: "already-running" });
+
+    await finalizeRuns(testDb, { now: later });
+
+    expect(
+      await startCheckAll(testDb, { userId: user.id, now: later }),
+    ).toMatchObject({ ok: true });
   });
 });
