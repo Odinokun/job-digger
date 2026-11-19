@@ -3,6 +3,7 @@
 import { Checkbox, Chip } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
+import { knownAtsName } from "@/lib/companies/known-ats";
 import type { CareerPlatform } from "@/lib/companies/platform";
 import type { Finding } from "@/server/discovery/discover";
 
@@ -62,10 +63,11 @@ export function FoundPages({
                 <span className="flex min-w-0 flex-col">
                   <span className="flex flex-wrap items-center gap-2">
                     {/* Власна сторінка - не платформа, тож і підпис свій:
-                        «Own page - not supported yet» (розділ 5, пункт 5). */}
+                        «Own page - not supported yet» (розділ 5, пункт 5).
+                        Відома ATS без парсера - її назва (задача 5.15). */}
                     <span className="font-medium">
                       {finding.platform === "unsupported"
-                        ? t("ownPage")
+                        ? (knownAtsName(finding.url) ?? t("ownPage"))
                         : platformLabels[finding.platform]}
                     </span>
                     <span className="text-sm text-muted">

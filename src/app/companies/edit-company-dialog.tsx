@@ -16,6 +16,7 @@ import { useActionState, useEffect, useState, useTransition } from "react";
 import { IconButton, WithTooltip } from "@/app/components/icon-button";
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import { prepareCareerSource } from "@/lib/companies/career-source";
+import { knownAtsName } from "@/lib/companies/known-ats";
 import type {
   CompaniesTab,
   CompanyListItem,
@@ -293,7 +294,8 @@ export function EditCompanyDialog({
                                 }
                               >
                                 <span className="font-medium">
-                                  {platformLabels[source.platform]}
+                                  {knownAtsName(source.url) ??
+                                    platformLabels[source.platform]}
                                 </span>{" "}
                                 <span className="text-muted">{source.url}</span>
                               </span>

@@ -6,6 +6,7 @@ import type {
   CompanyListItem,
   CompanySource,
 } from "@/lib/companies/company-list";
+import { knownAtsName } from "@/lib/companies/known-ats";
 
 import { CheckNowButton } from "./check-now-button";
 import { CompanyStatusChip } from "./company-status-chip";
@@ -87,8 +88,10 @@ export function CompanyCard({
                 key={source.id}
                 className="flex flex-wrap items-baseline gap-2"
               >
+                {/* Відома ATS без парсера - її назва замість «Unsupported»
+                    (задача 5.15): так видно, які парсери потрібні. */}
                 <span className="font-medium">
-                  {platformLabels[source.platform]}
+                  {knownAtsName(source.url) ?? platformLabels[source.platform]}
                 </span>
                 {/* Підпис стоїть перед адресою, бо саме він розрізняє джерела
                     одного сайту: три фільтри mozilla.org відрізняються лише
