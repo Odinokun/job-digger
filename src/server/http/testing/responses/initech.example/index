@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8" /><title>Initech</title></head>
+  <body>
+    <nav><a href="/products">Products</a><a href="/contact">Contact</a></nav>
+  </body>
+</html>

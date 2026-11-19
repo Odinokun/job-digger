@@ -5,7 +5,30 @@
  */
 import * as cheerio from "cheerio";
 
-import { boardUrlOf } from "./board-url.ts";
+import type { HttpClient } from "../http/client.ts";
+import { fetchText } from "../parsers/shared.ts";
+import { atsLinksOnPage } from "./ats-links.ts";
+import { boardUrlOf, type BoardUrl } from "./board-url.ts";
+
+/** Типові адреси кар'єрної сторінки - лише коли на головній посилання немає. */
+const USUAL_PATHS = ["/careers", "/jobs"];
+
+/**
+ * Скільки кар'єрних сторінок читаємо. Кожна - запит до чужого сайту з паузою
+ * ввічливості, а більше трьох окремих кар'єрних розділів у компанії не буває.
+ */
+const MAX_CAREER_PAGES = 3;
+
+/** Що дали кар'єрні сторінки сайту. */
+export type SiteCareerPages = {
+  /** Дошки ATS, на які ведуть кар'єрні сторінки. */
+  boards: BoardUrl[];
+  /** Кар'єрні сторінки без посилань на ATS - власні сторінки компанії. */
+  pages: string[];
+};
+
+/** Прочитана сторінка: тіло й адреса після редиректів. */
+type Page = { body: string; url: string };
 
 /**
  * Слова, які роблять сегмент шляху кар'єрним. Лише цілий сегмент: `/jobs` -
@@ -38,11 +61,12 @@ const PATH_WORDS = new Set([
 const HOST_WORDS = new Set(["careers", "career", "jobs", "karriere"]);
 
 /**
- * Текст посилання, з яким воно кар'єрне. Слово має стояти окремо: межа -
- * будь-що, крім літери, бо `\b` у JavaScript кирилиці не бачить.
+ * Текст посилання, з яким воно кар'єрне: увесь текст - кар'єрна фраза, без
+ * розділових знаків і стрілок по краях. Не «містить слово»: «Career guides» і
+ * «Read our jobs report» - не кар'єрні сторінки (Grammarly, 19.11.2026).
  */
 const TEXT_WORDS = new RegExp(
-  `(^|[^\\p{L}])(${[
+  `^(${[
     "careers?",
     "jobs",
     "join us",
@@ -63,7 +87,7 @@ const TEXT_WORDS = new RegExp(
     "кар['ʼ’]єра",
     "вакансии",
     "карьера",
-  ].join("|")})($|[^\\p{L}])`,
+  ].join("|")})$`,
   "iu",
 );
 
@@ -165,12 +189,33 @@ function careerPageOf(
   const [label] = url.hostname.split(".");
   if (
     (label !== undefined && HOST_WORDS.has(label) && url.hostname !== site) ||
-    TEXT_WORDS.test(text)
+    TEXT_WORDS.test(trimToLetters(text))
   ) {
     return `${url.origin}${url.pathname}`;
   }
 
   return null;
+}
+
+/** Текст без небуквених символів по краях: «Careers →» стає «Careers». */
+function trimToLetters(text: string): string {
+  return text.replace(/^[^\p{L}]+|[^\p{L}]+$/gu, "");
+}
+
+/**
+ * Чи сама адреса кар'єрна: кар'єрний сегмент шляху або піддомен. Потрібно після
+ * редиректу - тексту посилання там уже немає.
+ */
+function isCareerAddress(address: string): boolean {
+  const url = new URL(address);
+  const [label] = url.hostname.split(".");
+
+  return (
+    url.pathname
+      .split("/")
+      .some((segment) => PATH_WORDS.has(segment.toLowerCase())) ||
+    (label !== undefined && HOST_WORDS.has(label))
+  );
 }
 
 function withoutWww(host: string): string {
@@ -181,4 +226,100 @@ function withoutWww(host: string): string {
 function isSameSite(host: string, site: string): boolean {
   const bare = withoutWww(host);
   return bare === site || bare.endsWith(`.${site}`);
+}
+
+/**
+ * Кар'єрні сторінки сайту і дошки ATS, на які вони ведуть (задача 5.03).
+ *
+ * `home` - уже прочитана головна (її читав пошук посилань на ATS, 5.02). Порядок
+ * - від дешевшого для чужого сайту: посилання з головної; без них - типові
+ * адреси; без тих - sitemap. Знайдені сторінки (до `MAX_CAREER_PAGES`)
+ * читаються, і посилання з них на ATS стають дошками. Сторінка без ATS -
+ * власна сторінка компанії; чи її можна прочитати, вирішує пробне читання (5.06).
+ *
+ * Сторінка, що не відповіла, просто не знахідка: головна вже прочиталась, і
+ * збій однієї сторінки не робить невдалим увесь пошук.
+ */
+export async function findSiteCareerPages(
+  home: Page,
+  client: HttpClient,
+): Promise<SiteCareerPages> {
+  const candidates = await careerCandidates(home, client);
+  const boards = new Map<string, BoardUrl>();
+  // Множина: дві адреси можуть редиректити на одну сторінку (Grammarly,
+  // 19.11.2026 - і `/careers`, і `/jobs` ведуть на `superhuman.com`).
+  const pages = new Set<string>();
+
+  for (const candidate of candidates.slice(0, MAX_CAREER_PAGES)) {
+    const page =
+      typeof candidate === "string"
+        ? await readPage(client, candidate)
+        : candidate;
+
+    if (page === null) {
+      continue;
+    }
+
+    const linked = atsLinksOnPage(page.body, page.url);
+    for (const board of linked) {
+      boards.set(board.url, board);
+    }
+    if (linked.length === 0) {
+      pages.add(withoutQuery(page.url));
+    }
+  }
+
+  return { boards: [...boards.values()], pages: [...pages] };
+}
+
+/**
+ * Кар'єрні сторінки-кандидати: адреси, які ще треба прочитати, або вже
+ * прочитані сторінки (типова адреса читається, щоб дізнатися, чи вона є).
+ */
+async function careerCandidates(
+  home: Page,
+  client: HttpClient,
+): Promise<Array<string | Page>> {
+  const linked = careerPagesOnPage(home.body, home.url);
+  if (linked.length > 0) {
+    return linked;
+  }
+
+  const origin = new URL(home.url).origin;
+  const usual: Page[] = [];
+  for (const path of USUAL_PATHS) {
+    const page = await readPage(client, `${origin}${path}`);
+    if (page !== null) {
+      usual.push(page);
+    }
+  }
+  if (usual.length > 0) {
+    return usual;
+  }
+
+  const sitemap = await fetchText(client, `${origin}/sitemap.xml`);
+  return sitemap.ok ? careerPagesInSitemap(sitemap.body, home.url) : [];
+}
+
+/**
+ * Кар'єрна сторінка за адресою або `null`, якщо вона не відповіла або редирект
+ * завів туди, де кар'єри вже не видно: на сторінку помилки, що відповідає 200
+ * (Palantir, 19.11.2026), чи на головну замість неіснуючого `/careers`.
+ */
+async function readPage(client: HttpClient, url: string): Promise<Page | null> {
+  const page = await fetchText(client, url);
+
+  if (!page.ok) {
+    return null;
+  }
+
+  const moved = withoutQuery(page.url) !== withoutQuery(url);
+  return moved && !isCareerAddress(page.url)
+    ? null
+    : { body: page.body, url: page.url };
+}
+
+function withoutQuery(address: string): string {
+  const url = new URL(address);
+  return `${url.origin}${url.pathname}`;
 }
