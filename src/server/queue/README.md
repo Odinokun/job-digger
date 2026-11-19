@@ -27,6 +27,7 @@
 | `run-task.integration.test.ts` | Успіх, збій сайту, платформа без парсера, виняток, видалене джерело |
 | `worker.ts`                    | `createQueueWorker(options)` - цикл обробника зі `start` і `stop` |
 | `worker.integration.test.ts`   | Запуск від завдань до закриття; після `stop` нічого не захоплюється |
+| `start.ts`                     | `startQueueWorker()` - один цикл на процес сервера, ліміт з ENV |
 | `task-error.ts`                | `CheckTaskError` - що лежить у `check_tasks.error`           |
 | `test-fixtures.ts`             | Джерело, запуск і завдання для інтеграційних тестів черги    |
 
