@@ -65,7 +65,7 @@ PR: #57
 | [3.22 Перехід на вкладку під час дії над рядком](3.22-mark-then-switch-tab.md)                   | done    |
 | [3.23 Один пул з'єднань з базою в продакшні](3.23-one-db-pool.md)                                | done    |
 | [3.24 Парсер Breezy HR](3.24-breezy-parser.md)                                                   | done    |
-| [3.25 Парсер CleverStaff](3.25-cleverstaff-parser.md)                                            | todo    |
+| [3.25 Парсер CleverStaff](3.25-cleverstaff-parser.md)                                            | done    |
 | [3.26 Парсер Hurma](3.26-hurma-parser.md)                                                        | todo    |
 | [3.27 Парсер Personio](3.27-personio-parser.md)                                                  | todo    |
 | [3.28 Парсер softgarden](3.28-softgarden-parser.md)                                              | todo    |
