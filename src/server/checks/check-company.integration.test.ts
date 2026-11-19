@@ -4,7 +4,13 @@ import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import type { CareerPlatform } from "../../lib/companies/platform.ts";
-import { careerSources, companies, users, vacancies } from "../db/schema.ts";
+import {
+  careerSources,
+  checkRuns,
+  companies,
+  users,
+  vacancies,
+} from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import { createHttpClient, type HttpClient } from "../http/client.ts";
@@ -181,6 +187,21 @@ describe("checkCompany", () => {
       lastCheckedAt: CHECKED_AT,
       consecutiveFailures: 1,
     });
+  });
+
+  it("refuses while the user's general check is running", async () => {
+    // Компанія і так перевіряється в загальній перевірці - дублікатів завдань
+    // не створюємо (docs/checks-and-queue.md, розділ 8).
+    const { userId, companyId, sourceIds } = await companyWith({
+      url: "job-boards.greenhouse.io/discord",
+    });
+    await testDb.insert(checkRuns).values({ userId, startedAt: CHECKED_AT });
+
+    expect(await check(userId, companyId)).toEqual({
+      ok: false,
+      reason: "check-running",
+    });
+    expect(await vacancyCount(sourceIds[0])).toBe(0);
   });
 
   it("does not check a company of another user", async () => {

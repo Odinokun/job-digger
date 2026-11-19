@@ -129,7 +129,9 @@ export type LoadMoreCompaniesResult =
  * Невдалі джерела - не збій: перевірка відбулася, а їхній стан у самому рядку.
  */
 export type CheckCompanyNowResult =
-  { ok: true; company: CompanyListItem | null } | { ok: false };
+  | { ok: true; company: CompanyListItem | null }
+  /** `check-running` - іде загальна перевірка; без причини - неочікуваний збій. */
+  | { ok: false; reason?: "check-running" };
 
 /**
  * Результат Check all: скільки джерел поставлено в чергу і стан перевірки

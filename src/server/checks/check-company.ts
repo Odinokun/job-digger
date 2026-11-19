@@ -3,10 +3,10 @@
  * що відстежуються, і застосовує життєвий цикл вакансій. Поки без черги - її
  * робить етап 4; в History ця перевірка не записується.
  */
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { careerSources, companies } from "../db/schema.ts";
+import { careerSources, checkRuns, companies } from "../db/schema.ts";
 import type { HttpClient } from "../http/client.ts";
 import { checkSource } from "./check-source.ts";
 
@@ -18,7 +18,7 @@ export interface CheckCompanyInput {
 }
 
 export type CheckCompanyResult =
-  { ok: true } | { ok: false; reason: "not-found" };
+  { ok: true } | { ok: false; reason: "not-found" | "check-running" };
 
 export async function checkCompany(
   db: NodePgDatabase,
@@ -32,6 +32,18 @@ export async function checkCompany(
 
   if (company === undefined) {
     return { ok: false, reason: "not-found" };
+  }
+
+  // Під час загальної перевірки компанія і так перевіряється - дублікатів
+  // не створюємо (docs/checks-and-queue.md, розділ 8). Кнопка в цей час
+  // вимкнена, а це - захист від запиту, що прийшов уже після старту.
+  const [activeRun] = await db
+    .select({ id: checkRuns.id })
+    .from(checkRuns)
+    .where(and(eq(checkRuns.userId, userId), isNull(checkRuns.finishedAt)));
+
+  if (activeRun !== undefined) {
+    return { ok: false, reason: "check-running" };
   }
 
   const sources = await db

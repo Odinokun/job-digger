@@ -134,7 +134,8 @@ export async function loadMoreCompaniesAction(
  *
  * Аргументи - недовірений ввід, як і в `loadMoreCompaniesAction`: компанія
  * шукається за користувачем із сервера, тож чужу перевірити не вийде. Дія
- * чекає, поки прочитаються всі джерела, - черги ще немає (етап 4).
+ * чекає, поки прочитаються всі джерела. Під час загальної перевірки - відмова
+ * `check-running`: компанія і так перевіряється.
  */
 export async function checkCompanyNowAction(
   companyId: unknown,
@@ -154,6 +155,11 @@ export async function checkCompanyNowAction(
       checkedAt: new Date(),
     });
 
+    if (!checked.ok && checked.reason === "check-running") {
+      return "check-running" as const;
+    }
+
+    // `not-found` - компанії вже немає, і `null` прибирає її рядок.
     return checked.ok
       ? findCompanyInTab(db, {
           userId: user.id,
@@ -165,6 +171,10 @@ export async function checkCompanyNowAction(
 
   if (!outcome.ok) {
     return { ok: false };
+  }
+
+  if (outcome.value === "check-running") {
+    return { ok: false, reason: "check-running" };
   }
 
   // Перевірка додає й прибирає вакансії - лічильник непрочитаних у шапці.
