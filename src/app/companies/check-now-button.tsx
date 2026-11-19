@@ -1,9 +1,11 @@
 "use client";
 
-import { Button, Spinner } from "@heroui/react";
+import { Button, Spinner, toast, Tooltip } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 
+import { useCheckStatus } from "@/app/components/check-status-provider";
+import { TOOLTIP_DELAY_MS } from "@/app/components/icon-button";
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import type {
   CompaniesTab,
@@ -34,18 +36,27 @@ export function CheckNowButton({
   const t = useTranslations("CompaniesPage");
   const showActionFailed = useActionFailedToast();
   const [isPending, startCheck] = useTransition();
+  const { status } = useCheckStatus();
+  // Під час загальної перевірки компанія і так перевіряється
+  // (docs/checks-and-queue.md, розділ 8).
+  const isGeneralCheckRunning = (status?.run ?? null) !== null;
 
-  return (
+  const button = (
     <Button
       size="sm"
       variant="secondary"
+      isDisabled={isGeneralCheckRunning}
       isPending={isPending}
       onPress={() =>
         startCheck(async () => {
           const result = await checkCompanyNowAction(companyId, tab);
 
           if (!result.ok) {
-            showActionFailed();
+            if (result.reason === "check-running") {
+              toast.warning(t("generalCheckRunning"));
+            } else {
+              showActionFailed();
+            }
             return;
           }
 
@@ -60,5 +71,20 @@ export function CheckNowButton({
         </>
       )}
     </Button>
+  );
+
+  if (!isGeneralCheckRunning) {
+    return button;
+  }
+
+  // Вимкнена кнопка не отримує наведення, тож підказку тримає обгортка
+  // (документація HeroUI, Tooltip.Trigger).
+  return (
+    <Tooltip delay={TOOLTIP_DELAY_MS}>
+      <Tooltip.Trigger>{button}</Tooltip.Trigger>
+      <Tooltip.Content>
+        <p>{t("generalCheckRunning")}</p>
+      </Tooltip.Content>
+    </Tooltip>
   );
 }

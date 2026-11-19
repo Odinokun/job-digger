@@ -22,13 +22,15 @@ interface CheckAllButtonProps {
 export function CheckAllButton({ isDisabled }: CheckAllButtonProps) {
   const t = useTranslations("CompaniesPage");
   const showActionFailed = useActionFailedToast();
-  const { track } = useCheckStatus();
+  const { status, track } = useCheckStatus();
+  // Одна загальна перевірка на користувача: поки вона йде, нову не почати.
+  const isRunning = (status?.run ?? null) !== null;
   const [isPending, startCheck] = useTransition();
 
   return (
     <Button
       variant="secondary"
-      isDisabled={isDisabled}
+      isDisabled={isDisabled || isRunning}
       isPending={isPending}
       onPress={() =>
         startCheck(async () => {

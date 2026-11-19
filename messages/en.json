@@ -44,6 +44,7 @@
     "emptyNotTracked": "Every company has at least one career page that is tracked.",
     "noSources": "No career pages yet.",
     "checkNow": "Check now",
+    "generalCheckRunning": "A general check is running",
     "checkAll": "Check all",
     "checkAllRunning": "A check is already running",
     "checkAllNothing": "Nothing to check: no career page is tracked",

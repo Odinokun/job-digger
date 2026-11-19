@@ -8,7 +8,7 @@ import type { ReactNode } from "react";
  * підказку легко не дочекатися; документація HeroUI у прикладах ставить 0.
  * 300 мс - щоб підказки не мерехтіли, поки курсор лише проходить повз.
  */
-const TOOLTIP_DELAY_MS = 300;
+export const TOOLTIP_DELAY_MS = 300;
 
 interface WithTooltipProps {
   /** Текст підказки - назва дії. */
