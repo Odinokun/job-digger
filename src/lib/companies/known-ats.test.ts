@@ -18,13 +18,9 @@ describe("knownAtsName", () => {
   });
 
   it("names an ATS that shares its host with the vendor's website", () => {
-    // CleverStaff і JOIN тримають дошки на тому самому хості, що й свій сайт:
-    // дошку видно лише за початком шляху.
-    expect(knownAtsName("https://cleverstaff.net/i/12345-vacancies")).toBe(
-      "CleverStaff",
-    );
+    // JOIN тримає дошки на тому самому хості, що й свій сайт: дошку видно
+    // лише за початком шляху.
     expect(knownAtsName("https://join.com/companies/acme")).toBe("JOIN");
-    expect(knownAtsName("https://cleverstaff.net/why.html")).toBeNull();
     expect(knownAtsName("https://join.com/en")).toBeNull();
   });
 

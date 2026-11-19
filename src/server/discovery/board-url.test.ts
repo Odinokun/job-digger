@@ -43,6 +43,16 @@ describe("boardUrlOf", () => {
       "https://acme.breezy.hr",
       "breezy",
     ],
+    [
+      "https://cleverstaff.net/i/8allocate-vacancies/description",
+      "https://cleverstaff.net/i/8allocate-vacancies",
+      "cleverstaff",
+    ],
+    [
+      "https://cleverstaff.net/i/vacancy-3ONpJV",
+      "https://cleverstaff.net/i/vacancy-3ONpJV",
+      "cleverstaff",
+    ],
   ];
 
   for (const [link, url, platform] of cases) {
@@ -63,6 +73,7 @@ describe("boardUrlOf", () => {
     expect(boardUrlOf("https://www.peopleforce.io/")).toBeNull();
     // Скрипт вбудованої дошки Breezy лежить на її CDN.
     expect(boardUrlOf("https://assets-cdn.breezy.hr/x.js")).toBeNull();
+    expect(boardUrlOf("https://cleverstaff.net/why.html")).toBeNull();
   });
 
   it("ignores what is not a web address", () => {

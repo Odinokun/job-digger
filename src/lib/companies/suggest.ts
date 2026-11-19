@@ -111,11 +111,26 @@ function companyNameFromPlatformUrl(
   host: string,
   platform: CareerPlatform,
 ): string {
-  const slug = SUBDOMAIN_SLUG_PLATFORMS.includes(platform)
-    ? platformSubdomain(host)
-    : firstPathSegment(normalizedUrl, host);
+  const slug =
+    platform === "cleverstaff"
+      ? cleverstaffAlias(normalizedUrl, host)
+      : SUBDOMAIN_SLUG_PLATFORMS.includes(platform)
+        ? platformSubdomain(host)
+        : firstPathSegment(normalizedUrl, host);
 
   return slug === "" ? "" : titleCase(slug);
+}
+
+/**
+ * Аліас компанії з дошки CleverStaff: `cleverstaff.net/i/8allocate-vacancies` -
+ * `8allocate`. Посилання на окрему вакансію (`/i/vacancy-...`) компанії не
+ * називає.
+ */
+function cleverstaffAlias(normalizedUrl: string, host: string): string {
+  const page = normalizedUrl.slice(host.length).split("/").filter(Boolean)[1];
+  return page?.endsWith("-vacancies")
+    ? page.slice(0, -"-vacancies".length)
+    : "";
 }
 
 /** Перший лейбл перед суфіксом платформи: `bosch.wd3.myworkdayjobs.com` - `bosch`. */

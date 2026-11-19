@@ -1,0 +1,1 @@
+ALTER TYPE "public"."career_platform" ADD VALUE 'cleverstaff' BEFORE 'schema_org';
