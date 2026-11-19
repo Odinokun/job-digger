@@ -12,6 +12,8 @@
 | `check-source.ts`                   | `checkSource(db, client, source, checkedAt)` - перевірка одного джерела і її підсумок |
 | `check-all.ts`                      | `startCheckAll(db, { userId, now })` - поставити Check all у чергу |
 | `check-all.integration.test.ts`     | Які джерела потрапляють у запуск; одна активна перевірка          |
+| `find-new-pages.ts` | `startFindNewPages(db, { userId, now })` - поставити Find new pages у чергу; `isFindingNewPages` - чи він триває |
+| `find-new-pages.integration.test.ts` | Які компанії шукаються; один пошук на користувача, зокрема при одночасних кліках |
 | `check-status.ts`                   | `getCheckStatus(db, { userId })` - хід активного запуску, непоказаний підсумок і непрочитані; `markSummaryShown` |
 | `check-status.integration.test.ts`  | Активний запуск, підсумок: який пропонується і що позначає `markSummaryShown` |
 | `failed-sources.ts`                 | `listFailedSources`, `retryFailedSources` - Failed Sources Drawer |
@@ -105,3 +107,23 @@ Failed Sources Drawer показує невдалі джерела **остан�
 закрита за правилом фіналізації ([`queue/README.md`](../queue/README.md#завершення-запуску)),
 дає звичайний рядок. Курсор - як у Jobs: час запуску з мікросекундами
 ([`db/time.ts`](../db/time.ts)) і `id` для однакового часу.
+
+## Find new pages
+
+Повторний пошук сторінок для всіх компаній вкладки Not tracked (docs/ui.md, розділ
+4.3; задача 5.10). `startFindNewPages` ставить у чергу по завданню `discover` на
+компанію - фонове, як Check all, але без рядка в `check_runs` (рішення автора
+19.11.2026): у History пошук не пишеться, а «триває» означає, що в користувача є
+незавершені завдання `discover` (`isFindingNewPages`). Що робить кожне завдання -
+[`queue/README.md`](../queue/README.md#пошук-сторінок).
+
+**Один пошук на користувача тримає advisory lock**, а не унікальний індекс: рядка,
+на який його повісити, немає. Перевірка «чи триває» і вставка йдуть в одній
+транзакції під `pg_advisory_xact_lock(ключ, hashtext(user_id))`, тож другий
+одночасний клік чекає першого й бачить його завдання. Тест на це прогріває пул
+зʼєднань: без цього перший клік завершувався, поки інші ще підключалися, і тест
+проходив навіть без блокування.
+
+Check all і Find new pages одне одному не заважають: різні вкладки, спільний лише
+ліміт одночасних завдань черги.
+
