@@ -125,6 +125,6 @@ CleverStaff за назвою не пробується: аліас чутлив
 й назва сайту.
 
 На справжній мережі (19.11.2026): Linear → Ashby, Discord → Greenhouse, Spotify і
-Palantir → Lever. Monobank і Bosch UA за назвою нічого не мають. Lever читається
+Palantir → Lever, Monobank і Spribe → Hurma (з 3.26). Bosch UA за назвою нічого не має. Lever читається
 сторінками з паузою ввічливості, тож велика дошка займає ~14 с (Spotify - 91
 вакансія, Palantir - 306).
