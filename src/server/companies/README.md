@@ -12,7 +12,7 @@
 | --------------- | ---------------------------------------------------------------- |
 | `duplicates.ts` | `findCompanyUrlConflict` - що вже є серед компаній користувача    |
 | `list.ts`       | `listCompanies`, `findCompanyInTab` і `countCompaniesByTab`       |
-| `add.ts`        | `addCompany` - додавання компанії з однією карʼєрною сторінкою      |
+| `add.ts`        | `addCompany` - додавання компанії з карʼєрною сторінкою з поля і вибраними знахідками Find pages |
 | `update.ts`     | `updateCompany` - перейменування, видалення й додавання карʼєрних джерел |
 | `sources.ts`    | `addCareerSource` - джерело до вже доданої компанії, `companySources` |
 | `delete.ts`     | `deleteCompany` - компанія разом із усіма її джерелами            |
@@ -189,10 +189,12 @@ Not tracked, і попередній `not_found` чи `check_failed` її біл
 
 ## Додавання компанії
 
-`addCompany` - уся серверна частина модалки Add company. Автоматичного пошуку
-сторінок у ній немає: він приходить в етапі 5, тому платформа джерела виводиться
-з адреси, а `discovery_status` лишається `not_checked` - пошуку ще не було, і це
-не те саме, що «не знайдено».
+`addCompany` - уся серверна частина модалки Add company, крім самого пошуку
+(`src/server/discovery`). Джерела - карʼєрна сторінка з поля і вибрані знахідки
+Find pages (`foundUrls`): кожна перевіряється так само, як поле (`career-url`,
+`source-taken`), а та сама сторінка, записана інакше, - одне джерело. Платформа
+кожного джерела виводиться з адреси, а `discovery_status` лишається `not_checked`:
+статуси пошуку - задача 5.11.
 
 **Відмова - результат, а не виняток.** Кожен випадок (`name-required`,
 `address-required`, `company-url`, `career-url`, `already-added`, `same-domain`,
