@@ -52,7 +52,7 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   const jobsLink = page
     .getByRole("navigation", { name: "Main" })
     .getByRole("link", { name: /^Jobs/ });
-  await expect(jobsLink).toContainText(`(${BOARD_SIZE})`);
+  await expect(jobsLink).toHaveText(`Jobs ${BOARD_SIZE}`);
   await expect(page).toHaveTitle(`(${BOARD_SIZE}) Job Digger`);
 
   // Unread: уся дошка, кожна вакансія з назвою компанії.
@@ -81,7 +81,7 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
     .getByRole("button", { name: "Mark as read" })
     .click();
   await expect(vacancyRow(page, TITLE)).toHaveCount(0);
-  await expect(jobsLink).toContainText(`(${BOARD_SIZE - 1})`);
+  await expect(jobsLink).toHaveText(`Jobs ${BOARD_SIZE - 1}`);
 
   await page.getByRole("link", { name: /^Read/ }).click();
   await expect(vacancyRow(page, TITLE)).toBeVisible();
@@ -138,7 +138,7 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
     page.getByText(`${BOARD_SIZE} vacancies of Discord marked as unread.`),
   ).toBeVisible();
   // Лічильник у шапці оновлюється й без переходу на Jobs.
-  await expect(jobsLink).toContainText(`(${BOARD_SIZE})`);
+  await expect(jobsLink).toHaveText(`Jobs ${BOARD_SIZE}`);
 
   await page
     .getByRole("navigation", { name: "Main" })
