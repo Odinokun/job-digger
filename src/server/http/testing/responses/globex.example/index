@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="de">
+  <head><meta charset="utf-8" /><title>Globex</title></head>
+  <body>
+    <nav>
+      <a href="/de/produkte">Produkte</a>
+      <a href="/de/karriere">Karriere</a>
+    </nav>
+  </body>
+</html>
