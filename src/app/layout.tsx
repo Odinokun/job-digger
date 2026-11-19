@@ -11,6 +11,7 @@ import { getLocale } from "next-intl/server";
 
 import "./globals.css";
 import { AppHeader } from "./components/app-header";
+import { CheckStatusProvider } from "./components/check-status-provider";
 import { getUnreadCount } from "./components/unread-count";
 import { ThemeScript } from "./theme-script";
 
@@ -61,7 +62,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   // Мова запиту - з `src/i18n/request.ts`. У `lang` вона потрібна для
   // читалок екрана й правильного перенесення слів.
-  const locale = await getLocale();
+  const [locale, unread] = await Promise.all([getLocale(), getUnreadCount()]);
 
   return (
     <html
@@ -86,11 +87,15 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {/* Передає локаль і переклади в клієнтські компоненти; від серверного
             батька він успадковує їх сам, тому пропи не потрібні. */}
         <NextIntlClientProvider>
-          <AppHeader />
-          {/* 80rem - стоковий токен max-w-7xl. Саме токен, а не власне число:
-              перевизначати --container-5xl не стали, бо тоді клас max-w-5xl
-              означав би не 5xl. Хедер тримає ту саму ширину. */}
-          <main className="mx-auto max-w-7xl px-6 py-8">{children}</main>
+          {/* Стан загальної перевірки потрібен і шапці, і сторінкам, тож
+              провайдер обгортає обох. */}
+          <CheckStatusProvider initialUnread={unread}>
+            <AppHeader />
+            {/* 80rem - стоковий токен max-w-7xl. Саме токен, а не власне число:
+                перевизначати --container-5xl не стали, бо тоді клас max-w-5xl
+                означав би не 5xl. Хедер тримає ту саму ширину. */}
+            <main className="mx-auto max-w-7xl px-6 py-8">{children}</main>
+          </CheckStatusProvider>
           {/* Регіон сповіщень. Без пропа `queue` він бере глобальну чергу -
               ту саму, у яку пише `toast` із будь-якого компонента. */}
           <Toast.Provider />

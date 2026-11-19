@@ -136,7 +136,8 @@
     }
   },
   "Errors": {
-    "actionFailed": "The action could not be completed. Try again."
+    "actionFailed": "The action could not be completed. Try again.",
+    "connectionLost": "Lost connection to the server"
   },
   "ErrorScreen": {
     "title": "Something went wrong",
