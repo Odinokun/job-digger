@@ -15,6 +15,7 @@ import type { Cursor } from "@/lib/pagination/cursor";
 
 import { loadMoreCompaniesAction } from "./actions";
 import { AddCompanyDialog } from "./add-company-dialog";
+import { CheckAllButton } from "./check-all-button";
 import { CompaniesList } from "./companies-list";
 
 interface CompaniesBoardProps {
@@ -30,6 +31,8 @@ interface CompaniesBoardProps {
   noSourcesLabel: string;
   platformLabels: Record<CompanySource["platform"], string>;
   statusLabels: Record<DiscoveryStatus, string>;
+  /** Чи є на Tracked хоч одна компанія - інакше Check all вимкнена. */
+  hasTracked: boolean;
 }
 
 /**
@@ -57,6 +60,7 @@ export function CompaniesBoard({
   noSourcesLabel,
   platformLabels,
   statusLabels,
+  hasTracked,
 }: CompaniesBoardProps) {
   const [items, setItems] = useState(initialItems);
   const [cursor, setCursor] = useState(initialCursor);
@@ -132,9 +136,20 @@ export function CompaniesBoard({
         <h1 className="font-display text-3xl font-semibold tracking-tight">
           {title}
         </h1>
-        {/* Кнопка Add живе на сторінці Companies, поруч зі списком
-            (docs/ui.md, розділ 4.2). */}
-        <AddCompanyDialog tab={tab} onAdded={addRow} onSourceAdded={applyRow} />
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Check all - лише на Tracked: Not tracked у загальній перевірці
+              не бере участі ніколи (docs/ui.md, розділ 4.3). */}
+          {tab === "tracked" ? (
+            <CheckAllButton isDisabled={!hasTracked} />
+          ) : null}
+          {/* Кнопка Add живе на сторінці Companies, поруч зі списком
+              (docs/ui.md, розділ 4.2). */}
+          <AddCompanyDialog
+            tab={tab}
+            onAdded={addRow}
+            onSourceAdded={applyRow}
+          />
+        </div>
       </div>
 
       <div className="mt-4">{tabs}</div>

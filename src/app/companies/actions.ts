@@ -6,6 +6,7 @@ import { runAction } from "@/app/action-result";
 import { revalidateUnreadCount } from "@/app/components/unread-count";
 import { parseCompaniesTab } from "@/lib/companies/company-list";
 import type { Cursor } from "@/lib/pagination/cursor";
+import { startCheckAll } from "@/server/checks/check-all";
 import { checkCompany } from "@/server/checks/check-company";
 import { addCompany } from "@/server/companies/add";
 import { deleteCompany } from "@/server/companies/delete";
@@ -24,6 +25,7 @@ import type {
   DeleteCompanyFormState,
   EditCompanyFormState,
   LoadMoreCompaniesResult,
+  StartCheckAllResult,
 } from "./form-state";
 
 /**
@@ -168,6 +170,30 @@ export async function checkCompanyNowAction(
   revalidateUnreadCount();
 
   return { ok: true, company: outcome.value };
+}
+
+/**
+ * Check all з вкладки Tracked (docs/checks-and-queue.md, розділ 8): ставить
+ * у чергу всі джерела, що відстежуються, і одразу повертається - джерела
+ * перевіряє цикл черги, а інтерфейс не блокується.
+ */
+export async function startCheckAllAction(): Promise<StartCheckAllResult> {
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return startCheckAll(db, { userId: user.id, now: new Date() });
+  });
+
+  if (!outcome.ok) {
+    return { ok: false, reason: "unexpected" };
+  }
+
+  const started = outcome.value;
+
+  return started.ok
+    ? { ok: true, total: started.total }
+    : { ok: false, reason: started.reason };
 }
 
 /**
