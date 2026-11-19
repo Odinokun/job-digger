@@ -7,6 +7,7 @@ import { revalidateUnreadCount } from "@/app/components/unread-count";
 import { parseCompaniesTab } from "@/lib/companies/company-list";
 import type { Cursor } from "@/lib/pagination/cursor";
 import { startCheckAll } from "@/server/checks/check-all";
+import { getCheckStatus } from "@/server/checks/check-status";
 import { checkCompany } from "@/server/checks/check-company";
 import { addCompany } from "@/server/companies/add";
 import { deleteCompany } from "@/server/companies/delete";
@@ -182,18 +183,25 @@ export async function startCheckAllAction(): Promise<StartCheckAllResult> {
     const db = getDb();
     const user = await getSystemUser(db);
 
-    return startCheckAll(db, { userId: user.id, now: new Date() });
+    const started = await startCheckAll(db, {
+      userId: user.id,
+      now: new Date(),
+    });
+
+    return started.ok
+      ? {
+          ok: true as const,
+          total: started.total,
+          status: await getCheckStatus(db, { userId: user.id }),
+        }
+      : started;
   });
 
   if (!outcome.ok) {
     return { ok: false, reason: "unexpected" };
   }
 
-  const started = outcome.value;
-
-  return started.ok
-    ? { ok: true, total: started.total }
-    : { ok: false, reason: started.reason };
+  return outcome.value;
 }
 
 /**

@@ -1,3 +1,4 @@
+import type { CheckStatus } from "@/lib/checks/check-status";
 import type { CompanyListItem } from "@/lib/companies/company-list";
 import type { Cursor } from "@/lib/pagination/cursor";
 import type { AddCompanyResult } from "@/server/companies/add";
@@ -131,11 +132,12 @@ export type CheckCompanyNowResult =
   { ok: true; company: CompanyListItem | null } | { ok: false };
 
 /**
- * Результат Check all: скільки джерел поставлено в чергу або чому перевірка не
- * стартувала. `unexpected` - збій, який показується спільним toast.
+ * Результат Check all: скільки джерел поставлено в чергу і стан перевірки
+ * одразу після старту (з ним індикатор видно без чекання на опитування) або
+ * чому перевірка не стартувала. `unexpected` - збій, який показується спільним toast.
  */
 export type StartCheckAllResult =
-  | { ok: true; total: number }
+  | { ok: true; total: number; status: CheckStatus }
   | {
       ok: false;
       reason: "already-running" | "nothing-to-check" | "unexpected";

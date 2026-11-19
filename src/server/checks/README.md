@@ -12,6 +12,8 @@
 | `check-source.ts`                   | `checkSource(db, client, source, checkedAt)` - перевірка одного джерела і її підсумок |
 | `check-all.ts`                      | `startCheckAll(db, { userId, now })` - поставити Check all у чергу |
 | `check-all.integration.test.ts`     | Які джерела потрапляють у запуск; одна активна перевірка          |
+| `check-status.ts`                   | `getCheckStatus(db, { userId })` - хід активного запуску й кількість непрочитаних |
+| `check-status.integration.test.ts`  | Свіжий користувач, активний запуск, чужі й завершені не рахуються   |
 | `check-company.ts`                  | `checkCompany(db, client, { userId, companyId, checkedAt })` - Check now |
 | `check-company.integration.test.ts` | Інтеграційні тести на справжній базі й фейковому вебсервері        |
 
