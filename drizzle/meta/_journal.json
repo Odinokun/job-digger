@@ -57,6 +57,13 @@
       "when": 1795035304112,
       "tag": "0007_vacancy_created_at",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795067816341,
+      "tag": "0008_check_runs",
+      "breakpoints": true
     }
   ]
 }

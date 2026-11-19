@@ -190,3 +190,47 @@ export const vacancies = pgTable(
     index("vacancies_detected_idx").on(table.firstDetectedAt, table.id),
   ],
 );
+
+/**
+ * Загальна перевірка (Check all чи автоперевірка) - один рядок History
+ * (docs/ui.md, розділ 4.4). Check now і Retry сюди не пишуться.
+ *
+ * Лічильники зберігаються, а не рахуються з `check_tasks`: рядок History фіксує
+ * результат на момент завершення, а завдання видаленого джерела зникають разом
+ * із ним (docs/checks-and-queue.md, розділ 8).
+ */
+export const checkRuns = pgTable(
+  "check_runs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // Date & time у History і початок Duration.
+    startedAt: timestamp("started_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    // `null` - запуск ще йде.
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+    // Скільки джерел у запуску: знаменник прогресу «Checking 37/120».
+    sourcesTotal: integer("sources_total").notNull().default(0),
+    // Скільки джерел перевірено - разом із невдалими. Чисельник прогресу і
+    // Sources checked у History.
+    sourcesChecked: integer("sources_checked").notNull().default(0),
+    sourcesFailed: integer("sources_failed").notNull().default(0),
+    newVacancies: integer("new_vacancies").notNull().default(0),
+    removedVacancies: integer("removed_vacancies").notNull().default(0),
+    // Коли підсумок показали користувачу. Запуск часто завершується при
+    // закритій вкладці, а підсумок має спливти один раз при поверненні (4.06).
+    summaryShownAt: timestamp("summary_shown_at", { withTimezone: true }),
+  },
+  (table) => [
+    // Одна загальна перевірка одночасно на користувача: два одночасні Check all
+    // не проскочать навіть повз перевірку в коді.
+    uniqueIndex("check_runs_one_active_per_user")
+      .on(table.userId)
+      .where(sql`${table.finishedAt} is null`),
+    // History: запуски користувача від найновішого.
+    index("check_runs_user_started_idx").on(table.userId, table.startedAt),
+  ],
+);
