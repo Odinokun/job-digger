@@ -5,6 +5,9 @@
  */
 import * as cheerio from "cheerio";
 
+import type { HttpClient } from "../http/client.ts";
+import { fetchText } from "../parsers/shared.ts";
+import type { ParserError } from "../parsers/types.ts";
 import { boardUrlOf, type BoardUrl } from "./board-url.ts";
 
 /**
@@ -49,4 +52,29 @@ function boardOf(address: string, pageUrl: string): BoardUrl | null {
   }
 
   return boardUrlOf(url.toString());
+}
+
+/** Дошки, на які веде головна сторінка компанії, або чому її не прочитали. */
+export type SiteAtsLinks =
+  { ok: true; boards: BoardUrl[] } | { ok: false; error: ParserError };
+
+/**
+ * Дошки ATS з головної сторінки сайту компанії (`siteUrl` - абсолютна адреса).
+ * Відносні посилання розвʼязуються від адреси, на якій сторінка опинилась після
+ * редиректів: `acme.example` часто веде на `acme.example/en/`.
+ *
+ * Помилки - ті самі, що в парсерів (`not-found`, `bad-status`,
+ * `fetch-failed`): сайт, який не відповів, для пошуку теж «не прочитано».
+ */
+export async function findSiteAtsLinks(
+  siteUrl: string,
+  client: HttpClient,
+): Promise<SiteAtsLinks> {
+  const page = await fetchText(client, siteUrl);
+
+  if (!page.ok) {
+    return page;
+  }
+
+  return { ok: true, boards: atsLinksOnPage(page.body, page.url) };
 }
