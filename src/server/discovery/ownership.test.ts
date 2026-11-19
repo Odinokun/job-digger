@@ -55,6 +55,17 @@ describe("boardOwnership", () => {
     });
   });
 
+  it("names the other site from the Personio header logo", () => {
+    // Personio, дошка Astrafy: сайт компанії - логотип у шапці; посилання
+    // «Imprint» у футері теж веде на сайт компанії, але на інших дошках його немає.
+    const html = `<header class="Header_header__MwWvM header-container career-header body-container" role="banner"><div class="Header_headerContent__4dgi7"><div class="Header_logo__V9h3K logo-wrapper"><a href="https://www.astrafy.io" aria-label="Astrafy" class="logo-wrapper"><img src="https://assets.cdn.personio.de/logos/81507/social/198d5089f6276c81dcb74095e97e5b47.png" alt="Astrafy" class="Header_logoImage__YyeGM"/></a></div></div></header><a href="https://www.personio.com/">Powered by Personio</a>`;
+
+    expect(boardOwnership(html, "https://acme.example")).toEqual({
+      kind: "other",
+      site: "astrafy.io",
+    });
+  });
+
   it("takes the other site from the Ashby page data and the Lever footer", () => {
     expect(
       boardOwnership(

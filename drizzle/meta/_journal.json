@@ -99,6 +99,13 @@
       "when": 1795123490212,
       "tag": "0013_hurma_platform",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1795124994905,
+      "tag": "0014_personio_platform",
+      "breakpoints": true
     }
   ]
 }

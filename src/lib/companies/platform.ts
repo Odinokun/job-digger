@@ -19,6 +19,7 @@ export const CAREER_PLATFORMS = [
   "breezy",
   "cleverstaff",
   "hurma",
+  "personio",
   "schema_org",
   "unsupported",
 ] as const;
@@ -46,6 +47,9 @@ export type CareerPlatform = (typeof CAREER_PLATFORMS)[number];
  *   `cleverstaff.net/i/{alias}-vacancies` (задача 3.25).
  * - `hurma.work` - публічна сторінка вакансій Hurma на субдомені компанії,
  *   `{company}.hurma.work/public-vacancies` (задача 3.26).
+ * - `jobs.personio.de` і `jobs.personio.com` - дошка Personio на субдомені
+ *   компанії (developer.personio.de/docs/retrieving-open-job-positions; `.com`
+ *   віддає те саме - задача 3.27). Сам `personio.de`/`.com` - сайт постачальника.
  */
 const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["greenhouse.io", "greenhouse"],
@@ -57,6 +61,8 @@ const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["breezy.hr", "breezy"],
   ["cleverstaff.net", "cleverstaff"],
   ["hurma.work", "hurma"],
+  ["jobs.personio.de", "personio"],
+  ["jobs.personio.com", "personio"],
 ];
 
 /**

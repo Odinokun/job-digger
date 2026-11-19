@@ -16,6 +16,7 @@ import {
 } from "../parsers/cleverstaff.ts";
 import { greenhouseBoardToken } from "../parsers/greenhouse.ts";
 import { hurmaBoardUrl, hurmaCompany } from "../parsers/hurma.ts";
+import { personioBoard } from "../parsers/personio.ts";
 import { leverSite } from "../parsers/lever.ts";
 import { peopleforceSite } from "../parsers/peopleforce.ts";
 import { workdaySite } from "../parsers/workday.ts";
@@ -91,6 +92,7 @@ const BOARDS: Array<[CareerPlatform, BoardOf]> = [
       return company === null ? null : hurmaBoardUrl(company);
     },
   ],
+  ["personio", personioBoard],
 ];
 
 /**

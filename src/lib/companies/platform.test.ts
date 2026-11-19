@@ -52,6 +52,15 @@ describe("detectPlatform", () => {
     );
   });
 
+  it("reads personio on both domains", () => {
+    expect(detectPlatform("astrafy.jobs.personio.de")).toBe("personio");
+    expect(detectPlatform("astrafy.jobs.personio.com/job/2888194")).toBe(
+      "personio",
+    );
+    // Сайт самої Personio - не дошка.
+    expect(detectPlatform("www.personio.com/careers")).toBe("unsupported");
+  });
+
   it("falls back to unsupported for a page on the company's own domain", () => {
     expect(detectPlatform("www.lifeatspotify.com/jobs")).toBe("unsupported");
   });

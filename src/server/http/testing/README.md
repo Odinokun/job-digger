@@ -55,6 +55,7 @@ https://boards-api.greenhouse.io/v1/boards/acme/jobs
 | `responses/jobs.breezy.hr/json` | Публічний JSON другої дошки Breezy HR: одна віддалена вакансія (`is_remote: true`) | 19.11.2026 |
 | `responses/cleverstaff.net/hr/public/getAllOpenVacancy` | CleverStaff, дошка 8allocate (8 віддалених вакансій, з описами - 196 КБ). Рядок запиту сервер ігнорує, тож це відповідь на будь-який аліас | 19.11.2026 |
 | `responses/spribe.hurma.work/api/v1/public-vacancies` | Hurma, дошка Spribe, `per_page=100&page=1` (6 вакансій, одна сторінка; в одної є `residence`, в одної - `work_format: "Remote"`). Без заголовка `X-Requested-With` справжній API дає 403, фейковий сервер заголовків не читає | 19.11.2026 |
+| `responses/astrafy.jobs.personio.de/xml` | XML-фід Personio, дошка Astrafy (4 вакансії з описами, 27 КБ; у двох є `additionalOffices`). Сервер віддає його як HTML, бо файл починається з `<` - парсер на тип вмісту не дивиться | 19.11.2026 |
 | `responses/cleverstaff.net/hr/public/getVacancy` | CleverStaff, вакансія 8allocate `3ONpJV`: з неї парсер дізнається аліас компанії | 19.11.2026 |
 
 **Сайти компаній - синтетичні** (рішення автора 19.11.2026, задача 5.02). Пошук

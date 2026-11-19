@@ -58,6 +58,11 @@ describe("boardUrlOf", () => {
       "https://spribe.hurma.work/public-vacancies",
       "hurma",
     ],
+    [
+      "https://astrafy.jobs.personio.de/job/2888194?language=en",
+      "https://astrafy.jobs.personio.de",
+      "personio",
+    ],
   ];
 
   for (const [link, url, platform] of cases) {
@@ -81,6 +86,7 @@ describe("boardUrlOf", () => {
     expect(boardUrlOf("https://cleverstaff.net/why.html")).toBeNull();
     // Довідка Hurma - на її піддомені, як і дошки компаній.
     expect(boardUrlOf("https://support.hurma.work/en")).toBeNull();
+    expect(boardUrlOf("https://www.jobs.personio.de/")).toBeNull();
   });
 
   it("ignores what is not a web address", () => {

@@ -23,6 +23,7 @@ const BOARD_BY_SLUG: Array<[CareerPlatform, (slug: string) => string]> = [
   ["peopleforce", (slug) => `https://${slug}.peopleforce.io/careers`],
   ["breezy", (slug) => `https://${slug}.breezy.hr`],
   ["hurma", hurmaBoardUrl],
+  ["personio", (slug) => `https://${slug}.jobs.personio.de`],
 ];
 
 /** Дошка, знайдена за назвою, і скільки на ній вакансій зараз. */
