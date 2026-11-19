@@ -38,6 +38,9 @@
 | `personio.ts`        | Personio: `readPersonio(sourceUrl, client)`, `personioBoard`, `parsePersonioFeed` |
 | `personio.test.ts`   | Юніт-тести парсера Personio                       |
 | `personio.integration.test.ts` | `readPersonio` через фейковий вебсервер |
+| `softgarden.ts`      | softgarden: `readSoftgarden(sourceUrl, client)`, `softgardenSource`, `softgardenBoardUrl`, `parseSoftgardenBoard` (стара дошка, HTML), `parseSoftgardenFeed` (кар'єрний сайт, JSON) |
+| `softgarden.test.ts` | Юніт-тести парсера softgarden                     |
+| `softgarden.integration.test.ts` | `readSoftgarden` через фейковий вебсервер і сервер з відповіддю 400 |
 | `pages-to-check.ts`  | `PAGES_TO_CHECK` - спільний ліміт сторінок для парсерів, що читають сторінками; `parsePagesToCheck` |
 | `pages-to-check.test.ts` | Юніт-тести розбору змінної                   |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
