@@ -66,7 +66,7 @@ PR: #57
 | [3.23 Один пул з'єднань з базою в продакшні](3.23-one-db-pool.md)                                | done    |
 | [3.24 Парсер Breezy HR](3.24-breezy-parser.md)                                                   | done    |
 | [3.25 Парсер CleverStaff](3.25-cleverstaff-parser.md)                                            | done    |
-| [3.26 Парсер Hurma](3.26-hurma-parser.md)                                                        | todo    |
+| [3.26 Парсер Hurma](3.26-hurma-parser.md)                                                        | done    |
 | [3.27 Парсер Personio](3.27-personio-parser.md)                                                  | todo    |
 | [3.28 Парсер softgarden](3.28-softgarden-parser.md)                                              | todo    |
 | [3.29 Парсер rexx](3.29-rexx-parser.md)                                                          | backlog |

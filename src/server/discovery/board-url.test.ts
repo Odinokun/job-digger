@@ -53,6 +53,11 @@ describe("boardUrlOf", () => {
       "https://cleverstaff.net/i/vacancy-3ONpJV",
       "cleverstaff",
     ],
+    [
+      "https://spribe.hurma.work/public-vacancies/72?lang=en",
+      "https://spribe.hurma.work/public-vacancies",
+      "hurma",
+    ],
   ];
 
   for (const [link, url, platform] of cases) {
@@ -74,6 +79,8 @@ describe("boardUrlOf", () => {
     // Скрипт вбудованої дошки Breezy лежить на її CDN.
     expect(boardUrlOf("https://assets-cdn.breezy.hr/x.js")).toBeNull();
     expect(boardUrlOf("https://cleverstaff.net/why.html")).toBeNull();
+    // Довідка Hurma - на її піддомені, як і дошки компаній.
+    expect(boardUrlOf("https://support.hurma.work/en")).toBeNull();
   });
 
   it("ignores what is not a web address", () => {

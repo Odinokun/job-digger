@@ -7,6 +7,7 @@
 
 import type { CareerPlatform } from "../../lib/companies/platform.ts";
 import type { HttpClient } from "../http/client.ts";
+import { hurmaBoardUrl } from "../parsers/hurma.ts";
 import { readSource } from "../parsers/read-source.ts";
 import type { BoardUrl } from "./board-url.ts";
 
@@ -21,6 +22,7 @@ const BOARD_BY_SLUG: Array<[CareerPlatform, (slug: string) => string]> = [
   ["ashby", (slug) => `https://jobs.ashbyhq.com/${slug}`],
   ["peopleforce", (slug) => `https://${slug}.peopleforce.io/careers`],
   ["breezy", (slug) => `https://${slug}.breezy.hr`],
+  ["hurma", hurmaBoardUrl],
 ];
 
 /** Дошка, знайдена за назвою, і скільки на ній вакансій зараз. */

@@ -24,14 +24,12 @@
  *   свій сайт.
  *
  * Сам домен і `www.` не підпадають під піддомен: це сайт постачальника, на
- * нього веде «Powered by ...», а не дошка компанії. Інші службові хости
- * постачальника - у `VENDOR_HOSTS`.
+ * нього веде «Powered by ...», а не дошка компанії.
  *
  * Хости перевірені справжніми запитами 19.11.2026: хост відповідає й належить
  * цьому постачальнику, а для платформ задачі 5.15 (Україна й Німеччина) - ще й
  * веде на справжню кар'єрну сторінку (BITE, Umantis - власні сторінки
- * постачальників; d.vinci - клієнт `impulse`). Hurma свого шаблону не документує:
- * узято її піддомени, бо невідомий піддомен відповідає 404 самої Hurma.
+ * постачальників; d.vinci - клієнт `impulse`).
  */
 const KNOWN_ATS: Array<[pattern: string, name: string]> = [
   [".bamboohr.com", "BambooHR"],
@@ -59,8 +57,6 @@ const KNOWN_ATS: Array<[pattern: string, name: string]> = [
   [".ultipro.com", "UKG Pro"],
   [".dayforcehcm.com", "Dayforce"],
   ["recruiting.paylocity.com", "Paylocity"],
-  // Україна (задача 5.15).
-  [".hurma.work", "Hurma"],
   // Німеччина (задача 5.15). rexx тут немає: його клієнти тримають кар'єрну
   // сторінку на власному домені (задача 5.13).
   ["jobs.b-ite.com", "BITE"],
@@ -70,9 +66,6 @@ const KNOWN_ATS: Array<[pattern: string, name: string]> = [
   ["join.com/companies/", "JOIN"],
 ];
 
-/** Службові хости постачальників, що не є дошками компаній. */
-const VENDOR_HOSTS = new Set(["academy.hurma.work", "support.hurma.work"]);
-
 /**
  * Назва відомої ATS без парсера, на яку веде адреса, або `null`. Приймає і
  * абсолютну адресу, і очищену (`acme.bamboohr.com`), як її зберігає база.
@@ -80,7 +73,7 @@ const VENDOR_HOSTS = new Set(["academy.hurma.work", "support.hurma.work"]);
 export function knownAtsName(url: string): string | null {
   const parsed = parse(url);
 
-  if (parsed === null || VENDOR_HOSTS.has(parsed.host)) {
+  if (parsed === null) {
     return null;
   }
 

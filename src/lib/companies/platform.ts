@@ -18,6 +18,7 @@ export const CAREER_PLATFORMS = [
   "peopleforce",
   "breezy",
   "cleverstaff",
+  "hurma",
   "schema_org",
   "unsupported",
 ] as const;
@@ -43,6 +44,8 @@ export type CareerPlatform = (typeof CAREER_PLATFORMS)[number];
  * - `breezy.hr` - дошка Breezy HR теж на субдомені компанії (задача 3.24).
  * - `cleverstaff.net` - дошка CleverStaff на хості самої платформи,
  *   `cleverstaff.net/i/{alias}-vacancies` (задача 3.25).
+ * - `hurma.work` - публічна сторінка вакансій Hurma на субдомені компанії,
+ *   `{company}.hurma.work/public-vacancies` (задача 3.26).
  */
 const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["greenhouse.io", "greenhouse"],
@@ -53,6 +56,7 @@ const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["peopleforce.io", "peopleforce"],
   ["breezy.hr", "breezy"],
   ["cleverstaff.net", "cleverstaff"],
+  ["hurma.work", "hurma"],
 ];
 
 /**
