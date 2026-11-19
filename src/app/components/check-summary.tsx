@@ -2,10 +2,11 @@
 
 import { toast } from "@heroui/react";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { markCheckSummaryShownAction } from "./check-actions";
 import { useCheckStatus } from "./check-status-provider";
+import { FailedSourcesDrawer } from "./failed-sources-drawer";
 
 /**
  * Підсумок загальної перевірки (docs/checks-and-queue.md, розділ 8): спливає,
@@ -21,6 +22,7 @@ export function CheckSummary() {
   const { status } = useCheckStatus();
   const summary = status?.summary ?? null;
   const shown = useRef(new Set<string>());
+  const [isDrawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (summary === null || shown.current.has(summary.runId)) return;
@@ -36,9 +38,19 @@ export function CheckSummary() {
       }),
       variant: summary.failed > 0 ? "warning" : "success",
       timeout: 0,
+      // Невдалі джерела - у drawer з Retry.
+      actionProps:
+        summary.failed > 0
+          ? {
+              children: t("showFailed"),
+              onPress: () => setDrawerOpen(true),
+            }
+          : undefined,
     });
     void markCheckSummaryShownAction(summary.runId);
   }, [summary, t]);
 
-  return null;
+  return (
+    <FailedSourcesDrawer isOpen={isDrawerOpen} onOpenChange={setDrawerOpen} />
+  );
 }

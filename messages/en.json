@@ -164,6 +164,25 @@
   },
   "CheckSummary": {
     "title": "Check finished",
-    "description": "{checked, plural, one {# source} other {# sources}} checked: {ok} ok, {failed} failed. Vacancies: {newVacancies} new, {removedVacancies} removed."
+    "description": "{checked, plural, one {# source} other {# sources}} checked: {ok} ok, {failed} failed. Vacancies: {newVacancies} new, {removedVacancies} removed.",
+    "showFailed": "Show failed sources"
+  },
+  "FailedSources": {
+    "title": "Failed sources",
+    "empty": "No failed sources left.",
+    "loadFailed": "Could not load the failed sources.",
+    "checkRunning": "Retry is available once the current check finishes.",
+    "retry": "Retry",
+    "retryAll": "Retry all failed",
+    "close": "Close",
+    "reasons": {
+      "notFound": "Page not found",
+      "badStatus": "The site responded with {status}",
+      "unreadable": "The page could not be read",
+      "fetchFailed": "The site could not be reached",
+      "stalled": "The check got stuck",
+      "abandoned": "The check was interrupted",
+      "crashed": "Internal error"
+    }
   }
 }
