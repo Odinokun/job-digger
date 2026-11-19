@@ -39,6 +39,12 @@ describe("detectPlatform", () => {
     );
   });
 
+  it("reads cleverstaff", () => {
+    expect(detectPlatform("cleverstaff.net/i/8allocate-vacancies")).toBe(
+      "cleverstaff",
+    );
+  });
+
   it("falls back to unsupported for a page on the company's own domain", () => {
     expect(detectPlatform("www.lifeatspotify.com/jobs")).toBe("unsupported");
   });

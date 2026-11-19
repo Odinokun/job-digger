@@ -17,6 +17,7 @@ export const CAREER_PLATFORMS = [
   "workday",
   "peopleforce",
   "breezy",
+  "cleverstaff",
   "schema_org",
   "unsupported",
 ] as const;
@@ -40,6 +41,8 @@ export type CareerPlatform = (typeof CAREER_PLATFORMS)[number];
  * - `myworkdayjobs.com` і `myworkdaysite.com` - два формати career site Workday.
  * - `peopleforce.io` - карʼєрний сайт PeopleForce живе на власному субдомені.
  * - `breezy.hr` - дошка Breezy HR теж на субдомені компанії (задача 3.24).
+ * - `cleverstaff.net` - дошка CleverStaff на хості самої платформи,
+ *   `cleverstaff.net/i/{alias}-vacancies` (задача 3.25).
  */
 const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["greenhouse.io", "greenhouse"],
@@ -49,6 +52,7 @@ const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["myworkdaysite.com", "workday"],
   ["peopleforce.io", "peopleforce"],
   ["breezy.hr", "breezy"],
+  ["cleverstaff.net", "cleverstaff"],
 ];
 
 /**

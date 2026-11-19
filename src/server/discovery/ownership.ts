@@ -40,6 +40,7 @@ const PLATFORM_DOMAINS = [
   "ashbyhq.com",
   "peopleforce.io",
   "breezy.hr",
+  "cleverstaff.net",
   "myworkdayjobs.com",
   "myworkdaysite.com",
 ];

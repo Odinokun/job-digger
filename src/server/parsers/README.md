@@ -29,6 +29,9 @@
 | `breezy.ts`          | Breezy HR: `readBreezy(sourceUrl, client)`, `breezyCompany`, `parseBreezyPositions` |
 | `breezy.test.ts`     | Юніт-тести парсера Breezy HR                      |
 | `breezy.integration.test.ts` | `readBreezy` через фейковий вебсервер |
+| `cleverstaff.ts`     | CleverStaff: `readCleverStaff(sourceUrl, client)`, `cleverstaffSource`, `cleverstaffBoardUrl`, `parseCleverStaffVacancies` |
+| `cleverstaff.test.ts` | Юніт-тести парсера CleverStaff                  |
+| `cleverstaff.integration.test.ts` | `readCleverStaff` через фейковий вебсервер: дошка й посилання на вакансію |
 | `pages-to-check.ts`  | `PAGES_TO_CHECK` - спільний ліміт сторінок для парсерів, що читають сторінками; `parsePagesToCheck` |
 | `pages-to-check.test.ts` | Юніт-тести розбору змінної                   |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
@@ -295,3 +298,33 @@ JSON ніде не описаний - про нього пишуть лише с
 
 Перевірено на справжній мережі (вручну, 19.11.2026): `breezy` - 3 вакансії, `jobs` -
 одна віддалена, неіснуюча дошка - `not-found`.
+
+## CleverStaff
+
+**Дошка - SPA на хості самої платформи:** `https://cleverstaff.net/i/{alias}-vacancies`,
+вакансія - `https://cleverstaff.net/i/vacancy-{localId}`. Дані сторінка бере з
+публічного API без ключа. Перевірено справжніми запитами 19.11.2026 (8allocate,
+-A-HR-, MEV).
+
+- **Не задокументований `getAllOpenVacancy`, а не задокументований `getVacancies`.**
+  [Документація](https://neo.cleverstaff.net/api.html) описує
+  `GET /hr/public/getVacancies?alias=`, але на дошку без вакансій (MEV) він
+  відповідає `notFound`, так само як на неіснуючу - і перевірка вирішила б, що
+  дошки немає. Сама сторінка дошки ходить на `GET /hr/public/getAllOpenVacancy?alias=&lang=en`
+  (видно з її JavaScript), і той для порожньої дошки дає `status: "ok"` без поля
+  `objects`. Ціна - API без документації, може змінитися без попередження.
+- **Помилки приходять зі статусом 200:** `{"status":"error","code":"notFound"}` -
+  `not-found`, інший `code` (наприклад, `accountBlocked`) - `unreadable`.
+- **Аліас чутливий до регістру** і буває з дефісами (`-A-HR-`).
+- **Посилання на вакансію** аліаса компанії не містить: парсер спершу питає
+  `GET /hr/public/getVacancy?host=&id={localId}` (поле `object.alias`), потім читає
+  дошку. Закрита вакансія - `vacancyIsNotPublic`, тобто `not-found`.
+- **Поля:** `externalId` - `localId`, назва - `position`, посилання складається з
+  `localId`, локація - `displayFullName` усіх `regions` через «; » (або `region`),
+  для `workCondition: "remote"` - з приміткою «remote». Статуси на публічній
+  дошці - `inwork`, `open`, `replacement`, усі відкриті, тож не фільтруються.
+- Один запит на всю дошку, сторінок немає. Відповідь з описами вакансій:
+  33 вакансії - 514 КБ.
+
+Перевірено на справжній мережі (вручну, 19.11.2026): -A-HR- - 33 вакансії з
+локаціями, посилання на вакансію 8allocate - 8, MEV - 0, неіснуюча дошка - `not-found`.

@@ -109,6 +109,16 @@ describe("suggestCompanyFields", () => {
       );
     });
 
+    it("takes the company name from a CleverStaff board", () => {
+      // Перший сегмент шляху - службовий `i`, компанія - у другому.
+      expect(
+        suggestCompanyFields("cleverstaff.net/i/8allocate-vacancies").name,
+      ).toBe("8allocate");
+      expect(
+        suggestCompanyFields("cleverstaff.net/i/vacancy-3ONpJV").name,
+      ).toBe("");
+    });
+
     it("suggests the pasted address as the career page and no website", () => {
       expect(suggestCompanyFields("jobs.lever.co/spotify")).toEqual({
         url: "",
