@@ -82,7 +82,7 @@ PR: #57
 | [5.02 Пошук: посилання з сайту компанії на ATS](5.02-discovery-site-ats-links.md)                | done    |
 | [5.03 Пошук: кар'єрні сторінки на сайті компанії](5.03-discovery-site-career-pages.md)           | done    |
 | [5.04 Пошук: ATS за назвою компанії](5.04-discovery-ats-by-name.md)                              | done    |
-| [5.05 Перевірка належності сторінки компанії](5.05-page-ownership-check.md)                      | todo    |
+| [5.05 Перевірка належності сторінки компанії](5.05-page-ownership-check.md)                      | done    |
 | [5.06 Пробне читання знахідок](5.06-trial-read.md)                                               | todo    |
 | [5.07 Find pages у модалці Add company](5.07-find-pages-modal.md)                                | done    |
 | [5.08 Позначки дублікатів у списку знахідок](5.08-discovery-duplicate-marks.md)                  | todo    |

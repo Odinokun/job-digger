@@ -144,7 +144,9 @@
         "vacancies": "{count, plural, one {# vacancy} other {# vacancies}}",
         "notReadable": "Can't be read yet",
         "byName": "Found by name - check",
-        "nothing": "No career pages found. If you know one, paste it below."
+        "nothing": "No career pages found. If you know one, paste it below.",
+        "byNameConfirmed": "Found by name, links to the company site",
+        "byNameOther": "Links to {site} - probably another company"
       }
     },
     "sourceTaken": "This career page already belongs to {name}.",

@@ -21,8 +21,7 @@ interface FoundPagesProps {
  *
  * Галочка - справжній `<input name="foundUrl">` (HeroUI передає `name` і
  * `value` у поле React Aria), тож вибрані адреси їдуть із формою на Save самі.
- * Знахідку, яка не читається, вибрати не можна. Знахідка за назвою позначена:
- * дошку з такою назвою могла завести інша компанія.
+ * Знахідку, яка не читається, вибрати не можна.
  */
 export function FoundPages({
   findings,
@@ -65,11 +64,7 @@ export function FoundPages({
                         ? t("notReadable")
                         : t("vacancies", { count: finding.vacancies })}
                     </span>
-                    {finding.via === "name" ? (
-                      <Chip size="sm" color="warning" variant="primary">
-                        {t("byName")}
-                      </Chip>
-                    ) : null}
+                    <OwnershipMark finding={finding} />
                   </span>
                   <span className="truncate font-mono text-sm text-muted">
                     {finding.url}
@@ -81,5 +76,35 @@ export function FoundPages({
         ))}
       </ul>
     </div>
+  );
+}
+
+/**
+ * Позначка знахідки за назвою (задача 5.05). Знахідка з сайту позначки не має:
+ * посилання з сайту і є доказом.
+ *
+ * - дошка веде на сайт компанії - лише тихий підпис, знахідка надійна;
+ * - дошка називає своїм інший сайт - попередження з ним: у компанії буває
+ *   кілька доменів, тож вирішує людина;
+ * - нічого не відомо - «перевір».
+ */
+function OwnershipMark({ finding }: { finding: Finding }) {
+  const t = useTranslations("CompaniesPage.addCompany.found");
+  const ownership = finding.ownership;
+
+  if (finding.via === "site" || ownership === null) {
+    return null;
+  }
+
+  if (ownership.kind === "confirmed") {
+    return <span className="text-sm text-muted">{t("byNameConfirmed")}</span>;
+  }
+
+  return (
+    <Chip size="sm" color="warning" variant="primary">
+      {ownership.kind === "other"
+        ? t("byNameOther", { site: ownership.site })
+        : t("byName")}
+    </Chip>
   );
 }
