@@ -15,6 +15,7 @@ import { atsLinksOnPage } from "./ats-links.ts";
 import type { BoardUrl } from "./board-url.ts";
 import { findBoardsByName } from "./by-name.ts";
 import { findSiteCareerPages } from "./career-pages.ts";
+import { boardOwnership, type BoardOwnership } from "./ownership.ts";
 
 /** Одна знахідка в списку Find pages. */
 export type Finding = {
@@ -28,7 +29,21 @@ export type Finding = {
   via: "site" | "name";
   /** Скільки вакансій прочитало пробне читання, або `null` - не читається. */
   vacancies: number | null;
+  /**
+   * Чия дошка, знайдена за назвою (задача 5.05): `null` для знахідок із сайту
+   * - посилання з сайту і є доказом.
+   */
+  ownership: BoardOwnership | null;
 };
+
+/**
+ * Чи можна покладатися на знахідку без перевірки людиною: сайт компанії веде
+ * на неї сам, або дошка за назвою веде на сайт компанії (рішення автора
+ * 19.11.2026, tasks/5.05-page-ownership-check.md).
+ */
+export function isReliableFinding(finding: Finding): boolean {
+  return finding.via === "site" || finding.ownership?.kind === "confirmed";
+}
 
 /**
  * Усі знахідки для компанії, у порядку надійності: дошки, на які веде сайт;
@@ -53,9 +68,18 @@ export async function discoverSources(
   ]);
 
   const seen = new Set(fromSite.map((finding) => finding.url));
-  const fromName: Finding[] = byName
-    .filter((board) => !seen.has(board.url))
-    .map((board) => ({ ...board, via: "name" }));
+  const fromName: Finding[] = await Promise.all(
+    byName
+      .filter((board) => !seen.has(board.url))
+      .map(async (board) => ({
+        ...board,
+        via: "name" as const,
+        ownership:
+          company.siteUrl === null
+            ? { kind: "unknown" as const }
+            : await ownershipOf(board.url, company.siteUrl, client),
+      })),
+  );
 
   return [...fromSite, ...fromName];
 }
@@ -85,6 +109,7 @@ async function discoverOnSite(
       ...board,
       via: "site" as const,
       vacancies: await trialRead(board, client),
+      ownership: null,
     })),
   );
 
@@ -95,6 +120,7 @@ async function discoverOnSite(
       platform: normalized.ok ? detectPlatform(normalized.url) : "unsupported",
       via: "site",
       vacancies: null,
+      ownership: null,
     };
   });
 
@@ -108,4 +134,17 @@ async function trialRead(
 ): Promise<number | null> {
   const result = await readSource(board, client);
   return result?.ok ? result.vacancies.length : null;
+}
+
+/**
+ * Належність дошки за її сторінкою для людей (`boardOwnership`). Сторінка, що
+ * не відповіла, нічого не каже - `unknown`.
+ */
+async function ownershipOf(
+  boardUrl: string,
+  siteUrl: string,
+  client: HttpClient,
+): Promise<BoardOwnership> {
+  const page = await fetchText(client, boardUrl);
+  return page.ok ? boardOwnership(page.body, siteUrl) : { kind: "unknown" };
 }
