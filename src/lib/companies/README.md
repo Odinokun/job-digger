@@ -20,6 +20,7 @@
 | `career-source.ts` | `prepareCareerSource` - адреса джерела, його підпис, платформа й дублікат усередині компанії |
 | `name.ts`     | `normalizeCompanyName` і `sameCompanyName` - коли дві назви це одна компанія    |
 | `company-list.ts` | Типи рядка списку, переліки вкладок і `discovery_status`, `parseCompaniesTab` |
+| `company-status.ts` | `companyCheckStatus` - статус на Tracked: OK, Has errors, Checking або нічого до першої перевірки |
 
 ## Чому це не в `src/server`
 

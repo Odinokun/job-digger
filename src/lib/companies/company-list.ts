@@ -43,6 +43,19 @@ export type CompanySource = {
   label: string | null;
   platform: CareerPlatform;
   isTracked: boolean;
+  /**
+   * Чим закінчилася остання перевірка джерела: `null` - ще не перевірялося.
+   * Невдала - це `consecutive_failures > 0`.
+   */
+  lastCheck: "ok" | "failed" | null;
+  /**
+   * Остання успішна перевірка - «Last ok: 12 days ago» біля невдалого джерела:
+   * після збою вакансії не видаляються, і без цієї дати застарілі не відрізнити
+   * від живих (docs/ui.md, розділ 4.2).
+   */
+  lastSuccessAt: Date | null;
+  /** Джерело в черзі: завдання чекає або виконується. */
+  isChecking: boolean;
 };
 
 export type CompanyListItem = {

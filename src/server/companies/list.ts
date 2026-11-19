@@ -10,7 +10,12 @@ import {
 } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { careerSources, companies, vacancies } from "../db/schema.ts";
+import {
+  careerSources,
+  checkTasks,
+  companies,
+  vacancies,
+} from "../db/schema.ts";
 import type {
   CompaniesTab,
   CompanyListItem,
@@ -141,6 +146,19 @@ async function attachDetails(
       platform: careerSources.platform,
       isTracked: careerSources.isTracked,
       lastCheckedAt: careerSources.lastCheckedAt,
+      lastSuccessAt: careerSources.lastSuccessAt,
+      consecutiveFailures: careerSources.consecutiveFailures,
+      // Джерело в черзі - Checking у статусі компанії. Завдань у черзі на
+      // джерело - одиниці, а індекс `check_tasks_source_idx` є.
+      //
+      // Імена таблиць - явно: у запиті з однієї таблиці Drizzle пише колонки
+      // без них, і всередині підзапиту `"source_id" = "id"` порівнювало б
+      // колонки самої `check_tasks`.
+      isChecking: sql<boolean>`exists (
+        select 1 from ${checkTasks} as queued_task
+        where queued_task.source_id = ${careerSources}.id
+          and queued_task.status in ('queued', 'running')
+      )`,
     })
     .from(careerSources)
     .where(
@@ -156,9 +174,23 @@ async function attachDetails(
   // Остання перевірка компанії - найпізніша серед її джерел.
   const lastChecked = new Map<string, Date>();
 
-  for (const { companyId, lastCheckedAt, ...source } of sources) {
+  for (const {
+    companyId,
+    lastCheckedAt,
+    consecutiveFailures,
+    ...source
+  } of sources) {
     const list = byCompany.get(companyId) ?? [];
-    list.push(source);
+    list.push({
+      ...source,
+      // Невдала остання перевірка - та, після якої лічильник збоїв не нуль.
+      lastCheck:
+        lastCheckedAt === null
+          ? null
+          : consecutiveFailures > 0
+            ? "failed"
+            : "ok",
+    });
     byCompany.set(companyId, list);
 
     const latest = lastChecked.get(companyId);

@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { eq } from "drizzle-orm";
 
-import { careerSources, companies, users, vacancies } from "../db/schema.ts";
+import {
+  careerSources,
+  checkTasks,
+  companies,
+  users,
+  vacancies,
+} from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
 import { normalizedSourceUrl } from "../db/testing/career-source-values.ts";
 import { testDb } from "../db/testing/test-db.ts";
@@ -180,6 +186,9 @@ describe("listCompanies", () => {
         platform: "greenhouse",
         isTracked: true,
         label: null,
+        lastCheck: null,
+        lastSuccessAt: null,
+        isChecking: false,
       },
       {
         id: expect.any(String),
@@ -187,6 +196,9 @@ describe("listCompanies", () => {
         platform: "lever",
         isTracked: true,
         label: "Remote Canada",
+        lastCheck: null,
+        lastSuccessAt: null,
+        isChecking: false,
       },
     ]);
   });
@@ -377,6 +389,9 @@ describe("findCompanyInTab", () => {
           platform: "greenhouse",
           isTracked: true,
           label: null,
+          lastCheck: null,
+          lastSuccessAt: null,
+          isChecking: false,
         },
       ],
       vacancies: { total: 0, favorites: 0 },
@@ -522,5 +537,84 @@ describe("last checked", () => {
     });
 
     expect(items[0]?.lastCheckedAt).toBeNull();
+  });
+});
+
+describe("source check state", () => {
+  // Статус компанії й «Last ok» на вкладці Tracked (docs/ui.md, розділ 4.2).
+  async function sourceOf(name: string) {
+    const user = await seedSystemUser(testDb);
+    const company = await insertTracked(user.id, name);
+    const [source] = await testDb
+      .select()
+      .from(careerSources)
+      .where(eq(careerSources.companyId, company.id));
+    const read = async () => {
+      const found = await findCompanyInTab(testDb, {
+        userId: user.id,
+        companyId: company.id,
+        tab: "tracked",
+      });
+      return found?.sources[0];
+    };
+    return { source, read };
+  }
+
+  it("has no last check before the first one", async () => {
+    const { read } = await sourceOf("Bosch");
+
+    expect(await read()).toMatchObject({
+      lastCheck: null,
+      lastSuccessAt: null,
+      isChecking: false,
+    });
+  });
+
+  it("reports a successful last check", async () => {
+    const { source, read } = await sourceOf("Bosch");
+    const at = new Date("2026-11-18T10:00:00Z");
+    await testDb
+      .update(careerSources)
+      .set({ lastCheckedAt: at, lastSuccessAt: at, consecutiveFailures: 0 })
+      .where(eq(careerSources.id, source.id));
+
+    expect(await read()).toMatchObject({ lastCheck: "ok", lastSuccessAt: at });
+  });
+
+  it("reports a failed last check with the last success", async () => {
+    const { source, read } = await sourceOf("Bosch");
+    const lastOk = new Date("2026-11-07T10:00:00Z");
+    await testDb
+      .update(careerSources)
+      .set({
+        lastCheckedAt: new Date("2026-11-18T10:00:00Z"),
+        lastSuccessAt: lastOk,
+        consecutiveFailures: 3,
+      })
+      .where(eq(careerSources.id, source.id));
+
+    expect(await read()).toMatchObject({
+      lastCheck: "failed",
+      lastSuccessAt: lastOk,
+    });
+  });
+
+  it("marks a source with a queued or running task", async () => {
+    const { source, read } = await sourceOf("Bosch");
+    await testDb.insert(checkTasks).values({ sourceId: source.id });
+
+    expect(await read()).toMatchObject({ isChecking: true });
+
+    await testDb
+      .update(checkTasks)
+      .set({ status: "running", lockedAt: new Date() })
+      .where(eq(checkTasks.sourceId, source.id));
+    expect(await read()).toMatchObject({ isChecking: true });
+
+    await testDb
+      .update(checkTasks)
+      .set({ status: "failed" })
+      .where(eq(checkTasks.sourceId, source.id));
+    expect(await read()).toMatchObject({ isChecking: false });
   });
 });
