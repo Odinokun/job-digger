@@ -89,6 +89,7 @@ host.endsWith("." + suffix)`. Із простим `endsWith` будь-хто м�
 | `ashbyhq.com`                           | ashby       |
 | `myworkdayjobs.com`, `myworkdaysite.com` | workday    |
 | `peopleforce.io`                        | peopleforce |
+| `breezy.hr`                             | breezy      |
 | решта                                   | unsupported |
 
 Звідки взяті домени - у коментарі до `PLATFORM_DOMAINS`: у Greenhouse офіційно
@@ -161,7 +162,7 @@ host.endsWith("." + suffix)`. Із простим `endsWith` будь-хто м�
 попередження про однаковий домен втратило б сенс.
 
 **Де в адресі ATS стоїть назва - залежить від платформи.** У Greenhouse, Lever і Ashby
-це перший сегмент шляху, у Workday і PeopleForce - субдомен (`bosch.wd3.myworkdayjobs.com`).
+це перший сегмент шляху, у Workday, PeopleForce і Breezy HR - субдомен (`bosch.wd3.myworkdayjobs.com`).
 Перелік доменів платформ лишається один - у `platform.ts`; `suggest.ts` бере в нього
 суфікс через `platformHostSuffix`, щоб відрізнити лейбли компанії від лейблів платформи.
 Адреса без slug-а (`jobs.lever.co`) назви не дає.
