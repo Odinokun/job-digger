@@ -11,7 +11,13 @@ import {
   useOverlayState,
 } from "@heroui/react";
 import { useTranslations } from "next-intl";
-import { useActionState, useEffect, useState, useTransition } from "react";
+import {
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 
 import { WithTooltip } from "@/app/components/icon-button";
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
@@ -21,7 +27,10 @@ import type {
 } from "@/lib/companies/company-list";
 import type { CareerPlatform } from "@/lib/companies/platform";
 import type { Finding } from "@/server/discovery/discover";
-import type { AddCareerSourceFormState } from "./form-state";
+import type {
+  AddCareerSourceFormState,
+  AddCompanyFormState,
+} from "./form-state";
 import { suggestCompanyFields } from "@/lib/companies/suggest";
 import {
   normalizeCompanyUrl,
@@ -64,7 +73,7 @@ interface AddCompanyDialogProps {
    * Доданий рядок або `null`, якщо компанія належить іншій вкладці.
    * Список вставляє його в себе, тому дозавантажені порції лишаються.
    */
-  onAdded: (added: CompanyListItem | null) => void;
+  onAdded: (added: CompanyListItem | null, firstCheck: string | null) => void;
   /**
    * Компанія, якій дісталася вставлена адреса ще одним карʼєрним джерелом.
    * Рядок уже є в списку, тому його заміщають, а не додають.
@@ -136,9 +145,16 @@ export function AddCompanyDialog({
   // мертвою.
   const closeDialog = overlay.close;
 
+  // Кожен результат - рівно один раз. Ефект перезапускається не лише з новим
+  // станом: `onAdded` міняє ідентичність разом із перекладачем після кожної
+  // Server Action. Повтор вставляв би рядок у тому вигляді, який він мав на
+  // Save, і затирав би результат першої перевірки (задача 5.09).
+  const handledState = useRef<AddCompanyFormState | null>(null);
+
   useEffect(() => {
-    if (state.status === "added") {
-      onAdded(state.company);
+    if (state.status === "added" && handledState.current !== state) {
+      handledState.current = state;
+      onAdded(state.company, state.firstCheck);
       closeDialog();
     }
   }, [state, closeDialog, onAdded]);

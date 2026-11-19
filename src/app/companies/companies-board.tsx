@@ -14,7 +14,11 @@ import {
 } from "@/lib/companies/company-list";
 import type { Cursor } from "@/lib/pagination/cursor";
 
-import { loadMoreCompaniesAction, reloadCompaniesAction } from "./actions";
+import {
+  checkCompanyNowAction,
+  loadMoreCompaniesAction,
+  reloadCompaniesAction,
+} from "./actions";
 import { AddCompanyDialog } from "./add-company-dialog";
 import { CheckAllButton } from "./check-all-button";
 import { CompaniesList } from "./companies-list";
@@ -66,6 +70,8 @@ export function CompaniesBoard({
   const [items, setItems] = useState(initialItems);
   const [cursor, setCursor] = useState(initialCursor);
   const [isPending, startTransition] = useTransition();
+  // Нова компанія, чия картка має сама почати першу перевірку (задача 5.09).
+  const [firstCheckId, setFirstCheckId] = useState<string | null>(null);
   const showActionFailed = useActionFailedToast();
   const { status } = useCheckStatus();
   const isCheckRunning = (status?.run ?? null) !== null;
@@ -122,13 +128,36 @@ export function CompaniesBoard({
     [applyRow],
   );
 
+  /**
+   * Нова компанія: рядок у список і перша перевірка, якщо є що перевіряти
+   * (docs/discovery-and-parsing.md, розділ 5, пункт 7).
+   *
+   * Видна картка перевіряє себе сама - кнопкою Check now, зі спінером, як після
+   * натискання. Не видна (компанію додали з вкладки Not tracked) - перевірка
+   * йде без кнопки; лічильник Jobs оновить відповідь дії.
+   */
   const addRow = useCallback(
-    (added: CompanyListItem | null) => {
+    (added: CompanyListItem | null, firstCheck: string | null) => {
       if (added) {
         applyRow(added.id, added);
       }
+
+      if (firstCheck === null) {
+        return;
+      }
+
+      if (added !== null && tab === "tracked") {
+        setFirstCheckId(firstCheck);
+        return;
+      }
+
+      void checkCompanyNowAction(firstCheck, tab).then((result) => {
+        if (!result.ok && result.reason !== "check-running") {
+          showActionFailed();
+        }
+      });
     },
-    [applyRow],
+    [applyRow, tab, showActionFailed],
   );
 
   const loadMore = useCallback(() => {
@@ -182,6 +211,7 @@ export function CompaniesBoard({
         onLoadMore={loadMore}
         onSaved={applyRow}
         onDeleted={removeRow}
+        firstCheckId={firstCheckId}
         emptyLabel={emptyLabel}
         loadMoreLabel={loadMoreLabel}
         noSourcesLabel={noSourcesLabel}

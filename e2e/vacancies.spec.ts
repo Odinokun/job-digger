@@ -44,9 +44,9 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   const card = companyCard(page, "Discord");
   await expect(card).toBeVisible();
 
-  // Перевірка однієї компанії. Завершення видно за часом останньої перевірки.
-  await card.getByRole("button", { name: "Check now" }).click();
-  await expect(card.getByText(/Last checked/)).toBeVisible();
+  // Перша перевірка стартує сама одразу після Save (задача 5.09). Завершення
+  // видно за часом останньої перевірки.
+  await expect(card.getByText(/Last checked/)).toBeVisible({ timeout: 15_000 });
 
   // Лічильник непрочитаних - у меню біля Jobs і в назві вкладки браузера.
   const jobsLink = page

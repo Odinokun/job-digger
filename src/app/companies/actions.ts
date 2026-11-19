@@ -70,13 +70,27 @@ export async function addCompanyAction(
 
     // Рядок для списку: без нього клієнт мусив би перечитувати сторінку, а з
     // нею й дозавантажені порції.
+    const company = await findCompanyInTab(db, {
+      userId: user.id,
+      companyId: result.companyId,
+      tab,
+    });
+
+    // Компанія на Tracked - у неї є джерела, що відстежуються, і її одразу
+    // перевіряють (docs/discovery-and-parsing.md, розділ 5, пункт 7).
+    const isTracked =
+      tab === "tracked"
+        ? company !== null
+        : (await findCompanyInTab(db, {
+            userId: user.id,
+            companyId: result.companyId,
+            tab: "tracked",
+          })) !== null;
+
     return {
       ok: true as const,
-      company: await findCompanyInTab(db, {
-        userId: user.id,
-        companyId: result.companyId,
-        tab,
-      }),
+      company,
+      firstCheck: isTracked ? result.companyId : null,
     };
   });
 
@@ -93,7 +107,11 @@ export async function addCompanyAction(
   // Рядок список вставить сам, а лічильники вкладок рендерить сервер.
   revalidatePath("/companies");
 
-  return { status: "added", company: result.company };
+  return {
+    status: "added",
+    company: result.company,
+    firstCheck: result.firstCheck,
+  };
 }
 
 /**

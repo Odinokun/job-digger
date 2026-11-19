@@ -38,7 +38,15 @@ export type AddCompanyFormState =
    * Рядок повертається, щоб список вставив його в себе, не перечитуючи
    * дозавантажені порції.
    */
-  | { status: "added"; company: CompanyListItem | null }
+  | {
+      status: "added";
+      company: CompanyListItem | null;
+      /**
+       * Компанія, яку треба одразу перевірити, або `null`, якщо джерел, що
+       * відстежуються, у неї немає - тоді вона в Not tracked (задача 5.09).
+       */
+      firstCheck: string | null;
+    }
   | { status: "failed"; result: Extract<AddCompanyResult, { ok: false }> }
   /**
    * Збій, якого форма не передбачала: база не піднята, запит упав.

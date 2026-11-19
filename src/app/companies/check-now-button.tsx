@@ -2,7 +2,7 @@
 
 import { Button, Spinner, toast, Tooltip } from "@heroui/react";
 import { useTranslations } from "next-intl";
-import { useTransition } from "react";
+import { useEffect, useRef, useTransition } from "react";
 
 import { useCheckStatus } from "@/app/components/check-status-provider";
 import { TOOLTIP_DELAY_MS } from "@/app/components/icon-button";
@@ -19,6 +19,11 @@ interface CheckNowButtonProps {
   tab: CompaniesTab;
   /** Перевірка завершилася: рядок компанії після неї або `null`, якщо її вже немає. */
   onChecked: (companyId: string, checked: CompanyListItem | null) => void;
+  /**
+   * Почати перевірку одразу, без натискання: перша перевірка щойно доданої
+   * компанії (задача 5.09). Один раз за життя кнопки.
+   */
+  startsOnMount?: boolean;
 }
 
 /**
@@ -32,6 +37,7 @@ export function CheckNowButton({
   companyId,
   tab,
   onChecked,
+  startsOnMount = false,
 }: CheckNowButtonProps) {
   const t = useTranslations("CompaniesPage");
   const showActionFailed = useActionFailedToast();
@@ -41,28 +47,44 @@ export function CheckNowButton({
   // (docs/checks-and-queue.md, розділ 8).
   const isGeneralCheckRunning = (status?.run ?? null) !== null;
 
+  function check() {
+    startCheck(async () => {
+      const result = await checkCompanyNowAction(companyId, tab);
+
+      if (!result.ok) {
+        if (result.reason === "check-running") {
+          toast.warning(t("generalCheckRunning"));
+        } else {
+          showActionFailed();
+        }
+        return;
+      }
+
+      onChecked(companyId, result.company);
+    });
+  }
+
+  // Ref, а не залежності ефекту: Strict Mode у розробці ставить ефект двічі, і
+  // без нього перша перевірка пішла б двома запитами.
+  const started = useRef(false);
+  const latestCheck = useRef(check);
+  useEffect(() => {
+    latestCheck.current = check;
+  });
+  useEffect(() => {
+    if (startsOnMount && !started.current) {
+      started.current = true;
+      latestCheck.current();
+    }
+  }, [startsOnMount]);
+
   const button = (
     <Button
       size="sm"
       variant="secondary"
       isDisabled={isGeneralCheckRunning}
       isPending={isPending}
-      onPress={() =>
-        startCheck(async () => {
-          const result = await checkCompanyNowAction(companyId, tab);
-
-          if (!result.ok) {
-            if (result.reason === "check-running") {
-              toast.warning(t("generalCheckRunning"));
-            } else {
-              showActionFailed();
-            }
-            return;
-          }
-
-          onChecked(companyId, result.company);
-        })
-      }
+      onPress={check}
     >
       {({ isPending: isChecking }) => (
         <>
