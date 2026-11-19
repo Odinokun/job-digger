@@ -20,9 +20,11 @@ export type BoardOwnership =
  * політика конфіденційності) такого не означає.
  *
  * - Lever: логотип у шапці і «{Company} Home Page» у футері;
+ * - Breezy HR: пункт шапки `link company` («Company website»);
  * - Ashby: поле `publicWebsite` у даних сторінки (`ASHBY_WEBSITE`).
  */
-const WEBSITE_LINKS = "a.main-header-logo[href], .main-footer-text a[href]";
+const WEBSITE_LINKS =
+  "a.main-header-logo[href], .main-footer-text a[href], li.link.company a[href]";
 
 /** Ashby малює дошку JavaScript-ом, а сайт організації кладе в JSON сторінки. */
 const ASHBY_WEBSITE = /"publicWebsite"\s*:\s*"(https?:[^"]+)"/g;
@@ -37,6 +39,7 @@ const PLATFORM_DOMAINS = [
   "greenhouse.com",
   "ashbyhq.com",
   "peopleforce.io",
+  "breezy.hr",
   "myworkdayjobs.com",
   "myworkdaysite.com",
 ];

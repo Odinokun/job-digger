@@ -20,6 +20,7 @@ const BOARD_BY_SLUG: Array<[CareerPlatform, (slug: string) => string]> = [
   ["lever", (slug) => `https://jobs.lever.co/${slug}`],
   ["ashby", (slug) => `https://jobs.ashbyhq.com/${slug}`],
   ["peopleforce", (slug) => `https://${slug}.peopleforce.io/careers`],
+  ["breezy", (slug) => `https://${slug}.breezy.hr`],
 ];
 
 /** Дошка, знайдена за назвою, і скільки на ній вакансій зараз. */

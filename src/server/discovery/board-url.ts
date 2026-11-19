@@ -9,6 +9,7 @@
 import { knownAtsName } from "../../lib/companies/known-ats.ts";
 import type { CareerPlatform } from "../../lib/companies/platform.ts";
 import { ashbyBoard } from "../parsers/ashby.ts";
+import { breezyCompany } from "../parsers/breezy.ts";
 import { greenhouseBoardToken } from "../parsers/greenhouse.ts";
 import { leverSite } from "../parsers/lever.ts";
 import { peopleforceSite } from "../parsers/peopleforce.ts";
@@ -57,6 +58,13 @@ const BOARDS: Array<[CareerPlatform, BoardOf]> = [
     (link) => {
       const site = peopleforceSite(link);
       return site === null ? null : `${site}/careers`;
+    },
+  ],
+  [
+    "breezy",
+    (link) => {
+      const company = breezyCompany(link);
+      return company === null ? null : `https://${company}.breezy.hr`;
     },
   ],
 ];

@@ -33,6 +33,7 @@ export default async function CompaniesPage({
     ashby: t("platforms.ashby"),
     workday: t("platforms.workday"),
     peopleforce: t("platforms.peopleforce"),
+    breezy: t("platforms.breezy"),
     schema_org: t("platforms.schemaOrg"),
     unsupported: t("platforms.unsupported"),
   };

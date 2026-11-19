@@ -38,6 +38,11 @@ describe("boardUrlOf", () => {
       "https://team.peopleforce.io/careers",
       "peopleforce",
     ],
+    [
+      "https://acme.breezy.hr/p/98323abf2296-designer?source=site",
+      "https://acme.breezy.hr",
+      "breezy",
+    ],
   ];
 
   for (const [link, url, platform] of cases) {
@@ -56,6 +61,8 @@ describe("boardUrlOf", () => {
     // футері кар'єрної сторінки трапляється часто.
     expect(boardUrlOf("https://boards.greenhouse.io/")).toBeNull();
     expect(boardUrlOf("https://www.peopleforce.io/")).toBeNull();
+    // Скрипт вбудованої дошки Breezy лежить на її CDN.
+    expect(boardUrlOf("https://assets-cdn.breezy.hr/x.js")).toBeNull();
   });
 
   it("ignores what is not a web address", () => {

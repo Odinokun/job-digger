@@ -26,6 +26,9 @@
 | `peopleforce.ts`     | PeopleForce: `readPeopleForce(sourceUrl, client)`, `peopleforceSite`, `parsePeopleForcePage` |
 | `peopleforce.test.ts` | Юніт-тести парсера PeopleForce                   |
 | `peopleforce.integration.test.ts` | `readPeopleForce` через фейковий вебсервер і сервер зі сторінками |
+| `breezy.ts`          | Breezy HR: `readBreezy(sourceUrl, client)`, `breezyCompany`, `parseBreezyPositions` |
+| `breezy.test.ts`     | Юніт-тести парсера Breezy HR                      |
+| `breezy.integration.test.ts` | `readBreezy` через фейковий вебсервер |
 | `pages-to-check.ts`  | `PAGES_TO_CHECK` - спільний ліміт сторінок для парсерів, що читають сторінками; `parsePagesToCheck` |
 | `pages-to-check.test.ts` | Юніт-тести розбору змінної                   |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
@@ -90,6 +93,8 @@ PeopleForce. Окрема задача на кожну платформу, TDD, 
 
 - [ ] `src/lib/companies/platform.ts` - значення в `CAREER_PLATFORMS` і домен у
       `PLATFORM_DOMAINS`. Таблиця доменів у [README `src/lib/companies`](../../lib/companies/README.md).
+- [ ] Прибрати платформу з `src/lib/companies/known-ats.ts`: там лише ATS без
+      парсера, і рядок, що лишився, підписував би джерело назвою з того списку.
 - [ ] Міграція: enum `career_platform` будується з `CAREER_PLATFORMS`, тож
       `npm run db:generate` ([порядок роботи з міграціями](../db/README.md)).
 - [ ] `src/lib/companies/suggest.ts` - якщо назва компанії в адресі живе в
@@ -265,3 +270,28 @@ Workday - по 100 вакансій за 5 сторінок (близько 9 с
 Перевірено на справжній мережі (вручну, 18.11.2026): PeopleForce - 6 вакансій,
 Webellian - 23 за 3 сторінки, V2Cloud - 3; компанія без сторінки кар'єри (`macpaw`) і
 неіснуюча - `not-found`.
+
+## Breezy HR
+
+**Публічний JSON без документації.** Дошка `https://{company}.breezy.hr` віддає
+свої вакансії на `https://{company}.breezy.hr/json`, без ключа. Офіційно цей
+JSON ніде не описаний - про нього пишуть лише сторонні скрапери, тож усе нижче
+перевірено справжніми запитами 19.11.2026 (дошки самої Breezy - `breezy` і `jobs`)
+і може змінитися без попередження.
+
+- **Адреса.** `breezyCompany` бере субдомен компанії, зокрема з посилання на
+  вакансію (`/p/{id}-{slug}`). Субдомени самої Breezy - не компанії: `assets-cdn`
+  (на ньому скрипти вбудованої дошки, тож посилання на нього трапляються на сайтах
+  компаній), `app`, `www`.
+- **Один запит, без сторінок:** масив усіх вакансій.
+- **Поля:** `externalId` - `id` (він же на початку шляху вакансії), назва - `name`,
+  посилання - `url`, локація - `location.name`, а для віддаленої вакансії
+  (`location.is_remote: true`) - з приміткою «remote» (`United States, remote`).
+- **Помилки:** невідома дошка - 404 (HTML-сторінка «not found»), тобто `not-found`.
+  Сторонні скрапери пишуть, що компанія може вимкнути публічний JSON; як тоді
+  відповідає дошка, перевірити не було на чому.
+- **Сайт компанії** на сторінці дошки - пункт шапки `li.link.company`: за ним
+  перевіряється належність дошки, знайденої за назвою (`src/server/discovery/ownership.ts`).
+
+Перевірено на справжній мережі (вручну, 19.11.2026): `breezy` - 3 вакансії, `jobs` -
+одна віддалена, неіснуюча дошка - `not-found`.

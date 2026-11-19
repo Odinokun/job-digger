@@ -43,7 +43,11 @@ const LANGUAGE_SEGMENT_PATTERN = /^[a-z]{2}(-[a-z]{2})?$/i;
  * `bosch.wd3.myworkdayjobs.com` і `acme.peopleforce.io` проти
  * `jobs.lever.co/spotify`.
  */
-const SUBDOMAIN_SLUG_PLATFORMS: CareerPlatform[] = ["workday", "peopleforce"];
+const SUBDOMAIN_SLUG_PLATFORMS: CareerPlatform[] = [
+  "workday",
+  "peopleforce",
+  "breezy",
+];
 
 /**
  * Підказки для полів Add company, виведені з однієї вставленої адреси.

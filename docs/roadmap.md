@@ -18,7 +18,7 @@
 
 3. **Парсинг і вакансії**
 
-   Парсери ATS (Greenhouse, Lever, Ashby, Workday, PeopleForce), модуль запитів із ввічливістю до сайтів і захистом від SSRF, пагінація, життєвий цикл вакансій, вкладки Unread/Read/Favorites/All, Check now. Це перша робоча версія: додав URL - бачиш вакансії.
+   Парсери ATS (Greenhouse, Lever, Ashby, Workday, PeopleForce, Breezy HR), модуль запитів із ввічливістю до сайтів і захистом від SSRF, пагінація, життєвий цикл вакансій, вкладки Unread/Read/Favorites/All, Check now. Це перша робоча версія: додав URL - бачиш вакансії.
 
    Парсер schema.org JobPosting (3.11) і нові парсери відкладені: їх додаємо тоді, коли трапиться джерело, якому вони потрібні (рішення автора 18.11.2026, деталі - [tasks/3.11](../tasks/3.11-schema-org-jobposting-parser.md)).
 
