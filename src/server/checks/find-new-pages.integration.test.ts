@@ -5,6 +5,7 @@ import { checkTasks, users } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import {
+  activeRun,
   companyToDiscover,
   greenhouseSource,
   task,
@@ -113,6 +114,25 @@ describe("isFindingNewPages", () => {
     expect(await isFindingNewPages(testDb, user.id)).toBe(false);
     await task(testDb, { kind: "discover", companyId: acme });
     expect(await isFindingNewPages(testDb, user.id)).toBe(true);
+  });
+
+  it("stays true while the first checks of added boards are queued", async () => {
+    // Їх ставить пошук (`queue/discover-task.ts`): фонові й без запуску.
+    const user = await seedSystemUser(testDb);
+    const sourceId = await greenhouseSource(testDb, "discord");
+    await task(testDb, { sourceId, priority: "background" });
+
+    expect(await isFindingNewPages(testDb, user.id)).toBe(true);
+  });
+
+  it("does not count Retry or Check all as a search", async () => {
+    const user = await seedSystemUser(testDb);
+    const sourceId = await greenhouseSource(testDb, "discord");
+    await task(testDb, { sourceId, priority: "manual" });
+    const runId = await activeRun(testDb);
+    await task(testDb, { sourceId, runId, priority: "background" });
+
+    expect(await isFindingNewPages(testDb, user.id)).toBe(false);
   });
 
   it("does not see a search of another user", async () => {

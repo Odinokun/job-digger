@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { checkRuns, users } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
 import { testDb } from "../db/testing/test-db.ts";
+import { companyToDiscover, task } from "../queue/test-fixtures.ts";
 import { getCheckStatus, markSummaryShown } from "./check-status.ts";
 
 const now = new Date("2026-11-19T10:00:00Z");
@@ -16,6 +17,18 @@ describe("getCheckStatus", () => {
       run: null,
       summary: null,
       unread: 0,
+      findingNewPages: false,
+    });
+  });
+
+  it("tells that Find new pages is going", async () => {
+    const user = await seedSystemUser(testDb);
+    const companyId = await companyToDiscover(testDb, "Acme");
+    await task(testDb, { kind: "discover", companyId });
+
+    expect(await getCheckStatus(testDb, { userId: user.id })).toMatchObject({
+      run: null,
+      findingNewPages: true,
     });
   });
 

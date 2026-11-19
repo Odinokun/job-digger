@@ -167,6 +167,14 @@ export type CheckCompanyNowResult =
  * одразу після старту (з ним індикатор видно без чекання на опитування) або
  * чому перевірка не стартувала. `unexpected` - збій, який показується спільним toast.
  */
+/** Відповідь Find new pages: як у Check all, але без запуску (задача 5.10). */
+export type StartFindNewPagesResult =
+  | { ok: true; total: number; status: CheckStatus }
+  | {
+      ok: false;
+      reason: "already-running" | "nothing-to-search" | "unexpected";
+    };
+
 export type StartCheckAllResult =
   | { ok: true; total: number; status: CheckStatus }
   | {

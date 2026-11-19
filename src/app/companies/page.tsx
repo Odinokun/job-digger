@@ -67,6 +67,7 @@ export default async function CompaniesPage({
       platformLabels={platformLabels}
       statusLabels={statusLabels}
       hasTracked={counts.tracked > 0}
+      hasNotTracked={counts.notTracked > 0}
     />
   );
 }

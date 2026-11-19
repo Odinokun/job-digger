@@ -61,7 +61,7 @@ export function createStatusPoller({
       failures = 0;
       if (stopped) return;
       onStatus(status);
-      keepPolling = status.run !== null;
+      keepPolling = isBusy(status);
     } catch {
       failures += 1;
       if (failures >= MAX_FAILED_POLLS) {
@@ -85,7 +85,7 @@ export function createStatusPoller({
     track(status) {
       if (stopped) return;
       onStatus(status);
-      if (status.run !== null) schedule();
+      if (isBusy(status)) schedule();
     },
     stop() {
       stopped = true;
@@ -93,4 +93,9 @@ export function createStatusPoller({
       timer = undefined;
     },
   };
+}
+
+/** Чи йде щось, за чим варто стежити: загальна перевірка чи Find new pages. */
+export function isBusy(status: CheckStatus): boolean {
+  return status.run !== null || status.findingNewPages;
 }

@@ -3,7 +3,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { CheckStatus } from "./check-status";
 import { createStatusPoller } from "./status-poller";
 
-const idle: CheckStatus = { run: null, summary: null, unread: 0 };
+const idle: CheckStatus = {
+  run: null,
+  summary: null,
+  unread: 0,
+  findingNewPages: false,
+};
 const running: CheckStatus = {
   run: {
     total: 3,
@@ -14,7 +19,10 @@ const running: CheckStatus = {
   },
   summary: null,
   unread: 2,
+  findingNewPages: false,
 };
+/** Find new pages іде, загальної перевірки немає. */
+const finding: CheckStatus = { ...idle, findingNewPages: true };
 
 const INTERVAL = 3000;
 
@@ -73,6 +81,15 @@ describe("createStatusPoller", () => {
 
     // Перевірка закінчилась - опитування зупинилось.
     await vi.advanceTimersByTimeAsync(INTERVAL * 5);
+    expect(fetchStatus).toHaveBeenCalledTimes(3);
+  });
+
+  it("keeps polling while Find new pages is going", async () => {
+    const { poller, fetchStatus } = setup([finding, finding, idle]);
+
+    poller.start();
+    await vi.advanceTimersByTimeAsync(INTERVAL * 5);
+
     expect(fetchStatus).toHaveBeenCalledTimes(3);
   });
 

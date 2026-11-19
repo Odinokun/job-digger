@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 
 import { useCheckStatus } from "@/app/components/check-status-provider";
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
+import { isBusy } from "@/lib/checks/status-poller";
 import {
   compareCompanyRows,
   type CompaniesTab,
@@ -21,6 +22,7 @@ import {
 } from "./actions";
 import { AddCompanyDialog } from "./add-company-dialog";
 import { CheckAllButton } from "./check-all-button";
+import { FindNewPagesButton } from "./find-new-pages-button";
 import { CompaniesList } from "./companies-list";
 
 interface CompaniesBoardProps {
@@ -38,6 +40,8 @@ interface CompaniesBoardProps {
   statusLabels: Record<DiscoveryStatus, string>;
   /** Чи є на Tracked хоч одна компанія - інакше Check all вимкнена. */
   hasTracked: boolean;
+  /** Чи є на Not tracked хоч одна компанія - інакше Find new pages вимкнена. */
+  hasNotTracked: boolean;
 }
 
 /**
@@ -66,6 +70,7 @@ export function CompaniesBoard({
   platformLabels,
   statusLabels,
   hasTracked,
+  hasNotTracked,
 }: CompaniesBoardProps) {
   const [items, setItems] = useState(initialItems);
   const [cursor, setCursor] = useState(initialCursor);
@@ -74,13 +79,14 @@ export function CompaniesBoard({
   const [firstCheckId, setFirstCheckId] = useState<string | null>(null);
   const showActionFailed = useActionFailedToast();
   const { status } = useCheckStatus();
-  const isCheckRunning = (status?.run ?? null) !== null;
+  const isCheckRunning = status !== null && isBusy(status);
   const wasCheckRunning = useRef(false);
   const shownCount = items.length;
 
-  // Загальна перевірка закінчилась - статуси й «Last checked» змінились, а
-  // рядки живуть у стані й самі не оновлюються. Перечитуємо стільки, скільки
-  // показано, щоб не загубити дозавантажені порції.
+  // Загальна перевірка чи Find new pages закінчились - статуси, «Last
+  // checked» і сам склад вкладок змінились, а рядки живуть у стані й самі не
+  // оновлюються. Перечитуємо стільки, скільки показано, щоб не загубити
+  // дозавантажені порції.
   useEffect(() => {
     if (wasCheckRunning.current && !isCheckRunning) {
       void reloadCompaniesAction(tab, shownCount).then((result) => {
@@ -189,7 +195,10 @@ export function CompaniesBoard({
               не бере участі ніколи (docs/ui.md, розділ 4.3). */}
           {tab === "tracked" ? (
             <CheckAllButton isDisabled={!hasTracked} />
-          ) : null}
+          ) : (
+            // На Not tracked замість Check all - Find new pages (розділ 4.3).
+            <FindNewPagesButton isDisabled={!hasNotTracked} />
+          )}
           {/* Кнопка Add живе на сторінці Companies, поруч зі списком
               (docs/ui.md, розділ 4.2). */}
           <AddCompanyDialog

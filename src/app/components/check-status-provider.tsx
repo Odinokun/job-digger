@@ -15,6 +15,7 @@ import {
 import type { CheckStatus } from "@/lib/checks/check-status";
 import {
   createStatusPoller,
+  isBusy,
   type StatusPoller,
 } from "@/lib/checks/status-poller";
 
@@ -38,7 +39,8 @@ interface CheckStatusProviderProps {
  * (`lib/checks/status-poller.ts`) і роздає стан компонентам через
  * `useCheckStatus`.
  *
- * Коли змінилася кількість непрочитаних або перевірка закінчилась, сторінка
+ * Коли змінилася кількість непрочитаних або закінчилась перевірка чи Find new
+ * pages, сторінка
  * перечитується з сервера (`router.refresh`): лічильник у меню й назва вкладки
  * рендеряться там. Клієнтський стан при цьому лишається
  * (node_modules/next/dist/docs/01-app/03-api-reference/04-functions/use-router.md).
@@ -83,8 +85,10 @@ export function CheckStatusProvider({
       },
       onStatus: (next) => {
         setStatus(next);
-        const finished = wasRunning.current && next.run === null;
-        wasRunning.current = next.run !== null;
+        // Закінчилась загальна перевірка чи Find new pages - лічильники
+        // вкладок і меню рендерить сервер.
+        const finished = wasRunning.current && !isBusy(next);
+        wasRunning.current = isBusy(next);
         if (next.unread !== shownUnread.current || finished) {
           shownUnread.current = next.unread;
           latest.current.router.refresh();

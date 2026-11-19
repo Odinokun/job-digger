@@ -3,7 +3,7 @@
  * Not tracked (docs/ui.md, розділ 4.3; задача 5.10). Тут лише постановка в
  * чергу - кожну компанію шукає цикл черги (`queue/discover-task.ts`).
  */
-import { and, eq, inArray, notExists, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, notExists, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { careerSources, checkTasks, companies } from "../db/schema.ts";
@@ -85,23 +85,46 @@ export async function startFindNewPages(
   });
 }
 
-/** Чи є в користувача незавершений пошук Find new pages. */
+/**
+ * Чи триває Find new pages користувача: є незавершені завдання пошуку або
+ * перші перевірки дошок, які пошук додав. Другі - фонові завдання `check` без
+ * запуску: Retry ручний, а Check all має запуск. Поки вони йдуть, інтерфейс
+ * опитує стан і по завершенню перечитує список і лічильник Jobs.
+ */
 export async function isFindingNewPages(
   db: NodePgDatabase,
   userId: string,
 ): Promise<boolean> {
-  const rows = await db
-    .select({ id: checkTasks.id })
-    .from(checkTasks)
-    .innerJoin(companies, eq(companies.id, checkTasks.companyId))
-    .where(
-      and(
-        eq(companies.userId, userId),
-        eq(checkTasks.kind, "discover"),
-        inArray(checkTasks.status, ["queued", "running"]),
-      ),
-    )
-    .limit(1);
+  const unfinished = inArray(checkTasks.status, ["queued", "running"]);
+  const [searches, firstChecks] = await Promise.all([
+    db
+      .select({ id: checkTasks.id })
+      .from(checkTasks)
+      .innerJoin(companies, eq(companies.id, checkTasks.companyId))
+      .where(
+        and(
+          eq(companies.userId, userId),
+          eq(checkTasks.kind, "discover"),
+          unfinished,
+        ),
+      )
+      .limit(1),
+    db
+      .select({ id: checkTasks.id })
+      .from(checkTasks)
+      .innerJoin(careerSources, eq(careerSources.id, checkTasks.sourceId))
+      .innerJoin(companies, eq(companies.id, careerSources.companyId))
+      .where(
+        and(
+          eq(companies.userId, userId),
+          eq(checkTasks.kind, "check"),
+          eq(checkTasks.priority, "background"),
+          isNull(checkTasks.runId),
+          unfinished,
+        ),
+      )
+      .limit(1),
+  ]);
 
-  return rows.length > 0;
+  return searches.length > 0 || firstChecks.length > 0;
 }
