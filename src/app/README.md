@@ -81,6 +81,10 @@ Companies) і Check now. Кнопки модалок (Save, Delete) поки б�
   видалення компанії чи джерела), викликає `revalidateUnreadCount` - `revalidatePath("/", "layout")`.
   Зміни, які робить не користувач, а черга, приходять опитуванням - див.
   `check-status-provider.tsx`.
+- `check-progress.tsx` - індикатор «Checking 37/120» у шапці, поки йде загальна
+  перевірка; клієнтський, стан бере з `useCheckStatus`. Обгортка з `role="status"`
+  існує завжди, а текст у ній зʼявляється: читалка екрана оголошує зміни лише в
+  регіоні, що вже був на сторінці.
 - `check-status-provider.tsx` - `CheckStatusProvider` у кореневому layout і хук
   `useCheckStatus`: стан загальної перевірки для шапки й сторінок. Опитує
   `/api/check-status` за правилами `lib/checks/status-poller.ts`. Check all передає
@@ -145,8 +149,8 @@ Companies; інакше - текст самої вкладки («Усе про�
 - `delete-company-dialog.tsx` - кошик і підтвердження видалення; клієнтський.
 - `check-now-button.tsx` - Check now у картці на вкладці Tracked; клієнтський.
 - `check-all-button.tsx` - Check all поруч з Add, лише на вкладці Tracked і вимкнена,
-  коли вона порожня; клієнтський. Ставить джерела в чергу і про старт каже toast -
-  до індикатора прогресу в шапці (задача 4.05).
+  коли вона порожня; клієнтський. Ставить джерела в чергу і передає стан зі своєї
+  відповіді в `useCheckStatus().track` - індикатор у шапці видно одразу.
 - `company-read-buttons.tsx` - Mark all as read / Mark all as unread у картці, лише
   коли в компанії є вакансії; клієнтський. Без діалогу, результат - сповіщення з
   кількістю, бо на сторінці Companies інакше нічого видимо не змінюється.

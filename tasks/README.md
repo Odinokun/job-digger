@@ -68,7 +68,7 @@ PR: #57
 | [4.02 Захоплення завдань і повернення завислих](4.02-task-claiming-stale-recovery.md)            | done |
 | [4.03 Обробник черги як фоновий цикл](4.03-queue-background-loop.md)                             | done |
 | [4.04 Check all для всіх Tracked](4.04-check-all-tracked.md)                                     | done |
-| [4.05 Індикатор прогресу в шапці](4.05-header-progress.md)                                       | todo |
+| [4.05 Індикатор прогресу в шапці](4.05-header-progress.md)                                       | done |
 | [4.06 Підсумок після завершення перевірки](4.06-check-summary.md)                                | todo |
 | [4.07 Failed Sources Drawer з Retry](4.07-failed-sources-drawer.md)                              | todo |
 | [4.08 Правила перетину запусків](4.08-run-overlap-rules.md)                                      | todo |

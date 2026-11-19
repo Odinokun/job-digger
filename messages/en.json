@@ -4,7 +4,8 @@
     "jobs": "Jobs",
     "companies": "Companies",
     "history": "History",
-    "settings": "Settings"
+    "settings": "Settings",
+    "checking": "Checking {checked}/{total}"
   },
   "JobsPage": {
     "title": "Jobs",
@@ -44,7 +45,6 @@
     "noSources": "No career pages yet.",
     "checkNow": "Check now",
     "checkAll": "Check all",
-    "checkAllStarted": "Checking {count, plural, one {# career page} other {# career pages}}",
     "checkAllRunning": "A check is already running",
     "checkAllNothing": "Nothing to check: no career page is tracked",
     "lastChecked": "Last checked: {time}",
