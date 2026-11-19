@@ -10,6 +10,8 @@
 | Файл                                | Роль                                                              |
 | ----------------------------------- | ----------------------------------------------------------------- |
 | `check-source.ts`                   | `checkSource(db, client, source, checkedAt)` - перевірка одного джерела і її підсумок |
+| `check-all.ts`                      | `startCheckAll(db, { userId, now })` - поставити Check all у чергу |
+| `check-all.integration.test.ts`     | Які джерела потрапляють у запуск; одна активна перевірка          |
 | `check-company.ts`                  | `checkCompany(db, client, { userId, companyId, checkedAt })` - Check now |
 | `check-company.integration.test.ts` | Інтеграційні тести на справжній базі й фейковому вебсервері        |
 
@@ -31,3 +33,22 @@
 - Перевірка синхронна: Server Action чекає, поки прочитаються всі джерела. Для
   кількох джерел однієї компанії цього досить; черга з пріоритетом для ручних дій
   замінить це на етапі 4. В History Check now не записується.
+
+## Check all
+
+`startCheckAll` лише ставить перевірку в чергу; джерела перевіряє
+[цикл черги](../queue/README.md#цикл-обробника).
+
+- **Одне джерело = одне завдання** з пріоритетом `background`. Беруться джерела з
+  `is_tracked` у компаніях користувача - це і є вкладка Tracked. Компанії Not
+  tracked не мають таких джерел, тож у Check all не потрапляють ніколи.
+- Запуск (`check_runs`) і всі його завдання створюються однією транзакцією:
+  цикл не побачить запуску без завдань, а `sources_total` - знаменник прогресу.
+- **Друга перевірка, поки йде перша, не стартує** - `already-running`. Тримає це
+  частковий унікальний індекс, а `insert ... on conflict do nothing` замість винятку:
+  «For ON CONFLICT DO NOTHING, it is optional to specify a conflict_target; when
+  omitted, conflicts with all usable constraints (and unique indexes) are handled»
+  ([docs/18/sql-insert](https://www.postgresql.org/docs/18/sql-insert.html)). Два
+  одночасні кліки дають один запуск - тест на це є.
+- **Перевіряти нічого** - `nothing-to-check`, і запуск не створюється: інакше в
+  History зʼявився б рядок без жодного джерела.
