@@ -1,0 +1,122 @@
+import { eq } from "drizzle-orm";
+import { describe, expect, it } from "vitest";
+
+import { checkTasks } from "../db/schema.ts";
+import { testDb } from "../db/testing/test-db.ts";
+import { claimTask } from "./claim.ts";
+import { greenhouseSource, minutesAfter, task } from "./test-fixtures.ts";
+
+const now = new Date("2026-11-19T10:00:00Z");
+
+async function statusOf(id: string) {
+  const [row] = await testDb
+    .select()
+    .from(checkTasks)
+    .where(eq(checkTasks.id, id));
+  return row;
+}
+
+describe("claimTask", () => {
+  it("returns null when the queue is empty", async () => {
+    expect(await claimTask(testDb, { now, maxRunning: 5 })).toBeNull();
+  });
+
+  it("marks the claimed task running, locked now, one attempt spent", async () => {
+    const sourceId = await greenhouseSource(testDb, "discord");
+    const id = await task(testDb, { sourceId });
+
+    const claimed = await claimTask(testDb, { now, maxRunning: 5 });
+
+    expect(claimed).toEqual({
+      id,
+      sourceId,
+      runId: null,
+      attempts: 1,
+      lockedAt: now,
+    });
+    expect(await statusOf(id)).toMatchObject({
+      status: "running",
+      lockedAt: now,
+      attempts: 1,
+    });
+  });
+
+  it("takes manual tasks first, then the oldest", async () => {
+    // Ручна дія чекає щонайбільше одне фонове завдання, а не всю чергу
+    // (docs/checks-and-queue.md, розділ 8).
+    const sourceId = await greenhouseSource(testDb, "discord");
+    const old = minutesAfter(now, -10);
+    const older = minutesAfter(now, -20);
+    const newManual = await task(testDb, {
+      sourceId,
+      priority: "manual",
+      createdAt: old,
+    });
+    const oldBackground = await task(testDb, {
+      sourceId,
+      priority: "background",
+      createdAt: older,
+    });
+    const oldManual = await task(testDb, {
+      sourceId,
+      priority: "manual",
+      createdAt: older,
+    });
+
+    const order = [];
+    for (let i = 0; i < 3; i++) {
+      order.push((await claimTask(testDb, { now, maxRunning: 5 }))?.id);
+    }
+
+    expect(order).toEqual([oldManual, newManual, oldBackground]);
+  });
+
+  it("skips tasks that are not queued", async () => {
+    const sourceId = await greenhouseSource(testDb, "discord");
+    await task(testDb, { sourceId, status: "running", lockedAt: now });
+    await task(testDb, { sourceId, status: "succeeded" });
+    await task(testDb, { sourceId, status: "failed" });
+
+    expect(await claimTask(testDb, { now, maxRunning: 5 })).toBeNull();
+  });
+
+  it("claims nothing while the running limit is reached", async () => {
+    const sourceId = await greenhouseSource(testDb, "discord");
+    await task(testDb, { sourceId, status: "running", lockedAt: now });
+    await task(testDb, { sourceId, status: "running", lockedAt: now });
+    await task(testDb, { sourceId });
+
+    expect(await claimTask(testDb, { now, maxRunning: 2 })).toBeNull();
+  });
+
+  it("never hands one task to two concurrent claims", async () => {
+    const sourceId = await greenhouseSource(testDb, "discord");
+    for (let i = 0; i < 3; i++) await task(testDb, { sourceId });
+
+    const claims = await Promise.all(
+      Array.from({ length: 6 }, () =>
+        claimTask(testDb, { now, maxRunning: 10 }),
+      ),
+    );
+
+    const ids = claims.flatMap((claim) => (claim ? [claim.id] : []));
+    expect(ids).toHaveLength(3);
+    expect(new Set(ids).size).toBe(3);
+  });
+
+  it("keeps the running limit under concurrent claims", async () => {
+    // Ліміт спільний для всіх процесів: перевірка «скільки вже виконується» і
+    // захоплення мають бути одним кроком, інакше шість одночасних claim
+    // побачать нуль і візьмуть по завданню.
+    const sourceId = await greenhouseSource(testDb, "discord");
+    for (let i = 0; i < 6; i++) await task(testDb, { sourceId });
+
+    const claims = await Promise.all(
+      Array.from({ length: 6 }, () =>
+        claimTask(testDb, { now, maxRunning: 2 }),
+      ),
+    );
+
+    expect(claims.filter((claim) => claim !== null)).toHaveLength(2);
+  });
+});
