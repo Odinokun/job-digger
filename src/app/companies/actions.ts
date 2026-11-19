@@ -13,7 +13,7 @@ import { checkCompany } from "@/server/checks/check-company";
 import { addCompany } from "@/server/companies/add";
 import { deleteCompany } from "@/server/companies/delete";
 import { findCompanyInTab, listCompanies } from "@/server/companies/list";
-import { addCareerSource } from "@/server/companies/sources";
+import { addCareerSource, addCareerSources } from "@/server/companies/sources";
 import { findCompaniesWithSources } from "@/server/companies/source-duplicates";
 import { updateCompany } from "@/server/companies/update";
 import { discoverSources } from "@/server/discovery/discover";
@@ -122,10 +122,16 @@ export async function addCompanyAction(
  * Нічого не змінює - лише читає чужі сайти, - але Server Action, бо пошук
  * ходить у мережу з сервера. Аргументи - недовірений ввід, тому адреса
  * перевіряється тут: крива дає ту саму відмову, що й Save.
+ *
+ * `companyId` - пошук для вже доданої компанії (Find pages на картці Not
+ * tracked, задача 5.14): її власні джерела вже на картці, тож зі знахідок
+ * вони прибираються. Id - недовірений ввід, але лише фільтрує знахідки:
+ * компанії шукаються серед компаній самого користувача.
  */
 export async function findPagesAction(
   url: unknown,
   name: unknown,
+  companyId?: unknown,
 ): Promise<FindPagesResult> {
   const typedUrl = typeof url === "string" ? url.trim() : "";
   const typedName = typeof name === "string" ? name.trim() : "";
@@ -155,10 +161,15 @@ export async function findPagesAction(
       urls: findings.map((finding) => finding.url),
     });
 
-    return findings.map((finding) => ({
-      ...finding,
-      trackedIn: tracked.get(finding.url) ?? null,
-    }));
+    return findings
+      .map((finding) => ({
+        ...finding,
+        trackedIn: tracked.get(finding.url) ?? null,
+      }))
+      .filter(
+        (finding) =>
+          finding.trackedIn === null || finding.trackedIn.id !== companyId,
+      );
   });
 
   return outcome.ok
@@ -476,6 +487,66 @@ export async function addCareerSourceAction(
 
   // Рядок список замінить сам, а лічильники вкладок рендерить сервер: із новим
   // джерелом компанія переїжджає з Not tracked у Tracked.
+  revalidatePath("/companies");
+
+  return { status: "added", companyId: company, company: result.company };
+}
+
+/**
+ * Додає вибрані знахідки Find pages джерелами вже доданої компанії - модалка
+ * Find pages на картці Not tracked (задача 5.14).
+ *
+ * Аргументи - недовірений ввід: адреси зводяться до рядків, а права на
+ * компанію й самі адреси перевіряє `addCareerSources`. Перша перевірка після
+ * Save - справа клієнта, як і після Add company (5.09).
+ */
+export async function addFoundPagesAction(
+  companyId: unknown,
+  urls: unknown,
+  tab: unknown,
+): Promise<AddCareerSourceFormState> {
+  const company = asString(companyId);
+  const currentTab = parseCompaniesTab(tab);
+  const picked = Array.isArray(urls)
+    ? urls.filter((url): url is string => typeof url === "string")
+    : [];
+
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    const result = await addCareerSources(db, {
+      userId: user.id,
+      companyId: company,
+      sources: picked.map((url) => ({ url })),
+    });
+
+    if (!result.ok) {
+      return result;
+    }
+
+    return {
+      ok: true as const,
+      company: await findCompanyInTab(db, {
+        userId: user.id,
+        companyId: company,
+        tab: currentTab,
+      }),
+    };
+  });
+
+  if (!outcome.ok) {
+    return { status: "failed-unexpectedly" };
+  }
+
+  const result = outcome.value;
+
+  if (!result.ok) {
+    return { status: "failed", result };
+  }
+
+  // Лічильники вкладок рендерить сервер: із джерелом, що читається, компанія
+  // переїжджає з Not tracked у Tracked.
   revalidatePath("/companies");
 
   return { status: "added", companyId: company, company: result.company };

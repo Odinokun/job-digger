@@ -12,6 +12,7 @@ import { CompanyStatusChip } from "./company-status-chip";
 import { CompanyReadButtons } from "./company-read-buttons";
 import { DeleteCompanyDialog } from "./delete-company-dialog";
 import { EditCompanyDialog } from "./edit-company-dialog";
+import { FindPagesDialog } from "./find-pages-dialog";
 import { LastChecked } from "./last-checked";
 
 interface CompanyCardProps {
@@ -141,7 +142,16 @@ export function CompanyCard({
               onChecked={onSaved}
               startsOnMount={startsCheck}
             />
-          ) : null}
+          ) : (
+            // На Not tracked перевіряти нічого - замість Check now пошук
+            // сторінок для цієї компанії (docs/ui.md, розділ 4.3).
+            <FindPagesDialog
+              company={company}
+              tab={tab}
+              platformLabels={platformLabels}
+              onSaved={onSaved}
+            />
+          )}
           {/* Mark all as read / unread - лише коли є що позначати. */}
           {company.vacancies.total > 0 ? (
             <CompanyReadButtons
