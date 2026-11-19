@@ -97,6 +97,35 @@ export function careerPagesOnPage(html: string, pageUrl: string): string[] {
   return [...found];
 }
 
+/**
+ * Кар'єрні сторінки сайту з його sitemap (https://www.sitemaps.org/protocol.html):
+ * адреси з `<url><loc>`, у шляху яких є кар'єрне слово, обрізані по нього.
+ *
+ * Тексту посилання тут немає, тож рахується лише шлях і піддомен. Вкладені
+ * sitemap (`<sitemapindex>`) не читаються: кожен - ще один запит до чужого сайту.
+ */
+export function careerPagesInSitemap(xml: string, siteUrl: string): string[] {
+  // `xml: true` - розбір як XML, а не HTML (node_modules/cheerio/dist/esm/options.d.ts).
+  const $ = cheerio.load(xml, { xml: true });
+  const site = new URL(siteUrl);
+  const found = new Set<string>();
+
+  $("url > loc").each((_, element) => {
+    const career = careerPageOf(
+      $(element).text().trim(),
+      "",
+      site,
+      withoutWww(site.hostname),
+    );
+
+    if (career !== null) {
+      found.add(career);
+    }
+  });
+
+  return [...found];
+}
+
 function careerPageOf(
   address: string,
   text: string,

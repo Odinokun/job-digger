@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { careerPagesOnPage } from "./career-pages.ts";
+import { careerPagesInSitemap, careerPagesOnPage } from "./career-pages.ts";
 
 const PAGE = "https://www.acme.example/en/";
 
@@ -70,5 +70,42 @@ describe("careerPagesOnPage", () => {
       <a href="mailto:jobs@acme.example">jobs@acme.example</a>`;
 
     expect(careerPagesOnPage(html, PAGE)).toEqual([]);
+  });
+});
+
+describe("careerPagesInSitemap", () => {
+  const SITE = "https://acme.example/";
+
+  it("finds career pages among the sitemap addresses", () => {
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+      <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+        <url><loc>https://acme.example/</loc></url>
+        <url><loc>https://acme.example/en/about</loc></url>
+        <url><loc>https://acme.example/en/jobs</loc></url>
+        <url><loc>https://acme.example/en/jobs/designer-12</loc></url>
+        <url><loc>https://acme.example/de/karriere</loc></url>
+      </urlset>`;
+
+    expect(careerPagesInSitemap(xml, SITE)).toEqual([
+      "https://acme.example/en/jobs",
+      "https://acme.example/de/karriere",
+    ]);
+  });
+
+  it("ignores other sites and nested sitemaps", () => {
+    // Вкладені sitemap не читаються: на кожен пішов би ще один запит до
+    // чужого сайту, а кар'єрну сторінку зазвичай видно й без них.
+    const xml = `<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+        <sitemap><loc>https://acme.example/careers-sitemap.xml</loc></sitemap>
+      </sitemapindex>
+      <urlset><url><loc>https://other.example/careers</loc></url></urlset>`;
+
+    expect(careerPagesInSitemap(xml, SITE)).toEqual([]);
+  });
+
+  it("finds nothing in what is not a sitemap", () => {
+    expect(
+      careerPagesInSitemap("<html><body>Not found</body></html>", SITE),
+    ).toEqual([]);
   });
 });

@@ -13,7 +13,7 @@
 | `ats-links.ts` | `atsLinksOnPage` - дошки ATS, на які веде сторінка: посилання, iframe і скрипт вбудовування, по одній на дошку в порядку появи; `findSiteAtsLinks` - те саме для головної сторінки сайту через HTTP-клієнт |
 | `ats-links.test.ts` | Юніт-тести `atsLinksOnPage` |
 | `ats-links.integration.test.ts` | `findSiteAtsLinks` через фейковий вебсервер: синтетичний сайт `acme.example` і сайт, якого немає |
-| `career-pages.ts` | `careerPagesOnPage` - кар'єрні сторінки свого сайту за текстом посилання, шляхом або піддоменом |
+| `career-pages.ts` | `careerPagesOnPage` - кар'єрні сторінки свого сайту за текстом посилання, шляхом або піддоменом; `careerPagesInSitemap` - те саме з адрес sitemap, лише за шляхом |
 | `career-pages.test.ts` | Юніт-тести пошуку кар'єрних сторінок |
 
 ## Адреса дошки
