@@ -109,5 +109,6 @@ PR: #57
 | [7.09 Пін GitHub Actions і Dependabot](7.09-pin-actions-dependabot.md)                           | backlog |
 | [7.10 Підключати CSS лише тих компонентів HeroUI, які використовуємо](7.10-heroui-css-subset.md) | backlog |
 | [Лічильник проблемних джерел у меню](failing-sources-counter.md)                                 | analyze |
+| [Ручні перевірки лише по перших сторінках](first-page-only-manual-checks.md) | analyze |
 | [Розібратися з уразливостями у npm audit](npm-audit-vulnerabilities.md)                          | backlog |
 | [Розкласти документацію за частинами застосунку](split-docs-by-app-part.md)                      | analyze |
