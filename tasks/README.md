@@ -64,7 +64,7 @@ PR: #57
 | [3.21 Стани завантаження й оптимістичні дії](3.21-loading-states-optimistic.md)                  | done    |
 | [3.22 Перехід на вкладку під час дії над рядком](3.22-mark-then-switch-tab.md)                  | done    |
 | [3.23 Один пул з'єднань з базою в продакшні](3.23-one-db-pool.md)                              | done    |
-| [4.01 Схема check_runs + check_tasks](4.01-check-runs-tasks-schema.md)                           | todo |
+| [4.01 Схема check_runs + check_tasks](4.01-check-runs-tasks-schema.md)                           | done |
 | [4.02 Захоплення завдань і повернення завислих](4.02-task-claiming-stale-recovery.md)            | todo |
 | [4.03 Обробник черги як фоновий цикл](4.03-queue-background-loop.md)                             | todo |
 | [4.04 Check all для всіх Tracked](4.04-check-all-tracked.md)                                     | todo |
