@@ -11,6 +11,7 @@
 | `pagination/cursor.ts` | курсор keyset-пагінації та його розбір із недовіреного значення             |
 | `vacancies/vacancy-list.ts` | вкладки Jobs (`JOBS_TABS`, `parseJobsTab`, `belongsToJobsTab`), тип рядка `VacancyListItem` і `patchVacancy` для оптимістичних дій |
 | `vacancies/vacancy-list.test.ts` | юніт-тести вкладок і `patchVacancy`            |
+| `checks/check-status.ts` | `CheckStatus` - стан загальної перевірки й непрочитані, що інтерфейс отримує опитуванням |
 | `theme.ts`             | вибір оформлення (Light / Dark / System), імʼя cookie і розбір її значення  |
 
 ## Курсор пагінації
