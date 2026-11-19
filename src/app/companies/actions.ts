@@ -128,6 +128,37 @@ export async function loadMoreCompaniesAction(
   return { ok: true, ...outcome.value };
 }
 
+/** Більше рядків одним перечитуванням не віддаємо - захист від хибного числа. */
+const MAX_RELOAD = 500;
+
+/**
+ * Перечитує з початку стільки компаній, скільки вже показано, - після кінця
+ * загальної перевірки: статуси й «Last checked» змінились, а рядки списку живуть
+ * у клієнтському стані. Скільки показано - недовірене число, тож обмежене.
+ */
+export async function reloadCompaniesAction(
+  tab: unknown,
+  shown: unknown,
+): Promise<LoadMoreCompaniesResult> {
+  const limit =
+    typeof shown === "number" && Number.isInteger(shown) && shown > 0
+      ? Math.min(shown, MAX_RELOAD)
+      : undefined;
+
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return listCompanies(db, {
+      userId: user.id,
+      tab: parseCompaniesTab(tab),
+      limit,
+    });
+  });
+
+  return outcome.ok ? { ok: true, ...outcome.value } : { ok: false };
+}
+
 /**
  * Check now для однієї компанії: перевіряє її джерела й повертає оновлений
  * рядок списку.

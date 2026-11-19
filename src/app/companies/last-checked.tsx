@@ -13,7 +13,17 @@ const UPDATE_INTERVAL_MS = 60_000;
  * хвилину, щоб підпис не застигав на відкритій сторінці
  * (https://next-intl.dev/docs/usage/dates-times#relative-times-update).
  */
-export function LastChecked({ at }: { at: Date }) {
+export function LastChecked({
+  at,
+  message = "lastChecked",
+}: {
+  at: Date;
+  /**
+   * Підпис: «Last checked» картки або «Last ok» біля невдалого джерела - той
+   * самий відносний час.
+   */
+  message?: "lastChecked" | "lastOk";
+}) {
   const t = useTranslations("CompaniesPage");
   const format = useFormatter();
   const now = useNow({ updateInterval: UPDATE_INTERVAL_MS });
@@ -25,7 +35,7 @@ export function LastChecked({ at }: { at: Date }) {
 
   return (
     <span className="text-sm text-muted">
-      {t("lastChecked", { time: format.relativeTime(shown, now) })}
+      {t(message, { time: format.relativeTime(shown, now) })}
     </span>
   );
 }

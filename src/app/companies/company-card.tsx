@@ -1,4 +1,5 @@
 import { Card } from "@heroui/react";
+import { useTranslations } from "next-intl";
 
 import type {
   CompaniesTab,
@@ -7,6 +8,7 @@ import type {
 } from "@/lib/companies/company-list";
 
 import { CheckNowButton } from "./check-now-button";
+import { CompanyStatusChip } from "./company-status-chip";
 import { CompanyReadButtons } from "./company-read-buttons";
 import { DeleteCompanyDialog } from "./delete-company-dialog";
 import { EditCompanyDialog } from "./edit-company-dialog";
@@ -27,9 +29,8 @@ interface CompanyCardProps {
 /**
  * Один рядок списку компаній.
  *
- * Поля, даних для яких ще немає (кількість вакансій, статус перевірки), тут не
- * показуються: вони приходять із задачами 3.04 і 4.01, а порожнє «0 вакансій»
- * ввело б в оману. Час останньої перевірки зʼявляється після першого Check now.
+ * Статус перевірки й час останньої перевірки зʼявляються після першої
+ * перевірки: до неї показувати нічого, а порожнє «0 вакансій» ввело б в оману.
  */
 export function CompanyCard({
   company,
@@ -99,6 +100,16 @@ export function CompanyCard({
                 >
                   {source.url}
                 </a>
+                {/* Після збою вакансії джерела не видаляються, і без дати
+                    останнього успіху мертві виглядали б як живі
+                    (docs/ui.md, розділ 4.2). */}
+                {source.isTracked && source.lastCheck === "failed" ? (
+                  source.lastSuccessAt === null ? (
+                    <NeverOk />
+                  ) : (
+                    <LastChecked at={source.lastSuccessAt} message="lastOk" />
+                  )
+                ) : null}
               </li>
             ))}
           </ul>
@@ -111,10 +122,13 @@ export function CompanyCard({
             Tracked: на Not tracked перевіряти нічого. */}
         {statusLabel !== undefined ? (
           <span className="text-sm text-muted">{statusLabel}</span>
-        ) : company.lastCheckedAt === null ? (
-          <span />
         ) : (
-          <LastChecked at={company.lastCheckedAt} />
+          <div className="flex flex-wrap items-center gap-2">
+            <CompanyStatusChip sources={company.sources} />
+            {company.lastCheckedAt === null ? null : (
+              <LastChecked at={company.lastCheckedAt} />
+            )}
+          </div>
         )}
         <div className="flex items-center gap-2">
           {tab === "tracked" ? (
@@ -142,4 +156,11 @@ export function CompanyCard({
       </Card.Footer>
     </Card>
   );
+}
+
+/** Невдале джерело, яке ще жодного разу не перевірилося успішно. */
+function NeverOk() {
+  const t = useTranslations("CompaniesPage");
+
+  return <span className="text-sm text-danger">{t("neverOk")}</span>;
 }

@@ -49,6 +49,13 @@
     "checkAllRunning": "Перевірка вже триває",
     "checkAllNothing": "Нічого перевіряти: жодна кар'єрна сторінка не відстежується",
     "lastChecked": "Остання перевірка: {time}",
+    "lastOk": "Востаннє успішно: {time}",
+    "neverOk": "Жодної успішної перевірки",
+    "checkStatus": {
+      "ok": "OK",
+      "hasErrors": "Є помилки",
+      "checking": "Перевіряється"
+    },
     "loadMore": "Завантажити ще",
     "platforms": {
       "greenhouse": "Greenhouse",
