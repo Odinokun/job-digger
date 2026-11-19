@@ -12,8 +12,8 @@
 | `check-source.ts`                   | `checkSource(db, client, source, checkedAt)` - перевірка одного джерела і її підсумок |
 | `check-all.ts`                      | `startCheckAll(db, { userId, now })` - поставити Check all у чергу |
 | `check-all.integration.test.ts`     | Які джерела потрапляють у запуск; одна активна перевірка          |
-| `check-status.ts`                   | `getCheckStatus(db, { userId })` - хід активного запуску й кількість непрочитаних |
-| `check-status.integration.test.ts`  | Свіжий користувач, активний запуск, чужі й завершені не рахуються   |
+| `check-status.ts`                   | `getCheckStatus(db, { userId })` - хід активного запуску, непоказаний підсумок і непрочитані; `markSummaryShown` |
+| `check-status.integration.test.ts`  | Активний запуск, підсумок: який пропонується і що позначає `markSummaryShown` |
 | `check-company.ts`                  | `checkCompany(db, client, { userId, companyId, checkedAt })` - Check now |
 | `check-company.integration.test.ts` | Інтеграційні тести на справжній базі й фейковому вебсервері        |
 
@@ -54,3 +54,16 @@
   одночасні кліки дають один запуск - тест на це є.
 - **Перевіряти нічого** - `nothing-to-check`, і запуск не створюється: інакше в
   History зʼявився б рядок без жодного джерела.
+
+## Підсумок перевірки
+
+Підсумок завершеного запуску спливає **один раз**, навіть якщо запуск закінчився при
+закритій вкладці (docs/checks-and-queue.md, розділ 8). Тримає це
+`check_runs.summary_shown_at`.
+
+- `getCheckStatus` віддає в `summary` **останній** завершений запуск без позначки:
+  після кількох автоперевірок за відсутності користувачеві потрібен свіжий підсумок,
+  а не черга старих.
+- `markSummaryShown` позначає цей запуск і **всі старші** непоказані того самого
+  користувача, але не новіші - їхнього підсумку ще ніхто не бачив. Межа - `finished_at`
+  показаного запуску; чужий `runId` дає порожню межу й нічого не змінює.

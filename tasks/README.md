@@ -69,13 +69,14 @@ PR: #57
 | [4.03 Обробник черги як фоновий цикл](4.03-queue-background-loop.md)                             | done |
 | [4.04 Check all для всіх Tracked](4.04-check-all-tracked.md)                                     | done |
 | [4.05 Індикатор прогресу в шапці](4.05-header-progress.md)                                       | done |
-| [4.06 Підсумок після завершення перевірки](4.06-check-summary.md)                                | todo |
+| [4.06 Підсумок після завершення перевірки](4.06-check-summary.md)                                | done |
 | [4.07 Failed Sources Drawer з Retry](4.07-failed-sources-drawer.md)                              | todo |
 | [4.08 Правила перетину запусків](4.08-run-overlap-rules.md)                                      | todo |
 | [4.09 Статуси компанії на вкладці Tracked](4.09-tracked-company-statuses.md)                     | todo |
 | [4.10 Сторінка History з Load more](4.10-history-page.md)                                        | todo |
 | [4.11 E2E: Check all від запуску до підсумку](4.11-e2e-check-all.md)                             | done |
 | [4.12 Polling-маршрут стану перевірки](4.12-check-status-polling.md)                             | done |
+| [4.13 Сповіщення про нові вакансії на сторінці Jobs](4.13-new-vacancies-notice.md)            | todo |
 | [5.01 Визначення платформи за URL](5.01-platform-detection.md)                                   | backlog |
 | [5.02 Пошук: посилання з сайту компанії на ATS](5.02-discovery-site-ats-links.md)                | backlog |
 | [5.03 Пошук: кар'єрні сторінки на сайті компанії](5.03-discovery-site-career-pages.md)           | backlog |

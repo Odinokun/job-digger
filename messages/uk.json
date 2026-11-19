@@ -161,5 +161,9 @@
   },
   "Common": {
     "close": "Закрити"
+  },
+  "CheckSummary": {
+    "title": "Перевірку завершено",
+    "description": "{checked, plural, one {Перевірено # джерело} few {Перевірено # джерела} many {Перевірено # джерел} other {Перевірено # джерела}}: успішно - {ok}, з помилкою - {failed}. Нових вакансій - {newVacancies}, видалених - {removedVacancies}."
   }
 }
