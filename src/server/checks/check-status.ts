@@ -1,8 +1,9 @@
 /**
- * Стан загальної перевірки для опитування з інтерфейсу: хід активного запуску
- * і кількість непрочитаних (docs/checks-and-queue.md, розділ 8).
+ * Стан загальної перевірки для опитування з інтерфейсу: хід активного запуску,
+ * непоказаний підсумок і кількість непрочитаних (docs/checks-and-queue.md,
+ * розділ 8).
  */
-import { and, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNotNull, isNull, lte, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import type { CheckStatus } from "../../lib/checks/check-status.ts";
@@ -13,7 +14,7 @@ export async function getCheckStatus(
   db: NodePgDatabase,
   { userId }: { userId: string },
 ): Promise<CheckStatus> {
-  const [[run], { count: unread }] = await Promise.all([
+  const [[run], [summary], { count: unread }] = await Promise.all([
     db
       .select({
         total: checkRuns.sourcesTotal,
@@ -25,8 +26,60 @@ export async function getCheckStatus(
       .from(checkRuns)
       // Активний запуск у користувача один - це тримає унікальний індекс.
       .where(and(eq(checkRuns.userId, userId), isNull(checkRuns.finishedAt))),
+    db
+      .select({
+        runId: checkRuns.id,
+        checked: checkRuns.sourcesChecked,
+        failed: checkRuns.sourcesFailed,
+        newVacancies: checkRuns.newVacancies,
+        removedVacancies: checkRuns.removedVacancies,
+      })
+      .from(checkRuns)
+      .where(
+        and(
+          eq(checkRuns.userId, userId),
+          isNotNull(checkRuns.finishedAt),
+          isNull(checkRuns.summaryShownAt),
+        ),
+      )
+      // Кілька непоказаних (автоперевірки за відсутності) - лише останній.
+      .orderBy(desc(checkRuns.finishedAt))
+      .limit(1),
     countUnread(db, { userId }),
   ]);
 
-  return { run: run ?? null, unread };
+  return { run: run ?? null, summary: summary ?? null, unread };
+}
+
+export interface MarkSummaryShownInput {
+  userId: string;
+  runId: string;
+  now: Date;
+}
+
+/**
+ * Підсумок показано: позначаються цей запуск і всі старші непоказані того самого
+ * користувача - інакше після кількох автоперевірок підсумки спливали б один за
+ * одним. Новіші не чіпаються: їхнього підсумку користувач ще не бачив.
+ */
+export async function markSummaryShown(
+  db: NodePgDatabase,
+  { userId, runId, now }: MarkSummaryShownInput,
+): Promise<void> {
+  // Чужий `runId` дає `null`, а порівняння з `null` - жодного рядка.
+  const shownFinishedAt = sql`(
+    select ${checkRuns.finishedAt} from ${checkRuns}
+    where ${checkRuns.id} = ${runId} and ${checkRuns.userId} = ${userId}
+  )`;
+
+  await db
+    .update(checkRuns)
+    .set({ summaryShownAt: now })
+    .where(
+      and(
+        eq(checkRuns.userId, userId),
+        isNull(checkRuns.summaryShownAt),
+        lte(checkRuns.finishedAt, shownFinishedAt),
+      ),
+    );
 }

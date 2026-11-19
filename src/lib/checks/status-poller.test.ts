@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { CheckStatus } from "./check-status";
 import { createStatusPoller } from "./status-poller";
 
-const idle: CheckStatus = { run: null, unread: 0 };
+const idle: CheckStatus = { run: null, summary: null, unread: 0 };
 const running: CheckStatus = {
   run: {
     total: 3,
@@ -12,6 +12,7 @@ const running: CheckStatus = {
     newVacancies: 2,
     removedVacancies: 0,
   },
+  summary: null,
   unread: 2,
 };
 
