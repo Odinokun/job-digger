@@ -90,6 +90,8 @@ PeopleForce. Окрема задача на кожну платформу, TDD, 
 
 - [ ] `src/lib/companies/platform.ts` - значення в `CAREER_PLATFORMS` і домен у
       `PLATFORM_DOMAINS`. Таблиця доменів у [README `src/lib/companies`](../../lib/companies/README.md).
+- [ ] Прибрати платформу з `src/lib/companies/known-ats.ts`: там лише ATS без
+      парсера, і рядок, що лишився, підписував би джерело назвою з того списку.
 - [ ] Міграція: enum `career_platform` будується з `CAREER_PLATFORMS`, тож
       `npm run db:generate` ([порядок роботи з міграціями](../db/README.md)).
 - [ ] `src/lib/companies/suggest.ts` - якщо назва компанії в адресі живе в

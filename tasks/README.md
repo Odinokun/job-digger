@@ -98,7 +98,7 @@ PR: #57
 | [5.12 E2E: Find pages від URL до вакансій](5.12-e2e-find-pages.md)                               | done    |
 | [5.13 ATS на домені компанії](5.13-ats-on-company-domain.md)                                     | backlog |
 | [5.14 Find pages для однієї компанії на Not tracked](5.14-find-pages-not-tracked-company.md)     | done    |
-| [5.15 Відомі ATS без парсера](5.15-known-ats-without-parser.md)                                  | todo    |
+| [5.15 Відомі ATS без парсера](5.15-known-ats-without-parser.md)                                  | done    |
 | [6.01 Таблиця settings і сторінка Settings](6.01-settings-page.md)                               | backlog |
 | [6.02 Розрахунок часу наступної автоперевірки](6.02-next-auto-check-time.md)                     | backlog |
 | [6.03 Автоперевірка локально і перевірка на старті](6.03-auto-check-local.md)                    | backlog |
