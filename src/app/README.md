@@ -193,6 +193,11 @@ Companies; інакше - текст самої вкладки («Усе про�
   галочку ставить клік по підпису: сам `<input>` HeroUI прихований під намальованою
   галочкою, і `check()` його не дістає.
 - `edit-company-dialog.tsx` - кнопка Edit і модалка редагування; клієнтський.
+- `find-pages-dialog.tsx` - Find pages на картці Not tracked (задача 5.14): пошук за сайтом
+  і назвою самої компанії стартує на відкритті, власні джерела компанії зі знахідок
+  прибрані (`findPagesAction` з `companyId`), вибрані додаються одним Save
+  (`addFoundPagesAction` → `addCareerSources`), далі перша перевірка без кнопки, як
+  після Add company з вкладки Not tracked; клієнтський.
 - `delete-company-dialog.tsx` - кошик і підтвердження видалення; клієнтський.
 - `check-now-button.tsx` - Check now у картці на вкладці Tracked; клієнтський. Поки
   йде загальна перевірка, кнопка вимкнена з підказкою «A general check is running»:

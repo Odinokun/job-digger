@@ -152,6 +152,13 @@
         "alreadyTracked": "Already tracked in {name}"
       }
     },
+    "findPages": {
+      "open": "Find pages",
+      "title": "Find pages for {name}",
+      "searching": "Looking for career pages…",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
     "sourceTaken": "This career page already belongs to {name}.",
     "loading": "Loading companies…",
     "companyRead": {
