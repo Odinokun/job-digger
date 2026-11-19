@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<workzag-jobs>
+
+<position>
+    <id>2888194</id>
+    <subcompany>Astrafy SA</subcompany>
+    <office>Madrid</office>
+    <department>Analytics &amp; Insights</department>
+    <recruitingCategory>Permanent Employee</recruitingCategory>
+    <name>Analytics Engineer – Power BI &amp; Microsoft Fabric</name>
+    <jobDescriptions>
+        <jobDescription>
+            <name>Your mission</name>
+            <value>
+                <![CDATA[<p>You will work on different projects to help Astrafy customers get the most out of their data on the Microsoft stack. You will work on the business and technical sides of the customer use case.</p><p>On the business side:</p><ul><li>Collaborate with stakeholders (Finance, Operations, Quality, HR…) to understand the business needs.</li><li>Challenge and refine the requirements to ensure alignment with business objectives.</li><li>Perform a thorough analysis of the client’s data sources (ERP, planning tools, files, APIs) to assess the available data.</li><li>Conduct workshops with stakeholders to validate KPIs.</li><li>Define visualizations and the overall dashboard structure in Power BI</li><li>Help business users grow into a governed self-service model: certified datasets, clear roles, and best practices.</li></ul><p>On the technical side:</p><ul><li>Build or refine the data platform on Microsoft Fabric following a medallion architecture (Bronze, Silver, Gold) with Lakehouses and Warehouses.</li><li>Develop ingestion with Data Pipelines and Dataflows Gen2, and transformations with notebooks (PySpark, Spark SQL).</li><li>Design robust semantic models (star schema, DAX, row-level security) to support Power BI reporting and exploration.</li><li>Industrialize delivery: DEV/TEST/PROD environments, Fabric deployment pipelines, Git integration with Azure DevOps.</li><li>Monitor and optimize Fabric capacity, refresh schedules, and performance.</li><li>Contribute to data governance (Microsoft Purview, documentation, data quality).</li><li>Focus on usability and clear data presentation.</li><li>Leverage AI-driven solutions (Copilot in Fabric and Power BI, Azure AI) to enhance user experience.</li></ul><p>In addition to these core responsibilities, we strongly value knowledge-sharing and community engagement. At Astrafy, we are active contributors on platforms like Medium, where we regularly publish articles to share our expertise, insights, and innovations, helping to grow both our community and industry presence.<br>As part of the role, the candidate will also be encouraged to write articles, offering valuable insights and thought leadership to enhance Astrafy’s impact further and foster greater collaboration within our field.</p>]]>
+            </value>
+        </jobDescription>
+        <jobDescription>
+            <name>Your profile</name>
+            <value>
+                <![CDATA[<ul><li><p>Experience with Power BI is required (data modeling, DAX, Power Query, workspace and app management)</p></li><li>Hands-on experience with Microsoft Fabric is required (Lakehouse, Warehouse, Data Pipelines, Dataflows, notebooks, OneLake)</li><li>Advanced knowledge of SQL is required</li><li>Good knowledge of Python / PySpark</li><li>Azure knowledge (Azure DevOps, Entra ID, Data Factory, on-premises data gateway…) is required</li><li>Good understanding of end-to-end pipeline design and implementation (ETL/ELT)</li><li>Experience with Git and CI/CD practices is required</li><li>Familiarity with data governance tools (Microsoft Purview) is a plus</li><li>Experience with Grafana, time-series or industrial (OT) data is a plus</li><li>Strong data visualization skills to convey information and results clearly</li><li>Attention to detail and quality with excellent problem-solving</li><li>You have an analytics and solution-oriented mindset</li><li>You work well in a team as well as independently</li><li>Excellent communication and collaboration skills (both with your colleagues as well as with external stakeholders)</li><li>You speak Spanish and English fluently. French is also appreciated.</li></ul><p>This role is not just a job; it’s an opportunity to be at the forefront of the data revolution, helping companies unlock the potential of modern data technologies. If you are passionate about data engineering and analytics, thrive in dynamic environments, and are eager to make a significant impact, we would love to hear from you.<br>Was this list a bit much? Don’t worry - we don’t expect you to tick every box from the beginning.</p>]]>
+            </value>
+        </jobDescription>
+        <jobDescription>
+            <name>Why us?</name>
+            <value>
+                <![CDATA[<ul><li>An attractive salary package, with no blurry or hidden clauses. Everything we offer is open-source via our Gitbook. Check it out <a href="https://astrafy.gitbook.io/handbook/its-all-about-people/compensation">here</a>.</li><li>An exciting job where technology innovation is not a buzzword but a reality.</li><li>Be part of a dynamic team that shares strong values. Check out our “Culture and Values” chart <a href="https://docs.astrafy.io/handbook/the-company/culture-and-values">here</a>.</li><li>Continuous training &amp; development of soft and hard skills. Check out our training policy <a href="https://docs.astrafy.io/handbook/its-all-about-people/training">here</a>.</li><li>Flexible working hours and remote policies. Check it out <a href="https://docs.astrafy.io/handbook/the-company/remote-work">here</a>.</li><li>An excellent team of colleagues &amp; regular team-building activities. Check it out <a href="https://docs.astrafy.io/handbook/its-all-about-people/team-building-and-retreat">here</a>.</li></ul><p>And much more. We have compiled a detailed handbook covering all you need to know about our company. Check it out <a href="https://docs.astrafy.io/handbook/">here</a>.</p>]]>
+            </value>
+        </jobDescription>
+    </jobDescriptions>
+    <employmentType>permanent</employmentType>
+    <seniority>experienced</seniority>
+    <schedule>full-time</schedule>
+    <yearsOfExperience>2-5</yearsOfExperience>
+    <occupation>general_and_other_engineering</occupation>
+    <occupationCategory>engineering</occupationCategory>
+    <createdAt>2026-11-13T12:01:36+00:00</createdAt>
+</position>
+
+<position>
+    <id>738990</id>
+    <subcompany>Astrafy SA</subcompany>
+    <office>Madrid (Hybrid)</office>
+    <department>Data Engineering</department>
+    <recruitingCategory>Intern</recruitingCategory>
+    <name>Internship - Data Engineer</name>
+    <jobDescriptions>
+        <jobDescription>
+            <name>Your mission</name>
+            <value>
+                <![CDATA[You will work on different projects to help Astrafy customers get the most out of their data. You will work on the business and technical sides of the customer use case.<br><ul><li><strong>Design and maintain scalable data pipelines</strong> leveraging technologies such as <strong>Airflow</strong>, <strong>dbt</strong>, <strong>BigQuery</strong>, <strong>Pubsub</strong>, and <strong>Snowflake</strong>, ensuring efficient and reliable data ingestion, transformation, and delivery.</li><li><strong>Develop and optimize data infrastructure</strong> in the <strong>Google Cloud</strong> environment, implementing best practices for performance, cost, and security.</li><li><strong>Use Terraform</strong> to automate infrastructure provisioning and manage containerized workloads, promoting agility and repeatability across environments.</li><li><strong>Implement robust data governance, security, and quality measures</strong>, ensuring accuracy, consistency, and compliance throughout the data lifecycle.</li><li><strong>Collaborate with cross-functional teams</strong> to design and deploy BI dashboards and other analytics solutions that empower stakeholders with actionable insights.</li><li><strong>Continuously refine data architecture</strong> to accommodate changing business needs, scaling solutions to handle increased data volume and complexity.</li><li><strong>Champion a culture of innovation</strong> by researching, evaluating, and recommending emerging data technologies and industry best practices.</li></ul>If you don't check every box, don't worry. No one knows everything, but we expect a great motivation to learn, take ownership, and become part of a supportive team. At Astrafy, everyone is learning and teaching others every day in their role.]]>
+            </value>
+        </jobDescription>
+        <jobDescription>
+            <name>Your profile</name>
+            <value>
+                <![CDATA[<ul><li><strong>Technical expertise:</strong> Knowledge and experience with the tools mentioned above or similar ones are valued.</li><li><strong>Continuous Learning:</strong> Curious to stay updated on emerging data technologies, practices, and frameworks, and to share knowledge across the organization.</li><li><strong>Team Player:</strong> Strong communication and collaboration skills, with the ability to work effectively within cross-functional teams to deliver impactful data solutions.</li><li>You speak <strong>English</strong> fluently, and a word of French and/or Spanish is a plus</li></ul>]]>
+            </value>
+        </jobDescription>
+        <jobDescription>
+            <name>Why us?</name>
+            <value>
+                <![CDATA[<ul><li><strong>Attractive Salary Package:</strong> No blurry or hidden clauses. Everything is transparently outlined in our <a href="https://astrafy.gitbook.io/handbook/its-all-about-people/compensation">Gitbook</a> (<a href="https://astrafy.gitbook.io/handbook/its-all-about-people/compensation">https://astrafy.gitbook.io/handbook/its-all-about-people/compensation</a>)</li><li><strong>Genuine Innovation:</strong> An exciting role where technology innovation is our daily job. We don’t get stuck with old technologies and practices. We encourage learning, testing, and taking initiative.</li><li><strong>Strong Values &amp; Culture:</strong> Become part of a dynamic team that lives by solid values. Learn more in our “<a href="https://docs.astrafy.io/handbook/the-company/culture-and-values">Culture and Values</a>” chart (<a href="https://docs.astrafy.io/handbook/the-company/culture-and-values">https://docs.astrafy.io/handbook/the-company/culture-and-values</a>)</li><li><strong>Continuous Learning:</strong> We offer ongoing training and development for both soft and hard skills. Check out our <a href="https://docs.astrafy.io/handbook/its-all-about-people/training">training policy</a> (<a href="https://docs.astrafy.io/handbook/its-all-about-people/training">https://docs.astrafy.io/handbook/its-all-about-people/training</a>)</li><li><strong>Flexible Work Environment:</strong> Enjoy flexible hours and remote work options. We want the job to adapt to your circumstances. Discover more <a href="https://docs.astrafy.io/handbook/the-company/remote-work">here</a>. (<a href="https://docs.astrafy.io/handbook/the-company/remote-work">https://docs.astrafy.io/handbook/the-company/remote-work</a>)</li><li><strong>Team-Building &amp; Retreats:</strong> We organise two team-building retreats per year in an exciting European location, along with several activities during the year. Learn more <a href="https://docs.astrafy.io/handbook/its-all-about-people/team-building-and-retreat">here</a> (<a href="https://docs.astrafy.io/handbook/its-all-about-people/team-building-and-retreat">https://docs.astrafy.io/handbook/its-all-about-people/team-building-and-retreat</a>).</li><li><strong>And Much More:</strong> Our <a href="https://docs.astrafy.io/handbook/">handbook</a> (<a href="https://docs.astrafy.io/handbook/">https://docs.astrafy.io/handbook/</a>) covers all you need to know about who we are and how we work.</li></ul>]]>
+            </value>
+        </jobDescription>
+    </jobDescriptions>
+    <employmentType>intern</employmentType>
+    <seniority>entry-level</seniority>
+    <schedule>full-time</schedule>
+    <yearsOfExperience>lt-1</yearsOfExperience>
+    <keywords>internship,google cloud,data engineer,bigquery,dbt,airflow,airbyte</keywords>
+    <occupation>database_development_and_administration</occupation>
+    <occupationCategory>it_software</occupationCategory>
+    <createdAt>2022-07-05T09:30:52+00:00</createdAt>
+</position>
+
+<position>
+    <id>2124624</id>
+    <office>Geneva</office>
+    <additionalOffices>
+        <office>Madrid (Remote)</office>
+    </additionalOffices>
+    <department>Analytics &amp; Insights</department>
+    <recruitingCategory>Permanent Employee</recruitingCategory>
+    <name>Looker Engineer / BI Engineer</name>
+    <jobDescriptions>
+        <jobDescription>
+            <name>Your mission</name>
+            <value>
+                <![CDATA[You will work on different projects to help Astrafy customers get the most out of their data. You will work on the business and technical sides of the customer use case.<br>On the business side:<br><ul><li>Collaborate with stakeholders to understand the business needs.</li><li>Challenge and refine the requirements to ensure alignment with business objectives.</li><li>Perform a thorough analysis of the client's database to assess the available data.</li><li>Conduct workshops with stakeholders to validate KPIs.</li><li>Define visualizations and the overall dashboard structure in Looker (using Miro or Figma)</li></ul>On the technical side:<br><ul><li>Build or refine the data model to support Looker’s data exploration (using BigQuery and dbt).</li><li>Develop LookML models for transforming and structuring data.</li><li>Ensure flexibility for users to explore custom reports.</li><li>Focus on usability and clear data presentation.</li><li>Leverage AI-driven solutions to enhance user experience</li></ul>In addition to these core responsibilities, we strongly value knowledge-sharing and community engagement. At Astrafy, we are active contributors on platforms like Medium, where we regularly publish articles to share our expertise, insights, and innovations, helping to grow both our community and industry presence.<br>As part of the role, the candidate will also be encouraged to write articles, offering valuable insights and thought leadership to enhance Astrafy's impact further and foster greater collaboration within our field.]]>
+            </value>
+        </jobDescription>
+        <jobDescription>
+            <name>Your profile</name>
+            <value>
+                <![CDATA[<ul><li>Experience with enterprise-grade BI tools is required (Looker, Data Studio)</li><li>Advanced knowledge of SQL is required</li><li>Google Cloud knowledge (BigQuery, Cloud Storage, Cloud Function ...) is required</li><li>Good understanding of dbt</li><li>Good understanding of end-to-end pipeline design and implementation (ETL)</li><li>Experience with dbt and Git is required</li><li>Strong data visualization skills to convey information and results clearly</li><li>Attention to detail and quality with excellent problem-solving</li><li>You have an analytics and solution-oriented mindset</li><li>You work well in a team as well as independently</li><li>Excellent communication and collaboration skills (both with your colleagues as well as with external stakeholders)</li><li>You speak English and French fluently</li></ul>This role is not just a job; it's an opportunity to be at the forefront of the data revolution, helping companies unlock the potential of modern data technologies. If you are passionate about data analytics, thrive in dynamic environments, and are eager to make a significant impact, we would love to hear from you.<br><br>Was this list a bit much? Don't worry - we don't expect you to tick every box from the beginning.]]>
+            </value>
+        </jobDescription>
+        <jobDescription>
+            <name>Why us?</name>
+            <value>
+                <![CDATA[<ul><li>An attractive salary package, with no blurry or hidden clauses.  Everything we offer is open-source via our Gitbook. Check it out <a href="https://astrafy.gitbook.io/handbook/its-all-about-people/compensation">here</a> (<a href="https://astrafy.gitbook.io/handbook/its-all-about-people/compensation">https://astrafy.gitbook.io/handbook/its-all-about-people/compensation</a>).</li><li>An exciting job where technology innovation is not a buzzword but a reality. </li><li>Be part of a dynamic team that shares strong values. Check out our “Culture and Values” chart <a href="https://docs.astrafy.io/handbook/the-company/culture-and-values">here</a> (<a href="https://docs.astrafy.io/handbook/the-company/culture-and-values">https://docs.astrafy.io/handbook/the-company/culture-and-values</a>). </li><li>Continuous training &amp; development of soft and hard skills. Check out our training policy <a href="https://docs.astrafy.io/handbook/its-all-about-people/training">here</a> (<a href="https://docs.astrafy.io/handbook/its-all-about-people/training">https://docs.astrafy.io/handbook/its-all-about-people/training</a>).</li><li>Flexible working hours and remote policies. Check it out <a href="https://docs.astrafy.io/handbook/the-company/remote-work">here</a> (<a href="https://docs.astrafy.io/handbook/the-company/remote-work">https://docs.astrafy.io/handbook/the-company/remote-work</a>).</li><li>An excellent team of colleagues &amp; regular team-building activities. Check it out <a href="https://docs.astrafy.io/handbook/its-all-about-people/team-building-and-retreat">here</a> (<a href="https://docs.astrafy.io/handbook/its-all-about-people/team-building-and-retreat">https://docs.astrafy.io/handbook/its-all-about-people/team-building-and-retreat</a>). </li></ul>And much more. We have compiled a detailed handbook covering all you need to know about our company. Check it out <a href="https://docs.astrafy.io/handbook/">here</a> (<a href="https://docs.astrafy.io/handbook/">https://docs.astrafy.io/handbook/</a>).]]>
+            </value>
+        </jobDescription>
+    </jobDescriptions>
+    <employmentType>permanent</employmentType>
+    <seniority>experienced</seniority>
+    <schedule>full-time</schedule>
+    <yearsOfExperience>5-7</yearsOfExperience>
+    <keywords>business intelligence,google cloud,looker,sql,data analyst</keywords>
+    <occupation>business_analysis_and_research</occupation>
+    <occupationCategory>business_and_strategic_development</occupationCategory>
+    <createdAt>2025-05-22T09:31:42+00:00</createdAt>
+</position>
+
+<position>
+    <id>2180291</id>
+    <office>Madrid (Hybrid)</office>
+    <additionalOffices>
+        <office>Madrid (Remote)</office>
+    </additionalOffices>
+    <department>Data Engineering</department>
+    <recruitingCategory>Permanent Employee</recruitingCategory>
+    <name>Senior Data Engineer</name>
+    <jobDescriptions>
+        <jobDescription>
+            <name>Your mission</name>
+            <value>
+                <![CDATA[<p><span>You will work on different projects to help Astrafy customers get the most out of their <strong>data</strong>.</span><span> </span></p><p><span>You will work on both the b<strong>usiness and technical sides</strong> of customer use cases. Importantly, you will be onboarded with a clear trajectory as a <strong>Team Leader</strong>, where you will <strong>progressively</strong> take charge of mentoring, guiding, and managing a dedicated squad of 5 team members as we scale.</span><span> </span></p><p>Your core responsibilities will include:</p><ul><li><p><strong>Team Leadership &amp; Growth:</strong> Step into a team leader role, progressively taking charge of 5 team members. You will act as their mentor, foster their technical growth, and ensure high-quality project delivery.</p></li><li><p><strong>Pipeline Design &amp; Maintenance:</strong> Design and maintain scalable data pipelines leveraging technologies such as Airflow, dbt, BigQuery, Pubsub, and other Google Cloud / Open Source tools, ensuring efficient and reliable data ingestion, transformation, and delivery.</p></li><li><p><strong>Cloud Infrastructure Optimization:</strong> Develop and optimize data infrastructure in the Google Cloud environment, implementing best practices for performance, cost, and security.</p></li><li><p><strong>Infrastructure as Code:</strong> Use Terraform to automate infrastructure provisioning and manage containerized workloads, promoting agility and repeatability across environments.</p></li><li><p><strong>Data Governance &amp; Quality:</strong> Implement robust data governance, security, and quality measures, ensuring accuracy, consistency, and compliance throughout the data lifecycle.</p></li><li><p><strong>Architecture Evolution:</strong> Continuously refine data architecture to accommodate changing business needs, scaling solutions to handle increased data volume and complexity.</p></li><li><p><strong>Innovation &amp; Best Practices:</strong> Champion a culture of innovation by researching, evaluating, and recommending emerging data technologies and industry best practices.</p></li></ul><em>If you don't check every box, don't worry.</em> No one knows everything, but we expect a great motivation to learn, take ownership, and become part of a supportive team. At Astrafy, everyone is learning and teaching others every day in their role.]]>
+            </value>
+        </jobDescription>
+        <jobDescription>
+            <name>Your profile</name>
+            <value>
+                <![CDATA[<ul><li><strong>Technical Expertise:</strong> Deep knowledge and han<span>ds-on experience with the modern data stack tools mentioned above (or similar ones) is highly valued.</span>  <br><br></li><li><p><strong><span>Leadership &amp; People Skills:</span></strong><span> A strong motivation or proven capability to step into a leadership position. You a</span><span>re ready to progressively take charge of 5 team members, guiding their workflows and supporting their career progression.</span>  </p></li><li><p><strong><span>Continuous Learning:</span></strong><span> Curiosit</span>y to stay updated on emerging data technologies, practices, and frameworks, and a passion for sharing knowledge across the organization.  </p></li><li><p><strong>Team Player:</strong> Strong communication and collaboration skills, with the ability to work effectively within cross-functional environments to deliver impactful, high-craftsmanship data solutions.</p></li><li><p><strong>Languages:</strong> You speak English &amp; Spanish fluently. A working knowledge of French is a definitive plus.</p></li></ul>]]>
+            </value>
+        </jobDescription>
+        <jobDescription>
+            <name>Why us?</name>
+            <value>
+                <![CDATA[<ul><li><strong>Attractive Salary Package:</strong> No blurry or hidden clauses. Everything is transparently outlined in our <a href="https://astrafy.gitbook.io/handbook/its-all-about-people/compensation">Gitbook</a> (<a href="https://astrafy.gitbook.io/handbook/its-all-about-people/compensation">https://astrafy.gitbook.io/handbook/its-all-about-people/compensation</a>)<br><br></li><li><strong>Genuine Innovation:</strong> An exciting role where technology innovation is our daily job. We don’t get stuck with old technologies and practices. We encourage learning, testing and taking initiatives.<br><br></li><li><strong>Strong Values &amp; Culture:</strong> Become part of a dynamic team that lives by solid values. Learn more in our “<a href="https://docs.astrafy.io/handbook/the-company/culture-and-values">Culture and Values</a>” chart (<a href="https://docs.astrafy.io/handbook/the-company/culture-and-values">https://docs.astrafy.io/handbook/the-company/culture-and-values</a>)<br><br></li><li><strong>Continuous Learning:</strong> We offer ongoing training and development for both soft and hard skills. Check out our <a href="https://docs.astrafy.io/handbook/its-all-about-people/training">training policy</a> (<a href="https://docs.astrafy.io/handbook/its-all-about-people/training">https://docs.astrafy.io/handbook/its-all-about-people/training</a>)<br><br></li><li><strong>Flexible Work Environment:</strong> Enjoy flexible hours and remote work options. We want the job to adapt your circumstances. Discover more <a href="https://docs.astrafy.io/handbook/the-company/remote-work">here</a>. (<a href="https://docs.astrafy.io/handbook/the-company/remote-work">https://docs.astrafy.io/handbook/the-company/remote-work</a>)<br><br></li><li><strong>Team-Building &amp; Retreats:</strong> We organise two team-building per year in an exciting European location, along with several activities during the year. Learn more <a href="https://docs.astrafy.io/handbook/its-all-about-people/team-building-and-retreat">here</a> (<a href="https://docs.astrafy.io/handbook/its-all-about-people/team-building-and-retreat">https://docs.astrafy.io/handbook/its-all-about-people/team-building-and-retreat</a>).<br><br></li><li><strong>And Much More:</strong> Our <a href="https://docs.astrafy.io/handbook/">handbook</a> (<a href="https://docs.astrafy.io/handbook/">https://docs.astrafy.io/handbook/</a>) covers all you need to know about who we are and how we work.</li></ul><br><span style="font-family:'Google Sans Text', sans-serif;line-height:1.15;margin-top:0px;margin-left:0px;margin-right:0px;">We use an artificial intelligence assistant to help evaluate applications and assess qualifications based on job-related criteria.</span> This tool assists our team by organizing and reviewing applicant responses; <span style="font-family:'Google Sans Text', sans-serif;line-height:1.15;margin-top:0px;margin-left:0px;margin-right:0px;">however, </span><b style="font-family:'Google Sans Text', sans-serif;line-height:1.15;margin-top:0px;margin-left:0px;margin-right:0px;"><span style="font-family:'Google Sans Text', sans-serif;line-height:1.15;margin-top:0px;margin-left:0px;margin-right:0px;">all final decisions regarding screening, interviewing, and hiring are made entirely by human recruiters.</span></b><br><br>]]>
+            </value>
+        </jobDescription>
+    </jobDescriptions>
+    <employmentType>permanent</employmentType>
+    <seniority>experienced</seniority>
+    <schedule>full-time</schedule>
+    <yearsOfExperience>2-5</yearsOfExperience>
+    <keywords>dbt,google cloud,data engineer,bigquery,terraform,airflow,kubernetes,airbyte,cicd</keywords>
+    <occupation>database_development_and_administration</occupation>
+    <occupationCategory>it_software</occupationCategory>
+    <createdAt>2025-06-19T14:44:26+00:00</createdAt>
+    <salaryInformation>
+        <min>45000.00</min>
+        <max>60000.00</max>
+        <currencySymbol>€</currencySymbol>
+        <currencyCode>EUR</currencyCode>
+        <type>yearly</type>
+    </salaryInformation>
+</position>
+
+</workzag-jobs>

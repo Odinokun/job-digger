@@ -35,6 +35,9 @@
 | `hurma.ts`           | Hurma: `readHurma(sourceUrl, client)`, `hurmaCompany`, `hurmaBoardUrl`, `parseHurmaVacancies`, `hurmaHasNextPage` |
 | `hurma.test.ts`      | Юніт-тести парсера Hurma                          |
 | `hurma.integration.test.ts` | `readHurma` через фейковий вебсервер і сервер зі сторінками та перевіркою заголовка |
+| `personio.ts`        | Personio: `readPersonio(sourceUrl, client)`, `personioBoard`, `parsePersonioFeed` |
+| `personio.test.ts`   | Юніт-тести парсера Personio                       |
+| `personio.integration.test.ts` | `readPersonio` через фейковий вебсервер |
 | `pages-to-check.ts`  | `PAGES_TO_CHECK` - спільний ліміт сторінок для парсерів, що читають сторінками; `parsePagesToCheck` |
 | `pages-to-check.test.ts` | Юніт-тести розбору змінної                   |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
