@@ -61,6 +61,15 @@ describe("detectPlatform", () => {
     expect(detectPlatform("www.personio.com/careers")).toBe("unsupported");
   });
 
+  it("reads softgarden boards and career sites", () => {
+    expect(detectPlatform("dps.softgarden.io/en/vacancies")).toBe("softgarden");
+    expect(detectPlatform("spinncloud.career.softgarden.de/en")).toBe(
+      "softgarden",
+    );
+    // Скрипти й стилі softgarden - не дошка.
+    expect(detectPlatform("static.softgarden.de/x.js")).toBe("unsupported");
+  });
+
   it("falls back to unsupported for a page on the company's own domain", () => {
     expect(detectPlatform("www.lifeatspotify.com/jobs")).toBe("unsupported");
   });

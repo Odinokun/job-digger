@@ -48,7 +48,6 @@ const KNOWN_ATS: Array<[pattern: string, name: string]> = [
   ["ats.rippling.com", "Rippling"],
   [".homerun.co", "Homerun"],
   [".factorialhr.com", "Factorial"],
-  [".softgarden.io", "softgarden"],
   ["jobs.gem.com", "Gem"],
   ["jobs.dover.com", "Dover"],
   ["app.dover.com", "Dover"],

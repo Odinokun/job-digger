@@ -66,6 +66,17 @@ describe("boardOwnership", () => {
     });
   });
 
+  it("names the other site from the logo of a softgarden career site", () => {
+    // softgarden, SpiNNcloud: логотип у шапці кар'єрного сайту веде на сайт
+    // компанії. Клас згенерований styled-components, стабільний лише початок.
+    const html = `<a href="https://spinncloud.com" aria-label="An external link: You are leaving the career site" target="_blank" class="HeaderLogo__BrandLink-sc-k8vlfh-1 cUDiYH"><img alt="SpiNNcloud"/></a><a href="https://acrobat.adobe.com/">Adobe Reader</a>`;
+
+    expect(boardOwnership(html, "https://acme.example")).toEqual({
+      kind: "other",
+      site: "spinncloud.com",
+    });
+  });
+
   it("takes the other site from the Ashby page data and the Lever footer", () => {
     expect(
       boardOwnership(

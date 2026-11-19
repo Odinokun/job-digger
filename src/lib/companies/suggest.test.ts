@@ -111,6 +111,9 @@ describe("suggestCompanyFields", () => {
       expect(suggestCompanyFields("astrafy.jobs.personio.de").name).toBe(
         "Astrafy",
       );
+      expect(
+        suggestCompanyFields("spinncloud.career.softgarden.de/en").name,
+      ).toBe("Spinncloud");
     });
 
     it("takes the company name from a CleverStaff board", () => {

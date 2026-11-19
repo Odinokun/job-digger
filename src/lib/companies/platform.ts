@@ -20,6 +20,7 @@ export const CAREER_PLATFORMS = [
   "cleverstaff",
   "hurma",
   "personio",
+  "softgarden",
   "schema_org",
   "unsupported",
 ] as const;
@@ -50,6 +51,9 @@ export type CareerPlatform = (typeof CAREER_PLATFORMS)[number];
  * - `jobs.personio.de` і `jobs.personio.com` - дошка Personio на субдомені
  *   компанії (developer.personio.de/docs/retrieving-open-job-positions; `.com`
  *   віддає те саме - задача 3.27). Сам `personio.de`/`.com` - сайт постачальника.
+ * - `softgarden.io` (стара дошка) і `career.softgarden.de` (новий кар'єрний
+ *   сайт) - два продукти softgarden, обидва на субдомені компанії (задача 3.28).
+ *   Решта `softgarden.de` (`static.`, сайт) - не дошки.
  */
 const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["greenhouse.io", "greenhouse"],
@@ -63,6 +67,8 @@ const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["hurma.work", "hurma"],
   ["jobs.personio.de", "personio"],
   ["jobs.personio.com", "personio"],
+  ["softgarden.io", "softgarden"],
+  ["career.softgarden.de", "softgarden"],
 ];
 
 /**

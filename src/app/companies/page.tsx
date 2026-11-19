@@ -37,6 +37,7 @@ export default async function CompaniesPage({
     cleverstaff: t("platforms.cleverstaff"),
     hurma: t("platforms.hurma"),
     personio: t("platforms.personio"),
+    softgarden: t("platforms.softgarden"),
     schema_org: t("platforms.schemaOrg"),
     unsupported: t("platforms.unsupported"),
   };
