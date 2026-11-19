@@ -107,6 +107,10 @@ describe("suggestCompanyFields", () => {
       expect(suggestCompanyFields("acme.peopleforce.io/careers").name).toBe(
         "Acme",
       );
+      // Суфікс Personio - з двох лейблів, і `jobs` до назви не потрапляє.
+      expect(suggestCompanyFields("astrafy.jobs.personio.de").name).toBe(
+        "Astrafy",
+      );
     });
 
     it("takes the company name from a CleverStaff board", () => {

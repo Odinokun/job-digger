@@ -38,8 +38,6 @@ const KNOWN_ATS: Array<[pattern: string, name: string]> = [
   ["careers.smartrecruiters.com", "SmartRecruiters"],
   [".recruitee.com", "Recruitee"],
   [".teamtailor.com", "Teamtailor"],
-  [".jobs.personio.de", "Personio"],
-  [".jobs.personio.com", "Personio"],
   [".applytojob.com", "JazzHR"],
   ["jobs.jobvite.com", "Jobvite"],
   [".icims.com", "iCIMS"],

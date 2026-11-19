@@ -36,6 +36,7 @@ export default async function CompaniesPage({
     breezy: t("platforms.breezy"),
     cleverstaff: t("platforms.cleverstaff"),
     hurma: t("platforms.hurma"),
+    personio: t("platforms.personio"),
     schema_org: t("platforms.schemaOrg"),
     unsupported: t("platforms.unsupported"),
   };

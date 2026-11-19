@@ -48,6 +48,7 @@ const SUBDOMAIN_SLUG_PLATFORMS: CareerPlatform[] = [
   "peopleforce",
   "breezy",
   "hurma",
+  "personio",
 ];
 
 /**

@@ -21,10 +21,11 @@ export type BoardOwnership =
  *
  * - Lever: логотип у шапці і «{Company} Home Page» у футері;
  * - Breezy HR: пункт шапки `link company` («Company website»);
+ * - Personio: логотип у шапці (`a.logo-wrapper`);
  * - Ashby: поле `publicWebsite` у даних сторінки (`ASHBY_WEBSITE`).
  */
 const WEBSITE_LINKS =
-  "a.main-header-logo[href], .main-footer-text a[href], li.link.company a[href]";
+  "a.main-header-logo[href], .main-footer-text a[href], li.link.company a[href], a.logo-wrapper[href]";
 
 /** Ashby малює дошку JavaScript-ом, а сайт організації кладе в JSON сторінки. */
 const ASHBY_WEBSITE = /"publicWebsite"\s*:\s*"(https?:[^"]+)"/g;
@@ -42,6 +43,8 @@ const PLATFORM_DOMAINS = [
   "breezy.hr",
   "cleverstaff.net",
   "hurma.work",
+  "personio.de",
+  "personio.com",
   "myworkdayjobs.com",
   "myworkdaysite.com",
 ];

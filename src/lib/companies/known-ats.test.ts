@@ -5,8 +5,8 @@ import { knownAtsName } from "./known-ats.ts";
 describe("knownAtsName", () => {
   it("names an ATS that keeps the company in a subdomain", () => {
     expect(knownAtsName("https://acme.bamboohr.com/careers")).toBe("BambooHR");
-    expect(knownAtsName("https://acme.jobs.personio.de/job/123")).toBe(
-      "Personio",
+    expect(knownAtsName("https://acme.teamtailor.com/jobs/123")).toBe(
+      "Teamtailor",
     );
   });
 
