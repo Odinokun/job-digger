@@ -10,7 +10,7 @@ import type {
   FailedSource,
   FailedSourcesList,
 } from "../../lib/checks/failed-sources.ts";
-import { checkRuns } from "../db/schema.ts";
+import { checkRuns, checkTasks } from "../db/schema.ts";
 import type { CheckTaskError } from "../queue/task-error.ts";
 
 interface FailedRow extends Record<string, unknown> {
@@ -94,4 +94,48 @@ export async function listFailedSources(
   }
 
   return { items, canRetry: active.length === 0 };
+}
+
+export interface RetryFailedSourcesInput {
+  userId: string;
+  /** Конкретні джерела (Retry) або всі невдалі (Retry all failed). */
+  sourceIds: string[] | "all";
+  now: Date;
+}
+
+export type RetryFailedSourcesResult =
+  { ok: true; queued: number } | { ok: false; reason: "check-running" };
+
+/**
+ * Ставить Retry у чергу: ручне завдання поза запуском, тож рядок History не
+ * змінюється, а черга бере його раніше за фонові. Повторюються лише джерела зі
+ * списку drawer, які ще не чекають на свій Retry: id приходять із клієнта.
+ */
+export async function retryFailedSources(
+  db: NodePgDatabase,
+  { userId, sourceIds, now }: RetryFailedSourcesInput,
+): Promise<RetryFailedSourcesResult> {
+  const { items, canRetry } = await listFailedSources(db, { userId });
+
+  if (!canRetry) {
+    return { ok: false, reason: "check-running" };
+  }
+
+  const targets = items.filter(
+    (item) =>
+      !item.isRetrying &&
+      (sourceIds === "all" || sourceIds.includes(item.sourceId)),
+  );
+
+  if (targets.length > 0) {
+    await db.insert(checkTasks).values(
+      targets.map((item) => ({
+        sourceId: item.sourceId,
+        priority: "manual" as const,
+        createdAt: now,
+      })),
+    );
+  }
+
+  return { ok: true, queued: targets.length };
 }
