@@ -16,6 +16,8 @@
 | `check-status.integration.test.ts`  | Активний запуск, підсумок: який пропонується і що позначає `markSummaryShown` |
 | `failed-sources.ts`                 | `listFailedSources`, `retryFailedSources` - Failed Sources Drawer |
 | `failed-sources.integration.test.ts` | Які джерела в drawer, що з ними робить Retry                     |
+| `history.ts`                        | `listCheckRuns` - завершені перевірки для History, по 20 з курсором |
+| `history.integration.test.ts`       | Пʼять показників, порядок, курсор, чужі й незавершені не видно    |
 | `check-company.ts`                  | `checkCompany(db, client, { userId, companyId, checkedAt })` - Check now |
 | `check-company.integration.test.ts` | Інтеграційні тести на справжній базі й фейковому вебсервері        |
 
@@ -94,3 +96,12 @@ Failed Sources Drawer показує невдалі джерела **остан�
   це зайва перевірка, а не помилка, тож блокування заради цього немає.
 - Причина в рядку - `reason` без технічних подробиць, а для `bad-status` ще й код
   відповіді. Тип рядка - [`lib/checks/failed-sources.ts`](../../lib/checks/failed-sources.ts).
+
+## History
+
+`listCheckRuns` віддає **завершені** загальні перевірки користувача від найновішої,
+по 20 (docs/ui.md, розділ 4.4). Рядок - рівно пʼять показників: час запуску,
+перевірено джерел (зокрема невдалих), нові й видалені вакансії, тривалість. Перевірка,
+закрита за правилом фіналізації ([`queue/README.md`](../queue/README.md#завершення-запуску)),
+дає звичайний рядок. Курсор - як у Jobs: час запуску з мікросекундами
+([`db/time.ts`](../db/time.ts)) і `id` для однакового часу.
