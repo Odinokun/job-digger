@@ -26,10 +26,10 @@ import type {
   CompanyListItem,
 } from "@/lib/companies/company-list";
 import type { CareerPlatform } from "@/lib/companies/platform";
-import type { Finding } from "@/server/discovery/discover";
 import type {
   AddCareerSourceFormState,
   AddCompanyFormState,
+  FoundPage,
 } from "./form-state";
 import { suggestCompanyFields } from "@/lib/companies/suggest";
 import {
@@ -127,7 +127,7 @@ export function AddCompanyDialog({
   // Відмови, які видно ще до Save. Та сама перевірка повториться на сервері -
   // поля приходять із клієнта, - але `ftp://` нема чого везти туди й назад.
   // Знахідки Find pages: `null` - пошуку для цієї адреси ще не було.
-  const [findings, setFindings] = useState<Finding[] | null>(null);
+  const [findings, setFindings] = useState<FoundPage[] | null>(null);
   const [selectedFound, setSelectedFound] = useState<string[]>([]);
   const [isFinding, startFinding] = useTransition();
   const [findError, setFindError] = useState<"address-required" | null>(null);
