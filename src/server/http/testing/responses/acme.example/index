@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Acme - Tools for every job</title>
+  </head>
+  <body>
+    <header>
+      <a href="/">Acme</a>
+      <nav>
+        <a href="/products">Products</a>
+        <a href="/about">About</a>
+        <a href="https://jobs.lever.co/leverdemo">Careers</a>
+      </nav>
+    </header>
+    <main>
+      <h1>Tools for every job</h1>
+      <p>We are hiring: <a href="https://jobs.lever.co/leverdemo/5ac21346-8e0c-4494-8e7a-3eb92ff77902">Director of Diversity</a></p>
+    </main>
+    <footer>
+      <a href="https://www.linkedin.com/company/acme">LinkedIn</a>
+      <a href="mailto:hello@acme.example">hello@acme.example</a>
+    </footer>
+  </body>
+</html>

@@ -4,6 +4,7 @@
  * Запит `/{домен}/{шлях}` віддається файлом `{root}/{домен}/{шлях}` - так у
  * тестах можна зберігати справжні відповіді платформ і віддавати їх застосунку,
  * не ходячи в мережу. Рядок запиту ігнорується: відповідь визначає лише шлях.
+ * Шлях, що закінчується на `/`, віддається файлом `index` у цій теці.
  *
  * Слухає лише 127.0.0.1, як і сам застосунок.
  */
@@ -73,7 +74,10 @@ function responseFile(rootDir: string, requestUrl: string): string | null {
     return null;
   }
 
-  const file = resolve(rootDir, `.${decoded}`);
+  // Шлях на `/` - тека, а її вміст лежить у файлі `index`: так віддається
+  // корінь сайту компанії (`/acme.example/`).
+  const path = decoded.endsWith("/") ? `${decoded}index` : decoded;
+  const file = resolve(rootDir, `.${path}`);
   return file.startsWith(rootDir + sep) ? file : null;
 }
 

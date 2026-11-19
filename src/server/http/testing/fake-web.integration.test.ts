@@ -22,6 +22,8 @@ describe("fake web server", () => {
       join(root, "boards-api.greenhouse.io/v1/boards/acme/jobs"),
       '{"jobs":[],"meta":{"total":0}}',
     );
+    await mkdir(join(root, "acme.example"));
+    await writeFile(join(root, "acme.example/index"), "<html>Acme</html>");
     await writeFile(join(base, "secret.txt"), "outside of the responses");
 
     fakeWeb = await startFakeWeb({ root, port: 0 });
@@ -39,6 +41,16 @@ describe("fake web server", () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ jobs: [], meta: { total: 0 } });
+  });
+
+  it("serves the index file for a path that ends with a slash", async () => {
+    // Корінь сайту: HTTP-клієнт перетворює `https://acme.example` на
+    // `/acme.example/`, а тека файлом бути не може.
+    const response = await fetch(`${fakeWeb.origin}/acme.example/`);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/html");
+    expect(await response.text()).toBe("<html>Acme</html>");
   });
 
   it("ignores the query string", async () => {

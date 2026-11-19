@@ -56,16 +56,22 @@ export function postJson(
 }
 
 /**
- * Сторінка через HTTP-клієнт: `{ ok: true, body }` - тіло як є, для HTML -
- * або ті самі помилки, що в `fetchJson`, крім розбору JSON.
+ * Сторінка через HTTP-клієнт: `{ ok: true, body, url }` - тіло як є, для
+ * HTML, і адреса, з якої воно прийшло після редиректів (від неї розвʼязуються
+ * відносні посилання), - або ті самі помилки, що в `fetchJson`, крім розбору
+ * JSON.
  */
 export async function fetchText(
   client: HttpClient,
   url: string,
-): Promise<{ ok: true; body: string } | Extract<ParseResult, { ok: false }>> {
+): Promise<
+  { ok: true; body: string; url: string } | Extract<ParseResult, { ok: false }>
+> {
   const sent = await responseOf(() => client.get(url));
 
-  return sent.ok ? { ok: true, body: sent.response.body } : sent;
+  return sent.ok
+    ? { ok: true, body: sent.response.body, url: sent.response.url }
+    : sent;
 }
 
 async function answerOf(
