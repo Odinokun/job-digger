@@ -72,13 +72,11 @@ Tracked · Not tracked
 
 Список і його пагінація вже в коді - [`src/app/README.md`](../src/app/README.md#довгі-списки) і [`src/server/companies/README.md`](../src/server/companies/README.md). Jobs і History беруть той самий курсор.
 
-Статус компанії: **OK** - остання перевірка без помилок, **Has errors** - є невдалі джерела, **Checking** - зараз перевіряється.
-
-Якщо остання перевірка джерела була невдалою, поруч показуємо час його останньої успішної перевірки («Last ok: 12 days ago»). Без цього не видно, що дані джерела застаріли: після невдалої перевірки вакансії не видаляються ([розділ 6](discovery-and-parsing.md)), тому мертві вакансії виглядають як живі. З відстеження джерело автоматично не знімається - це рішення користувача.
+Статус компанії (OK, Has errors, Checking) і «Last ok» біля невдалого джерела вже в коді - [`src/app/README.md`](../src/app/README.md) (`company-status-chip.tsx`, `company-card.tsx`) і [`src/lib/companies/company-status.ts`](../src/lib/companies/company-status.ts). З відстеження джерело автоматично не знімається - це рішення користувача.
 
 Дії: Add, Edit, Check now, Mark all as read, Mark all as unread, Delete через іконку кошика.
 
-Check now і «Last checked» вже в коді, поки без черги - [`src/server/checks/README.md`](../src/server/checks/README.md) і [`src/app/README.md`](../src/app/README.md#відносний-час). Лишилося: Check now неактивна під час загальної перевірки ([розділ 8](checks-and-queue.md)) - разом із чергою на етапі 4.
+Check now (зокрема неактивна під час загальної перевірки) і «Last checked» вже в коді - [`src/server/checks/README.md`](../src/server/checks/README.md) і [`src/app/README.md`](../src/app/README.md#відносний-час).
 
 Mark all as read / Mark all as unread для компанії вже в коді - [`src/app/README.md`](../src/app/README.md) (`company-read-buttons.tsx`) і [`src/server/vacancies/README.md`](../src/server/vacancies/README.md#позначки-користувача).
 

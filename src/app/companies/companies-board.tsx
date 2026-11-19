@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import type { ReactNode } from "react";
 
+import { useCheckStatus } from "@/app/components/check-status-provider";
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import {
   compareCompanyRows,
@@ -13,7 +14,7 @@ import {
 } from "@/lib/companies/company-list";
 import type { Cursor } from "@/lib/pagination/cursor";
 
-import { loadMoreCompaniesAction } from "./actions";
+import { loadMoreCompaniesAction, reloadCompaniesAction } from "./actions";
 import { AddCompanyDialog } from "./add-company-dialog";
 import { CheckAllButton } from "./check-all-button";
 import { CompaniesList } from "./companies-list";
@@ -66,6 +67,24 @@ export function CompaniesBoard({
   const [cursor, setCursor] = useState(initialCursor);
   const [isPending, startTransition] = useTransition();
   const showActionFailed = useActionFailedToast();
+  const { status } = useCheckStatus();
+  const isCheckRunning = (status?.run ?? null) !== null;
+  const wasCheckRunning = useRef(false);
+  const shownCount = items.length;
+
+  // Загальна перевірка закінчилась - статуси й «Last checked» змінились, а
+  // рядки живуть у стані й самі не оновлюються. Перечитуємо стільки, скільки
+  // показано, щоб не загубити дозавантажені порції.
+  useEffect(() => {
+    if (wasCheckRunning.current && !isCheckRunning) {
+      void reloadCompaniesAction(tab, shownCount).then((result) => {
+        if (!result.ok) return;
+        setItems(result.items);
+        setCursor(result.nextCursor);
+      });
+    }
+    wasCheckRunning.current = isCheckRunning;
+  }, [isCheckRunning, tab, shownCount]);
 
   /**
    * Рядок, якого торкнулася дія, заміщає свій попередній.

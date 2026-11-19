@@ -49,6 +49,13 @@
     "checkAllRunning": "A check is already running",
     "checkAllNothing": "Nothing to check: no career page is tracked",
     "lastChecked": "Last checked: {time}",
+    "lastOk": "Last ok: {time}",
+    "neverOk": "Never checked successfully",
+    "checkStatus": {
+      "ok": "OK",
+      "hasErrors": "Has errors",
+      "checking": "Checking"
+    },
     "loadMore": "Load more",
     "platforms": {
       "greenhouse": "Greenhouse",
