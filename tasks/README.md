@@ -69,7 +69,7 @@ PR: #57
 | [3.26 Парсер Hurma](3.26-hurma-parser.md)                                                        | todo    |
 | [3.27 Парсер Personio](3.27-personio-parser.md)                                                  | todo    |
 | [3.28 Парсер softgarden](3.28-softgarden-parser.md)                                              | todo    |
-| [3.29 Парсер rexx](3.29-rexx-parser.md)                                                          | todo    |
+| [3.29 Парсер rexx](3.29-rexx-parser.md)                                                          | backlog |
 | [4.01 Схема check_runs + check_tasks](4.01-check-runs-tasks-schema.md)                           | done    |
 | [4.02 Захоплення завдань і повернення завислих](4.02-task-claiming-stale-recovery.md)            | done    |
 | [4.03 Обробник черги як фоновий цикл](4.03-queue-background-loop.md)                             | done    |
