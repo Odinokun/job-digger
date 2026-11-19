@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { runAction } from "@/app/action-result";
 import { revalidateUnreadCount } from "@/app/components/unread-count";
 import { parseCompaniesTab } from "@/lib/companies/company-list";
+import { absoluteCompanyUrl, normalizeCompanyUrl } from "@/lib/companies/url";
 import type { Cursor } from "@/lib/pagination/cursor";
 import { startCheckAll } from "@/server/checks/check-all";
 import { getCheckStatus } from "@/server/checks/check-status";
@@ -14,6 +15,7 @@ import { deleteCompany } from "@/server/companies/delete";
 import { findCompanyInTab, listCompanies } from "@/server/companies/list";
 import { addCareerSource } from "@/server/companies/sources";
 import { updateCompany } from "@/server/companies/update";
+import { discoverSources } from "@/server/discovery/discover";
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 import { httpClient } from "@/server/http/http-client";
@@ -25,6 +27,7 @@ import type {
   CheckCompanyNowResult,
   DeleteCompanyFormState,
   EditCompanyFormState,
+  FindPagesResult,
   LoadMoreCompaniesResult,
   StartCheckAllResult,
 } from "./form-state";
@@ -51,6 +54,10 @@ export async function addCompanyAction(
       name: readField(formData, "name"),
       url: readField(formData, "url"),
       careerUrl: readField(formData, "careerUrl"),
+      // Вибрані знахідки Find pages: галочки списку з `name="foundUrl"`.
+      foundUrls: formData
+        .getAll("foundUrl")
+        .filter((value): value is string => typeof value === "string"),
       // Прапорець зʼявляється у формі лише після попередження - про домен або
       // про однакову назву. Один на обидва: користувач підтверджує рішення
       // «усе одно додати», а не кожну перевірку окремо.
@@ -87,6 +94,43 @@ export async function addCompanyAction(
   revalidatePath("/companies");
 
   return { status: "added", company: result.company };
+}
+
+/**
+ * Find pages у модалці Add company: пошук кар'єрних джерел за сайтом і назвою
+ * (`discoverSources`, docs/discovery-and-parsing.md, розділ 5).
+ *
+ * Нічого не змінює - лише читає чужі сайти, - але Server Action, бо пошук
+ * ходить у мережу з сервера. Аргументи - недовірений ввід, тому адреса
+ * перевіряється тут: крива дає ту саму відмову, що й Save.
+ */
+export async function findPagesAction(
+  url: unknown,
+  name: unknown,
+): Promise<FindPagesResult> {
+  const typedUrl = typeof url === "string" ? url.trim() : "";
+  const typedName = typeof name === "string" ? name.trim() : "";
+
+  if (typedUrl === "" && typedName === "") {
+    return { ok: false, problem: "address-required" };
+  }
+
+  let siteUrl: string | null = null;
+  if (typedUrl !== "") {
+    const normalized = normalizeCompanyUrl(typedUrl);
+    if (!normalized.ok) {
+      return { ok: false, problem: "company-url", reason: normalized.reason };
+    }
+    siteUrl = absoluteCompanyUrl(typedUrl);
+  }
+
+  const outcome = await runAction(() =>
+    discoverSources({ siteUrl, name: typedName }, httpClient),
+  );
+
+  return outcome.ok
+    ? { ok: true, findings: outcome.value }
+    : { ok: false, problem: "failed-unexpectedly" };
 }
 
 /** Поле форми як рядок: `FormData` віддає ще й файли, їх тут бути не може. */

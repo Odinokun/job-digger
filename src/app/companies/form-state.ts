@@ -5,6 +5,8 @@ import type { AddCompanyResult } from "@/server/companies/add";
 import type { DeleteCompanyResult } from "@/server/companies/delete";
 import type { AddCareerSourceResult } from "@/server/companies/sources";
 import type { UpdateCompanyResult } from "@/server/companies/update";
+import type { Finding } from "@/server/discovery/discover";
+import type { UrlRefusalReason } from "@/lib/companies/url";
 
 /**
  * Стани форм сторінки Companies і їхні початкові значення.
@@ -45,6 +47,17 @@ export type AddCompanyFormState =
    * виправити, а тут виправляти нічого - лишається повторити дію.
    */
   | { status: "failed-unexpectedly" };
+
+/**
+ * Відповідь Find pages: знахідки або чому пошук не почався.
+ *
+ * `address-required` - порожні і сайт, і назва: шукати нема за чим.
+ */
+export type FindPagesResult =
+  | { ok: true; findings: Finding[] }
+  | { ok: false; problem: "address-required" }
+  | { ok: false; problem: "company-url"; reason: UrlRefusalReason }
+  | { ok: false; problem: "failed-unexpectedly" };
 
 export const ADD_COMPANY_INITIAL_STATE: AddCompanyFormState = {
   status: "idle",

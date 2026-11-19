@@ -167,6 +167,7 @@ export function CompaniesBoard({
             tab={tab}
             onAdded={addRow}
             onSourceAdded={applyRow}
+            platformLabels={platformLabels}
           />
         </div>
       </div>

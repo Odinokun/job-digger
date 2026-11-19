@@ -84,7 +84,7 @@ PR: #57
 | [5.04 Пошук: ATS за назвою компанії](5.04-discovery-ats-by-name.md)                              | done |
 | [5.05 Перевірка належності сторінки компанії](5.05-page-ownership-check.md)                      | todo |
 | [5.06 Пробне читання знахідок](5.06-trial-read.md)                                               | todo |
-| [5.07 Find pages у модалці Add company](5.07-find-pages-modal.md)                                | todo |
+| [5.07 Find pages у модалці Add company](5.07-find-pages-modal.md)                                | done |
 | [5.08 Позначки дублікатів у списку знахідок](5.08-discovery-duplicate-marks.md)                  | todo |
 | [5.09 Перша перевірка одразу після Save](5.09-first-check-after-save.md)                         | todo |
 | [5.10 Find new pages для списку Not tracked](5.10-find-new-pages-not-tracked.md)                 | todo |
