@@ -26,6 +26,9 @@
 | `peopleforce.ts`     | PeopleForce: `readPeopleForce(sourceUrl, client)`, `peopleforceSite`, `parsePeopleForcePage` |
 | `peopleforce.test.ts` | Юніт-тести парсера PeopleForce                   |
 | `peopleforce.integration.test.ts` | `readPeopleForce` через фейковий вебсервер і сервер зі сторінками |
+| `breezy.ts`          | Breezy HR: `readBreezy(sourceUrl, client)`, `breezyCompany`, `parseBreezyPositions` |
+| `breezy.test.ts`     | Юніт-тести парсера Breezy HR                      |
+| `breezy.integration.test.ts` | `readBreezy` через фейковий вебсервер |
 | `pages-to-check.ts`  | `PAGES_TO_CHECK` - спільний ліміт сторінок для парсерів, що читають сторінками; `parsePagesToCheck` |
 | `pages-to-check.test.ts` | Юніт-тести розбору змінної                   |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
