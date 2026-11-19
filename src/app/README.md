@@ -186,6 +186,19 @@ Companies; інакше - текст самої вкладки («Усе про�
 - `last-checked.tsx` - «Last checked: 5 min ago» і (`message="lastOk"`) «Last ok:
   12 days ago»; клієнтський, бо раз на хвилину
   оновлює `useNow` ([розділ «Відносний час»](#відносний-час)).
+Сторінка History - у `history/`:
+
+- `history/page.tsx` - серверна: перша порція з `listCheckRuns`, порожній стан без
+  кнопки (перевірку запускають лише з Companies). `key` таблиці - id найновішої
+  перевірки: коли після кінця перевірки провайдер робить `router.refresh()`, нова
+  перевірка дає новий ключ, і таблиця збирається наново з першої порції.
+- `history/history-board.tsx` - таблиця «Check history» і Load more; клієнтський.
+  Звичайна `<table>`, а не Table з HeroUI: та - сітка React Aria з виділенням і
+  навігацією між клітинками, а тут лише читання пʼяти чисел. Дата - абсолютна за
+  локаллю (`useFormatter().dateTime`), тривалість - хвилини й секунди.
+- `history/actions.ts` - `loadMoreHistoryAction`, наступні 20 записів.
+- `history/loading.tsx` - заготовка, поки сервер читає перевірки.
+
 - `companies/actions.ts` - Server Actions сторінки: додавання, редагування,
   видалення, джерело до вже доданої компанії, Check now, Check all, Load more і
   перечитування показаних рядків після загальної перевірки.

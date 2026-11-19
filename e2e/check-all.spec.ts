@@ -6,7 +6,7 @@ import { resetDatabase } from "./database.ts";
  * Головний сценарій етапу 4 (задача 4.11): Check all від запуску до підсумку.
  *
  * Критерій готовності етапу: написаний на його початку й червоний, поки етап
- * не зроблено, тому з тегом `@pending`. Тег знімає остання задача етапу.
+ * не зроблено. Тег `@pending` зняла задача 4.10 - тепер це звичайний сценарій.
  *
  * Три компанії на фейковому вебсервері (src/server/http/testing/README.md):
  * дві читаються, третя - дошка Greenhouse, якої на сервері немає, тож її
@@ -44,7 +44,7 @@ async function addCompany(
   await expect(dialog).toBeHidden();
 }
 
-test("Check all checks every tracked source and reports the failed one @pending", async ({
+test("Check all checks every tracked source and reports the failed one", async ({
   page,
 }) => {
   // Типових 30 с замало: три додавання, сама перевірка і опитування раз на

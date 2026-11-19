@@ -154,7 +154,17 @@
   },
   "HistoryPage": {
     "title": "History",
-    "empty": "No checks yet."
+    "empty": "No checks yet.",
+    "loading": "Loading the check history",
+    "tableLabel": "Check history",
+    "startedAt": "Date & time",
+    "sourcesChecked": "Sources checked",
+    "newVacancies": "New vacancies",
+    "removedVacancies": "Removed vacancies",
+    "duration": "Duration",
+    "durationSeconds": "{seconds} s",
+    "durationMinutes": "{minutes} min {seconds} s",
+    "loadMore": "Load more"
   },
   "SettingsPage": {
     "title": "Settings",

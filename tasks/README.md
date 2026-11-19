@@ -73,7 +73,7 @@ PR: #57
 | [4.07 Failed Sources Drawer з Retry](4.07-failed-sources-drawer.md)                              | done |
 | [4.08 Правила перетину запусків](4.08-run-overlap-rules.md)                                      | done |
 | [4.09 Статуси компанії на вкладці Tracked](4.09-tracked-company-statuses.md)                     | done |
-| [4.10 Сторінка History з Load more](4.10-history-page.md)                                        | todo |
+| [4.10 Сторінка History з Load more](4.10-history-page.md)                                        | done |
 | [4.11 E2E: Check all від запуску до підсумку](4.11-e2e-check-all.md)                             | done |
 | [4.12 Polling-маршрут стану перевірки](4.12-check-status-polling.md)                             | done |
 | [4.13 Сповіщення про нові вакансії на сторінці Jobs](4.13-new-vacancies-notice.md)            | todo |

@@ -154,7 +154,17 @@
   },
   "HistoryPage": {
     "title": "Історія",
-    "empty": "Перевірок ще не було."
+    "empty": "Перевірок ще не було.",
+    "loading": "Завантажуємо історію перевірок",
+    "tableLabel": "Історія перевірок",
+    "startedAt": "Дата й час",
+    "sourcesChecked": "Перевірено джерел",
+    "newVacancies": "Нові вакансії",
+    "removedVacancies": "Видалені вакансії",
+    "duration": "Тривалість",
+    "durationSeconds": "{seconds} с",
+    "durationMinutes": "{minutes} хв {seconds} с",
+    "loadMore": "Завантажити ще"
   },
   "SettingsPage": {
     "title": "Налаштування",

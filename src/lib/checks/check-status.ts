@@ -35,3 +35,18 @@ export interface CheckStatus {
   /** Кількість непрочитаних вакансій - лічильник у меню й назві вкладки. */
   unread: number;
 }
+
+/**
+ * Рядок History (docs/ui.md, розділ 4.4): рівно пʼять показників завершеної
+ * загальної перевірки.
+ */
+export interface CheckRunRow {
+  id: string;
+  /** Date & time - час запуску. */
+  startedAt: Date;
+  /** Скільки джерел перевірено, зокрема невдалих. */
+  sourcesChecked: number;
+  newVacancies: number;
+  removedVacancies: number;
+  durationMs: number;
+}

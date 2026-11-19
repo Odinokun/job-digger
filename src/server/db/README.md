@@ -15,6 +15,7 @@ Docker - [кореневий README](../../../README.md#база-даних).
 | `seed.ts`             | Раннер початкових даних (`npm run db:seed`)                       |
 | `demo-companies.ts`   | `seedDemoCompanies(db, userId)` - набір компаній для ручної перевірки |
 | `seed-demo.ts`        | Раннер демо-компаній (`npm run db:seed:demo`)                     |
+| `time.ts`             | `dbTimeText` - час бази з мікросекундами для курсорів і меж, `DB_TIME_PATTERN` |
 | `check-connection.ts` | Перевірка підключення (`npm run db:check`)                         |
 | [`testing/`](testing/README.md) | Обвʼязка інтеграційних тестів: тестова база й чистий стан |
 
