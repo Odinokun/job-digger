@@ -1,15 +1,7 @@
 /**
  * Списки вакансій для сторінки Jobs (docs/ui.md, розділ 4.1).
  */
-import {
-  and,
-  desc,
-  eq,
-  isNull,
-  sql,
-  type AnyColumn,
-  type SQL,
-} from "drizzle-orm";
+import { and, desc, eq, isNull, sql, type SQL } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import type {
@@ -18,6 +10,7 @@ import type {
 } from "../../lib/vacancies/vacancy-list.ts";
 import { parseCursor, type Cursor } from "../../lib/pagination/cursor.ts";
 import { careerSources, companies, vacancies } from "../db/schema.ts";
+import { DB_TIME_PATTERN, dbTimeText } from "../db/time.ts";
 
 /**
  * Поля рядка списку Jobs (`VacancyListItem`). Спільні для списку й для рядка,
@@ -47,18 +40,6 @@ export type VacancyListPage = {
   items: VacancyListItem[];
   nextCursor: Cursor | null;
 };
-
-/**
- * Момент часу точно так, як його зберігає база: ISO з мікросекундами. JS
- * `Date` тримає лише мілісекунди, тож межа, зібрана з нього, губила б
- * мікросекунди - рядок на межі опинявся б не з того боку.
- */
-export function dbTimeText(time: SQL | AnyColumn): SQL<string> {
-  return sql<string>`to_char(${time} at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`;
-}
-
-/** Форма, яку дає `dbTimeText`: усе інше - не час бази. */
-export const DB_TIME_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/;
 
 /**
  * Ключ курсора - дата виявлення з мікросекундами: курсор, зібраний з JS

@@ -10,12 +10,8 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import type { VacancyListItem } from "../../lib/vacancies/vacancy-list.ts";
 import { careerSources, companies, vacancies } from "../db/schema.ts";
-import {
-  DB_TIME_PATTERN,
-  dbTimeText,
-  tabCondition,
-  VACANCY_ROW,
-} from "./list.ts";
+import { DB_TIME_PATTERN, dbTimeText } from "../db/time.ts";
+import { tabCondition, VACANCY_ROW } from "./list.ts";
 
 /**
  * Форма UUID. Id приходить аргументом Server Action, а криве значення в
