@@ -24,6 +24,9 @@ const BOARD_BY_SLUG: Array<[CareerPlatform, (slug: string) => string]> = [
   ["breezy", (slug) => `https://${slug}.breezy.hr`],
   ["hurma", hurmaBoardUrl],
   ["personio", (slug) => `https://${slug}.jobs.personio.de`],
+  // Лише стара дошка: адреси кар'єрних сайтів softgarden рідко дорівнюють
+  // назві компанії (`engineering-crown`, `jobs-gfo-online`).
+  ["softgarden", (slug) => `https://${slug}.softgarden.io/en/vacancies`],
 ];
 
 /** Дошка, знайдена за назвою, і скільки на ній вакансій зараз. */

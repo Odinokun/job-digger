@@ -63,6 +63,16 @@ describe("boardUrlOf", () => {
       "https://astrafy.jobs.personio.de",
       "personio",
     ],
+    [
+      "https://dps.softgarden.io/job/17623206/x?jobDbPVId=1&l=en",
+      "https://dps.softgarden.io/en/vacancies",
+      "softgarden",
+    ],
+    [
+      "https://spinncloud.career.softgarden.de/jobs/29892564/x/",
+      "https://spinncloud.career.softgarden.de",
+      "softgarden",
+    ],
   ];
 
   for (const [link, url, platform] of cases) {
@@ -87,6 +97,7 @@ describe("boardUrlOf", () => {
     // Довідка Hurma - на її піддомені, як і дошки компаній.
     expect(boardUrlOf("https://support.hurma.work/en")).toBeNull();
     expect(boardUrlOf("https://www.jobs.personio.de/")).toBeNull();
+    expect(boardUrlOf("https://www.softgarden.io/")).toBeNull();
   });
 
   it("ignores what is not a web address", () => {

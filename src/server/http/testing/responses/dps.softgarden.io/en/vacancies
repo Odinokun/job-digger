@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.sourceforge.net/" lang="en" class="no-js no-ie">
+    <head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+		<meta name="author" content="softgarden e-recruiting GmbH"/>
+     	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+		<link rel="icon" href="https://static.softgarden.de/favicon/favicon-32x32.png"><!--[if IE]><link rel="shortcut icon" href="https://static.softgarden.de/favicon/favicon.ico"><![endif]--><style type="text/css" id="jobSearchCss">
+#jobsContainer .matchContainer .date { width: 12% } #jobsContainer .matchContainer .title { width: 53.45% } #jobsContainer .matchContainer .ProjectGeoLocationCity { width: 30.54% } </style>
+<script type="text/javascript" src="../wicket/resource/com.softgarden.staffit.webclient.webfrontend.core.WebFrontendApplication/core-ver-46480A77CA2574AB851CD35B365719CA.js"></script>
+<script type="text/javascript" id="jobsearchjs">
+/*<![CDATA[*/
+
+var criterions = [
+    {
+        "id": "audience",
+        "name": "Career Level",
+        "options": {
+            "3a3b1f6e7f000002010ad492e7837dd6": "Experienced Professional",
+            "3a3ab7987f000002010ad4925ffa0cf4": "Pupil",
+            "3a3af3667f000002010ad49215c3a5f4": "Young Professional",
+            "00001": "Apprentice",
+            "6179d1a00a0b0cce01ed3de8643a0e39": "Student",
+            "e9c9de07-1e43-4d00-b031-6fdec6f4194c": "Young Professional / Experienced Professional"
+        }
+    },
+    {
+        "id": "jobcategory",
+        "name": "Job Categories",
+        "options": {
+            "sam42_administration": "Administration and Secretariat",
+            "sam42_finance": "Finance",
+            "sam42_hr": "HR",
+            "sam42_it": "IT",
+            "sam42_law": "Law",
+            "sam42_marketing": "Marketing and Communication",
+            "sam42_sales": "Sales",
+            "sam42_management": "Senior Management",
+            "7428a7eb-1371-48d9-950b-dda4fcfebecc": "Consulting",
+            "12e0e471-ac41-410a-9cae-b3afbe27b033": "Development",
+            "44920ee3-b244-4363-a937-846b7169a703": "Analyse",
+            "73fb5522-c5e0-44f1-8895-8d093e36c745": "Applicants from abroad"
+        }
+    }
+];
+var sg_jobsearch_hide_inactive = true;
+var jobs_selected = Array();
+var current_page = 1;
+var order_by = 0;
+var jobs_per_page = 10;
+var paging_window = -1;
+var JobResultAnimationOff = false;
+var showInfoBoxSeeEndOfPage = true;
+var jobs_selected_per_list = Array();
+var preselected_location = '';
+var preselected_location_radius = '';
+var preselected_values = {};
+var geocodingOverride = {"OSM":{"62782":{"boundingBox":"[\"53.3951118\", \"53.7393983\", \"9.7275419\", \"10.3252805\"]"}},"GOOGLE":{}};
+jQuery(document).ready(function() {
+    jQuery('#selector_0').change(function () {
+    	jQuery('#jobsContainer').show();
+    	updateLists(0, order_by);
+	 	jQuery('.resetForm').show();
+	});
+    jQuery('#selector_1').change(function () {
+    	jQuery('#jobsContainer').show();
+    	updateLists(1, order_by);
+	 	jQuery('.resetForm').show();
+	});
+jQuery('.matchHeadline').show();
+initialize(order_by);
+});jobs_selected_per_list[0] = Array();
+jobs_selected_per_list[1] = Array();
+var job_id_list_ordered = new Array ();
+job_id_list_ordered[0] = [48333977, 66961470, 62556704, 25812245, 67837567, 68568902, 51142578, 63301724, 59164718, 63399504, 52735849, 39017709, 8519163, 63885029, 66724053, 17623206, 40825432, 40821792, 63432734];
+job_id_list_ordered[1] = [48333977, 66961470, 62556704, 25812245, 67837567, 68568902, 51142578, 63301724, 59164718, 63399504, 52735849, 39017709, 8519163, 63885029, 66724053, 17623206, 40825432, 40821792, 63432734];
+job_id_list_ordered[2] = [40821792, 40825432, 63301724, 39017709, 62556704, 63399504, 48333977, 52735849, 68568902, 67837567, 66961470, 59164718, 63885029, 51142578, 63432734, 25812245, 66724053, 8519163, 17623206];
+job_id_list_ordered[3] = [63885029, 63399504, 63432734, 17623206, 8519163, 25812245, 63301724, 40821792, 40825432, 66724053, 39017709, 52735849, 59164718, 51142578, 68568902, 67837567, 62556704, 66961470, 48333977];
+
+var complete_job_id_list = jobs_selected = [8519163, 17623206, 25812245, 39017709, 40821792, 40825432, 48333977, 51142578, 52735849, 59164718, 62556704, 63301724, 63399504, 63432734, 63885029, 66724053, 66961470, 67837567, 68568902];
+var jobs_keyword_search = complete_job_id_list;
+var jobs_geoLocation_search = complete_job_id_list;
+var search_criteria = new Array();
+search_criteria[0] = new Object();
+search_criteria[0]["3a3b1f6e7f000002010ad492e7837dd6"] = [39017709, 48333977, 51142578, 52735849, 59164718, 62556704, 63301724, 63399504, 63885029, 66961470, 67837567, 68568902];
+search_criteria[0]["6179d1a00a0b0cce01ed3de8643a0e39"] = [8519163, 17623206];
+search_criteria[0]["e9c9de07-1e43-4d00-b031-6fdec6f4194c"] = [25812245, 40821792, 40825432, 63432734, 66724053];
+
+search_criteria[1] = new Object();
+search_criteria[1]["12e0e471-ac41-410a-9cae-b3afbe27b033"] = [8519163, 17623206, 25812245, 48333977, 51142578, 63432734, 68568902];
+search_criteria[1]["sam42_it"] = [40821792, 59164718, 62556704, 63399504, 63885029, 66724053, 66961470, 67837567];
+search_criteria[1]["7428a7eb-1371-48d9-950b-dda4fcfebecc"] = [39017709, 40825432, 52735849, 63301724];
+
+
+/*]]>*/
+</script>
+<link rel="alternate" hreflang="de" href="https://dps.softgarden.io/de/vacancies" />
+<title>Career board | DPS Engineering GmbH</title><meta name="description" content="career board | © softgarden" />
+<meta name="robots" content="index, follow" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Career board | DPS Engineering GmbH" />
+<meta name="twitter:site" content="@softgarden" />
+<meta name="twitter:description" content="career board | © softgarden" />
+<meta name="twitter:image" content="https://app.softgarden.io/assets/public/media/get/dcbf7aad-5287-492b-bc12-2e693025b0f3/1556100911989/1100x0/DPS_Recruitingmotive_Karriereseite.jpg" />
+<meta property="og:title" content="Career board | DPS Engineering GmbH" />
+<meta property="og:description" content="career board | © softgarden" />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="https://app.softgarden.io/assets/public/media/get/dcbf7aad-5287-492b-bc12-2e693025b0f3/1556100911989/1100x576P/DPS_Recruitingmotive_Karriereseite.jpg" />
+<meta property="og:image:width" content="1100" />
+<meta property="og:image:height" content="576" />
+<script type="text/javascript" src="../wicket/resource/com.softgarden.staffit.webclient.webfrontend.pages.main.js.JavaScriptReference/modernizr-ver-BBD564F40D2D602049100DC76FE17C37.js"></script>
+<script type="text/javascript" id="sg_config">
+/*<![CDATA[*/
+var SG = SG || {};
+/*]]>*/
+</script>
+<link rel="stylesheet" type="text/css" href="//static.softgarden.de/thirdparty/fonts/css/dosis.css" />
+<link rel="stylesheet" type="text/css" href="//static.softgarden.de/thirdparty/fonts/css/dosis-vietnamese_latin-ext_latin.css" />
+<link rel="stylesheet" type="text/css" href="../wicket/resource/com.softgarden.staffit.webclient.webfrontend.pages.main.css.CssReference/webfrontend-v2-ver-591897EFF2EA75250FF42C429E89BE70.css" />
+<style type="text/css" id="companyCss">
+body { background:  #FFFFFF no-repeat 0% 0%; } 
+.content-wrapper, .narrow-page, header.image-header { background-color: #FFFFFF; } 
+.content-box { background: #E8E8E8; } 
+a, label i, label em { color: #6490B7; } 
+a:visited { color: #6490B7; } 
+a:hover, .btn-link:hover, .btn-link:focus, .btn-link:active { color: #8F8F8F; } 
+body, h1, h2, h3 { color: #111111; } 
+.secondary-color, label, .control-group.error .control-label { color: #9FABB3; } 
+textarea:focus, select:focus, input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:focus, input[type="datetime-local"]:focus, input[type="date"]:focus, input[type="month"]:focus, input[type="time"]:focus, input[type="week"]:focus, input[type="number"]:focus, input[type="email"]:focus, input[type="url"]:focus, input[type="search"]:focus, input[type="tel"]:focus, input[type="color"]:focus, .uneditable-input:focus, .chosen-container-active .chosen-single, .chosen-container-active .chosen-choices, .chosen-container .chosen-drop { border-color: #6490B7; } 
+.btn, .btn:visited, .btn-primary, .btn-primary:visited, .upload-item { background-color: #6490B7; color: #FFFFFF; background-image: none; } 
+.btn-link, .btn-link:visited { color: #6490B7; } 
+.upload-item a, .upload-item a:visited { color: #FFFFFF; } 
+.thirdparty-btn.thirdparty-btn--cv-upload > * { color: #FFFFFF !important; } 
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active { background-color: #FFFFFF; color: #000000; } 
+.thirdparty-btn.thirdparty-btn--cv-upload:hover > *, .thirdparty-btn.thirdparty-btn--cv-upload:active > *, .thirdparty-btn.thirdparty-btn--cv-upload:focus > * { color: #000000 !important; } 
+.navbar .btn-navbar, .navbar .btn-navbar.active, .navbar .btn-navbar:active, .navbar .btn-navbar:focus, .navbar .btn-navbar:hover { background-color: #FFFFFF; background-image: none; } 
+.navbar .btn-navbar .icon-bar, .navbar .btn-navbar.active .icon-bar, .navbar .btn-navbar:active .icon-bar, .navbar .btn-navbar:focus .icon-bar, .navbar .btn-navbar:hover .icon-bar { background-color: #494446; } 
+.sg-rating__star-icn.is-active, .sg-rating__star.is-hover .sg-rating__star-icn { color: #6490B7; } 
+.navbar .navbar-inner, .navbar .dropdown-menu { background-color: #FFFFFF; } 
+.navbar .nav > li > .dropdown-menu:after { border-bottom-color: #FFFFFF; } 
+.navbar .nav > li > a, .nav-collapse .dropdown-menu a, .navbar a, .navbar a:visited { color: #494446; } 
+.navbar .nav li.dropdown > .dropdown-toggle .caret { border-color: #494446; } 
+.navbar .nav > li > a.active, .navbar .nav > li > a:focus, .navbar .nav > li > a:hover, .navbar .nav li.dropdown.open > .dropdown-toggle, .nav-collapse .dropdown-menu a:focus, .nav-collapse .dropdown-menu a:hover, .nav-collapse .nav > li > a:focus, .nav-collapse .nav > li > a:hover { background-color: #FFFFFF; color: #9F8C69; } 
+.navbar .nav li.dropdown > a:focus .caret, .navbar .nav li.dropdown > a:hover .caret, .navbar .nav li.dropdown.open > .dropdown-toggle .caret { border-color: #9F8C69; } 
+body{    
+font-weight: 300;
+font-size:14px;
+}
+
+.navbar .brand img, .navbar .brand .brand-name, .job-abo, .application-status  {
+    display: none;
+}
+.navbar .nav li a {
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.navbar-fixed-top {
+    position: relative;
+}
+
+.container, .navbar-fixed-top .container, .navbar .navbar-inner, .navbar .dropdown-menu {
+    width: auto;
+    max-width: 1240px;    
+margin: 0 auto;
+
+}
+
+.navbar .navbar-inner {
+    background: #fff;
+    box-shadow: none;
+    height: auto;
+}
+
+.navbar .brand {
+       height: 103px;
+    margin: 20px 25px;
+    width: 163px;
+background: url(http://mediaassets.softgarden.de/customer/DPS/dps_logo_transparenterbackground.png) no-repeat;
+background-size: contain;
+ 
+}
+.page-wrapper {
+    margin-top: 0;
+}
+
+header img {
+    width: 100%;
+}
+
+.navbar .nav  li  a, .nav-collapse .dropdown-menu a, .navbar a, .navbar a:visited {
+    color: #808284;
+    text-transform: uppercase;
+    font-size: 14px;
+padding:10.5px 13px;
+}
+.navbar .nav {
+    margin: 45px 0 0 0;
+}
+
+.btn {
+    border-radius: 0;
+}
+
+.container{
+box-shadow: 0 1px 5px 1px rgba(0,0,0,.25);
+}
+
+.widget-page .container {
+    box-shadow: none;
+}
+
+#footer {
+    padding: 1em 35px;
+    background: #292627;
+    margin: 0;
+    color: #fff;
+    float: left;
+    width: calc(100% - 70px);
+}
+
+#footer a {
+    color: #fff;
+}
+
+#jobsContainer .matchContainer .date {
+    display: none;
+}
+#jobsContainer .matchContainer .outputContainer  .title a {
+    color:#111;
+}
+
+#jobsContainer .matchContainer .title
+@media only screen and (max-width: 767px) {
+.job-search #jobsContainer .matchContainer .ProjectGeoLocationCity,
+.job-search #jobsContainer .matchContainer .audience,
+.job-search #jobsContainer .matchContainer .date,
+.job-search #jobsContainer .matchContainer .jobcategory,
+.job-search #jobsContainer .matchContainer .sg_company_id,
+.job-search #jobsContainer .matchContainer .title {
+width: 100%;
+padding: 2px 0
+}
+.job-search #jobsContainer .matchContainer .matchHeadline {
+display: none!important
+}
+}
+
+.job-search .internal-account-hint {
+display: none;
+}</style>
+<meta name="wicket.header.items"/>
+    </head>
+    <body>
+		<a href="#content" class="visually-hidden">Skip to main content</a>
+		
+		<div id="navbar" class="navbar navbar-fixed-top">
+			<div class="navbar-inner">
+				<div class="container">
+					<button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse" aria-label="main menu">
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					
+					<a class="brand" href="./vacancies">
+						
+						<img src="https://app.softgarden.io/assets/public/media/get/3f1a653d-1d3b-46c2-b104-b2b1586f3713/1650610950328/0x45/dps_logo_transparenterbackground.png" alt="DPS Engineering GmbH"/>
+					</a>
+					
+					<div class="nav-public-collapse nav-collapse collapse">
+						<ul class="nav-public nav">
+					    	<li><a href="./vacancies" class="link-jobs external navlink active">Jobs</a></li><li></li><li><a href="../get-connected?l=en" class="link-getconnected external navlink">Get Connected</a></li><li></li><li></li>
+						</ul>
+					</div>
+					
+					<div class="nav-personal-collapse nav-collapse collapse">
+						<ul class="nav-personal nav pull-right">
+							<li><a href="../sign-in?l=en" class="link-signin navlink">Sign in</a></li><li><a href="../sign-up?l=en" class="link-register navlink">Sign up</a></li><li></li>
+							
+							<li class="dropdown-lang dropdown">
+								<a class="dropdown-toggle current-lang" data-toggle="dropdown" href="#"><i class="icon-flag small en" title="English"></i> <b class="caret"></b></a>
+								<ul class="dropdown-menu pull-left" data-role="menu">
+									<li class="lang">
+										<a href="./vacancies?-1.-navigationPanel-languageContainer-langNavRepeater-1-langNavLink">
+											<i class="icon-flag small de" title="German"></i>
+											Deutsch (German)
+										</a>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+
+		<div id="content" class="page-wrapper">
+			<div class="container">
+
+					
+		
+			<header class="image-header">
+				<div class="img-wrap">
+					<img src="https://app.softgarden.io/assets/public/media/get/dcbf7aad-5287-492b-bc12-2e693025b0f3/1556100911989/1100x0/DPS_Recruitingmotive_Karriereseite.jpg" alt="">
+				</div>
+			</header>
+		
+
+		
+		
+
+		
+		
+	
+					<div class="body-wrapper">
+						
+		
+		<div class="jobs-page narrow-page">
+			<div>
+		<div class="job-search-panel">
+		
+			
+		
+			<div class="job-search">
+		<div class="internal-account-hint span3">
+			<a href="./vacancies?-1.-jobSearch-jobSearchContainer-internalLink" class="btn btn-primary">Already an employee?</a>
+		</div>
+
+		<div class="searchBoxComplete">
+			<div class="searchBoxTop">
+				<section class="job-search-config searchBoxTopSmall">
+					<form class="search-form">
+						<section class="keyword-search">
+							<div class="keywordSearch">
+								<label for="keyword_search">Keyword search</label>
+								<div class="loading-spinner" id="performing_keyword_search">
+									<img src="../img/jobsearch/taloom_loader_small.gif" alt="searching"/>
+								</div>
+								<input id="keyword_search" type="text" class="input-xlarge" value="" name="jobSearch:jobSearchContainer:keyword_search"/>
+							</div>
+						</section>
+						<section class="location-search">
+							<div class="locationSearch search_criterion_box search_criterion_box_location">
+								<div class="resetLink selectAllLinkContainer">
+									<a href="#" onclick="resetLocationSearch();jQuery('.locationSearch .resetLink').hide(); return false;">Reset</a>
+								</div>
+								<label for="geoLocation_search">Location search</label>
+
+								<div class="loading-spinner" id="performing_location_search">
+									<img src="../img/jobsearch/taloom_loader_small.gif" alt="searching"/>
+								</div>
+								<div>
+									<input id="geoLocation_search" type="text" class="input-xlarge" value="" name="jobSearch:jobSearchContainer:geoLocation_search_wrapper:geoLocation_search"/>
+									<div id="geoLocation_info">
+
+										<small>
+											Work in
+											<a href="#" onclick="centerMapToSearch();" id="geoLocation_result"> </a>
+											<span class="search-result-no-map"></span>
+											within
+										</small>
+										<div id="geoLocation_radius">
+											<select name="jobSearch:jobSearchContainer:geoLocation_search_wrapper:geoLocationRadius" id="id1">
+<option value="1">1 km</option>
+<option value="5">5 km</option>
+<option value="10">10 km</option>
+<option selected="selected" value="25">25 km</option>
+<option value="50">50 km</option>
+<option value="75">75 km</option>
+<option value="100">100 km</option>
+</select>
+										</div>
+									</div>
+								</div>
+							</div>
+						</section>
+
+						
+	
+	<section class="extended-search">
+		<div class="search-criteria-container">
+			
+				<div class="search_criterion_box">
+	<div class="searchFieldLabel">
+		<div class="selectAllLinkContainer"><a href="javascript:;" id="id2" data-select="#selector_0" class="js-toggle-all-select-options">Reset</a></div>
+		<label for="searchFieldId" class="searchCriterionBoxHeader">Audience</label>
+	</div>
+	<select id="selector_0" multiple="multiple" size="5" class="SearchMultiSelectBox filter-options-select search_criterion_box_audience" aria-label="Zielgruppe oder Jobkategorie auswählen" name="audience[]" data-reset-link="#id2">
+<option  title = "Experienced Professional" value="3a3b1f6e7f000002010ad492e7837dd6">Experienced Professional</option>
+<option  title = "Pupil" value="3a3ab7987f000002010ad4925ffa0cf4">Pupil</option>
+<option  title = "Young Professional" value="3a3af3667f000002010ad49215c3a5f4">Young Professional</option>
+<option  title = "Apprentice" value="00001">Apprentice</option>
+<option  title = "Student" value="6179d1a00a0b0cce01ed3de8643a0e39">Student</option>
+<option  title = "Young Professional / Experienced Professional" value="e9c9de07-1e43-4d00-b031-6fdec6f4194c">Young Professional / Experienced Professional</option>
+</select>
+</div>
+			
+				<div class="search_criterion_box">
+	<div class="searchFieldLabel">
+		<div class="selectAllLinkContainer"><a href="javascript:;" id="id3" data-select="#selector_1" class="js-toggle-all-select-options">Reset</a></div>
+		<label for="searchFieldId" class="searchCriterionBoxHeader">Job category</label>
+	</div>
+	<select id="selector_1" multiple="multiple" size="5" class="SearchMultiSelectBox filter-options-select search_criterion_box_jobcategory" aria-label="Zielgruppe oder Jobkategorie auswählen" name="jobcategory[]" data-reset-link="#id3">
+<option  title = "Administration and Secretariat" value="sam42_administration">Administration and Secretariat</option>
+<option  title = "Finance" value="sam42_finance">Finance</option>
+<option  title = "HR" value="sam42_hr">HR</option>
+<option  title = "IT" value="sam42_it">IT</option>
+<option  title = "Law" value="sam42_law">Law</option>
+<option  title = "Marketing and Communication" value="sam42_marketing">Marketing and Communication</option>
+<option  title = "Sales" value="sam42_sales">Sales</option>
+<option  title = "Senior Management" value="sam42_management">Senior Management</option>
+<option  title = "Consulting" value="7428a7eb-1371-48d9-950b-dda4fcfebecc">Consulting</option>
+<option  title = "Development" value="12e0e471-ac41-410a-9cae-b3afbe27b033">Development</option>
+<option  title = "Analyse" value="44920ee3-b244-4363-a937-846b7169a703">Analyse</option>
+<option  title = "Applicants from abroad" value="73fb5522-c5e0-44f1-8895-8d093e36c745">Applicants from abroad</option>
+</select>
+</div>
+			
+		</div>
+		<div class="hide" id="mobile_placeholder">Please choose</div>
+	</section>
+	
+
+					</form>
+				</section>
+				<section class="job-abo">
+
+					<a href="./vacancies?-1.-jobSearch-jobSearchContainer-jobAboLink" rel="nofollow" class="btn btn-primary">Subscribe to jobs</a>
+
+				</section>
+
+				
+			</div>
+
+			<div id="jobsContainer" class="job-search-results">
+				<div>
+		<div class="job-search-result-panel">
+			<section id="job-search-map" class="jobMapContainer">
+				<div id="map_canvas"></div>
+			</section>
+
+			<section class="results">
+				<form>
+					<div class="result_count_div" id="job-search-result-count-label">
+						<p id="result_count_one" style="display: none;">Your search returned one positions</p>
+						<p id="result_count_more" style="display: none;">Your search returned  <span id='jobs_result_count'>{0}</span>  positions:</p>
+						<p id="result_count_none" style="display: none;">Your search returned no positions.</p>
+					</div>
+					<div class="matchContainer">
+						<div class="matchElement matchHeadline">
+							<div id="matchValueHeadline1" class="matchValue date" onclick="reorderList(1); return false;">
+								<a href="#" onclick="return false;"><span>Date</span><b class="caret"></b></a>
+							</div><div id="matchValueHeadline2" class="matchValue title" onclick="reorderList(2); return false;">
+								<a href="#" onclick="return false;"><span>Vacancy</span><b class="caret"></b></a>
+							</div><div id="matchValueHeadline3" class="matchValue ProjectGeoLocationCity" onclick="reorderList(3); return false;">
+								<a href="#" onclick="return false;"><span>Location</span><b class="caret"></b></a>
+							</div>
+						</div>
+						<div class="outputContainer">
+							<div class="matchElement" id="job_id_63432734">
+								<div class="matchValue date">11/19/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/63432734/Java-Developer-m-w-d-?jobDbPVId=291109695&amp;l=en" target="_blank">Java Developer (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Hamburg</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_40821792">
+								<div class="matchValue date">11/16/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/40821792/-Junior-Business-Analyst-m-w-d-f%C3%BCr-die-Bereiche-Zahlungsverkehr-und-Wertpapierservice?jobDbPVId=290767750&amp;l=en" target="_blank">(Junior) Business-Analyst (m/w/d) für die Bereiche Zahlungsverkehr und Wertpapierservice</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Deutschland,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Hamburg,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Stuttgart,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Frankfurt am Main</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_40825432">
+								<div class="matchValue date">11/16/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/40825432/-Junior-Consultant-im-Bereich-Banking-m-w-d-?jobDbPVId=290767745&amp;l=en" target="_blank">(Junior) Consultant im Bereich Banking (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Deutschland,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Hamburg,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Stuttgart,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Frankfurt am Main</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_17623206">
+								<div class="matchValue date">11/14/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/17623206/Werkstudent-Full-Stack-Webentwicklung-m-w-d-?jobDbPVId=290627785&amp;l=en" target="_blank">Werkstudent - Full Stack Webentwicklung (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Hamburg</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_66724053">
+								<div class="matchValue date">11/14/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/66724053/Testautomatisierer-m-w-d-?jobDbPVId=290627765&amp;l=en" target="_blank">Testautomatisierer (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Deutschland</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_63885029">
+								<div class="matchValue date">11/12/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/63885029/IT-Project-Lead-Banking-m-w-d-?jobDbPVId=290477683&amp;l=en" target="_blank">IT Project Lead - Banking (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Frankfurt am Main,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Hamburg,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Stuttgart</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_8519163">
+								<div class="matchValue date">11/11/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/8519163/Werkstudent-m-w-d-in-der-Anwendungsentwicklung?jobDbPVId=290347738&amp;l=en" target="_blank">Werkstudent (m/w/d) in der Anwendungsentwicklung</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Hamburg</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_39017709">
+								<div class="matchValue date">11/11/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/39017709/-Senior-Experte-Auslandszahlungsverkehr-m-w-d-?jobDbPVId=290347743&amp;l=en" target="_blank">(Senior) Experte Auslandszahlungsverkehr (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Deutschland</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_52735849">
+								<div class="matchValue date">11/11/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/52735849/-Senior-IT-Consultant-Banking-m-w-d-?jobDbPVId=290347728&amp;l=en" target="_blank">(Senior) IT-Consultant Banking (m/w/d) </a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Deutschland</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_63399504">
+								<div class="matchValue date">11/11/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/63399504/-Senior-Experte-Zahlungsverkehr-Payment-Infrastruktur-m-w-d-?jobDbPVId=290347703&amp;l=en" target="_blank">(Senior) Experte Zahlungsverkehr &amp; Payment-Infrastruktur (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Frankfurt am Main,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Hamburg,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Stuttgart</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_59164718">
+								<div class="matchValue date">11/11/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/59164718/Cloud-Engineer-m-w-d-?jobDbPVId=290347683&amp;l=en" target="_blank">Cloud Engineer (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Deutschland</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_63301724">
+								<div class="matchValue date">11/11/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/63301724/-Senior-Business-Analyst-Zahlungsverkehr-m-w-d-?jobDbPVId=290347658&amp;l=en" target="_blank">(Senior) Business Analyst Zahlungsverkehr (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Stuttgart,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Hamburg,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Frankfurt am Main,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Deutschland</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_51142578">
+								<div class="matchValue date">11/11/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/51142578/IT-Anwendungsentwickler-%E2%80%93-PL-1-Assembler-m-w-d-?jobDbPVId=290347643&amp;l=en" target="_blank">IT-Anwendungsentwickler – PL/1 | Assembler (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Deutschland</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_68568902">
+								<div class="matchValue date">11/5/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/68568902/-Senior-Mainframe-Anwendungsentwickler-m-w-d-?jobDbPVId=289769307&amp;l=en" target="_blank">(Senior) Mainframe Anwendungsentwickler (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Deutschland</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_67837567">
+								<div class="matchValue date">11/2/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/67837567/-Senior-Testmanager-m-w-d-?jobDbPVId=289483612&amp;l=en" target="_blank">(Senior) Testmanager (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Deutschland</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_25812245">
+								<div class="matchValue date">10/28/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/25812245/Technologiebegeisterter-Junior-Software-Ingenieur-m-w-d-?jobDbPVId=288987817&amp;l=en" target="_blank">Technologiebegeisterter (Junior) Software-Ingenieur (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Hamburg</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_62556704">
+								<div class="matchValue date">10/27/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/62556704/-Senior-Experte-Wertpapierabwicklung-m-w-d-?jobDbPVId=288857103&amp;l=en" target="_blank">(Senior) Experte Wertpapierabwicklung (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Deutschland,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Hamburg,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Stuttgart,</span>
+
+					
+
+					
+				</div>
+
+			</div><div>
+				<div class="location-container">
+					<span class="location-view-item">Frankfurt am Main</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_66961470">
+								<div class="matchValue date">10/26/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/66961470/Application-Manager-mit-HP-NonStop-Erfahrung-m-w-d-?jobDbPVId=288735343&amp;l=en" target="_blank">Application Manager mit HP NonStop Erfahrung (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Deutschland</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div><div class="matchElement" id="job_id_48333977">
+								<div class="matchValue date">10/23/26</div><div target="_blank" class="matchValue title">
+			<a href="../job/48333977/-Senior-IT-Mainframe-Experte-%E2%80%93-COBOL-PL1-Assembler-m-w-d-?jobDbPVId=288611568&amp;l=en" target="_blank">(Senior) IT - Mainframe Experte – COBOL / PL1 / Assembler (m/w/d)</a>
+		</div><div class="matchValue ProjectGeoLocationCity">
+			<div>
+				<div class="location-container">
+					<span class="location-view-item">Deutschland</span>
+
+					
+
+					
+				</div>
+
+			</div>
+
+		</div>
+							</div>
+						</div>
+						<div class="pagination pagination-centered"><ul id="job-search-pagination" class="taloom-pager"></ul></div>
+					</div>
+				</form>
+			</section>
+		</div>
+	</div>
+				
+		<div class="job-search-get-connected" id="job-search-get-connected">
+			<a href="../get-connected?l=en" class="job-search-get-connected-btn btn btn-primary" id="job-search-get-connected-btn">Get Connected</a>
+			<p class="job-search-get-connected-label" id="job-search-get-connected-label">Haven't found a job? You're interested in our company? Get connected with us, so you will be considered for future job positions.</p>
+		</div>
+	
+			</div>
+		</div>
+
+		<div id="sg_modal" hidden="" data-wicket-placeholder=""></div>
+	</div>
+
+		</div>
+	</div>
+		</div>
+	
+	
+					</div>
+
+
+				
+		<footer id="footer">
+			<ul class="inline">
+				<li><a href="./imprint" target="_blank" class="sg_imprint_link">Imprint</a></li>
+				<li><a href="./data-security" target="_blank" class="sg_data_privacy_link">Privacy Policy</a></li>
+				<li class="powered-by-taloom">
+	<span>
+		powered by 
+		<a href="https://softgarden.com/en" target="_blank">softgarden</a>
+		
+	</span>
+</li>
+			</ul>
+		</footer>
+	
+			</div>
+		</div>
+
+		
+
+		<div id="sg_modal" hidden="" data-wicket-placeholder=""></div>
+
+		
+		<script type="text/javascript" id="wicket-ajax-base-url">
+/*<![CDATA[*/
+Wicket.Ajax.baseUrl="en/vacancies";
+/*]]>*/
+</script>
+<script type="text/javascript" src="//static.softgarden.de/thirdparty/chosen/1.8.7/chosen.jquery.min.js"></script>
+<script type="text/javascript" id="id2">
+/*<![CDATA[*/
+$('#id2').hide();
+/*]]>*/
+</script>
+<script type="text/javascript" id="id3">
+/*<![CDATA[*/
+$('#id3').hide();
+/*]]>*/
+</script>
+<script type="text/javascript" id="allJobLocations">
+/*<![CDATA[*/
+SG.allJobLocations = [];SG.allJobLocations.push({markerName: 'Java\x20Developer\x20(m\/w\/d)', latitude: 53.5510846, longitude: 9.9936819, postingId: 63432734, geoName: 'Hamburg,\x20Deutschland'});SG.allJobLocations.push({markerName: '(Junior)\x20Business\x2dAnalyst\x20(m\/w\/d)\x20für\x20die\x20Bereiche\x20Zahlungsverkehr\x20und\x20Wertpapierservice', latitude: 51.165691, longitude: 10.451526, postingId: 40821792, geoName: 'Deutschland'});SG.allJobLocations.push({markerName: '(Junior)\x20Business\x2dAnalyst\x20(m\/w\/d)\x20für\x20die\x20Bereiche\x20Zahlungsverkehr\x20und\x20Wertpapierservice', latitude: 53.5510846, longitude: 9.9936819, postingId: 40821792, geoName: 'Hamburg'});SG.allJobLocations.push({markerName: '(Junior)\x20Business\x2dAnalyst\x20(m\/w\/d)\x20für\x20die\x20Bereiche\x20Zahlungsverkehr\x20und\x20Wertpapierservice', latitude: 50.1109221, longitude: 8.6821267, postingId: 40821792, geoName: 'Frankfurt\x20am\x20Main'});SG.allJobLocations.push({markerName: '(Junior)\x20Business\x2dAnalyst\x20(m\/w\/d)\x20für\x20die\x20Bereiche\x20Zahlungsverkehr\x20und\x20Wertpapierservice', latitude: 48.7758459, longitude: 9.1829321, postingId: 40821792, geoName: 'Stuttgar\x74'});SG.allJobLocations.push({markerName: '(Junior)\x20Consultant\x20im\x20Bereich\x20Banking\x20(m\/w\/d)', latitude: 51.165691, longitude: 10.451526, postingId: 40825432, geoName: 'Deutschland'});SG.allJobLocations.push({markerName: '(Junior)\x20Consultant\x20im\x20Bereich\x20Banking\x20(m\/w\/d)', latitude: 53.5510846, longitude: 9.9936819, postingId: 40825432, geoName: 'Hamburg'});SG.allJobLocations.push({markerName: '(Junior)\x20Consultant\x20im\x20Bereich\x20Banking\x20(m\/w\/d)', latitude: 50.1109221, longitude: 8.6821267, postingId: 40825432, geoName: 'Frankfurt\x20am\x20Main'});SG.allJobLocations.push({markerName: '(Junior)\x20Consultant\x20im\x20Bereich\x20Banking\x20(m\/w\/d)', latitude: 48.7758459, longitude: 9.1829321, postingId: 40825432, geoName: 'Stuttgar\x74'});SG.allJobLocations.push({markerName: 'Werkstudent\x20\x2d\x20Full\x20Stack\x20Webentwicklung\x20(m\/w\/d)', latitude: 53.5510846, longitude: 9.9936819, postingId: 17623206, geoName: 'Hamburg,\x20Deutschland'});SG.allJobLocations.push({markerName: 'Testautomatisierer\x20(m\/w\/d)', latitude: 51.165691, longitude: 10.451526, postingId: 66724053, geoName: 'Deutschland'});SG.allJobLocations.push({markerName: 'IT\x20Project\x20Lead\x20\x2d\x20Banking\x20(m\/w\/d)', latitude: 50.1109221, longitude: 8.6821267, postingId: 63885029, geoName: 'Frankfurt\x20am\x20Main,\x20Deutschland'});SG.allJobLocations.push({markerName: 'IT\x20Project\x20Lead\x20\x2d\x20Banking\x20(m\/w\/d)', latitude: 53.5510846, longitude: 9.9936819, postingId: 63885029, geoName: 'Hamburg'});SG.allJobLocations.push({markerName: 'IT\x20Project\x20Lead\x20\x2d\x20Banking\x20(m\/w\/d)', latitude: 48.7758459, longitude: 9.1829321, postingId: 63885029, geoName: 'Stuttgar\x74'});SG.allJobLocations.push({markerName: 'Werkstudent\x20(m\/w\/d)\x20in\x20der\x20Anwendungsentwicklung', latitude: 53.5510846, longitude: 9.9936819, postingId: 8519163, geoName: 'Hamburg,\x20Deutschland'});SG.allJobLocations.push({markerName: '(Senior)\x20Experte\x20Auslandszahlungsverkehr\x20(m\/w\/d)', latitude: 51.165691, longitude: 10.451526, postingId: 39017709, geoName: 'Deutschland'});SG.allJobLocations.push({markerName: '(Senior)\x20IT\x2dConsultant\x20Banking\x20(m\/w\/d)\x20', latitude: 51.165691, longitude: 10.451526, postingId: 52735849, geoName: 'Deutschland'});SG.allJobLocations.push({markerName: '(Senior)\x20Experte\x20Zahlungsverkehr\x20\x26\x20Payment\x2dInfrastruktur\x20(m\/w\/d)', latitude: 50.1109221, longitude: 8.6821267, postingId: 63399504, geoName: 'Frankfurt\x20am\x20Main,\x20Deutschland'});SG.allJobLocations.push({markerName: '(Senior)\x20Experte\x20Zahlungsverkehr\x20\x26\x20Payment\x2dInfrastruktur\x20(m\/w\/d)', latitude: 53.5510846, longitude: 9.9936819, postingId: 63399504, geoName: 'Hamburg'});SG.allJobLocations.push({markerName: '(Senior)\x20Experte\x20Zahlungsverkehr\x20\x26\x20Payment\x2dInfrastruktur\x20(m\/w\/d)', latitude: 48.7758459, longitude: 9.1829321, postingId: 63399504, geoName: 'Stuttgar\x74'});SG.allJobLocations.push({markerName: 'Cloud\x20Engineer\x20(m\/w\/d)', latitude: 51.165691, longitude: 10.451526, postingId: 59164718, geoName: 'Deutschland'});SG.allJobLocations.push({markerName: '(Senior)\x20Business\x20Analyst\x20Zahlungsverkehr\x20(m\/w\/d)', latitude: 48.7758459, longitude: 9.1829321, postingId: 63301724, geoName: 'Stuttgart,\x20Deutschland'});SG.allJobLocations.push({markerName: '(Senior)\x20Business\x20Analyst\x20Zahlungsverkehr\x20(m\/w\/d)', latitude: 51.165691, longitude: 10.451526, postingId: 63301724, geoName: 'Deutschland'});SG.allJobLocations.push({markerName: '(Senior)\x20Business\x20Analyst\x20Zahlungsverkehr\x20(m\/w\/d)', latitude: 53.5510846, longitude: 9.9936819, postingId: 63301724, geoName: 'Hamburg'});SG.allJobLocations.push({markerName: '(Senior)\x20Business\x20Analyst\x20Zahlungsverkehr\x20(m\/w\/d)', latitude: 50.1109221, longitude: 8.6821267, postingId: 63301724, geoName: 'Frankfurt\x20am\x20Main'});SG.allJobLocations.push({markerName: 'IT\x2dAnwendungsentwickler\x20–\x20PL\/1\x20|\x20Assembler\x20(m\/w\/d)', latitude: 51.165691, longitude: 10.451526, postingId: 51142578, geoName: 'Deutschland'});SG.allJobLocations.push({markerName: '(Senior)\x20Mainframe\x20Anwendungsentwickler\x20(m\/w\/d)', latitude: 51.165691, longitude: 10.451526, postingId: 68568902, geoName: 'Deutschland'});SG.allJobLocations.push({markerName: '(Senior)\x20Testmanager\x20(m\/w\/d)', latitude: 51.165691, longitude: 10.451526, postingId: 67837567, geoName: 'Deutschland'});SG.allJobLocations.push({markerName: 'Technologiebegeisterter\x20(Junior)\x20Software\x2dIngenieur\x20(m\/w\/d)', latitude: 53.5510846, longitude: 9.9936819, postingId: 25812245, geoName: 'Hamburg,\x20Deutschland'});SG.allJobLocations.push({markerName: '(Senior)\x20Experte\x20Wertpapierabwicklung\x20(m\/w\/d)', latitude: 51.165691, longitude: 10.451526, postingId: 62556704, geoName: 'Deutschland'});SG.allJobLocations.push({markerName: '(Senior)\x20Experte\x20Wertpapierabwicklung\x20(m\/w\/d)', latitude: 53.5510846, longitude: 9.9936819, postingId: 62556704, geoName: 'Hamburg'});SG.allJobLocations.push({markerName: '(Senior)\x20Experte\x20Wertpapierabwicklung\x20(m\/w\/d)', latitude: 50.1109221, longitude: 8.6821267, postingId: 62556704, geoName: 'Frankfurt\x20am\x20Main'});SG.allJobLocations.push({markerName: '(Senior)\x20Experte\x20Wertpapierabwicklung\x20(m\/w\/d)', latitude: 48.7758459, longitude: 9.1829321, postingId: 62556704, geoName: 'Stuttgar\x74'});SG.allJobLocations.push({markerName: 'Application\x20Manager\x20mit\x20HP\x20NonStop\x20Erfahrung\x20(m\/w\/d)', latitude: 51.165691, longitude: 10.451526, postingId: 66961470, geoName: 'Deutschland'});SG.allJobLocations.push({markerName: '(Senior)\x20IT\x20\x2d\x20Mainframe\x20Experte\x20–\x20COBOL\x20\/\x20PL1\x20\/\x20Assembler\x20(m\/w\/d)', latitude: 51.165691, longitude: 10.451526, postingId: 48333977, geoName: 'Deutschland'});
+/*]]>*/
+</script>
+<script type="text/javascript" id="jobMapInit">
+/*<![CDATA[*/
+window.jQuery('#job-search-map').hide();
+/*]]>*/
+</script>
+<script type="text/javascript" src="https://static.softgarden.de/thirdparty/leaflet/1.9.4/leaflet.js"></script>
+<script type="text/javascript" src="/thirdparty/jquery/query/jquery.query-2.2.3.js"></script>
+<script type="text/javascript" src="../wicket/resource/com.softgarden.staffit.webclient.webfrontend.pages.main.js.JavaScriptReference/jobSearchLive-ver-DF58093895DAE1EA109A34586D3118B6.js"></script>
+<script type="text/javascript" id="frontend-font">
+/*<![CDATA[*/
+WebFont.load({custom:{families:['Open Sans']}});
+/*]]>*/
+</script>
+<script type="text/javascript">
+/*<![CDATA[*/
+Wicket.Event.add(window, "domready", function(event) { 
+Wicket.Ajax.ajax({"u":"./vacancies?-1.0-jobSearch-jobSearchContainer-keyword_search","m":"POST","c":"keyword_search","e":"input change","ch":"keyword_search|d","tr":{"id":"keyword_search","d":10,"p":true}});;
+$('#id1').chosen({width: "100%",disable_search: true,no_results_text: "No entry found",placeholder_text_single: "Please choose",placeholder_text_multiple: "Please choose"});requestAnimationFrame(function() {  var $input = $('#id1_chosen .chosen-search input');  if ($input.length && !$input.attr('aria-label')) {    $input.attr('aria-label', 'Search options');  }});;
+Wicket.Event.publish(Wicket.Event.Topic.AJAX_HANDLERS_BOUND);
+;});
+/*]]>*/
+</script>
+
+    </body>
+</html>

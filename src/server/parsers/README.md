@@ -38,6 +38,9 @@
 | `personio.ts`        | Personio: `readPersonio(sourceUrl, client)`, `personioBoard`, `parsePersonioFeed` |
 | `personio.test.ts`   | Юніт-тести парсера Personio                       |
 | `personio.integration.test.ts` | `readPersonio` через фейковий вебсервер |
+| `softgarden.ts`      | softgarden: `readSoftgarden(sourceUrl, client)`, `softgardenSource`, `softgardenBoardUrl`, `parseSoftgardenBoard` (стара дошка, HTML), `parseSoftgardenFeed` (кар'єрний сайт, JSON) |
+| `softgarden.test.ts` | Юніт-тести парсера softgarden                     |
+| `softgarden.integration.test.ts` | `readSoftgarden` через фейковий вебсервер і сервер з відповіддю 400 |
 | `pages-to-check.ts`  | `PAGES_TO_CHECK` - спільний ліміт сторінок для парсерів, що читають сторінками; `parsePagesToCheck` |
 | `pages-to-check.test.ts` | Юніт-тести розбору змінної                   |
 | `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела; `null`, якщо парсера ще немає |
@@ -408,3 +411,54 @@ Telio Group, IITS, DCI, PJM):
 на вакансію Telio Group на `.com` - 11, IITS з `?language=de` у посиланні - 8,
 неіснуюча дошка - `not-found`; за назвою Astrafy знаходить свою дошку (4
 вакансії), належність дошки Telio Group до `tel.io` підтверджена логотипом.
+
+## softgarden
+
+**Два продукти, обидва без документації.** Документований API
+([dev.softgarden.de](https://dev.softgarden.de/frontend-v3/jobs-eines-kanals/),
+`api.softgarden.io`) потребує client ID від softgarden, тож для нас закритий.
+Публічно читаються дві різні дошки, і `softgardenSource` розрізняє їх за хостом.
+Усе нижче перевірено справжніми запитами 19.11.2026 і може змінитися без
+попередження. Рішення автора 19.11.2026: обидві в одній платформі `softgarden`.
+
+**Стара дошка `https://{company}.softgarden.io/{lang}/vacancies`** (DPS, Alcedis,
+Sikla, Nuvisan, Kraftanlagen, JD Sports, Plath) - серверний HTML (Apache Wicket),
+читається Cheerio.
+
+- **Усі вакансії однією сторінкою.** Сторінки по 10-20 малює JavaScript
+  (`jobs_per_page` у скрипті), у HTML - усі картки: Kraftanlagen - 85.
+  Корінь дошки - 302 на `/en/vacancies`; парсер одразу просить `/en/vacancies`
+  (назви вакансій мовою не перекладаються).
+- **Картка** - `.matchElement#job_id_{id}`; шапка таблиці теж `.matchElement`, але
+  з `.matchHeadline`. Назва й посилання - `.title a` (`../job/{id}/{slug}?jobDbPVId=...`;
+  рядок запиту відкидається), локації - `.location-view-item` через кому.
+- **Нулю довіряємо через дані мапи.** Лічильник «Your search returned {0}
+  positions» підставляє JavaScript, у HTML числа немає. Зате скрипт сторінки
+  кладе кожну вакансію з геолокацією в `SG.allJobLocations` з `postingId`: кожен
+  такий ID має бути серед карток, інакше `unreadable`. На всіх 7 дошках множини
+  збіглися повністю. Сторінка без `SG.allJobLocations` - теж `unreadable`.
+  **Дошки без вакансій не знайшлося**, тож нуль перевірено лише тестом: якщо
+  справжня порожня дошка виглядає інакше, вона дасть `unreadable`, а не нуль.
+- **Невідома компанія** - 404. Сайту компанії сторінка не показує (зовнішніх
+  посилань немає), тож належність не перевіряється.
+
+**Кар'єрний сайт `https://{company}.career.softgarden.de`** (softgarden, SpiNNcloud,
+BEE Partment, Crown) - фід schema.org `DataFeed` на `/jobs.feed.json` (на нього
+посилається сама сторінка).
+
+- **Один запит:** усі вакансії з описами; Crown (111) - 716 КБ.
+- **Фід цілий, коли `numberOfItems` дорівнює кількості `dataFeedElement`.**
+- **Поля:** `externalId` - `identifier.value` (він же в `/jobs/{id}/...`), назва -
+  `title`, посилання - `url` як є (у Crown веде на інший субдомен,
+  `crown.career.softgarden.de`), локація - місто (або регіон) і країна кожного
+  `jobLocation` (буває обʼєкт, за схемою - і масив), кілька місць - через «; ».
+  Порожні частини адреси softgarden заповнює `-`, вони відкидаються.
+- **Невідомий сайт - 400** `{"errorMessage":"No such client for domain ..."}`, а
+  не 404. У запиту без параметрів інших 400 не буває, тож це `not-found`.
+- **Сайт компанії** - логотип у шапці (`HeaderLogo__BrandLink-...`, клас від
+  styled-components): за ним перевіряється належність (`src/server/discovery/ownership.ts`).
+
+Перевірено на справжній мережі (вручну, 19.11.2026): Kraftanlagen з кореня дошки -
+85 вакансій, Sikla з `/de/vacancies` - 29, Crown - 111, BEE Partment - 30, неіснуючі
+дошка й сайт - `not-found`; за назвою Nuvisan знаходить свою стару дошку (8
+вакансій), належність BEE Partment до `beepartment.com` підтверджена логотипом.

@@ -22,10 +22,13 @@ export type BoardOwnership =
  * - Lever: логотип у шапці і «{Company} Home Page» у футері;
  * - Breezy HR: пункт шапки `link company` («Company website»);
  * - Personio: логотип у шапці (`a.logo-wrapper`);
+ * - softgarden, кар'єрний сайт: логотип у шапці (`HeaderLogo__BrandLink-...` -
+ *   клас від styled-components, стабільний лише початок). Стара дошка
+ *   softgarden зовнішніх посилань не має;
  * - Ashby: поле `publicWebsite` у даних сторінки (`ASHBY_WEBSITE`).
  */
 const WEBSITE_LINKS =
-  "a.main-header-logo[href], .main-footer-text a[href], li.link.company a[href], a.logo-wrapper[href]";
+  "a.main-header-logo[href], .main-footer-text a[href], li.link.company a[href], a.logo-wrapper[href], a[class^='HeaderLogo__BrandLink'][href]";
 
 /** Ashby малює дошку JavaScript-ом, а сайт організації кладе в JSON сторінки. */
 const ASHBY_WEBSITE = /"publicWebsite"\s*:\s*"(https?:[^"]+)"/g;
@@ -45,6 +48,8 @@ const PLATFORM_DOMAINS = [
   "hurma.work",
   "personio.de",
   "personio.com",
+  "softgarden.io",
+  "softgarden.de",
   "myworkdayjobs.com",
   "myworkdaysite.com",
 ];

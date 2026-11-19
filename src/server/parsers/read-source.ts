@@ -10,6 +10,7 @@ import { readCleverStaff } from "./cleverstaff.ts";
 import { readGreenhouse } from "./greenhouse.ts";
 import { readHurma } from "./hurma.ts";
 import { readPersonio } from "./personio.ts";
+import { readSoftgarden } from "./softgarden.ts";
 import { readLever } from "./lever.ts";
 import { readPeopleForce } from "./peopleforce.ts";
 import type { ParseResult } from "./types.ts";
@@ -32,6 +33,7 @@ const READERS: Partial<Record<CareerPlatform, Reader>> = {
   cleverstaff: readCleverStaff,
   hurma: (sourceUrl, client) => readHurma(sourceUrl, client),
   personio: readPersonio,
+  softgarden: readSoftgarden,
 };
 
 /**
