@@ -70,8 +70,10 @@ test("Check all checks every tracked source and reports the failed one @pending"
     page.getByRole("banner").getByText(new RegExp(`Checking \\d+/${SOURCES}`)),
   ).toBeVisible();
 
-  // Підсумок спливає сам, без перезавантаження сторінки.
-  const summary = page.getByRole("alert").filter({ hasText: "Check finished" });
+  // Підсумок спливає сам, без перезавантаження сторінки. Toast HeroUI - це
+  // `alertdialog` з назвою із заголовка; `role="alert"` усередині обгортає лише
+  // текст, а кнопка дії лежить поруч із ним.
+  const summary = page.getByRole("alertdialog", { name: "Check finished" });
   await expect(summary).toBeVisible({ timeout: 30_000 });
   await expect(summary).toContainText(`${SOURCES} sources checked`);
   await expect(summary).toContainText(`${SOURCES - 1} ok`);

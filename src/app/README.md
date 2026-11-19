@@ -25,6 +25,7 @@
 | Шлях                | Файл                        | Що віддає                                   |
 | ------------------- | --------------------------- | ------------------------------------------- |
 | `/api/check-status` | `api/check-status/route.ts` | `CheckStatus`: хід активної перевірки й непрочитані |
+| `/api/failed-sources` | `api/failed-sources/route.ts` | `FailedSourcesList`: рядки Failed Sources Drawer |
 
 - **Лише читання.** Усі зміни даних - Server Actions. Опитування - GET-маршрут, бо
   Server Actions клієнт Next надсилає по одній: опитування раз на 3 с ставало б у
@@ -90,6 +91,13 @@ Companies) і Check now. Кнопки модалок (Save, Delete) поки б�
   показаний одразу позначається Server Action з `check-actions.ts`
   (`markCheckSummaryShownAction`), тож при наступному завантаженні не повторюється.
   Правила, який підсумок пропонується - [`server/checks/README.md`](../server/checks/README.md#підсумок-перевірки).
+- `failed-sources-drawer.tsx` - правий drawer «Failed sources» з Retry у рядку й
+  Retry all failed; клієнтський. Відкривається кнопкою Show failed sources у підсумку.
+  Список бере з `/api/failed-sources`, Retry - Server Action з `check-actions.ts`.
+  Поки якийсь Retry у черзі, список перечитується раз на 2 с; Retry закінчився -
+  `router.refresh()`, бо знайдені вакансії міняють лічильник. Коли невдалих не
+  лишилось, drawer сам не закривається і каже, що їх більше немає. Які джерела в
+  списку - [`server/checks/README.md`](../server/checks/README.md#невдалі-джерела).
 - `check-status-provider.tsx` - `CheckStatusProvider` у кореневому layout і хук
   `useCheckStatus`: стан загальної перевірки для шапки й сторінок. Опитує
   `/api/check-status` за правилами `lib/checks/status-poller.ts`. Check all передає
