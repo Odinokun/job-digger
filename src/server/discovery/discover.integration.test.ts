@@ -68,6 +68,26 @@ describe("discoverSources", () => {
     ]);
   });
 
+  it("keeps a known ATS without a parser as one unreadable finding", async () => {
+    // Головна й кар'єрна сторінка Hooli ведуть на різні вакансії BambooHR: одна
+    // знахідка на платформу, з першого посилання. Кар'єрна сторінка - не
+    // власна, бо веде на ATS (задача 5.15).
+    expect(
+      await discoverSources(
+        { siteUrl: "https://hooli.example", name: "Hooli" },
+        client(),
+      ),
+    ).toEqual([
+      {
+        url: "https://hooli.bamboohr.com/careers/56",
+        platform: "unsupported",
+        via: "site",
+        trial: { kind: "unsupported" },
+        ownership: null,
+      },
+    ]);
+  });
+
   it("tells a board that did not answer from a page nothing can read", async () => {
     // Сайт Wayne веде на дошку Greenhouse `ghost`, якої немає: це не власна
     // сторінка, а дошка, яку не вдалося прочитати.

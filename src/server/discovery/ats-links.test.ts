@@ -57,6 +57,35 @@ describe("atsLinksOnPage", () => {
     ]);
   });
 
+  it("keeps a link to a known ATS that has no parser yet", () => {
+    // Читати нічим, але адреса знадобиться, коли зʼявиться парсер (задача 5.15).
+    const html = `<a href="https://acme.bamboohr.com/careers?source=site#top">Jobs</a>`;
+
+    expect(atsLinksOnPage(html, PAGE)).toEqual([
+      { url: "https://acme.bamboohr.com/careers", platform: "unsupported" },
+    ]);
+  });
+
+  it("gives one finding per known ATS without a parser", () => {
+    // Форми дошки такої платформи ми не знаємо, тож вакансії однієї дошки
+    // склеюються за платформою: першим лишається перше посилання.
+    const html = `
+      <a href="https://apply.workable.com/acme/j/1/">Designer</a>
+      <a href="https://apply.workable.com/acme/j/2/">Engineer</a>
+      <a href="https://jobs.lever.co/acme">Worldwide</a>`;
+
+    expect(atsLinksOnPage(html, PAGE)).toEqual([
+      { url: "https://apply.workable.com/acme/j/1/", platform: "unsupported" },
+      { url: "https://jobs.lever.co/acme", platform: "lever" },
+    ]);
+  });
+
+  it("ignores the website of an ATS vendor", () => {
+    const html = `<footer><a href="https://www.bamboohr.com/">Powered by BambooHR</a></footer>`;
+
+    expect(atsLinksOnPage(html, PAGE)).toEqual([]);
+  });
+
   it("ignores links that lead elsewhere", () => {
     const html = `
       <a href="/about">About</a>

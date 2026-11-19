@@ -6,6 +6,7 @@
  * збирається єдина форма адреси з того, що парсер дістав. Тому джерело, знайдене
  * пошуком, парсер читає тим самим кодом, що й додане руками.
  */
+import { knownAtsName } from "../../lib/companies/known-ats.ts";
 import type { CareerPlatform } from "../../lib/companies/platform.ts";
 import { ashbyBoard } from "../parsers/ashby.ts";
 import { greenhouseBoardToken } from "../parsers/greenhouse.ts";
@@ -64,6 +65,10 @@ const BOARDS: Array<[CareerPlatform, BoardOf]> = [
  * Дошка, на яку веде посилання, або `null`, якщо це не дошка відомої
  * платформи. Посилання - абсолютна адреса; будь-що інше (`mailto:`, сміття)
  * теж дає `null`.
+ *
+ * Відома ATS без парсера (`known-ats.ts`) - джерело з платформою
+ * `unsupported`. Форми її дошки ми не знаємо, тож адреса - саме посилання без
+ * рядка запиту й якоря (задача 5.15).
  */
 export function boardUrlOf(link: string): BoardUrl | null {
   for (const [platform, boardOf] of BOARDS) {
@@ -73,5 +78,21 @@ export function boardUrlOf(link: string): BoardUrl | null {
     }
   }
 
+  if (knownAtsName(link) !== null) {
+    const url = new URL(link);
+    return { url: `${url.origin}${url.pathname}`, platform: "unsupported" };
+  }
+
   return null;
+}
+
+/**
+ * За чим склеювати знахідки: одна на дошку, а для відомої ATS без парсера -
+ * одна на платформу, бо різні посилання на неї ми не вміємо звести до однієї
+ * дошки (вакансії однієї дошки інакше дали б кілька знахідок).
+ */
+export function boardKey(board: BoardUrl): string {
+  const known =
+    board.platform === "unsupported" ? knownAtsName(board.url) : null;
+  return known === null ? board.url : `known-ats:${known}`;
 }

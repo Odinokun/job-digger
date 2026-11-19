@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Hooli - Making the world a better place</title>
+  </head>
+  <body>
+    <nav>
+      <a href="/about">About</a>
+      <a href="/careers">Careers</a>
+    </nav>
+    <p>We are hiring: <a href="https://hooli.bamboohr.com/careers/56">Product manager</a></p>
+  </body>
+</html>

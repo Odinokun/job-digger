@@ -8,7 +8,7 @@ import * as cheerio from "cheerio";
 import type { HttpClient } from "../http/client.ts";
 import { fetchText } from "../parsers/shared.ts";
 import type { ParserError } from "../parsers/types.ts";
-import { boardUrlOf, type BoardUrl } from "./board-url.ts";
+import { boardKey, boardUrlOf, type BoardUrl } from "./board-url.ts";
 
 /**
  * Де на сторінці бувають адреси дошок: звичайне посилання, вбудована дошка в
@@ -34,8 +34,8 @@ export function atsLinksOnPage(html: string, pageUrl: string): BoardUrl[] {
     const address = $element.attr("href") ?? $element.attr("src");
     const board = address === undefined ? null : boardOf(address, pageUrl);
 
-    if (board !== null && !found.has(board.url)) {
-      found.set(board.url, board);
+    if (board !== null && !found.has(boardKey(board))) {
+      found.set(boardKey(board), board);
     }
   });
 
