@@ -16,6 +16,7 @@
 | ------------- | ------------------------------------------------------------------------------ |
 | `url.ts`      | `normalizeCompanyUrl` - адреса в порівнянній формі, `companyUrlHost` - її хост  |
 | `platform.ts` | `CAREER_PLATFORMS`, `detectPlatform` і `platformHostSuffix`                     |
+| `known-ats.ts` | `knownAtsName` - назва відомої ATS без парсера за адресою (BambooHR, Workable ...); перелік доменів і чому лише домени - у коментарях файлу |
 | `suggest.ts`  | `suggestCompanyFields` - підказки для полів модалки з однієї адреси             |
 | `career-source.ts` | `prepareCareerSource` - адреса джерела, його підпис, платформа й дублікат усередині компанії |
 | `name.ts`     | `normalizeCompanyName` і `sameCompanyName` - коли дві назви це одна компанія    |

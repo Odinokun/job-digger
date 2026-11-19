@@ -8,7 +8,7 @@ import * as cheerio from "cheerio";
 import type { HttpClient } from "../http/client.ts";
 import { fetchText } from "../parsers/shared.ts";
 import { atsLinksOnPage } from "./ats-links.ts";
-import { boardUrlOf, type BoardUrl } from "./board-url.ts";
+import { boardKey, boardUrlOf, type BoardUrl } from "./board-url.ts";
 
 /** Типові адреси кар'єрної сторінки - лише коли на головній посилання немає. */
 const USUAL_PATHS = ["/careers", "/jobs"];
@@ -262,7 +262,9 @@ export async function findSiteCareerPages(
 
     const linked = atsLinksOnPage(page.body, page.url);
     for (const board of linked) {
-      boards.set(board.url, board);
+      if (!boards.has(boardKey(board))) {
+        boards.set(boardKey(board), board);
+      }
     }
     if (linked.length === 0) {
       pages.add(withoutQuery(page.url));

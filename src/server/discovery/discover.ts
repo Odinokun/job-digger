@@ -12,7 +12,7 @@ import type { HttpClient } from "../http/client.ts";
 import { readSource } from "../parsers/read-source.ts";
 import { fetchText } from "../parsers/shared.ts";
 import { atsLinksOnPage } from "./ats-links.ts";
-import type { BoardUrl } from "./board-url.ts";
+import { boardKey, type BoardUrl } from "./board-url.ts";
 import { findBoardsByName } from "./by-name.ts";
 import { findSiteCareerPages } from "./career-pages.ts";
 import { boardOwnership, type BoardOwnership } from "./ownership.ts";
@@ -138,7 +138,10 @@ async function discoverOnSite(
     ...atsLinksOnPage(home.body, home.url),
     ...careers.boards,
   ]) {
-    boards.set(board.url, board);
+    // Перша знахідка лишається: головна сторінка йде раніше за кар'єрні.
+    if (!boards.has(boardKey(board))) {
+      boards.set(boardKey(board), board);
+    }
   }
 
   const read = await Promise.all(

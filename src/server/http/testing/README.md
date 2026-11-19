@@ -65,6 +65,7 @@ https://boards-api.greenhouse.io/v1/boards/acme/jobs
 | `responses/initech.example/` | Головна без кар'єрних посилань; `/careers` - власна сторінка без ATS | Типові адреси (5.03) |
 | `responses/umbrella.example/` | Ні посилань, ні `/careers`; `sitemap.xml` веде на `/en/jobs`, звідти посилання на Ashby `linear` | Sitemap (5.03) |
 | `responses/wayne.example/index` | Головна з посиланням Careers на дошку Greenhouse `ghost`, якої на сервері немає | Пробне читання, що не вдалося (5.06) |
+| `responses/hooli.example/` | Головна з вакансією на BambooHR і посиланням Careers; `/careers` веде ще на дві вакансії BambooHR і на сайт самої BambooHR («Powered by») | Відома ATS без парсера: одна знахідка на платформу (5.15) |
 | `responses/acme.example/index` | Головна Acme: Careers і одна вакансія ведуть на дошку Lever `leverdemo`, плюс внутрішні посилання, LinkedIn і `mailto:` | Пошук посилань на ATS (5.02), сценарій `e2e/find-pages.spec.ts` |
 
 Оновити або додати відповідь - один запит до справжньої платформи, наприклад:

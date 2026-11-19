@@ -64,6 +64,12 @@ PR: #57
 | [3.21 Стани завантаження й оптимістичні дії](3.21-loading-states-optimistic.md)                  | done    |
 | [3.22 Перехід на вкладку під час дії над рядком](3.22-mark-then-switch-tab.md)                   | done    |
 | [3.23 Один пул з'єднань з базою в продакшні](3.23-one-db-pool.md)                                | done    |
+| [3.24 Парсер Breezy HR](3.24-breezy-parser.md)                                                   | todo    |
+| [3.25 Парсер CleverStaff](3.25-cleverstaff-parser.md)                                            | todo    |
+| [3.26 Парсер Hurma](3.26-hurma-parser.md)                                                        | todo    |
+| [3.27 Парсер Personio](3.27-personio-parser.md)                                                  | todo    |
+| [3.28 Парсер softgarden](3.28-softgarden-parser.md)                                              | todo    |
+| [3.29 Парсер rexx](3.29-rexx-parser.md)                                                          | todo    |
 | [4.01 Схема check_runs + check_tasks](4.01-check-runs-tasks-schema.md)                           | done    |
 | [4.02 Захоплення завдань і повернення завислих](4.02-task-claiming-stale-recovery.md)            | done    |
 | [4.03 Обробник черги як фоновий цикл](4.03-queue-background-loop.md)                             | done    |
@@ -92,6 +98,7 @@ PR: #57
 | [5.12 E2E: Find pages від URL до вакансій](5.12-e2e-find-pages.md)                               | done    |
 | [5.13 ATS на домені компанії](5.13-ats-on-company-domain.md)                                     | backlog |
 | [5.14 Find pages для однієї компанії на Not tracked](5.14-find-pages-not-tracked-company.md)     | done    |
+| [5.15 Відомі ATS без парсера](5.15-known-ats-without-parser.md)                                  | todo    |
 | [6.01 Таблиця settings і сторінка Settings](6.01-settings-page.md)                               | backlog |
 | [6.02 Розрахунок часу наступної автоперевірки](6.02-next-auto-check-time.md)                     | backlog |
 | [6.03 Автоперевірка локально і перевірка на старті](6.03-auto-check-local.md)                    | backlog |

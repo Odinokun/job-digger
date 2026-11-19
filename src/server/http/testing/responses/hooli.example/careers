@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Careers at Hooli</title>
+  </head>
+  <body>
+    <h1>Open positions</h1>
+    <ul>
+      <li><a href="https://hooli.bamboohr.com/careers/12?source=site">Designer</a></li>
+      <li><a href="https://hooli.bamboohr.com/careers/34">Engineer</a></li>
+    </ul>
+    <footer>
+      <a href="https://www.bamboohr.com/">Powered by BambooHR</a>
+    </footer>
+  </body>
+</html>
