@@ -129,3 +129,14 @@ export type LoadMoreCompaniesResult =
  */
 export type CheckCompanyNowResult =
   { ok: true; company: CompanyListItem | null } | { ok: false };
+
+/**
+ * Результат Check all: скільки джерел поставлено в чергу або чому перевірка не
+ * стартувала. `unexpected` - збій, який показується спільним toast.
+ */
+export type StartCheckAllResult =
+  | { ok: true; total: number }
+  | {
+      ok: false;
+      reason: "already-running" | "nothing-to-check" | "unexpected";
+    };

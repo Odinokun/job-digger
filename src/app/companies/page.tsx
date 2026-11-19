@@ -65,6 +65,7 @@ export default async function CompaniesPage({
       noSourcesLabel={t("noSources")}
       platformLabels={platformLabels}
       statusLabels={statusLabels}
+      hasTracked={counts.tracked > 0}
     />
   );
 }
