@@ -149,9 +149,10 @@ unique на `companies(id, user_id)`. Купується за це атомар�
   визначиться в задачі 5.07, а не вгадується наперед.
 - **`locked_at`** - коли обробник захопив завдання. За ним завдання, що зависло в
   `running`, повертається в чергу (задача 4.02).
-- **`error` - `jsonb` з `ParserError`** так, як його повернув парсер
-  ([`parsers/types.ts`](../parsers/types.ts)): Failed Sources Drawer показує причину, а
-  нова причина не потребує міграції. History цих деталей не показує.
+- **`error` - `jsonb` з `CheckTaskError`**: помилка парсера так, як він її повернув
+  ([`parsers/types.ts`](../parsers/types.ts)), або причина від самої черги
+  ([`queue/task-error.ts`](../queue/task-error.ts)). Failed Sources Drawer показує
+  причину, а нова причина не потребує міграції. History цих деталей не показує.
 - **`skipped_vacancies`** - parse warning: скільки записів парсер пропустив через ваду
   даних ([`parsers/README.md`](../parsers/README.md), «Спільний формат»).
 - **Індекс черги частковий** - `(priority, created_at) where status = 'queued'`: у черзі

@@ -1,0 +1,11 @@
+/**
+ * Помилка невдалого завдання - те, що лежить у `check_tasks.error` і що
+ * показує Failed Sources Drawer.
+ */
+import type { ParserError } from "../parsers/types.ts";
+
+export type CheckTaskError =
+  /** Сайт або парсер: причина так, як її повернув парсер. */
+  | ParserError
+  /** Обробник щоразу зависав на завданні, і спроби скінчилися (`recover.ts`). */
+  | { reason: "stalled" };
