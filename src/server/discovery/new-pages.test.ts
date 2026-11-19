@@ -35,6 +35,7 @@ const SILENT_BOARD: Finding = {
 };
 
 const none = new Set<string>();
+const base = { siteFailed: false, taken: none, owned: none };
 
 describe("decideNewPages", () => {
   it("adds a reliable readable finding and leaves the status alone", () => {
@@ -43,6 +44,7 @@ describe("decideNewPages", () => {
         findings: [SITE_BOARD],
         siteFailed: false,
         taken: none,
+        owned: none,
       }),
     ).toEqual({ add: [SITE_BOARD.url], status: null });
   });
@@ -54,7 +56,12 @@ describe("decideNewPages", () => {
     };
 
     expect(
-      decideNewPages({ findings: [confirmed], siteFailed: false, taken: none }),
+      decideNewPages({
+        findings: [confirmed],
+        siteFailed: false,
+        taken: none,
+        owned: none,
+      }),
     ).toEqual({ add: [confirmed.url], status: null });
   });
 
@@ -65,6 +72,7 @@ describe("decideNewPages", () => {
         findings: [SITE_BOARD, OWN_PAGE],
         siteFailed: false,
         taken: none,
+        owned: none,
       }),
     ).toEqual({ add: [SITE_BOARD.url, OWN_PAGE.url], status: null });
   });
@@ -75,13 +83,19 @@ describe("decideNewPages", () => {
         findings: [NAME_BOARD],
         siteFailed: false,
         taken: none,
+        owned: none,
       }),
     ).toEqual({ add: [], status: "possible_page" });
   });
 
   it("saves an own page and calls the company unsupported", () => {
     expect(
-      decideNewPages({ findings: [OWN_PAGE], siteFailed: false, taken: none }),
+      decideNewPages({
+        findings: [OWN_PAGE],
+        siteFailed: false,
+        taken: none,
+        owned: none,
+      }),
     ).toEqual({ add: [OWN_PAGE.url], status: "unsupported" });
   });
 
@@ -91,19 +105,30 @@ describe("decideNewPages", () => {
         findings: [SILENT_BOARD, OWN_PAGE],
         siteFailed: false,
         taken: none,
+        owned: none,
       }),
     ).toEqual({ add: [OWN_PAGE.url], status: "check_failed" });
   });
 
   it("calls a check failed when the company site did not answer", () => {
     expect(
-      decideNewPages({ findings: [], siteFailed: true, taken: none }),
+      decideNewPages({
+        findings: [],
+        siteFailed: true,
+        taken: none,
+        owned: none,
+      }),
     ).toEqual({ add: [], status: "check_failed" });
   });
 
   it("says not found when there is nothing", () => {
     expect(
-      decideNewPages({ findings: [], siteFailed: false, taken: none }),
+      decideNewPages({
+        findings: [],
+        siteFailed: false,
+        taken: none,
+        owned: none,
+      }),
     ).toEqual({ add: [], status: "not_found" });
   });
 
@@ -114,7 +139,18 @@ describe("decideNewPages", () => {
         findings: [SITE_BOARD, NAME_BOARD],
         siteFailed: false,
         taken: new Set([SITE_BOARD.url, NAME_BOARD.url]),
+        owned: none,
       }),
     ).toEqual({ add: [], status: "not_found" });
+  });
+
+  it("counts a page the company already has without adding it again", () => {
+    expect(
+      decideNewPages({
+        ...base,
+        findings: [OWN_PAGE],
+        owned: new Set([OWN_PAGE.url]),
+      }),
+    ).toEqual({ add: [], status: "unsupported" });
   });
 });

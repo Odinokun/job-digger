@@ -7,12 +7,17 @@ import type { DiscoveryStatus } from "../../lib/companies/company-list.ts";
 import { isReliableFinding, type Finding } from "./discover.ts";
 
 export interface NewPagesInput {
-  /** Знахідки без власних джерел компанії - ті вже є. */
   findings: Finding[];
   /** Сайт компанії не відповів: про сторінки на ньому нічого не відомо. */
   siteFailed: boolean;
   /** Адреси знахідок, які вже відстежує інша компанія користувача. */
   taken: ReadonlySet<string>;
+  /**
+   * Адреси знахідок, які вже є джерелами самої компанії: на статус вони
+   * впливають (власна сторінка, збережена минулого разу, - це все ще
+   * Unsupported), але вдруге не додаються.
+   */
+  owned: ReadonlySet<string>;
 }
 
 export interface NewPagesDecision {
@@ -41,6 +46,7 @@ export function decideNewPages({
   findings,
   siteFailed,
   taken,
+  owned,
 }: NewPagesInput): NewPagesDecision {
   const free = findings.filter((finding) => !taken.has(finding.url));
   const reliable = free.filter(isReliableFinding);
@@ -48,7 +54,9 @@ export function decideNewPages({
   const ownPages = reliable.filter(
     (finding) => finding.trial.kind === "unsupported",
   );
-  const add = [...boards, ...ownPages].map((finding) => finding.url);
+  const add = [...boards, ...ownPages]
+    .map((finding) => finding.url)
+    .filter((url) => !owned.has(url));
 
   if (boards.length > 0) {
     return { add, status: null };
