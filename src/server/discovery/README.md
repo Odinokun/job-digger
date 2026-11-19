@@ -16,6 +16,8 @@
 | `career-pages.ts` | `careerPagesOnPage` - кар'єрні сторінки свого сайту за текстом посилання, шляхом або піддоменом; `careerPagesInSitemap` - те саме з адрес sitemap, лише за шляхом; `findSiteCareerPages` - кар'єрні сторінки сайту й дошки ATS на них |
 | `career-pages.test.ts` | Юніт-тести пошуку кар'єрних сторінок |
 | `career-pages.integration.test.ts` | `findSiteCareerPages` через фейковий вебсервер (синтетичні `globex`, `initech`, `umbrella`, `acme`) і свій сервер із редиректами |
+| `by-name.ts` | `nameSlugs` - варіанти назви дошки з назви компанії й домену |
+| `by-name.test.ts` | Юніт-тести `nameSlugs` |
 
 ## Адреса дошки
 
