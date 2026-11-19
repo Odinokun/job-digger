@@ -16,7 +16,7 @@
 | `update.ts`     | `updateCompany` - перейменування, видалення й додавання карʼєрних джерел |
 | `sources.ts`    | `addCareerSource` - джерело до вже доданої компанії, `companySources` |
 | `delete.ts`     | `deleteCompany` - компанія разом із усіма її джерелами            |
-| `source-duplicates.ts` | `findCompanyWithSource` - у кого вже є це карʼєрне джерело  |
+| `source-duplicates.ts` | `findCompanyWithSource` - у кого вже є це карʼєрне джерело; `findCompaniesWithSources` - те саме для списку адрес одним запитом |
 
 ## Рішення
 
@@ -171,6 +171,11 @@ Not tracked, і попередній `not_found` чи `check_failed` її біл
 
 **`exceptCompanyId`** виключає компанію, якій джерело саме додають: її власні джерела -
 дублікат усередині компанії, і про нього вже є окрема відмова.
+
+**Список знахідок Find pages** позначає такі джерела «вже відстежується в ...»
+(задача 5.08) через `findCompaniesWithSources`: один запит на всі знахідки, ключ -
+адреса так, як її передали. Вибрати таку знахідку не можна - Save однаково
+відмовив би `source-taken`.
 
 Чому перевірка дружня, а не unique-індекс - [`db/README.md`](../db/README.md#рішення-щодо-схеми).
 
