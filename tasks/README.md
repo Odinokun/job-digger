@@ -88,7 +88,7 @@ PR: #57
 | [5.08 Позначки дублікатів у списку знахідок](5.08-discovery-duplicate-marks.md)                  | done    |
 | [5.09 Перша перевірка одразу після Save](5.09-first-check-after-save.md)                         | done    |
 | [5.10 Find new pages для списку Not tracked](5.10-find-new-pages-not-tracked.md)                 | done    |
-| [5.11 Статуси вкладки Not tracked](5.11-not-tracked-statuses.md)                                 | todo    |
+| [5.11 Статуси вкладки Not tracked](5.11-not-tracked-statuses.md)                                 | done    |
 | [5.12 E2E: Find pages від URL до вакансій](5.12-e2e-find-pages.md)                               | done    |
 | [5.13 ATS на домені компанії](5.13-ats-on-company-domain.md)                                     | backlog |
 | [5.14 Find pages для однієї компанії на Not tracked](5.14-find-pages-not-tracked-company.md)     | done    |
