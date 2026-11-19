@@ -14,15 +14,25 @@
  */
 
 /**
- * Хост → назва платформи. Шаблон з крапкою на початку - будь-який піддомен
- * (`.bamboohr.com` - `acme.bamboohr.com`, компанія в піддомені), без крапки -
- * рівно цей хост (`apply.workable.com/acme`, компанія в шляху).
+ * Шаблон → назва платформи:
+ *
+ * - з крапкою на початку - будь-який піддомен (`.bamboohr.com` -
+ *   `acme.bamboohr.com`, компанія в піддомені);
+ * - без крапки - рівно цей хост (`apply.workable.com/acme`, компанія в шляху);
+ * - зі шляхом - цей хост і адреса, що починається з цього шляху
+ *   (`cleverstaff.net/i/`): платформа тримає дошки на тому самому хості, що й
+ *   свій сайт.
  *
  * Сам домен і `www.` не підпадають під піддомен: це сайт постачальника, на
- * нього веде «Powered by ...», а не дошка компанії.
+ * нього веде «Powered by ...», а не дошка компанії. Інші службові хости
+ * постачальника - у `VENDOR_HOSTS`.
  *
- * Домени перевірені справжніми запитами 19.11.2026: хост відповідає, і він
- * належить цьому постачальнику.
+ * Хости перевірені справжніми запитами 19.11.2026: хост відповідає й належить
+ * цьому постачальнику, а для платформ задачі 5.15 (Україна й Німеччина) - ще й
+ * веде на справжню кар'єрну сторінку (BITE, Umantis - власні сторінки
+ * постачальників; d.vinci - клієнт `impulse`; CleverStaff - його документація
+ * API, neo.cleverstaff.net/api.html). Hurma свого шаблону не документує:
+ * узято її піддомени, бо невідомий піддомен відповідає 404 самої Hurma.
  */
 const KNOWN_ATS: Array<[pattern: string, name: string]> = [
   [".bamboohr.com", "BambooHR"],
@@ -51,21 +61,43 @@ const KNOWN_ATS: Array<[pattern: string, name: string]> = [
   [".ultipro.com", "UKG Pro"],
   [".dayforcehcm.com", "Dayforce"],
   ["recruiting.paylocity.com", "Paylocity"],
+  // Україна (задача 5.15).
+  ["cleverstaff.net/i/", "CleverStaff"],
+  [".hurma.work", "Hurma"],
+  // Німеччина (задача 5.15). rexx тут немає: його клієнти тримають кар'єрну
+  // сторінку на власному домені (задача 5.13).
+  ["jobs.b-ite.com", "BITE"],
+  [".onlyfy.jobs", "onlyfy"],
+  ["jobs.umantis.com", "Umantis"],
+  [".dvinci-hr.com", "d.vinci"],
+  ["join.com/companies/", "JOIN"],
 ];
+
+/** Службові хости постачальників, що не є дошками компаній. */
+const VENDOR_HOSTS = new Set(["academy.hurma.work", "support.hurma.work"]);
 
 /**
  * Назва відомої ATS без парсера, на яку веде адреса, або `null`. Приймає і
  * абсолютну адресу, і очищену (`acme.bamboohr.com`), як її зберігає база.
  */
 export function knownAtsName(url: string): string | null {
-  const host = hostOf(url);
+  const parsed = parse(url);
 
-  if (host === null) {
+  if (parsed === null || VENDOR_HOSTS.has(parsed.host)) {
     return null;
   }
 
+  const { host, path } = parsed;
   for (const [pattern, name] of KNOWN_ATS) {
-    if (pattern.startsWith(".")) {
+    const slash = pattern.indexOf("/");
+    if (slash !== -1) {
+      if (
+        host === pattern.slice(0, slash) &&
+        path.startsWith(pattern.slice(slash))
+      ) {
+        return name;
+      }
+    } else if (pattern.startsWith(".")) {
       const domain = pattern.slice(1);
       if (host.endsWith(pattern) && host !== `www.${domain}`) {
         return name;
@@ -78,12 +110,13 @@ export function knownAtsName(url: string): string | null {
   return null;
 }
 
-function hostOf(url: string): string | null {
+function parse(url: string): { host: string; path: string } | null {
   try {
     const absolute = /^[a-z][a-z\d+.-]*:\/\//i.test(url)
       ? url
       : `https://${url}`;
-    return new URL(absolute).hostname.toLowerCase();
+    const parsed = new URL(absolute);
+    return { host: parsed.hostname.toLowerCase(), path: parsed.pathname };
   } catch {
     return null;
   }
