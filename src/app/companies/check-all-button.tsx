@@ -16,8 +16,8 @@ interface CheckAllButtonProps {
 
 /**
  * Check all на вкладці Tracked. Дія лише ставить джерела в чергу й одразу
- * повертається, тож спінер видно мить; саму перевірку веде цикл черги. Поки
- * немає індикатора прогресу в шапці (задача 4.05), про старт каже toast.
+ * повертається, тож спінер видно мить; саму перевірку веде цикл черги, а хід
+ * показує індикатор у шапці (`components/check-progress.tsx`).
  */
 export function CheckAllButton({ isDisabled }: CheckAllButtonProps) {
   const t = useTranslations("CompaniesPage");
@@ -35,9 +35,9 @@ export function CheckAllButton({ isDisabled }: CheckAllButtonProps) {
           const result = await startCheckAllAction();
 
           if (result.ok) {
-            // Стан із відповіді запускає опитування одразу.
+            // Стан із відповіді показує індикатор у шапці одразу й
+            // запускає опитування.
             track(result.status);
-            toast(t("checkAllStarted", { count: result.total }));
           } else if (result.reason === "already-running") {
             toast.warning(t("checkAllRunning"));
           } else if (result.reason === "nothing-to-check") {

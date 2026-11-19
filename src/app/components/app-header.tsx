@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
+import { CheckProgress } from "./check-progress";
 import { NavLink } from "./nav-link";
 import { getUnreadCount } from "./unread-count";
 
@@ -37,6 +38,7 @@ export async function AppHeader() {
             />
           ))}
         </nav>
+        <CheckProgress />
       </div>
     </header>
   );
