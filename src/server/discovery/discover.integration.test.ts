@@ -45,7 +45,7 @@ describe("discoverSources", () => {
         url: "https://jobs.lever.co/leverdemo",
         platform: "lever",
         via: "site",
-        vacancies: 10,
+        trial: { kind: "read", vacancies: 10 },
         ownership: null,
       },
     ]);
@@ -62,7 +62,26 @@ describe("discoverSources", () => {
         url: "https://initech.example/careers",
         platform: "unsupported",
         via: "site",
-        vacancies: null,
+        trial: { kind: "unsupported" },
+        ownership: null,
+      },
+    ]);
+  });
+
+  it("tells a board that did not answer from a page nothing can read", async () => {
+    // Сайт Wayne веде на дошку Greenhouse `ghost`, якої немає: це не власна
+    // сторінка, а дошка, яку не вдалося прочитати.
+    expect(
+      await discoverSources(
+        { siteUrl: "https://wayne.example", name: "Wayne" },
+        client(),
+      ),
+    ).toEqual([
+      {
+        url: "https://job-boards.greenhouse.io/ghost",
+        platform: "greenhouse",
+        via: "site",
+        trial: { kind: "failed" },
         ownership: null,
       },
     ]);
@@ -80,7 +99,7 @@ describe("discoverSources", () => {
         url: "https://jobs.lever.co/leverdemo",
         platform: "lever",
         via: "site",
-        vacancies: 10,
+        trial: { kind: "read", vacancies: 10 },
         ownership: null,
       },
     ]);
@@ -95,7 +114,7 @@ describe("discoverSources", () => {
         url: "https://jobs.ashbyhq.com/linear",
         platform: "ashby",
         via: "name",
-        vacancies: 33,
+        trial: { kind: "read", vacancies: 33 },
         ownership: { kind: "unknown" },
       },
     ]);
@@ -115,7 +134,7 @@ describe("discoverSources", () => {
         url: "https://jobs.ashbyhq.com/linear",
         platform: "ashby",
         via: "name",
-        vacancies: 33,
+        trial: { kind: "read", vacancies: 33 },
         ownership: { kind: "confirmed" },
       },
     ]);
@@ -133,7 +152,7 @@ describe("discoverSources", () => {
         url: "https://jobs.ashbyhq.com/linear",
         platform: "ashby",
         via: "name",
-        vacancies: 33,
+        trial: { kind: "read", vacancies: 33 },
         ownership: { kind: "other", site: "linear.app" },
       },
     ]);

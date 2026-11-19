@@ -17,6 +17,19 @@ import { findBoardsByName } from "./by-name.ts";
 import { findSiteCareerPages } from "./career-pages.ts";
 import { boardOwnership, type BoardOwnership } from "./ownership.ts";
 
+/**
+ * Результат пробного читання знахідки (задача 5.06):
+ *
+ * - `read` - прочитано, стільки вакансій зараз;
+ * - `unsupported` - читати нічим: власна сторінка компанії без парсера;
+ * - `failed` - парсер є, але дошка не відповіла чи відповіла помилкою. Буває
+ *   тимчасовим, тому окремо від `unsupported`.
+ */
+export type TrialRead =
+  | { kind: "read"; vacancies: number }
+  | { kind: "unsupported" }
+  | { kind: "failed" };
+
 /** Одна знахідка в списку Find pages. */
 export type Finding = {
   url: string;
@@ -27,8 +40,8 @@ export type Finding = {
    * за назвою - перевір».
    */
   via: "site" | "name";
-  /** Скільки вакансій прочитало пробне читання, або `null` - не читається. */
-  vacancies: number | null;
+  /** Пробне читання до показу списку; вибрати можна лише прочитане. */
+  trial: TrialRead;
   /**
    * Чия дошка, знайдена за назвою (задача 5.05): `null` для знахідок із сайту
    * - посилання з сайту і є доказом.
@@ -52,9 +65,8 @@ export function isReliableFinding(finding: Finding): boolean {
  * Сайт, що не відповів, - не провал пошуку: лишається пошук за назвою. Та сама
  * дошка, знайдена кількома способами, - одна знахідка з найнадійнішого.
  *
- * Пробне читання тут просте - той самий парсер, що й у перевірці; власна
- * сторінка, для якої парсера немає, - `vacancies: null`. Деталі пробного
- * читання - задача 5.06.
+ * Пробне читання - той самий парсер, що й у перевірці (`TrialRead`). Дошки
+ * за назвою вже прочитані пошуком: існує лише та, що прочиталась.
  */
 export async function discoverSources(
   company: { siteUrl: string | null; name: string },
@@ -72,8 +84,10 @@ export async function discoverSources(
     byName
       .filter((board) => !seen.has(board.url))
       .map(async (board) => ({
-        ...board,
+        url: board.url,
+        platform: board.platform,
         via: "name" as const,
+        trial: { kind: "read" as const, vacancies: board.vacancies },
         ownership:
           company.siteUrl === null
             ? { kind: "unknown" as const }
@@ -108,7 +122,7 @@ async function discoverOnSite(
     [...boards.values()].map(async (board) => ({
       ...board,
       via: "site" as const,
-      vacancies: await trialRead(board, client),
+      trial: await trialRead(board, client),
       ownership: null,
     })),
   );
@@ -119,7 +133,8 @@ async function discoverOnSite(
       url,
       platform: normalized.ok ? detectPlatform(normalized.url) : "unsupported",
       via: "site",
-      vacancies: null,
+      // Власна сторінка: парсера schema.org ще немає (задача 3.11).
+      trial: { kind: "unsupported" },
       ownership: null,
     };
   });
@@ -127,13 +142,20 @@ async function discoverOnSite(
   return [...read, ...pages];
 }
 
-/** Кількість вакансій або `null`, якщо джерело не прочиталось чи нічим читати. */
+/** Пробне читання дошки тим самим парсером, що й перевірка. */
 async function trialRead(
   board: BoardUrl,
   client: HttpClient,
-): Promise<number | null> {
+): Promise<TrialRead> {
   const result = await readSource(board, client);
-  return result?.ok ? result.vacancies.length : null;
+
+  if (result === null) {
+    return { kind: "unsupported" };
+  }
+
+  return result.ok
+    ? { kind: "read", vacancies: result.vacancies.length }
+    : { kind: "failed" };
 }
 
 /**
