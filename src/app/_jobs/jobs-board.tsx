@@ -14,6 +14,7 @@ import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import type { Cursor } from "@/lib/pagination/cursor";
 import {
   belongsToJobsTab,
+  countNewVacancies,
   patchVacancy,
   type JobsTab,
   type VacancyListItem,
@@ -26,6 +27,7 @@ import {
   setVacancyReadAction,
 } from "./actions";
 import { MarkAllRead } from "./mark-all-read";
+import { useNewVacanciesNotice } from "./new-vacancies-notice";
 import { VacancyRow } from "./vacancy-row";
 
 interface JobsBoardProps {
@@ -33,7 +35,11 @@ interface JobsBoardProps {
   title: string;
   /** Вкладки - серверний компонент, тому приходять готовими. */
   tabs: ReactNode;
-  /** Перша порція: її рендерить сервер, тож список видно без JavaScript. */
+  /**
+   * Перша порція: її рендерить сервер, тож список видно без JavaScript. Коли
+   * сторінку перечитано (`router.refresh` опитування чи дія), тут свіжа
+   * порція, а показаний список лишається в стані - див. `useNewVacanciesNotice`.
+   */
   initialItems: VacancyListItem[];
   initialCursor: Cursor | null;
   emptyLabel: string;
@@ -146,6 +152,23 @@ export function JobsBoard({
     setItems([]);
     setCursor(null);
   }, []);
+
+  /**
+   * Нові вакансії не вливаються в список самі (задача 4.13): `router.refresh`
+   * приносить свіжу першу порцію в пропси, а стан зі списком лишається. Show
+   * перечитує вкладку з першої порції - бере саме цю свіжу порцію.
+   */
+  const newCount = countNewVacancies(items, initialItems);
+  const showNew = useCallback(() => {
+    setItems(initialItems);
+    setCursor(initialCursor);
+  }, [initialItems, initialCursor]);
+
+  useNewVacanciesNotice({
+    count: newCount,
+    hasMore: newCount === initialItems.length && initialCursor !== null,
+    onShow: showNew,
+  });
 
   return (
     <>

@@ -9,8 +9,8 @@
 | ---------------------- | --------------------------------------------------------------------------- |
 | `companies/`           | адреси й назви компаній, платформи, типи списку - [README](companies/README.md) |
 | `pagination/cursor.ts` | курсор keyset-пагінації та його розбір із недовіреного значення             |
-| `vacancies/vacancy-list.ts` | вкладки Jobs (`JOBS_TABS`, `parseJobsTab`, `belongsToJobsTab`), тип рядка `VacancyListItem` і `patchVacancy` для оптимістичних дій |
-| `vacancies/vacancy-list.test.ts` | юніт-тести вкладок і `patchVacancy`            |
+| `vacancies/vacancy-list.ts` | вкладки Jobs (`JOBS_TABS`, `parseJobsTab`, `belongsToJobsTab`), тип рядка `VacancyListItem`, `patchVacancy` для оптимістичних дій і `countNewVacancies` для сповіщення про нові |
+| `vacancies/vacancy-list.test.ts` | юніт-тести вкладок, `patchVacancy` і `countNewVacancies` |
 | `checks/check-status.ts` | `CheckStatus` - стан загальної перевірки й непрочитані, що інтерфейс отримує опитуванням |
 | `checks/failed-sources.ts` | `FailedSource`, `FailedSourcesList`, `FailureReason` - рядки Failed Sources Drawer |
 | `checks/status-poller.ts` | `createStatusPoller` - коли опитувати сервер про стан перевірки і коли здатися |

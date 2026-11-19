@@ -76,7 +76,7 @@ PR: #57
 | [4.10 Сторінка History з Load more](4.10-history-page.md)                                        | done |
 | [4.11 E2E: Check all від запуску до підсумку](4.11-e2e-check-all.md)                             | done |
 | [4.12 Polling-маршрут стану перевірки](4.12-check-status-polling.md)                             | done |
-| [4.13 Сповіщення про нові вакансії на сторінці Jobs](4.13-new-vacancies-notice.md)            | todo |
+| [4.13 Сповіщення про нові вакансії на сторінці Jobs](4.13-new-vacancies-notice.md)            | done |
 | [5.01 Визначення платформи за URL](5.01-platform-detection.md)                                   | backlog |
 | [5.02 Пошук: посилання з сайту компанії на ATS](5.02-discovery-site-ats-links.md)                | backlog |
 | [5.03 Пошук: кар'єрні сторінки на сайті компанії](5.03-discovery-site-career-pages.md)           | backlog |
