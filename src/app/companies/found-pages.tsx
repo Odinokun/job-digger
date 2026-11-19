@@ -6,8 +6,10 @@ import { useTranslations } from "next-intl";
 import type { CareerPlatform } from "@/lib/companies/platform";
 import type { Finding } from "@/server/discovery/discover";
 
+import type { FoundPage } from "./form-state";
+
 interface FoundPagesProps {
-  findings: Finding[];
+  findings: FoundPage[];
   /** Адреси вибраних знахідок. */
   selected: string[];
   onToggle: (url: string, isSelected: boolean) => void;
@@ -21,7 +23,8 @@ interface FoundPagesProps {
  *
  * Галочка - справжній `<input name="foundUrl">` (HeroUI передає `name` і
  * `value` у поле React Aria), тож вибрані адреси їдуть із формою на Save самі.
- * Знахідку, яка не читається, вибрати не можна.
+ * Знахідку, яка не читається, вибрати не можна. Ту, що вже відстежується в
+ * іншій компанії, - теж: Save однаково відмовив би `source-taken` (задача 5.08).
  */
 export function FoundPages({
   findings,
@@ -47,7 +50,9 @@ export function FoundPages({
               name="foundUrl"
               value={finding.url}
               isSelected={selected.includes(finding.url)}
-              isDisabled={finding.trial.kind !== "read"}
+              isDisabled={
+                finding.trial.kind !== "read" || finding.trackedIn !== null
+              }
               onChange={(isSelected) => onToggle(finding.url, isSelected)}
             >
               <Checkbox.Content>
@@ -71,6 +76,11 @@ export function FoundPages({
                           : t("readFailed")}
                     </span>
                     <OwnershipMark finding={finding} />
+                    {finding.trackedIn === null ? null : (
+                      <Chip size="sm" color="warning" variant="primary">
+                        {t("alreadyTracked", { name: finding.trackedIn.name })}
+                      </Chip>
+                    )}
                   </span>
                   <span className="truncate font-mono text-sm text-muted">
                     {finding.url}
