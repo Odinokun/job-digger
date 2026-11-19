@@ -13,8 +13,9 @@ import { VacancyActions } from "./vacancy-actions";
 /**
  * Один рядок списку Jobs: назва-посилання на оригінал, компанія, локація й дата
  * виявлення й дії Read і Favorite (docs/ui.md, розділ 4.1). Непрочитана
- * вакансія виділена жирнішою назвою - на вкладках All і Favorites це єдине, що
- * відрізняє її від прочитаної.
+ * вакансія виділена жирнішою назвою і крапкою кольору уваги в полі ліворуч -
+ * на вкладках All і Favorites це те, що відрізняє її від прочитаної. Крапка
+ * стоїть поза потоком, тож назви прочитаних і непрочитаних вирівняні.
  *
  * Назва, компанія й локація прийшли з чужих сайтів, тому рендеряться лише як
  * текст - JSX екранує їх сам. Посилання відкривається в новій вкладці з
@@ -30,7 +31,15 @@ export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
   const format = useFormatter();
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-3">
+    <div className="relative flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-3">
+      {vacancy.isRead ? null : (
+        // Центр крапки - на середині першого рядка назви: py-3 + половина
+        // висоти рядка 24px. Ліворуч у полі сторінки, яке не менше 16px.
+        <span
+          aria-hidden
+          className="absolute top-5 -left-3.5 size-2 rounded-full bg-highlight"
+        />
+      )}
       <div className="flex min-w-0 flex-col gap-1">
         <div className="flex flex-wrap items-center gap-2">
           <a

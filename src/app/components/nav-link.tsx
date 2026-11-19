@@ -6,7 +6,11 @@ import { usePathname } from "next/navigation";
 interface NavLinkProps {
   href: string;
   label: string;
-  /** Число біля назви - як у вкладках Companies: «Jobs (12)». */
+  /**
+   * Число біля назви - бейдж кольору уваги (src/app/README.md#тема-ink). Текст
+   * посилання - «Jobs 12»: пробіл тримає назву й число окремими словами для
+   * читача екрана.
+   */
   count?: number;
 }
 
@@ -32,7 +36,12 @@ export function NavLink({ href, label, count }: NavLinkProps) {
     >
       {label}
       {count === undefined ? null : (
-        <span className="ml-1 text-muted">({count})</span>
+        <>
+          {" "}
+          <span className="rounded-sm bg-highlight px-1.5 py-0.5 text-xs font-semibold text-highlight-foreground tabular-nums">
+            {count}
+          </span>
+        </>
       )}
     </Link>
   );

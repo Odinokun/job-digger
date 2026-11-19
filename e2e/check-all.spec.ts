@@ -86,7 +86,7 @@ test("Check all checks every tracked source and reports the failed one", async (
   const jobsLink = page
     .getByRole("navigation", { name: "Main" })
     .getByRole("link", { name: /^Jobs/ });
-  await expect(jobsLink).toContainText(`(${NEW_VACANCIES})`);
+  await expect(jobsLink).toHaveText(`Jobs ${NEW_VACANCIES}`);
 
   // Невдале джерело - у Failed Sources Drawer, і лише воно.
   await summary.getByRole("button", { name: "Show failed sources" }).click();

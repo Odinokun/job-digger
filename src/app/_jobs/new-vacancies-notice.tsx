@@ -1,5 +1,6 @@
 "use client";
 
+import { Bell } from "@gravity-ui/icons";
 import { toast } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
@@ -48,6 +49,8 @@ export function useNewVacanciesNotice({
 
     const title = t(hasMore ? "titleAtLeast" : "title", { count });
     const options = {
+      // Дзвоник кольору уваги замість типового «i» (src/app/README.md#тема-ink).
+      indicator: <Bell className="text-highlight" />,
       timeout: 0,
       // Закрив сам користувач - наступна зміна числа покаже toast знову.
       onClose: () => {

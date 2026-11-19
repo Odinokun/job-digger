@@ -122,7 +122,7 @@ Companies) і Check now. Кнопки модалок (Save, Delete) поки б�
   (`/`, `/?tab=read` ...); серверний.
 - `_jobs/jobs-board.tsx` - заголовок, вкладки, список і Load more; клієнтський,
   тримає показані рядки й курсор.
-- `_jobs/new-vacancies-notice.ts` - хук `useNewVacanciesNotice`: toast «N new
+- `_jobs/new-vacancies-notice.tsx` - хук `useNewVacanciesNotice`: toast «N new
   vacancies» із Show у стандартному місці HeroUI (задача 4.13). Опитування стану
   перевірки при зміні непрочитаних кличе `router.refresh`, і `jobs-board.tsx`
   отримує свіжу першу порцію в пропсах, але показаний список у стані лишається -
@@ -132,8 +132,8 @@ Companies) і Check now. Кнопки модалок (Save, Delete) поки б�
   ньому оновлюється на місці, а закривається він, коли нових не лишилось або
   сторінку покинули.
 - `_jobs/vacancy-row.tsx` - рядок вакансії: назва-посилання, компанія, локація
-  (або «—»), абсолютна дата виявлення, позначка Closed, жирніша назва
-  непрочитаної; клієнтський через `useFormatter`.
+  (або «—»), абсолютна дата виявлення, позначка Closed, жирніша назва й крапка
+  кольору уваги в непрочитаної; клієнтський через `useFormatter`.
 - `_jobs/vacancy-actions.tsx` - кнопки-іконки Mark as read / unread і Favorite /
   Remove from Favorites у рядку; клієнтський. Дії **оптимістичні**: `jobs-board.tsx`
   накладає зміну через `useOptimistic` (`patchVacancy`) одразу, а справжній список
