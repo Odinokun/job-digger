@@ -318,7 +318,7 @@ describe("syncSourceVacancies", () => {
   it("keeps a vacancy favorited while the check is removing it", async () => {
     const sourceId = await greenhouseSource();
     await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
-    let check: Promise<void> | undefined;
+    let check: Promise<unknown> | undefined;
 
     await testDb.transaction(async (user) => {
       await user
@@ -346,5 +346,61 @@ describe("syncSourceVacancies", () => {
     await sync(sourceId, ok(), SECOND_CHECK);
 
     expect(await rowsOf(otherId)).toHaveLength(1);
+  });
+});
+
+describe("syncSourceVacancies counts", () => {
+  // Нові й видалені вакансії - числа рядка History (docs/ui.md, розділ 4.4).
+  it("counts every vacancy of the first check as new", async () => {
+    const sourceId = await greenhouseSource();
+
+    expect(
+      await sync(sourceId, ok(parsed("101"), parsed("102")), FIRST_CHECK),
+    ).toEqual({ newVacancies: 2, removedVacancies: 0 });
+  });
+
+  it("counts gone vacancies as removed, closed favorites included", async () => {
+    const sourceId = await greenhouseSource();
+    await sync(
+      sourceId,
+      ok(parsed("101"), parsed("102"), parsed("103")),
+      FIRST_CHECK,
+    );
+    await testDb
+      .update(vacancies)
+      .set({ isFavorite: true })
+      .where(eq(vacancies.key, "id:103"));
+
+    expect(
+      await sync(sourceId, ok(parsed("101"), parsed("104")), SECOND_CHECK),
+    ).toEqual({ newVacancies: 1, removedVacancies: 2 });
+  });
+
+  it("does not count a closed favorite again on later checks", async () => {
+    const sourceId = await greenhouseSource();
+    await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
+    await testDb
+      .update(vacancies)
+      .set({ isFavorite: true })
+      .where(eq(vacancies.sourceId, sourceId));
+    await sync(sourceId, ok(), SECOND_CHECK);
+
+    expect(await sync(sourceId, ok(), THIRD_CHECK)).toEqual({
+      newVacancies: 0,
+      removedVacancies: 0,
+    });
+  });
+
+  it("counts nothing when the check failed", async () => {
+    const sourceId = await greenhouseSource();
+    await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
+
+    expect(
+      await sync(
+        sourceId,
+        { ok: false, error: { reason: "not-found" } },
+        SECOND_CHECK,
+      ),
+    ).toEqual({ newVacancies: 0, removedVacancies: 0 });
   });
 });

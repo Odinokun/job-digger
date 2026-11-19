@@ -20,13 +20,24 @@ export interface SyncSourceVacanciesInput {
   checkedAt: Date;
 }
 
+/**
+ * Що перевірка зробила з вакансіями джерела - числа рядка History. Видалені -
+ * усі, що зникли з сайту: і стерті, і Favorites, які отримали Closed.
+ */
+export interface SyncCounts {
+  newVacancies: number;
+  removedVacancies: number;
+}
+
+const NOTHING: SyncCounts = { newVacancies: 0, removedVacancies: 0 };
+
 export async function syncSourceVacancies(
   db: NodePgDatabase,
   { sourceId, result, checkedAt }: SyncSourceVacanciesInput,
-): Promise<void> {
-  if (!result.ok) return;
+): Promise<SyncCounts> {
+  if (!result.ok) return NOTHING;
 
-  await db.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     // Джерело могли видалити, поки сайт відповідав, - тоді результат
     // відкидається (docs/checks-and-queue.md, розділ 8). `FOR KEY SHARE` ще й
     // не дає видалити джерело до кінця транзакції: видалення дочекається, і
@@ -37,26 +48,31 @@ export async function syncSourceVacancies(
       .from(careerSources)
       .where(eq(careerSources.id, sourceId))
       .for("key share");
-    if (source === undefined) return;
+    if (source === undefined) return NOTHING;
 
-    await upsertSeen(tx, sourceId, result.vacancies, checkedAt);
-    await removeGone(tx, sourceId, checkedAt);
+    return {
+      newVacancies: await upsertSeen(tx, sourceId, result.vacancies, checkedAt),
+      removedVacancies: await removeGone(tx, sourceId, checkedAt),
+    };
   });
 }
 
 type Executor = Pick<NodePgDatabase, "insert" | "execute">;
 
-/** Знайдені вакансії: нові створюються, наявні отримують свіжі дані з сайту. */
+/**
+ * Знайдені вакансії: нові створюються, наявні отримують свіжі дані з сайту.
+ * Повертає, скільки вакансій нових.
+ */
 async function upsertSeen(
   db: Executor,
   sourceId: string,
   list: ParsedVacancy[],
   checkedAt: Date,
-): Promise<void> {
+): Promise<number> {
   // Порожній `values([])` Drizzle не приймає, а вставляти й нічого.
-  if (list.length === 0) return;
+  if (list.length === 0) return 0;
 
-  await db
+  const rows = await db
     .insert(vacancies)
     .values(
       uniqueByKey(list).map(([key, vacancy]) => ({
@@ -89,7 +105,14 @@ async function upsertSeen(
         // заново.
         closedAt: null,
       },
-    });
+    })
+    .returning({ firstDetectedAt: vacancies.firstDetectedAt });
+
+  // Нова - та, що виявлена саме цією перевіркою: оновлення наявної дату
+  // виявлення не чіпає.
+  return rows.filter(
+    (row) => row.firstDetectedAt.getTime() === checkedAt.getTime(),
+  ).length;
 }
 
 /**
@@ -129,16 +152,23 @@ async function removeGone(
   db: Executor,
   sourceId: string,
   checkedAt: Date,
-): Promise<void> {
+): Promise<number> {
   const gone = sql`${vacancies.sourceId} = ${sourceId} and ${vacancies.lastSeenAt} < ${checkedAt}`;
 
-  await db.execute(sql`
+  const result = await db.execute<{ removed: number }>(sql`
     with deleted as (
       delete from ${vacancies}
       where ${gone} and not ${vacancies.isFavorite}
+      returning 1
+    ),
+    closed as (
+      update ${vacancies}
+      set ${sql.identifier(vacancies.closedAt.name)} = ${checkedAt}
+      where ${gone} and ${vacancies.isFavorite} and ${vacancies.closedAt} is null
+      returning 1
     )
-    update ${vacancies}
-    set ${sql.identifier(vacancies.closedAt.name)} = ${checkedAt}
-    where ${gone} and ${vacancies.isFavorite} and ${vacancies.closedAt} is null
+    select ((select count(*) from deleted) + (select count(*) from closed))::int as removed
   `);
+
+  return result.rows[0].removed;
 }
