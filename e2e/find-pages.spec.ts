@@ -7,13 +7,12 @@ import { resetDatabase } from "./database.ts";
  * вакансій у Unread через Find pages (docs/discovery-and-parsing.md, розділ 5).
  *
  * Критерій готовності етапу: написаний на його початку й червоний, поки етап
- * не зроблено, тому з тегом `@pending`. Тег знімає остання задача етапу.
+ * не зроблено. Тег `@pending` зняла задача 5.11 - тепер це звичайний сценарій.
  *
  * Сайт компанії - `acme.example` на фейковому вебсервері
  * (src/server/http/testing/README.md): головна сторінка з посиланням Careers на
  * дошку Lever `leverdemo`, збережену в етапі 3. Домен `.example` зарезервований
- * (RFC 2606), тож навіть без фейкового сервера запит нікуди б не пішов. Самої
- * сторінки ще немає - вона зʼявиться разом із пошуком посилань на ATS (5.02).
+ * (RFC 2606), тож навіть без фейкового сервера запит нікуди б не пішов.
  */
 
 const SITE = "acme.example";
@@ -21,7 +20,7 @@ const BOARD = { url: "jobs.lever.co/leverdemo", platform: "Lever", jobs: 10 };
 
 test.beforeAll(resetDatabase);
 
-test("Find pages turns a company site into tracked vacancies @pending", async ({
+test("Find pages turns a company site into tracked vacancies", async ({
   page,
 }) => {
   // Пошук обходить сайт і пробно читає знахідки, а потім іде перша
