@@ -78,18 +78,18 @@ PR: #57
 | [4.12 Polling-маршрут стану перевірки](4.12-check-status-polling.md)                             | done |
 | [4.13 Сповіщення про нові вакансії на сторінці Jobs](4.13-new-vacancies-notice.md)            | done |
 | [4.14 Колір уваги в палітрі Ink](4.14-highlight-color.md) | done |
-| [5.01 Визначення платформи за URL](5.01-platform-detection.md)                                   | backlog |
-| [5.02 Пошук: посилання з сайту компанії на ATS](5.02-discovery-site-ats-links.md)                | backlog |
-| [5.03 Пошук: кар'єрні сторінки на сайті компанії](5.03-discovery-site-career-pages.md)           | backlog |
-| [5.04 Пошук: ATS за назвою компанії](5.04-discovery-ats-by-name.md)                              | backlog |
-| [5.05 Перевірка належності сторінки компанії](5.05-page-ownership-check.md)                      | backlog |
-| [5.06 Пробне читання знахідок](5.06-trial-read.md)                                               | backlog |
-| [5.07 Find pages у модалці Add company](5.07-find-pages-modal.md)                                | backlog |
-| [5.08 Позначки дублікатів у списку знахідок](5.08-discovery-duplicate-marks.md)                  | backlog |
-| [5.09 Перша перевірка одразу після Save](5.09-first-check-after-save.md)                         | backlog |
-| [5.10 Find new pages для списку Not tracked](5.10-find-new-pages-not-tracked.md)                 | backlog |
-| [5.11 Статуси вкладки Not tracked](5.11-not-tracked-statuses.md)                                 | backlog |
-| [5.12 E2E: Find pages від URL до вакансій](5.12-e2e-find-pages.md)                               | backlog |
+| [5.01 Визначення платформи за URL](5.01-platform-detection.md)                                   | done |
+| [5.02 Пошук: посилання з сайту компанії на ATS](5.02-discovery-site-ats-links.md)                | todo |
+| [5.03 Пошук: кар'єрні сторінки на сайті компанії](5.03-discovery-site-career-pages.md)           | todo |
+| [5.04 Пошук: ATS за назвою компанії](5.04-discovery-ats-by-name.md)                              | todo |
+| [5.05 Перевірка належності сторінки компанії](5.05-page-ownership-check.md)                      | todo |
+| [5.06 Пробне читання знахідок](5.06-trial-read.md)                                               | todo |
+| [5.07 Find pages у модалці Add company](5.07-find-pages-modal.md)                                | todo |
+| [5.08 Позначки дублікатів у списку знахідок](5.08-discovery-duplicate-marks.md)                  | todo |
+| [5.09 Перша перевірка одразу після Save](5.09-first-check-after-save.md)                         | todo |
+| [5.10 Find new pages для списку Not tracked](5.10-find-new-pages-not-tracked.md)                 | todo |
+| [5.11 Статуси вкладки Not tracked](5.11-not-tracked-statuses.md)                                 | todo |
+| [5.12 E2E: Find pages від URL до вакансій](5.12-e2e-find-pages.md)                               | done |
 | [6.01 Таблиця settings і сторінка Settings](6.01-settings-page.md)                               | backlog |
 | [6.02 Розрахунок часу наступної автоперевірки](6.02-next-auto-check-time.md)                     | backlog |
 | [6.03 Автоперевірка локально і перевірка на старті](6.03-auto-check-local.md)                    | backlog |
