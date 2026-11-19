@@ -86,3 +86,42 @@ export function patchVacancy(
 ): VacancyListItem[] {
   return items.map((item) => (item.id === id ? { ...item, ...changes } : item));
 }
+
+/**
+ * Чи стоїть вакансія `a` у списку вище за `b` - порядок запиту вкладок
+ * (`src/server/vacancies/list.ts`): дата виявлення, потім id, обидва за
+ * спаданням. Postgres порівнює UUID побайтово, а для рядків у нижньому
+ * регістрі це те саме, що порівняння рядків.
+ */
+function isListedBefore(
+  a: Pick<VacancyListItem, "id" | "firstDetectedAt">,
+  b: Pick<VacancyListItem, "id" | "firstDetectedAt">,
+): boolean {
+  const byDate = a.firstDetectedAt.getTime() - b.firstDetectedAt.getTime();
+
+  return byDate !== 0 ? byDate > 0 : a.id > b.id;
+}
+
+/**
+ * Скільки вакансій зі свіжої першої порції вкладки нові для показаного списку
+ * (задача 4.13): їх немає серед показаних, і вони стоять вище за останній
+ * показаний рядок.
+ *
+ * Друга умова відсіює рядки, що піднялися з наступної порції, коли показані
+ * вийшли з вкладки (прочитали в Unread): вони не нові, їх покаже Load more.
+ * Сама нова вакансія може стати і посеред списку - вакансії однієї перевірки
+ * мають одну дату виявлення, і між собою їх упорядковує id.
+ */
+export function countNewVacancies(
+  shown: Pick<VacancyListItem, "id" | "firstDetectedAt">[],
+  fresh: Pick<VacancyListItem, "id" | "firstDetectedAt">[],
+): number {
+  const shownIds = new Set(shown.map((item) => item.id));
+  const last = shown.at(-1);
+
+  return fresh.filter(
+    (item) =>
+      !shownIds.has(item.id) &&
+      (last === undefined || isListedBefore(item, last)),
+  ).length;
+}

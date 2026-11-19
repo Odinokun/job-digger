@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   belongsToJobsTab,
+  countNewVacancies,
   parseJobsTab,
   patchVacancy,
   type VacancyListItem,
@@ -105,5 +106,63 @@ describe("patchVacancy", () => {
     expect(
       patchVacancy(list, { id: second.id, changes: { isFavorite: true } }),
     ).toEqual(list);
+  });
+});
+
+describe("countNewVacancies", () => {
+  // Порядок списку - як у запиті вкладок: дата виявлення, потім id, обидва
+  // за спаданням. Вакансії однієї перевірки мають одну дату.
+  function found(id: number, at: string): VacancyListItem {
+    return {
+      ...vacancy({ isRead: false, isFavorite: false, closedAt: null }),
+      id: `00000000-0000-4000-8000-${String(id).padStart(12, "0")}`,
+      firstDetectedAt: new Date(at),
+    };
+  }
+
+  const EARLIER = "2026-11-18T10:00:00Z";
+  const LATER = "2026-11-19T10:00:00Z";
+
+  it("finds nothing new when the fresh page is what is shown", () => {
+    const shown = [found(3, EARLIER), found(2, EARLIER)];
+
+    expect(countNewVacancies(shown, [...shown])).toBe(0);
+  });
+
+  it("counts vacancies found after the list was shown", () => {
+    const shown = [found(3, EARLIER), found(2, EARLIER)];
+    const fresh = [found(1, LATER), found(9, LATER), ...shown];
+
+    expect(countNewVacancies(shown, fresh)).toBe(2);
+  });
+
+  it("counts a vacancy that lands between the shown ones", () => {
+    // Перевірка ще йде: нова вакансія має ту саму дату, що вже показані, і за
+    // id стає посеред списку, а не нагорі.
+    const shown = [found(5, LATER), found(3, LATER)];
+    const fresh = [found(5, LATER), found(4, LATER), found(3, LATER)];
+
+    expect(countNewVacancies(shown, fresh)).toBe(1);
+  });
+
+  it("ignores vacancies that moved up from the next portion", () => {
+    // Рядок прочитали в Unread, і в першу порцію підтягнувся наступний, ще не
+    // показаний. Він не новий: його покаже Load more.
+    const shown = [found(5, EARLIER), found(3, EARLIER)];
+    const fresh = [found(5, EARLIER), found(3, EARLIER), found(2, EARLIER)];
+
+    expect(countNewVacancies(shown, fresh)).toBe(0);
+  });
+
+  it("does not count shown vacancies that left the fresh page", () => {
+    // Позначка прийшла на сервер: рядок вийшов із вкладки, а в показаному
+    // списку ще є. Це не нова вакансія.
+    const shown = [found(5, EARLIER), found(3, EARLIER)];
+
+    expect(countNewVacancies(shown, [found(3, EARLIER)])).toBe(0);
+  });
+
+  it("counts the whole fresh page when nothing is shown", () => {
+    expect(countNewVacancies([], [found(2, LATER), found(1, LATER)])).toBe(2);
   });
 });

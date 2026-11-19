@@ -33,6 +33,11 @@
       "body": "{count, plural, one {Mark # vacancy in all companies as read?} other {Mark # vacancies in all companies as read?}} Vacancies found after this stay unread.",
       "confirm": "Mark as read",
       "cancel": "Cancel"
+    },
+    "newVacancies": {
+      "title": "{count, plural, one {# new vacancy} other {# new vacancies}}",
+      "titleAtLeast": "{count}+ new vacancies",
+      "show": "Show"
     }
   },
   "CompaniesPage": {
