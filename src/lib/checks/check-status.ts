@@ -34,6 +34,11 @@ export interface CheckStatus {
   summary: RunSummary | null;
   /** Кількість непрочитаних вакансій - лічильник у меню й назві вкладки. */
   unread: number;
+  /**
+   * Триває Find new pages (задача 5.10): запуску в нього немає, тож окремим
+   * прапорцем. Поки він `true`, інтерфейс опитує стан.
+   */
+  findingNewPages: boolean;
 }
 
 /**

@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createHttpClient, type HttpClient } from "../http/client.ts";
 import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
-import { discoverSources } from "./discover.ts";
+import { discoverCompany, discoverSources } from "./discover.ts";
 
 /** Розклад запитів тут не перевіряється - він має власні тести. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
@@ -156,5 +156,36 @@ describe("discoverSources", () => {
         ownership: { kind: "other", site: "linear.app" },
       },
     ]);
+  });
+});
+
+describe("discoverCompany", () => {
+  it("says when the company site did not answer", async () => {
+    const result = await discoverCompany(
+      { siteUrl: "https://linear.example", name: "Linear" },
+      client(),
+    );
+
+    expect(result.siteFailed).toBe(true);
+    // Пошук за назвою це не зупиняє.
+    expect(result.findings).toHaveLength(1);
+  });
+
+  it("does not call a site that answered failed", async () => {
+    const result = await discoverCompany(
+      { siteUrl: "https://acme.example", name: "Acme" },
+      client(),
+    );
+
+    expect(result.siteFailed).toBe(false);
+  });
+
+  it("has no site to fail without one", async () => {
+    const result = await discoverCompany(
+      { siteUrl: null, name: "Linear" },
+      client(),
+    );
+
+    expect(result.siteFailed).toBe(false);
   });
 });

@@ -42,6 +42,7 @@ export default async function CompaniesPage({
     not_found: t("statuses.notFound"),
     unsupported: t("statuses.unsupported"),
     check_failed: t("statuses.checkFailed"),
+    possible_page: t("statuses.possiblePage"),
   };
 
   return (
@@ -66,6 +67,7 @@ export default async function CompaniesPage({
       platformLabels={platformLabels}
       statusLabels={statusLabels}
       hasTracked={counts.tracked > 0}
+      hasNotTracked={counts.notTracked > 0}
     />
   );
 }

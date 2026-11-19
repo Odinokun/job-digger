@@ -72,12 +72,32 @@ export async function discoverSources(
   company: { siteUrl: string | null; name: string },
   client: HttpClient,
 ): Promise<Finding[]> {
-  const [fromSite, byName] = await Promise.all([
+  return (await discoverCompany(company, client)).findings;
+}
+
+/** Знахідки й чи відповів сайт компанії. */
+export interface Discovery {
+  findings: Finding[];
+  /**
+   * Сайт компанії не відповів - про сторінки на ньому нічого не відомо. Find
+   * new pages ставить тоді Check failed, а не Not found (задача 5.10). Без
+   * сайту - `false`: не відповідати нема кому.
+   */
+  siteFailed: boolean;
+}
+
+/** Те саме, що `discoverSources`, разом із тим, чи відповів сайт компанії. */
+export async function discoverCompany(
+  company: { siteUrl: string | null; name: string },
+  client: HttpClient,
+): Promise<Discovery> {
+  const [onSite, byName] = await Promise.all([
     company.siteUrl === null
       ? Promise.resolve([])
       : discoverOnSite(company.siteUrl, client),
     findBoardsByName(company, client),
   ]);
+  const fromSite = onSite ?? [];
 
   const seen = new Set(fromSite.map((finding) => finding.url));
   const fromName: Finding[] = await Promise.all(
@@ -95,18 +115,21 @@ export async function discoverSources(
       })),
   );
 
-  return [...fromSite, ...fromName];
+  return { findings: [...fromSite, ...fromName], siteFailed: onSite === null };
 }
 
-/** Знахідки сайту: дошки з головної й кар'єрних сторінок, потім самі сторінки. */
+/**
+ * Знахідки сайту: дошки з головної й кар'єрних сторінок, потім самі сторінки.
+ * `null` - головна сторінка не відповіла.
+ */
 async function discoverOnSite(
   siteUrl: string,
   client: HttpClient,
-): Promise<Finding[]> {
+): Promise<Finding[] | null> {
   const home = await fetchText(client, siteUrl);
 
   if (!home.ok) {
-    return [];
+    return null;
   }
 
   const careers = await findSiteCareerPages(home, client);

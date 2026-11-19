@@ -17,6 +17,7 @@ import { claimTask } from "./claim.ts";
 import { runTask } from "./run-task.ts";
 import {
   activeRun,
+  companyToDiscover,
   greenhouseSource,
   minutesAfter,
   task,
@@ -180,5 +181,21 @@ describe("runTask", () => {
 
     expect(await run(claimed)).toBe(false);
     expect(await runRow(runId)).toMatchObject({ sourcesChecked: 0 });
+  });
+
+  it("hands a discover task to the page search", async () => {
+    const companyId = await companyToDiscover(testDb, "Acme");
+    const id = await task(testDb, { kind: "discover", companyId });
+    const claimed = await claimTask(testDb, { now: claimedAt, maxRunning: 5 });
+    if (claimed === null) throw new Error("nothing to claim");
+
+    expect(await run(claimed)).toBe(true);
+    expect(await taskRow(id)).toMatchObject({ status: "succeeded" });
+    expect(
+      await testDb
+        .select()
+        .from(careerSources)
+        .where(eq(careerSources.companyId, companyId)),
+    ).toHaveLength(1);
   });
 });

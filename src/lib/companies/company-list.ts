@@ -20,6 +20,9 @@ export const DISCOVERY_STATUSES = [
   "not_found",
   "unsupported",
   "check_failed",
+  // Знайдено дошку лише за назвою, і вона не веде на сайт компанії: Find new
+  // pages її не додає, а користувач підтверджує через Find pages (задача 5.10).
+  "possible_page",
 ] as const;
 
 export type DiscoveryStatus = (typeof DISCOVERY_STATUSES)[number];

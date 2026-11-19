@@ -1,5 +1,6 @@
 /**
- * Виконання захопленого завдання: перевірити джерело і записати результат.
+ * Виконання захопленого завдання: перевірити джерело і записати результат, а
+ * завдання пошуку (`discover`) передати `runDiscoverTask`.
  * Правила - README.md поруч, «Виконання завдання».
  */
 import { eq } from "drizzle-orm";
@@ -9,6 +10,7 @@ import { checkSource } from "../checks/check-source.ts";
 import { careerSources } from "../db/schema.ts";
 import type { HttpClient } from "../http/client.ts";
 import type { ClaimedTask } from "./claim.ts";
+import { runDiscoverTask } from "./discover-task.ts";
 import { finishTask, type TaskOutcome } from "./finish.ts";
 
 export interface RunTaskOptions {
@@ -26,6 +28,10 @@ export async function runTask(
   claimed: ClaimedTask,
   { clock = () => new Date() }: RunTaskOptions = {},
 ): Promise<boolean> {
+  if (claimed.kind === "discover") {
+    return runDiscoverTask(db, client, claimed, { clock });
+  }
+
   const [source] = await db
     .select({
       id: careerSources.id,

@@ -10,6 +10,7 @@ import type { Cursor } from "@/lib/pagination/cursor";
 import { startCheckAll } from "@/server/checks/check-all";
 import { getCheckStatus } from "@/server/checks/check-status";
 import { checkCompany } from "@/server/checks/check-company";
+import { startFindNewPages } from "@/server/checks/find-new-pages";
 import { addCompany } from "@/server/companies/add";
 import { deleteCompany } from "@/server/companies/delete";
 import { findCompanyInTab, listCompanies } from "@/server/companies/list";
@@ -31,6 +32,7 @@ import type {
   FindPagesResult,
   LoadMoreCompaniesResult,
   StartCheckAllResult,
+  StartFindNewPagesResult,
 } from "./form-state";
 
 /**
@@ -313,6 +315,36 @@ export async function startCheckAllAction(): Promise<StartCheckAllResult> {
     const user = await getSystemUser(db);
 
     const started = await startCheckAll(db, {
+      userId: user.id,
+      now: new Date(),
+    });
+
+    return started.ok
+      ? {
+          ok: true as const,
+          total: started.total,
+          status: await getCheckStatus(db, { userId: user.id }),
+        }
+      : started;
+  });
+
+  if (!outcome.ok) {
+    return { ok: false, reason: "unexpected" };
+  }
+
+  return outcome.value;
+}
+
+/**
+ * Find new pages на вкладці Not tracked: ставить у чергу пошук для кожної її
+ * компанії (`startFindNewPages`) і повертає стан для опитування, як Check all.
+ */
+export async function startFindNewPagesAction(): Promise<StartFindNewPagesResult> {
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    const started = await startFindNewPages(db, {
       userId: user.id,
       now: new Date(),
     });
