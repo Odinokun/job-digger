@@ -7,10 +7,12 @@
    і font-mono у класах дають Instrument Sans, Instrument Serif і IBM Plex Mono.
    inline потрібен тому, що значення - посилання на іншу CSS-змінну.
 
-   --color-* - простір імен Tailwind, який генерує утиліти кольору, тому ці два
-   рядки створюють bg-info і text-info. У HeroUI такого токена немає, і він
-   потрібен саме цій темі: --accent тут безтоновий, тож бейдж «є нові вакансії»
-   без власного кольору вийшов би сірим. Деталі - src/app/README.md. */
+   --color-* - простір імен Tailwind, який генерує утиліти кольору, тому рядки
+   нижче створюють bg-info, text-info, bg-highlight, text-highlight і їхні
+   *-foreground. У HeroUI таких токенів немає, і вони потрібні саме цій темі:
+   --accent тут безтоновий, тож без власних кольорів бейдж «є нові вакансії»
+   вийшов би сірим, а «зверни увагу» не було б чим сказати. Деталі -
+   src/app/README.md. */
 @theme inline {
   --font-sans: var(--font-app-sans);
   --font-display: var(--font-app-display);
@@ -19,6 +21,8 @@
 
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
 
   /* Кнопка HeroUI має `rounded-3xl` жорстко у своєму CSS, а бібліотека рахує
      --radius-3xl як calc(var(--radius) * 3) - тобто 12px за нашого
@@ -74,8 +78,9 @@
      статусів заливаються самим токеном (Solid), а не його *-soft. */
   --success: oklch(0.575 0.13 150);
   --success-foreground: oklch(0.985 0.005 150);
-  --warning: oklch(0.692 0.148 64);
-  --warning-foreground: oklch(0.19 0.012 64);
+  /* Warning - помаранчевий (тон 50), щоб не зливатися з highlight (77). */
+  --warning: oklch(0.645 0.17 50);
+  --warning-foreground: oklch(0.19 0.012 50);
   --danger: oklch(0.565 0.21 26);
   --danger-foreground: oklch(0.985 0.005 26);
 
@@ -83,6 +88,12 @@
      далекий від success, warning і danger. */
   --info: oklch(0.528 0.188 238);
   --info-foreground: oklch(0.99 0.005 238);
+
+  /* Власний колір «зверни увагу»: обране, непрочитане, нові вакансії. Сам
+     #ffb100 на світлому тлі має контраст ~1.6:1, а іконці треба 3:1 (WCAG
+     1.4.11), тож тут темніший відтінок того самого тону - 3.2:1. */
+  --highlight: oklch(0.635 0.132 75);
+  --highlight-foreground: oklch(0.19 0.012 75);
 
   /* Hover задається явно. Похідні HeroUI домішують лише 10% accent-foreground,
      і на майже чорній кнопці такої зміни не видно. */
@@ -122,13 +133,17 @@
      читається тускліше. */
   --success: oklch(0.722 0.14 150);
   --success-foreground: oklch(0.16 0.012 150);
-  --warning: oklch(0.802 0.14 64);
-  --warning-foreground: oklch(0.175 0.012 64);
+  --warning: oklch(0.74 0.16 50);
+  --warning-foreground: oklch(0.175 0.012 50);
   --danger: oklch(0.648 0.192 26);
   --danger-foreground: oklch(0.158 0.02 26);
 
   --info: oklch(0.652 0.172 238);
   --info-foreground: oklch(0.145 0.032 238);
+
+  /* #ffb100 як є: на темному тлі контраст 10.9:1. */
+  --highlight: oklch(0.814 0.17 77);
+  --highlight-foreground: oklch(0.175 0.012 77);
 
   --accent-hover: oklch(0.808 0.006 250);
   --default-hover: oklch(0.332 0.006 250);
