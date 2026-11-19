@@ -15,7 +15,7 @@ import {
 
 import { DISCOVERY_STATUSES } from "../../lib/companies/company-list.ts";
 import { CAREER_PLATFORMS } from "../../lib/companies/platform.ts";
-import type { ParserError } from "../parsers/types.ts";
+import type { CheckTaskError } from "../queue/task-error.ts";
 
 /**
  * Єдиний користувач локальної версії. Значення технічне: пошта нікуди не йде,
@@ -280,9 +280,10 @@ export const checkTasks = pgTable(
     // повертається в чергу (4.02).
     lockedAt: timestamp("locked_at", { withTimezone: true }),
     finishedAt: timestamp("finished_at", { withTimezone: true }),
-    // Помилка парсера так, як він її повернув: причину показує Failed Sources
-    // Drawer. Технічна деталь - History її не показує.
-    error: jsonb("error").$type<ParserError>(),
+    // Помилка парсера так, як він її повернув, або причина від самої черги
+    // (`queue/task-error.ts`): її показує Failed Sources Drawer. Технічна
+    // деталь - History її не показує.
+    error: jsonb("error").$type<CheckTaskError>(),
     // Parse warning: скільки записів парсер пропустив через ваду даних
     // (docs/discovery-and-parsing.md, розділ 6).
     skippedVacancies: integer("skipped_vacancies").notNull().default(0),
