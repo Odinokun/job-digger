@@ -34,6 +34,12 @@ export type AddCompanyInput = {
   /** Карʼєрна сторінка. Необовʼязкова: без неї компанія йде в Not tracked. */
   careerUrl?: string;
   /**
+   * Знахідки Find pages, які користувач вибрав (docs/discovery-and-parsing.md,
+   * розділ 5, пункт 6). Приходять із клієнта, тож перевіряються так само, як
+   * `careerUrl`; та сама сторінка в полі й серед знахідок - одне джерело.
+   */
+  foundUrls?: string[];
+  /**
    * Користувач уже бачив попередження - про інші компанії того самого домену
    * або про компанію з такою самою назвою - і натиснув Save вдруге.
    *
@@ -79,12 +85,11 @@ export type AddCompanyResult =
   | { ok: false; problem: "same-name"; companies: NamedCompany[] };
 
 /**
- * Додає компанію з однією карʼєрною сторінкою, введеною руками.
+ * Додає компанію з карʼєрними сторінками: введеною руками і вибраними
+ * знахідками Find pages.
  *
- * Автоматичного пошуку сторінок тут немає - він приходить в етапі 5
- * (docs/discovery-and-parsing.md, розділ 5), тому платформа джерела виводиться
- * з адреси через `detectPlatform`, а `discovery_status` лишається `not_checked`:
- * пошуку ще не було, і це не те саме, що «не знайдено».
+ * Платформа кожного джерела виводиться з адреси через `detectPlatform`, а
+ * `discovery_status` лишається `not_checked`: статуси пошуку - задача 5.11.
  *
  * Уся перевірка вводу відбувається до першої вставки, а компанія з її джерелом
  * пишуться в одній транзакції: інакше крива карʼєрна адреса лишила б у базі
@@ -92,7 +97,14 @@ export type AddCompanyResult =
  */
 export async function addCompany(
   db: NodePgDatabase,
-  { userId, name, url, careerUrl, confirmed = false }: AddCompanyInput,
+  {
+    userId,
+    name,
+    url,
+    careerUrl,
+    foundUrls = [],
+    confirmed = false,
+  }: AddCompanyInput,
 ): Promise<AddCompanyResult> {
   const trimmedName = name.trim();
 
@@ -103,9 +115,12 @@ export async function addCompany(
   // Порожнє поле - це «адреси немає», а не крива адреса. Так само для обох
   // полів: порожній сайт не те саме, що `ftp://`.
   const typedUrl = url.trim();
-  const typedCareerUrl = careerUrl?.trim() ?? "";
+  // Поле карʼєрної сторінки першим: так його джерело йде першим і в списку.
+  const typedSources = [careerUrl ?? "", ...foundUrls]
+    .map((source) => source.trim())
+    .filter((source) => source !== "");
 
-  if (typedUrl === "" && typedCareerUrl === "") {
+  if (typedUrl === "" && typedSources.length === 0) {
     return { ok: false, problem: "address-required" };
   }
 
@@ -120,15 +135,20 @@ export async function addCompany(
     };
   }
 
-  const normalizedCareerUrl =
-    typedCareerUrl === "" ? null : normalizeCompanyUrl(typedCareerUrl);
+  // Джерела без повторів за очищеною адресою: та сама дошка в полі й серед
+  // знахідок, записана інакше, - одне джерело.
+  const sources = new Map<string, string>();
 
-  if (normalizedCareerUrl && !normalizedCareerUrl.ok) {
-    return {
-      ok: false,
-      problem: "career-url",
-      reason: normalizedCareerUrl.reason,
-    };
+  for (const typed of typedSources) {
+    const normalized = normalizeCompanyUrl(typed);
+
+    if (!normalized.ok) {
+      return { ok: false, problem: "career-url", reason: normalized.reason };
+    }
+
+    if (!sources.has(normalized.url)) {
+      sources.set(normalized.url, typed);
+    }
   }
 
   // Без сайту порівнювати нічого: компанії без нього не конфліктують між собою
@@ -171,13 +191,10 @@ export async function addCompany(
   }
 
   return db.transaction(async (tx) => {
-    if (normalizedCareerUrl?.ok) {
+    for (const normalizedUrl of sources.keys()) {
       // Та сама сторінка в іншої компанії означає, що компанію вже додано: без
       // сайту карʼєрне джерело - уся її ідентичність (картка 2.17).
-      const taken = await findCompanyWithSource(tx, {
-        userId,
-        normalizedUrl: normalizedCareerUrl.url,
-      });
+      const taken = await findCompanyWithSource(tx, { userId, normalizedUrl });
 
       if (taken) {
         return { ok: false, problem: "source-taken", company: taken };
@@ -243,18 +260,22 @@ export async function addCompany(
       };
     }
 
-    if (normalizedCareerUrl?.ok) {
-      const platform = detectPlatform(normalizedCareerUrl.url);
+    if (sources.size > 0) {
+      await tx.insert(careerSources).values(
+        [...sources].map(([normalizedUrl, typed]) => {
+          const platform = detectPlatform(normalizedUrl);
 
-      await tx.insert(careerSources).values({
-        companyId: company.id,
-        url: absoluteCompanyUrl(typedCareerUrl),
-        normalizedUrl: normalizedCareerUrl.url,
-        platform,
-        // Сторінку, яку нічим прочитати, зберігаємо без відстеження
-        // (docs/ui.md, розділ 4.3).
-        isTracked: platform !== "unsupported",
-      });
+          return {
+            companyId: company.id,
+            url: absoluteCompanyUrl(typed),
+            normalizedUrl,
+            platform,
+            // Сторінку, яку нічим прочитати, зберігаємо без відстеження
+            // (docs/ui.md, розділ 4.3).
+            isTracked: platform !== "unsupported",
+          };
+        }),
+      );
     }
 
     return { ok: true, companyId: company.id };

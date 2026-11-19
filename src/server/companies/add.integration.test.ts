@@ -568,4 +568,101 @@ describe("addCompany", () => {
 
     expect(result.ok).toBe(true);
   });
+
+  describe("with pages found by Find pages", () => {
+    it("saves every chosen page together with the typed one", async () => {
+      const userId = await user();
+
+      const result = await addCompany(testDb, {
+        userId,
+        name: "Spotify",
+        url: "https://www.spotify.com",
+        careerUrl: "jobs.lever.co/spotify",
+        // Та сама дошка, що й у полі, - одне джерело, а не два.
+        foundUrls: [
+          "https://jobs.lever.co/spotify",
+          "https://job-boards.greenhouse.io/spotify",
+        ],
+      });
+
+      expect(result).toEqual({ ok: true, companyId: expect.any(String) });
+      if (!result.ok) return;
+
+      const sources = await sourcesOf(result.companyId);
+      expect(
+        sources.map(({ url, platform, isTracked }) => ({
+          url,
+          platform,
+          isTracked,
+        })),
+      ).toEqual([
+        {
+          url: "https://jobs.lever.co/spotify",
+          platform: "lever",
+          isTracked: true,
+        },
+        {
+          url: "https://job-boards.greenhouse.io/spotify",
+          platform: "greenhouse",
+          isTracked: true,
+        },
+      ]);
+    });
+
+    it("takes a found page as the address of a company without a site", async () => {
+      const userId = await user();
+
+      const result = await addCompany(testDb, {
+        userId,
+        name: "Linear",
+        url: "",
+        foundUrls: ["https://jobs.ashbyhq.com/linear"],
+      });
+
+      expect(result).toEqual({ ok: true, companyId: expect.any(String) });
+    });
+
+    it("refuses a found page that already belongs to another company", async () => {
+      const userId = await user();
+      await addCompany(testDb, {
+        userId,
+        name: "Spotify",
+        url: "",
+        careerUrl: "jobs.lever.co/spotify",
+      });
+
+      const result = await addCompany(testDb, {
+        userId,
+        name: "Spotify AB",
+        url: "https://www.spotify.com",
+        foundUrls: ["https://jobs.lever.co/spotify"],
+      });
+
+      expect(result).toMatchObject({
+        ok: false,
+        problem: "source-taken",
+        company: { name: "Spotify" },
+      });
+      expect(await testDb.select().from(companies)).toHaveLength(1);
+    });
+
+    it("refuses a found address it cannot use", async () => {
+      // Знахідки приходять із клієнта, тож перевіряються так само, як поле.
+      const userId = await user();
+
+      const result = await addCompany(testDb, {
+        userId,
+        name: "Acme",
+        url: "https://acme.example",
+        foundUrls: ["ftp://acme.example/jobs"],
+      });
+
+      expect(result).toEqual({
+        ok: false,
+        problem: "career-url",
+        reason: "unsupported-scheme",
+      });
+      expect(await testDb.select().from(companies)).toHaveLength(0);
+    });
+  });
 });

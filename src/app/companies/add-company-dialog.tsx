@@ -6,6 +6,7 @@ import {
   Input,
   Label,
   Modal,
+  Spinner,
   TextField,
   useOverlayState,
 } from "@heroui/react";
@@ -18,6 +19,8 @@ import type {
   CompaniesTab,
   CompanyListItem,
 } from "@/lib/companies/company-list";
+import type { CareerPlatform } from "@/lib/companies/platform";
+import type { Finding } from "@/server/discovery/discover";
 import type { AddCareerSourceFormState } from "./form-state";
 import { suggestCompanyFields } from "@/lib/companies/suggest";
 import {
@@ -25,7 +28,12 @@ import {
   type UrlRefusalReason,
 } from "@/lib/companies/url";
 
-import { addCareerSourceAction, addCompanyAction } from "./actions";
+import {
+  addCareerSourceAction,
+  addCompanyAction,
+  findPagesAction,
+} from "./actions";
+import { FoundPages } from "./found-pages";
 import { ADD_COMPANY_INITIAL_STATE } from "./form-state";
 import { URL_ERROR_KEYS } from "./url-errors";
 
@@ -42,9 +50,9 @@ const EMPTY_REFUSALS = { url: null, careerUrl: null };
  * Кнопка Add і модальне вікно додавання компанії.
  *
  * Додавання живе саме в модалці, а не на окремій сторінці - це вимога плану
- * (docs/discovery-and-parsing.md, розділ 5). Справжнього пошуку сторінок тут ще
- * немає - він приходить в етапі 5; назва й головний сайт лише вгадуються з
- * вставленої адреси, без жодного запиту в мережу.
+ * (docs/discovery-and-parsing.md, розділ 5). Назва й головний сайт вгадуються з
+ * вставленої адреси без запиту в мережу, а Find pages шукає кар'єрні джерела на
+ * сервері й показує знахідки з галочками (`found-pages.tsx`).
  *
  * Компонент клієнтський, бо модалці потрібен стан відкриття, а формі -
  * результат Server Action. Сам список компаній лишається серверним.
@@ -62,12 +70,15 @@ interface AddCompanyDialogProps {
    * Рядок уже є в списку, тому його заміщають, а не додають.
    */
   onSourceAdded: (companyId: string, saved: CompanyListItem | null) => void;
+  /** Назви платформ для списку знахідок - ті самі, що в картках компаній. */
+  platformLabels: Record<CareerPlatform, string>;
 }
 
 export function AddCompanyDialog({
   tab,
   onAdded,
   onSourceAdded,
+  platformLabels,
 }: AddCompanyDialogProps) {
   const t = useTranslations("CompaniesPage.addCompany");
   const tUrlError = useTranslations("CompaniesPage.urlErrors");
@@ -106,6 +117,11 @@ export function AddCompanyDialog({
   const [, startSubmit] = useTransition();
   // Відмови, які видно ще до Save. Та сама перевірка повториться на сервері -
   // поля приходять із клієнта, - але `ftp://` нема чого везти туди й назад.
+  // Знахідки Find pages: `null` - пошуку для цієї адреси ще не було.
+  const [findings, setFindings] = useState<Finding[] | null>(null);
+  const [selectedFound, setSelectedFound] = useState<string[]>([]);
+  const [isFinding, startFinding] = useTransition();
+  const [findError, setFindError] = useState<"address-required" | null>(null);
   const [refusals, setRefusals] = useState<{
     url: UrlRefusalReason | null;
     careerUrl: UrlRefusalReason | null;
@@ -161,6 +177,9 @@ export function AddCompanyDialog({
     setSourceLabel("");
     setSubmitted(false);
     setRefusals(EMPTY_REFUSALS);
+    setFindings(null);
+    setSelectedFound([]);
+    setFindError(null);
     overlay.open();
   }
 
@@ -173,6 +192,11 @@ export function AddCompanyDialog({
     }
 
     if (field === "url") {
+      // Знахідки стосувалися попередньої адреси.
+      setFindings(null);
+      setSelectedFound([]);
+      setFindError(null);
+
       // Поле очистили - далі буде інша адреса, і підказка має спрацювати знову.
       if (value.trim() === "") {
         setSuggested(false);
@@ -222,6 +246,45 @@ export function AddCompanyDialog({
           ? previous.careerUrl
           : suggestion.careerUrl,
     }));
+  }
+
+  /**
+   * Find pages: пошук кар'єрних джерел за сайтом і назвою на сервері.
+   *
+   * Назва береться з поля, а якщо воно ще порожнє - з підказки за адресою:
+   * натискання кнопки знімає фокус із поля адреси, і підказка в цю мить ще не
+   * встигла записатися в стан.
+   */
+  function findPages() {
+    const name = fields.name.trim() || suggestCompanyFields(fields.url).name;
+    const url = fields.url;
+
+    setFindError(null);
+    startFinding(async () => {
+      const result = await findPagesAction(url, name);
+
+      if (result.ok) {
+        setFindings(result.findings);
+        setSelectedFound([]);
+        return;
+      }
+
+      if (result.problem === "company-url") {
+        setRefusals((previous) => ({ ...previous, url: result.reason }));
+      } else if (result.problem === "address-required") {
+        setFindError("address-required");
+      } else {
+        showActionFailed();
+      }
+    });
+  }
+
+  function toggleFound(url: string, isSelected: boolean) {
+    setSelectedFound((previous) =>
+      isSelected
+        ? [...previous, url]
+        : previous.filter((selected) => selected !== url),
+    );
   }
 
   /**
@@ -286,7 +349,7 @@ export function AddCompanyDialog({
 
   // Стосується пари полів, а не одного, тому стоїть окремо, а не в `FieldError`.
   const addressError =
-    failure?.problem === "address-required"
+    failure?.problem === "address-required" || findError !== null
       ? t("errors.addressRequired")
       : null;
 
@@ -397,6 +460,34 @@ export function AddCompanyDialog({
                   <FieldError>{urlError}</FieldError>
                   <span className="text-sm text-muted">{t("urlHint")}</span>
                 </TextField>
+
+                {/* Пошук іде з сервера й читає чужі сайти з паузами
+                    ввічливості - це секунди, тому спінер у кнопці. */}
+                <div className="flex flex-col items-start gap-3">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    isPending={isFinding}
+                    onPress={findPages}
+                  >
+                    {({ isPending: isSearching }) => (
+                      <>
+                        {isSearching ? (
+                          <Spinner color="current" size="sm" />
+                        ) : null}
+                        {t("findPages")}
+                      </>
+                    )}
+                  </Button>
+                  {findings === null ? null : (
+                    <FoundPages
+                      findings={findings}
+                      selected={selectedFound}
+                      onToggle={toggleFound}
+                      platformLabels={platformLabels}
+                    />
+                  )}
+                </div>
 
                 <TextField
                   fullWidth

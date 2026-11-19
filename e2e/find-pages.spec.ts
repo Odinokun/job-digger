@@ -48,8 +48,11 @@ test("Find pages turns a company site into tracked vacancies @pending", async ({
   // Назву компанії пошук заповнює сам; її можна змінити.
   await expect(dialog.getByLabel("Company name")).not.toHaveValue("");
 
-  // Джерело для відстеження вибирає користувач.
-  await found.getByRole("checkbox").check();
+  // Джерело для відстеження вибирає користувач. Клік - по підпису, як
+  // зробила б людина: сам `<input>` HeroUI ховає під намальованою галочкою, і
+  // `check()` на ньому не дістає (перехоплює `checkbox__control`).
+  await found.getByText(BOARD.url).click();
+  await expect(found.getByRole("checkbox")).toBeChecked();
   await dialog.getByRole("button", { name: "Save" }).click();
   await expect(dialog).toBeHidden();
 

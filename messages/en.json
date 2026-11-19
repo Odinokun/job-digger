@@ -137,6 +137,14 @@
         "nameRequired": "Enter a company name.",
         "alreadyAdded": "Already added as {name}.",
         "addressRequired": "Enter a company website or a career page."
+      },
+      "findPages": "Find pages",
+      "found": {
+        "title": "Found pages",
+        "vacancies": "{count, plural, one {# vacancy} other {# vacancies}}",
+        "notReadable": "Can't be read yet",
+        "byName": "Found by name - check",
+        "nothing": "No career pages found. If you know one, paste it below."
       }
     },
     "sourceTaken": "This career page already belongs to {name}.",
