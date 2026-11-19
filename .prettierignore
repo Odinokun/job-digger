@@ -18,3 +18,8 @@ blob-report/
 # Особисті дозволи Claude Code: у git файл не потрапляє, тож у CI його немає
 # взагалі, а локально він ламав `npm run format:check` без жодної зміни в коді
 .claude/settings.local.json
+
+# Збережені справжні відповіді платформ для фейкового вебсервера: лежать як є,
+# байт у байт (src/server/http/testing/README.md). Більшість без розширення, і
+# Prettier їх не бачив; `jobs.feed.json` softgarden першим має розширення
+src/server/http/testing/responses/
