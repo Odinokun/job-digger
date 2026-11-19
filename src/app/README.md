@@ -25,6 +25,7 @@
 | Шлях                | Файл                        | Що віддає                                   |
 | ------------------- | --------------------------- | ------------------------------------------- |
 | `/api/check-status` | `api/check-status/route.ts` | `CheckStatus`: хід активної перевірки й непрочитані |
+| `/api/failed-sources` | `api/failed-sources/route.ts` | `FailedSourcesList`: рядки Failed Sources Drawer |
 
 - **Лише читання.** Усі зміни даних - Server Actions. Опитування - GET-маршрут, бо
   Server Actions клієнт Next надсилає по одній: опитування раз на 3 с ставало б у
