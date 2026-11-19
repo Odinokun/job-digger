@@ -122,10 +122,16 @@ export async function addCompanyAction(
  * Нічого не змінює - лише читає чужі сайти, - але Server Action, бо пошук
  * ходить у мережу з сервера. Аргументи - недовірений ввід, тому адреса
  * перевіряється тут: крива дає ту саму відмову, що й Save.
+ *
+ * `companyId` - пошук для вже доданої компанії (Find pages на картці Not
+ * tracked, задача 5.14): її власні джерела вже на картці, тож зі знахідок
+ * вони прибираються. Id - недовірений ввід, але лише фільтрує знахідки:
+ * компанії шукаються серед компаній самого користувача.
  */
 export async function findPagesAction(
   url: unknown,
   name: unknown,
+  companyId?: unknown,
 ): Promise<FindPagesResult> {
   const typedUrl = typeof url === "string" ? url.trim() : "";
   const typedName = typeof name === "string" ? name.trim() : "";
@@ -155,10 +161,15 @@ export async function findPagesAction(
       urls: findings.map((finding) => finding.url),
     });
 
-    return findings.map((finding) => ({
-      ...finding,
-      trackedIn: tracked.get(finding.url) ?? null,
-    }));
+    return findings
+      .map((finding) => ({
+        ...finding,
+        trackedIn: tracked.get(finding.url) ?? null,
+      }))
+      .filter(
+        (finding) =>
+          finding.trackedIn === null || finding.trackedIn.id !== companyId,
+      );
   });
 
   return outcome.ok
