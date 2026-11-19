@@ -10,7 +10,7 @@ function finding(
     url: "https://jobs.ashbyhq.com/acme",
     platform: "ashby",
     via,
-    vacancies: 3,
+    trial: { kind: "read", vacancies: 3 },
     ownership,
   };
 }
