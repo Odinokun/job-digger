@@ -5,18 +5,16 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { checkRuns, checkTasks } from "../db/schema.ts";
-import type { ParserError } from "../parsers/types.ts";
+import type { SourceCheckOutcome } from "../checks/check-source.ts";
 import type { ClaimedTask } from "./claim.ts";
+import type { CheckTaskError } from "./task-error.ts";
 
+/**
+ * Результат завдання: підсумок перевірки джерела або помилка від самої черги
+ * (`task-error.ts`).
+ */
 export type TaskOutcome =
-  | {
-      ok: true;
-      newVacancies: number;
-      removedVacancies: number;
-      /** Записи, пропущені парсером через ваду даних - parse warning. */
-      skipped: number;
-    }
-  | { ok: false; error: ParserError };
+  SourceCheckOutcome | { ok: false; error: CheckTaskError };
 
 export interface FinishInput {
   now: Date;

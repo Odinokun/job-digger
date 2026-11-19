@@ -3,13 +3,12 @@
  * що відстежуються, і застосовує життєвий цикл вакансій. Поки без черги - її
  * робить етап 4; в History ця перевірка не записується.
  */
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { careerSources, companies } from "../db/schema.ts";
 import type { HttpClient } from "../http/client.ts";
-import { readSource } from "../parsers/read-source.ts";
-import { syncSourceVacancies } from "../vacancies/lifecycle.ts";
+import { checkSource } from "./check-source.ts";
 
 export interface CheckCompanyInput {
   userId: string;
@@ -56,39 +55,4 @@ export async function checkCompany(
   );
 
   return { ok: true };
-}
-
-async function checkSource(
-  db: NodePgDatabase,
-  client: HttpClient,
-  source: {
-    id: string;
-    url: string;
-    platform: (typeof careerSources.$inferSelect)["platform"];
-  },
-  checkedAt: Date,
-): Promise<void> {
-  const result = await readSource(source, client);
-
-  if (result === null) {
-    return;
-  }
-
-  await syncSourceVacancies(db, { sourceId: source.id, result, checkedAt });
-
-  await db
-    .update(careerSources)
-    .set(
-      result.ok
-        ? {
-            lastCheckedAt: checkedAt,
-            lastSuccessAt: checkedAt,
-            consecutiveFailures: 0,
-          }
-        : {
-            lastCheckedAt: checkedAt,
-            consecutiveFailures: sql`${careerSources.consecutiveFailures} + 1`,
-          },
-    )
-    .where(eq(careerSources.id, source.id));
 }
