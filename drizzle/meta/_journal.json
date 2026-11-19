@@ -71,6 +71,13 @@
       "when": 1795067892487,
       "tag": "0009_check_tasks",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795105211329,
+      "tag": "0010_find_new_pages",
+      "breakpoints": true
     }
   ]
 }

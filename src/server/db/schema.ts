@@ -247,6 +247,14 @@ export const checkTaskPriority = pgEnum("check_task_priority", [
   "background",
 ]);
 
+/**
+ * Що робить завдання: `check` - перевіряє одне карʼєрне джерело, `discover` -
+ * шукає карʼєрні сторінки компанії на вкладці Not tracked (Find new pages,
+ * задача 5.10). Одна черга на обидва: спільний ліміт одночасних завдань,
+ * захоплення й повернення завислих працюють однаково.
+ */
+export const checkTaskKind = pgEnum("check_task_kind", ["check", "discover"]);
+
 export const checkTaskStatus = pgEnum("check_task_status", [
   "queued",
   "running",
@@ -262,11 +270,18 @@ export const checkTasks = pgTable(
   "check_tasks",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    kind: checkTaskKind("kind").notNull().default("check"),
     // Видалення джерела забирає його завдання: незавершені так і скасовуються,
-    // а результат уже захопленого відкидає життєвий цикл (3.13).
-    sourceId: uuid("source_id")
-      .notNull()
-      .references(() => careerSources.id, { onDelete: "cascade" }),
+    // а результат уже захопленого відкидає життєвий цикл (3.13). Лише в
+    // `check`: у `discover` джерела ще немає.
+    sourceId: uuid("source_id").references(() => careerSources.id, {
+      onDelete: "cascade",
+    }),
+    // Компанія, для якої шукаються сторінки, - лише в `discover`. Видалена
+    // компанія забирає й свій пошук.
+    companyId: uuid("company_id").references(() => companies.id, {
+      onDelete: "cascade",
+    }),
     // Загальна перевірка, що створила завдання. `null` - Check now чи Retry:
     // вони в History не пишуться.
     runId: uuid("run_id").references(() => checkRuns.id, {
@@ -301,5 +316,13 @@ export const checkTasks = pgTable(
     index("check_tasks_run_idx").on(table.runId),
     // Failed Sources Drawer і каскадне видалення джерела.
     index("check_tasks_source_idx").on(table.sourceId),
+    // Каскадне видалення компанії і «чи триває Find new pages».
+    index("check_tasks_company_idx").on(table.companyId),
+    // Кожен вид завдання має рівно свою ціль: перевірка - джерело, пошук -
+    // компанію. Інакше обробник отримав би завдання, яке нема чим виконати.
+    check(
+      "check_tasks_target_matches_kind",
+      sql`(${table.kind} = 'check' and ${table.sourceId} is not null and ${table.companyId} is null) or (${table.kind} = 'discover' and ${table.companyId} is not null and ${table.sourceId} is null)`,
+    ),
   ],
 );

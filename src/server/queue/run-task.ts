@@ -26,6 +26,14 @@ export async function runTask(
   claimed: ClaimedTask,
   { clock = () => new Date() }: RunTaskOptions = {},
 ): Promise<boolean> {
+  if (claimed.kind === "discover") {
+    // Пошук сторінок зʼявиться наступним кроком задачі 5.10.
+    return finishTask(db, claimed, {
+      now: clock(),
+      outcome: { ok: false, error: { reason: "crashed" } },
+    });
+  }
+
   const [source] = await db
     .select({
       id: careerSources.id,

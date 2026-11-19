@@ -22,13 +22,16 @@ export interface ClaimInput {
  * Захоплене завдання. `lockedAt` - ще й знак власності: результат приймається,
  * лише поки він збігається з тим, що в базі (`finishTask`).
  */
-export interface ClaimedTask {
+export type ClaimedTask = {
   id: string;
-  sourceId: string;
   runId: string | null;
   attempts: number;
   lockedAt: Date;
-}
+} & (
+  | { kind: "check"; sourceId: string }
+  /** Find new pages для компанії (задача 5.10). */
+  | { kind: "discover"; companyId: string }
+);
 
 export async function claimTask(
   db: NodePgDatabase,
@@ -67,11 +70,22 @@ export async function claimTask(
       .where(eq(checkTasks.id, next.id))
       .returning({
         id: checkTasks.id,
+        kind: checkTasks.kind,
         sourceId: checkTasks.sourceId,
+        companyId: checkTasks.companyId,
         runId: checkTasks.runId,
         attempts: checkTasks.attempts,
       });
 
-    return { ...claimed, lockedAt: now };
+    const { kind, sourceId, companyId, ...rest } = claimed;
+    // Ціль відповідає виду - це тримає CHECK `check_tasks_target_matches_kind`,
+    // але компілятор про нього не знає.
+    if (kind === "check" && sourceId !== null) {
+      return { ...rest, lockedAt: now, kind, sourceId };
+    }
+    if (kind === "discover" && companyId !== null) {
+      return { ...rest, lockedAt: now, kind, companyId };
+    }
+    throw new Error(`Check task ${claimed.id} has no target for its kind`);
   });
 }

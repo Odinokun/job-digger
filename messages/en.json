@@ -75,7 +75,8 @@
       "notChecked": "Not checked",
       "notFound": "Not found",
       "unsupported": "Unsupported",
-      "checkFailed": "Check failed"
+      "checkFailed": "Check failed",
+      "possiblePage": "Possible page - check it"
     },
     "urlErrors": {
       "empty": "Enter an address.",

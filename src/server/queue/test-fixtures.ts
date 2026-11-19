@@ -1,5 +1,6 @@
 /**
- * Дані для інтеграційних тестів черги: джерело, запуск, завдання.
+ * Дані для інтеграційних тестів черги: джерело, компанія для пошуку, запуск,
+ * завдання.
  */
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
@@ -48,11 +49,30 @@ export async function activeRun(
   return run.id;
 }
 
-/** Завдання для джерела - повертає його id. */
+/** Компанія без джерел із сайтом `{slug}.example` - повертає її id. */
+export async function companyToDiscover(
+  db: NodePgDatabase,
+  name: string,
+  slug = name.toLowerCase(),
+): Promise<string> {
+  const user = await seedSystemUser(db);
+  const [company] = await db
+    .insert(companies)
+    .values({
+      userId: user.id,
+      name,
+      url: `https://${slug}.example`,
+      normalizedUrl: `${slug}.example`,
+    })
+    .returning();
+
+  return company.id;
+}
+
+/** Завдання для джерела чи компанії - повертає його id. */
 export async function task(
   db: NodePgDatabase,
-  values: Pick<typeof checkTasks.$inferInsert, "sourceId"> &
-    Partial<typeof checkTasks.$inferInsert>,
+  values: Partial<typeof checkTasks.$inferInsert>,
 ): Promise<string> {
   const [row] = await db.insert(checkTasks).values(values).returning();
 

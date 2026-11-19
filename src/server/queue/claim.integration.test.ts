@@ -4,7 +4,12 @@ import { describe, expect, it } from "vitest";
 import { checkTasks } from "../db/schema.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import { claimTask } from "./claim.ts";
-import { greenhouseSource, minutesAfter, task } from "./test-fixtures.ts";
+import {
+  companyToDiscover,
+  greenhouseSource,
+  minutesAfter,
+  task,
+} from "./test-fixtures.ts";
 
 const now = new Date("2026-11-19T10:00:00Z");
 
@@ -29,6 +34,7 @@ describe("claimTask", () => {
 
     expect(claimed).toEqual({
       id,
+      kind: "check",
       sourceId,
       runId: null,
       attempts: 1,
@@ -118,5 +124,30 @@ describe("claimTask", () => {
     );
 
     expect(claims.filter((claim) => claim !== null)).toHaveLength(2);
+  });
+
+  it("hands out a discover task with its company", async () => {
+    const companyId = await companyToDiscover(testDb, "Acme");
+    const id = await task(testDb, { kind: "discover", companyId });
+
+    const claimed = await claimTask(testDb, { now, maxRunning: 5 });
+
+    expect(claimed).toEqual({
+      id,
+      kind: "discover",
+      companyId,
+      runId: null,
+      attempts: 1,
+      lockedAt: now,
+    });
+  });
+
+  it("counts discover tasks against the shared limit", async () => {
+    const companyId = await companyToDiscover(testDb, "Acme");
+    const sourceId = await greenhouseSource(testDb, "discord");
+    await task(testDb, { kind: "discover", companyId, status: "running" });
+    await task(testDb, { sourceId });
+
+    expect(await claimTask(testDb, { now, maxRunning: 1 })).toBeNull();
   });
 });
