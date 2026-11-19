@@ -1,12 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
-import {
-  careerSources,
-  checkRuns,
-  checkTasks,
-  companies,
-} from "./schema.ts";
+import { careerSources, checkRuns, checkTasks, companies } from "./schema.ts";
 import { seedSystemUser } from "./system-user.ts";
 import { testDb } from "./testing/test-db.ts";
 
@@ -139,12 +134,10 @@ describe("check_tasks", () => {
     // Ручні дії беруться з черги раніше за фонові (docs/checks-and-queue.md,
     // розділ 8): захоплення сортує за `priority`, і порядок задає сам enum.
     const sourceId = await greenhouseSource("discord");
-    await testDb
-      .insert(checkTasks)
-      .values([
-        { sourceId, priority: "background" },
-        { sourceId, priority: "manual" },
-      ]);
+    await testDb.insert(checkTasks).values([
+      { sourceId, priority: "background" },
+      { sourceId, priority: "manual" },
+    ]);
 
     const rows = await testDb
       .select({ priority: checkTasks.priority })
