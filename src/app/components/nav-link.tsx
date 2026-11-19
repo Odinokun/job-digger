@@ -7,7 +7,7 @@ interface NavLinkProps {
   href: string;
   label: string;
   /**
-   * Число біля назви - бейдж кольору уваги (src/app/README.md#тема-ink). Текст
+   * Число біля назви - кольором `counter`, без заливки (src/app/README.md#тема-ink). Текст
    * посилання - «Jobs 12»: пробіл тримає назву й число окремими словами для
    * читача екрана.
    */
@@ -38,7 +38,7 @@ export function NavLink({ href, label, count }: NavLinkProps) {
       {count === undefined ? null : (
         <>
           {" "}
-          <span className="rounded-sm bg-highlight px-1.5 py-0.5 text-xs font-semibold text-highlight-foreground tabular-nums">
+          <span className="font-semibold text-counter tabular-nums">
             {count}
           </span>
         </>
