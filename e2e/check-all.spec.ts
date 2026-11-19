@@ -22,7 +22,11 @@ const PEOPLEFORCE = {
 const BROKEN = { url: "job-boards.greenhouse.io/ghost", name: "Ghost" };
 
 const SOURCES = 3;
-const NEW_VACANCIES = LEVER.jobs + PEOPLEFORCE.jobs;
+/**
+ * Вакансії обох дошок. Їх знаходить уже перша перевірка, що стартує одразу після
+ * Save (задача 5.09), тож для самого Check all вони не нові.
+ */
+const VACANCIES = LEVER.jobs + PEOPLEFORCE.jobs;
 
 // Check all рахує всі компанії на Tracked: чужі зіпсували б числа.
 test.beforeAll(resetDatabase);
@@ -63,6 +67,13 @@ test("Check all checks every tracked source and reports the failed one", async (
   await tracked.click();
   await expect(tracked).toContainText("3");
 
+  // Перші перевірки після Save мають закінчитись до Check all: інакше дві
+  // перевірки одних джерел ідуть навперегони, і числа підсумку випадкові.
+  const jobsLink = page
+    .getByRole("navigation", { name: "Main" })
+    .getByRole("link", { name: /^Jobs/ });
+  await expect(jobsLink).toHaveText(`Jobs ${VACANCIES}`, { timeout: 30_000 });
+
   // Запуск. Індикатор зʼявляється одразу з відповіді на Check all, а не з
   // першого опитування, тож його видно, хоч фейковий сервер відповідає миттєво.
   await page.getByRole("button", { name: "Check all" }).click();
@@ -78,15 +89,13 @@ test("Check all checks every tracked source and reports the failed one", async (
   await expect(summary).toContainText(`${SOURCES} sources checked`);
   await expect(summary).toContainText(`${SOURCES - 1} ok`);
   await expect(summary).toContainText("1 failed");
-  await expect(summary).toContainText(`${NEW_VACANCIES} new`);
+  // Вакансії вже знайшла перша перевірка - нових Check all не бачить.
+  await expect(summary).toContainText("0 new");
   await expect(summary).toContainText("0 removed");
   await expect(page.getByRole("banner").getByText(/Checking/)).toBeHidden();
 
-  // Нові вакансії вже в лічильнику біля Jobs - його оновило опитування.
-  const jobsLink = page
-    .getByRole("navigation", { name: "Main" })
-    .getByRole("link", { name: /^Jobs/ });
-  await expect(jobsLink).toHaveText(`Jobs ${NEW_VACANCIES}`);
+  // Лічильник біля Jobs той самий: вакансії ті самі, нічого не зникло.
+  await expect(jobsLink).toHaveText(`Jobs ${VACANCIES}`);
 
   // Невдале джерело - у Failed Sources Drawer, і лише воно.
   await summary.getByRole("button", { name: "Show failed sources" }).click();
@@ -115,8 +124,6 @@ test("Check all checks every tracked source and reports the failed one", async (
   await expect(rows.first().getByRole("cell").nth(1)).toHaveText(
     String(SOURCES),
   );
-  await expect(rows.first().getByRole("cell").nth(2)).toHaveText(
-    String(NEW_VACANCIES),
-  );
+  await expect(rows.first().getByRole("cell").nth(2)).toHaveText("0");
   await expect(rows.first().getByRole("cell").nth(3)).toHaveText("0");
 });

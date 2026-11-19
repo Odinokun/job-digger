@@ -24,6 +24,8 @@ interface CompanyCardProps {
   platformLabels: Record<CompanySource["platform"], string>;
   onSaved: (companyId: string, saved: CompanyListItem | null) => void;
   onDeleted: (companyId: string) => void;
+  /** Щойно додана: Check now стартує сам (задача 5.09). */
+  startsCheck?: boolean;
 }
 
 /**
@@ -40,6 +42,7 @@ export function CompanyCard({
   platformLabels,
   onSaved,
   onDeleted,
+  startsCheck = false,
 }: CompanyCardProps) {
   return (
     // `h-full` - те, що робить картки в рядку однаковими: елемент сітки
@@ -136,6 +139,7 @@ export function CompanyCard({
               companyId={company.id}
               tab={tab}
               onChecked={onSaved}
+              startsOnMount={startsCheck}
             />
           ) : null}
           {/* Mark all as read / unread - лише коли є що позначати. */}

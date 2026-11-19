@@ -86,7 +86,7 @@ PR: #57
 | [5.06 Пробне читання знахідок](5.06-trial-read.md)                                               | todo |
 | [5.07 Find pages у модалці Add company](5.07-find-pages-modal.md)                                | done |
 | [5.08 Позначки дублікатів у списку знахідок](5.08-discovery-duplicate-marks.md)                  | todo |
-| [5.09 Перша перевірка одразу після Save](5.09-first-check-after-save.md)                         | todo |
+| [5.09 Перша перевірка одразу після Save](5.09-first-check-after-save.md)                         | done |
 | [5.10 Find new pages для списку Not tracked](5.10-find-new-pages-not-tracked.md)                 | todo |
 | [5.11 Статуси вкладки Not tracked](5.11-not-tracked-statuses.md)                                 | todo |
 | [5.12 E2E: Find pages від URL до вакансій](5.12-e2e-find-pages.md)                               | done |

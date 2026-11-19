@@ -20,6 +20,8 @@ interface CompaniesListProps {
   onLoadMore: () => void;
   onSaved: (companyId: string, saved: CompanyListItem | null) => void;
   onDeleted: (companyId: string) => void;
+  /** Нова компанія, картка якої сама починає першу перевірку. */
+  firstCheckId: string | null;
   emptyLabel: string;
   loadMoreLabel: string;
   noSourcesLabel: string;
@@ -42,6 +44,7 @@ export function CompaniesList({
   onLoadMore,
   onSaved,
   onDeleted,
+  firstCheckId,
   emptyLabel,
   loadMoreLabel,
   noSourcesLabel,
@@ -65,6 +68,7 @@ export function CompaniesList({
             <CompanyCard
               company={company}
               tab={tab}
+              startsCheck={company.id === firstCheckId}
               // Статус описує стан пошуку сторінок, тому має сенс лише там,
               // де компанія ще не відстежується (docs/ui.md, розділ 4.3).
               statusLabel={
