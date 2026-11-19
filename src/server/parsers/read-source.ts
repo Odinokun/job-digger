@@ -5,6 +5,7 @@
 import type { CareerPlatform } from "../../lib/companies/platform.ts";
 import type { HttpClient } from "../http/client.ts";
 import { readAshby } from "./ashby.ts";
+import { readBreezy } from "./breezy.ts";
 import { readGreenhouse } from "./greenhouse.ts";
 import { readLever } from "./lever.ts";
 import { readPeopleForce } from "./peopleforce.ts";
@@ -24,6 +25,7 @@ const READERS: Partial<Record<CareerPlatform, Reader>> = {
   lever: (sourceUrl, client) => readLever(sourceUrl, client),
   workday: (sourceUrl, client) => readWorkday(sourceUrl, client),
   peopleforce: (sourceUrl, client) => readPeopleForce(sourceUrl, client),
+  breezy: readBreezy,
 };
 
 /**

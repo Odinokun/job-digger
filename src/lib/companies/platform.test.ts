@@ -32,6 +32,13 @@ describe("detectPlatform", () => {
     expect(detectPlatform("careers.peopleforce.io")).toBe("peopleforce");
   });
 
+  it("reads breezy", () => {
+    expect(detectPlatform("acme.breezy.hr")).toBe("breezy");
+    expect(detectPlatform("acme.breezy.hr/p/98323abf2296-designer")).toBe(
+      "breezy",
+    );
+  });
+
   it("falls back to unsupported for a page on the company's own domain", () => {
     expect(detectPlatform("www.lifeatspotify.com/jobs")).toBe("unsupported");
   });

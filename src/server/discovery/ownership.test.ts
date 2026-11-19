@@ -44,6 +44,17 @@ describe("boardOwnership", () => {
     });
   });
 
+  it("names the other site from the Breezy header", () => {
+    // Breezy `jobs` (дошка самої Breezy): сайт компанії - пункт шапки
+    // `link company`, а не будь-яке зовнішнє посилання.
+    const html = `<ul class="links"><li class="link misc company"><a href="http://breezyhr.com/" class="bzyButtonColor"><span>Company website</span></a></li></ul><a href="https://twitter.com/breezy_hr">Twitter</a>`;
+
+    expect(boardOwnership(html, "https://acme.example")).toEqual({
+      kind: "other",
+      site: "breezyhr.com",
+    });
+  });
+
   it("takes the other site from the Ashby page data and the Lever footer", () => {
     expect(
       boardOwnership(
