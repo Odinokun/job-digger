@@ -103,7 +103,19 @@ export interface RequestOptions {
    * віддають усе одним запитом (Ashby), - не для довільних сайтів.
    */
   maxBytes?: number;
+  /**
+   * Додаткові заголовки саме цього запиту - для API, що без них не відповідає
+   * (Hurma чекає `X-Requested-With`). Свій User-Agent і заголовки тіла клієнт
+   * ставить сам, і замінити їх тут не можна.
+   */
+  headers?: Record<string, string>;
 }
+
+/** Налаштування, з якими йде один запит: клієнта плюс запиту. */
+type SendOptions = HttpClientOptions & Pick<RequestOptions, "headers">;
+
+/** Заголовки, які клієнт ставить сам, - у нижньому регістрі. */
+const OWN_HEADERS = new Set(["user-agent", "content-type", "content-length"]);
 
 export interface HttpClient {
   get(url: string, request?: RequestOptions): Promise<HttpResponse>;
@@ -157,10 +169,12 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
     });
 
   /** Ліміт окремого запиту замість спільного. */
-  function withRequest(request: RequestOptions): HttpClientOptions {
-    return request.maxBytes === undefined
-      ? options
-      : { ...options, maxBytes: request.maxBytes };
+  function withRequest(request: RequestOptions): SendOptions {
+    return {
+      ...options,
+      ...(request.maxBytes === undefined ? {} : { maxBytes: request.maxBytes }),
+      ...(request.headers === undefined ? {} : { headers: request.headers }),
+    };
   }
 
   return {
@@ -215,7 +229,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
  */
 async function sendWithRetries(
   url: URL,
-  options: HttpClientOptions,
+  options: SendOptions,
   limiter: HostLimiter,
   json?: JsonBody,
 ): Promise<HttpResponse> {
@@ -350,10 +364,21 @@ function assertLoopback(fakeOrigin: string): void {
   }
 }
 
+/** Заголовки запиту без тих, що клієнт ставить сам, у будь-якому регістрі. */
+function extraHeaders(
+  headers: Record<string, string> = {},
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(headers).filter(
+      ([name]) => !OWN_HEADERS.has(name.toLowerCase()),
+    ),
+  );
+}
+
 /** Один запит, без редиректів: GET або, з тілом `json`, POST. */
 function send(
   logical: URL,
-  options: HttpClientOptions,
+  options: SendOptions,
   json?: JsonBody,
 ): Promise<HttpResponse> {
   // З фейковим вебсервером - на нього, домен стає частиною шляху. Без нього -
@@ -393,6 +418,7 @@ function send(
       {
         method: json === undefined ? "GET" : "POST",
         headers: {
+          ...extraHeaders(options.headers),
           "user-agent": USER_AGENT,
           ...(json === undefined
             ? {}

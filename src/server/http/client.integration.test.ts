@@ -121,6 +121,19 @@ describe("createHttpClient", () => {
     expect(USER_AGENT).toMatch(/^JobDigger\//);
   });
 
+  it("adds the headers of a request but keeps its own User-Agent", async () => {
+    const client = createHttpClient({ fakeOrigin: origin, limiter: noLimits });
+
+    await client.get("https://site.test/api", {
+      headers: { "x-requested-with": "XMLHttpRequest", "User-Agent": "Other" },
+    });
+    await client.get("https://site.test/api");
+
+    expect(received[0]?.headers["x-requested-with"]).toBe("XMLHttpRequest");
+    expect(received[0]?.headers["user-agent"]).toBe(USER_AGENT);
+    expect(received[1]?.headers["x-requested-with"]).toBeUndefined();
+  });
+
   describe("post", () => {
     /** Сервер, що відповідає тілом запиту, - щоб побачити, що саме дійшло. */
     function echoBody(request: IncomingMessage, response: ServerResponse) {
