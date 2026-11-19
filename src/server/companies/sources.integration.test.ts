@@ -5,7 +5,7 @@ import { careerSources, companies, users } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
 import { normalizedSourceUrl } from "../db/testing/career-source-values.ts";
 import { testDb } from "../db/testing/test-db.ts";
-import { addCareerSource } from "./sources.ts";
+import { addCareerSource, addCareerSources } from "./sources.ts";
 
 /** Компанія з одним відстежуваним джерелом. */
 async function insertCompany(userId: string, name: string, slug = "acme") {
@@ -161,5 +161,79 @@ describe("addCareerSource", () => {
       company: { id: mozilla.id, name: "Mozilla" },
     });
     expect(await readSources(bosch.id)).toHaveLength(1);
+  });
+});
+
+describe("addCareerSources", () => {
+  it("adds every picked page as a source of the company", async () => {
+    const user = await seedSystemUser(testDb);
+    const company = await insertCompany(user.id, "Acme");
+
+    const result = await addCareerSources(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      sources: [
+        { url: "https://jobs.lever.co/acme" },
+        { url: "https://jobs.ashbyhq.com/acme" },
+      ],
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect((await readSources(company.id)).map((s) => s.platform)).toEqual(
+      expect.arrayContaining(["greenhouse", "lever", "ashby"]),
+    );
+  });
+
+  it("takes the same page written twice as one source", async () => {
+    const user = await seedSystemUser(testDb);
+    const company = await insertCompany(user.id, "Acme");
+
+    await addCareerSources(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      sources: [
+        { url: "https://jobs.lever.co/acme" },
+        { url: "https://www.jobs.lever.co/acme/" },
+      ],
+    });
+
+    expect(await readSources(company.id)).toHaveLength(2);
+  });
+
+  it("adds nothing when one of the pages belongs to another company", async () => {
+    const user = await seedSystemUser(testDb);
+    const company = await insertCompany(user.id, "Acme");
+    const other = await insertCompany(user.id, "Globex", "globex");
+
+    const result = await addCareerSources(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      sources: [
+        { url: "https://jobs.lever.co/acme" },
+        { url: "https://boards.greenhouse.io/globex" },
+      ],
+    });
+
+    // Усе або нічого: перше джерело не лишається доданим наполовину.
+    expect(result).toEqual({
+      ok: false,
+      problem: "source-taken",
+      company: { id: other.id, name: "Globex" },
+    });
+    expect(await readSources(company.id)).toHaveLength(1);
+  });
+
+  it("adds nothing when one of the pages is unusable", async () => {
+    const user = await seedSystemUser(testDb);
+    const company = await insertCompany(user.id, "Acme");
+
+    const result = await addCareerSources(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      sources: [{ url: "https://jobs.lever.co/acme" }, { url: "ftp://acme" }],
+    });
+
+    expect(result).toMatchObject({ ok: false, problem: "source-url" });
+    expect(await readSources(company.id)).toHaveLength(1);
   });
 });

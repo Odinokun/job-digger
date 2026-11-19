@@ -1,7 +1,10 @@
 import { and, eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { prepareCareerSource } from "../../lib/companies/career-source.ts";
+import {
+  prepareCareerSource,
+  type PreparedCareerSource,
+} from "../../lib/companies/career-source.ts";
 import type { UrlRefusalReason } from "../../lib/companies/url.ts";
 import { careerSources, companies } from "../db/schema.ts";
 import {
@@ -51,6 +54,36 @@ export async function addCareerSource(
   db: NodePgDatabase,
   { userId, companyId, url, label }: AddCareerSourceInput,
 ): Promise<AddCareerSourceResult> {
+  return addCareerSources(db, {
+    userId,
+    companyId,
+    sources: [{ url, label }],
+  });
+}
+
+/** Які джерела і якій компанії додаємо одним Save. */
+export type AddCareerSourcesInput = {
+  userId: string;
+  companyId: string;
+  sources: Array<{ url: string; label?: string }>;
+};
+
+/**
+ * Додає кілька карʼєрних джерел до вже доданої компанії - вибрані знахідки
+ * Find pages на картці Not tracked (задача 5.14).
+ *
+ * Усе або нічого: спершу перевіряються всі адреси, і лише тоді вставка. Ранній
+ * `return` із транзакції Drizzle - це commit, а не відкат, тож вставка посеред
+ * перевірок лишила б половину джерел доданими.
+ *
+ * Та сама сторінка, записана двічі, - одне джерело, як і серед знахідок у
+ * `addCompany`. А от сторінка, що вже є в самої компанії, - відмова
+ * `source-duplicate`.
+ */
+export async function addCareerSources(
+  db: NodePgDatabase,
+  { userId, companyId, sources }: AddCareerSourcesInput,
+): Promise<AddCareerSourceResult> {
   return db.transaction(async (tx) => {
     const [company] = await tx
       .select({ id: companies.id })
@@ -63,38 +96,49 @@ export async function addCareerSource(
       return { ok: false, problem: "not-found" };
     }
 
-    const prepared = prepareCareerSource({
-      url,
-      label,
-      existingUrls: (await companySources(tx, companyId)).map(
-        (source) => source.url,
-      ),
-    });
+    const existingUrls = (await companySources(tx, companyId)).map(
+      (source) => source.url,
+    );
+    const ready = new Map<string, PreparedCareerSource>();
 
-    if (!prepared.ok) {
-      return prepared.problem === "url"
-        ? { ok: false, problem: "source-url", reason: prepared.reason }
-        : { ok: false, problem: "source-duplicate" };
+    for (const source of sources) {
+      const prepared = prepareCareerSource({ ...source, existingUrls });
+
+      if (!prepared.ok) {
+        return prepared.problem === "url"
+          ? { ok: false, problem: "source-url", reason: prepared.reason }
+          : { ok: false, problem: "source-duplicate" };
+      }
+
+      if (ready.has(prepared.normalizedUrl)) {
+        continue;
+      }
+
+      const taken = await findCompanyWithSource(tx, {
+        userId,
+        normalizedUrl: prepared.normalizedUrl,
+        exceptCompanyId: companyId,
+      });
+
+      if (taken) {
+        return { ok: false, problem: "source-taken", company: taken };
+      }
+
+      ready.set(prepared.normalizedUrl, prepared);
     }
 
-    const taken = await findCompanyWithSource(tx, {
-      userId,
-      normalizedUrl: prepared.normalizedUrl,
-      exceptCompanyId: companyId,
-    });
-
-    if (taken) {
-      return { ok: false, problem: "source-taken", company: taken };
+    if (ready.size > 0) {
+      await tx.insert(careerSources).values(
+        [...ready.values()].map((prepared) => ({
+          companyId,
+          url: prepared.url,
+          normalizedUrl: prepared.normalizedUrl,
+          label: prepared.label,
+          platform: prepared.platform,
+          isTracked: prepared.isTracked,
+        })),
+      );
     }
-
-    await tx.insert(careerSources).values({
-      companyId,
-      url: prepared.url,
-      normalizedUrl: prepared.normalizedUrl,
-      label: prepared.label,
-      platform: prepared.platform,
-      isTracked: prepared.isTracked,
-    });
 
     return { ok: true };
   });
