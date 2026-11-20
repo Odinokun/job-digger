@@ -39,10 +39,7 @@ export default async function JobsLoading() {
 
       <ul className="mt-2 divide-y">
         {Array.from({ length: ROWS }, (_, row) => (
-          <li
-            key={row}
-            className="flex items-center justify-between gap-6 py-3"
-          >
+          <li key={row} className="flex items-start justify-between gap-6 py-3">
             <div className="flex flex-col gap-2">
               <Skeleton className="h-4 w-72 rounded" />
               <Skeleton className="h-3 w-48 rounded" />
