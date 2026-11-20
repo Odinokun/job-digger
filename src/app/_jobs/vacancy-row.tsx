@@ -30,8 +30,11 @@ export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
   const t = useTranslations("JobsPage");
   const format = useFormatter();
 
+  // Від `sm` (640px) дата й дії завжди праворуч: довга назва переноситься
+  // всередині лівого блоку (`min-w-0`), а не виштовхує їх на новий рядок.
+  // Вужче - місця на два стовпці немає, і вони стають під назву.
   return (
-    <div className="relative flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-3">
+    <div className="relative flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-3 sm:flex-nowrap">
       {vacancy.isRead ? null : (
         // Центр крапки - на середині першого рядка назви: py-3 + половина
         // висоти рядка 24px. Ліворуч у полі сторінки, яке не менше 16px.
@@ -69,7 +72,7 @@ export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
       {/* Абсолютна дата за локаллю: відносний формат лишається для «Last
           checked» (docs/ui.md, розділ 4.1). Часовий пояс - той, що next-intl
           передає з сервера, тож серверний і клієнтський текст збігаються. */}
-      <div className="flex items-center gap-4">
+      <div className="flex shrink-0 items-center gap-4">
         <time
           dateTime={vacancy.firstDetectedAt.toISOString()}
           className="text-sm text-muted tabular-nums"
