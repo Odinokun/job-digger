@@ -118,3 +118,21 @@ export function compareCompanyRows(
 
   return byName === 0 ? left.id.localeCompare(right.id) : byName;
 }
+
+/**
+ * Компанія відстежується, якщо хоч одне її джерело відстежується - те саме
+ * правило, що ділить вкладки Tracked і Not tracked. Потрібне на вкладці Needs
+ * attention, де змішані обидві: дії картки визначає компанія, а не вкладка.
+ */
+export function isTrackedCompany(sources: CompanySource[]): boolean {
+  return sources.some((source) => source.isTracked);
+}
+
+/**
+ * Скільки сторінок компанії ми не читаємо - бейдж «N pages not read» (задача
+ * 6.11). Unsupported - постійний стан, а не збій, тому це окремий бейдж уваги,
+ * а не Has errors.
+ */
+export function notReadSourceCount(sources: CompanySource[]): number {
+  return sources.filter((source) => source.platform === "unsupported").length;
+}

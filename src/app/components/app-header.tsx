@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { CheckProgress } from "./check-progress";
 import { NavLink } from "./nav-link";
-import { getUnreadCount } from "./unread-count";
+import { getAttentionCount, getUnreadCount } from "./header-counts";
 
 // Порядок розділів фіксований і повторює docs/ui.md, розділ 4.
 // Jobs живе в корені: він відкривається за замовчуванням.
@@ -16,7 +16,16 @@ const sections = [
 
 export async function AppHeader() {
   const t = await getTranslations("Nav");
-  const unread = await getUnreadCount();
+  const [unread, attention] = await Promise.all([
+    getUnreadCount(),
+    getAttentionCount(),
+  ]);
+  // Число біля пункту меню - лише коли воно не нуль: непрочитані біля Jobs,
+  // компанії, що потребують уваги, біля Companies (задача 6.11).
+  const counts: Partial<Record<(typeof sections)[number]["key"], number>> = {
+    jobs: unread > 0 ? unread : undefined,
+    companies: attention > 0 ? attention : undefined,
+  };
 
   return (
     <header className="border-b">
@@ -33,8 +42,19 @@ export async function AppHeader() {
               key={section.href}
               href={section.href}
               label={t(section.key)}
-              // Число непрочитаних - лише біля Jobs і лише коли воно не нуль.
-              count={section.key === "jobs" && unread > 0 ? unread : undefined}
+              count={counts[section.key]}
+              // Число біля Companies - окреме посилання одразу на Needs
+              // attention. Сама назва веде, як завжди, на Tracked: інакше,
+              // поки є хоч одна сторінка, яку ми не читаємо, Companies
+              // відкривався б не там, де додають компанії.
+              countLink={
+                section.key === "companies"
+                  ? {
+                      href: "/companies?tab=attention",
+                      label: t("attentionCount", { count: attention }),
+                    }
+                  : undefined
+              }
             />
           ))}
         </nav>

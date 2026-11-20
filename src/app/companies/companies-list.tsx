@@ -2,11 +2,12 @@
 
 import { Button, Spinner } from "@heroui/react";
 
-import type {
-  CompaniesTab,
-  CompanyListItem,
-  CompanySource,
-  DiscoveryStatus,
+import {
+  isTrackedCompany,
+  type CompaniesTab,
+  type CompanyListItem,
+  type CompanySource,
+  type DiscoveryStatus,
 } from "@/lib/companies/company-list";
 
 import { CompanyCard } from "./company-card";
@@ -70,11 +71,12 @@ export function CompaniesList({
               tab={tab}
               startsCheck={company.id === firstCheckId}
               // Статус описує стан пошуку сторінок, тому має сенс лише там,
-              // де компанія ще не відстежується (docs/ui.md, розділ 4.3).
+              // де компанія ще не відстежується (docs/ui.md, розділ 4.3). Саме
+              // компанія, а не вкладка: на Needs attention змішані обидві.
               statusLabel={
-                tab === "not-tracked"
-                  ? statusLabels[company.discoveryStatus]
-                  : undefined
+                isTrackedCompany(company.sources)
+                  ? undefined
+                  : statusLabels[company.discoveryStatus]
               }
               noSourcesLabel={noSourcesLabel}
               platformLabels={platformLabels}

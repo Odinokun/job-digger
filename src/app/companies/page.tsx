@@ -12,6 +12,12 @@ import { getSystemUser } from "@/server/db/system-user";
 import { CompaniesBoard } from "./companies-board";
 import { CompaniesTabs } from "./companies-tabs";
 
+const EMPTY_LABELS = {
+  tracked: "emptyTracked",
+  "not-tracked": "emptyNotTracked",
+  attention: "emptyAttention",
+} as const;
+
 export default async function CompaniesPage({
   searchParams,
 }: PageProps<"/companies">) {
@@ -61,12 +67,16 @@ export default async function CompaniesPage({
           current={tab}
           label={t("tabsLabel")}
           counts={counts}
-          labels={{ tracked: t("tracked"), notTracked: t("notTracked") }}
+          labels={{
+            tracked: t("tracked"),
+            notTracked: t("notTracked"),
+            attention: t("attention"),
+          }}
         />
       }
       initialItems={companies}
       initialCursor={nextCursor}
-      emptyLabel={tab === "tracked" ? t("emptyTracked") : t("emptyNotTracked")}
+      emptyLabel={t(EMPTY_LABELS[tab])}
       loadMoreLabel={t("loadMore")}
       noSourcesLabel={t("noSources")}
       platformLabels={platformLabels}

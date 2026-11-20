@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   compareCompanyRows,
+  isTrackedCompany,
+  notReadSourceCount,
   parseCompaniesTab,
   type CompanyListItem,
+  type CompanySource,
 } from "./company-list";
 
 describe("parseCompaniesTab", () => {
@@ -55,5 +58,37 @@ describe("compareCompanyRows", () => {
     );
 
     expect(sorted.map((company) => company.id)).toEqual(["a", "b"]);
+  });
+});
+
+describe("company sources", () => {
+  const source = (overrides: Partial<CompanySource>): CompanySource => ({
+    id: "s",
+    url: "https://boards.greenhouse.io/acme",
+    label: null,
+    platform: "greenhouse",
+    isTracked: true,
+    lastCheck: null,
+    lastSuccessAt: null,
+    isChecking: false,
+    ...overrides,
+  });
+  const unsupported = source({
+    url: "https://acme.com/careers",
+    platform: "unsupported",
+    isTracked: false,
+  });
+
+  // На вкладці Needs attention змішані обидва списки, тож дії картки (Check
+  // now чи Find pages) визначає сама компанія, а не вкладка.
+  it("calls a company tracked when any of its sources is tracked", () => {
+    expect(isTrackedCompany([unsupported, source({})])).toBe(true);
+    expect(isTrackedCompany([unsupported])).toBe(false);
+    expect(isTrackedCompany([])).toBe(false);
+  });
+
+  it("counts the pages we cannot read", () => {
+    expect(notReadSourceCount([source({}), unsupported, unsupported])).toBe(2);
+    expect(notReadSourceCount([source({})])).toBe(0);
   });
 });
