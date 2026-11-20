@@ -158,6 +158,54 @@ export async function markAllRead(
 }
 
 /**
+ * Mark all as unread, крок 1: скільки вакансій у вкладці Read - число для
+ * діалогу підтвердження (задача 6.18).
+ */
+export async function countRead(
+  db: NodePgDatabase,
+  { userId }: { userId: string },
+): Promise<number> {
+  const [row] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(vacancies)
+    .where(
+      and(
+        inArray(vacancies.sourceId, ownSources(db, userId)),
+        tabCondition("read"),
+      ),
+    );
+
+  return row.count;
+}
+
+/**
+ * Mark all as unread, крок 2: повертає в Unread усі вакансії вкладки Read і
+ * каже, скільки повернуто (задача 6.18).
+ *
+ * Межі, як у `markAllRead`, немає: у вкладку Read потрапляє лише те, що людина
+ * прочитала сама, перевірка туди нічого не додає. Вакансія, прочитана в іншій
+ * вкладці, поки відкритий діалог, теж повернеться - а саме цього людина й
+ * хотіла. Число в діалозі тоді на одиницю менше, ніж повернуто.
+ */
+export async function markAllUnread(
+  db: NodePgDatabase,
+  { userId }: { userId: string },
+): Promise<number> {
+  const marked = await db
+    .update(vacancies)
+    .set({ isRead: false })
+    .where(
+      and(
+        inArray(vacancies.sourceId, ownSources(db, userId)),
+        tabCondition("read"),
+      ),
+    )
+    .returning({ id: vacancies.id });
+
+  return marked.length;
+}
+
+/**
  * Mark all as read / Mark all as unread для компанії (docs/ui.md, розділ 4.2):
  * змінює `is_read` усіх активних (не Closed) вакансій її джерел і повертає,
  * скільки змінено. Діалогу й межі немає: дію легко скасувати протилежною.
