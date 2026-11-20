@@ -143,4 +143,15 @@ describe("suggestCompanyFields", () => {
       expect(suggestCompanyFields("peopleforce.io").name).toBe("");
     });
   });
+
+  it("does not name a company after a TalentAdore token", () => {
+    // Задача 6.28: в адресі лише токен компанії, а не назва.
+    expect(
+      suggestCompanyFields("ats.talentadore.com/positions/rR1TqSR/json"),
+    ).toEqual({
+      url: "",
+      name: "",
+      careerUrl: "ats.talentadore.com/positions/rR1TqSR/json",
+    });
+  });
 });

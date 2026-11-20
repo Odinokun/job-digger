@@ -48,6 +48,7 @@
 | softgarden  | стара дошка `https://{company}.softgarden.io/en/vacancies`, кар'єрний сайт `https://{company}.career.softgarden.de` |
 | BambooHR    | `https://{company}.bamboohr.com/careers`         |
 | Pinpoint    | `https://{company}.pinpointhq.com/`              |
+| TalentAdore | `https://ats.talentadore.com/positions/{token}/json` - сторінки для людей немає; адреса береться з `data-url` віджета на сторінці компанії |
 | Workable    | `https://apply.workable.com/{account}/`; коротке посилання на вакансію `/j/{shortcode}` акаунта не містить - знахідки немає |
 | CleverStaff | `https://cleverstaff.net/i/{alias}-vacancies`; посилання на вакансію `/i/vacancy-{id}` лишається як є - аліас компанії дізнається парсер окремим запитом |
 

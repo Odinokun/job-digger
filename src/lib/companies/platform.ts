@@ -28,6 +28,7 @@ export const CAREER_PLATFORMS = [
   "workable",
   "bamboohr",
   "pinpoint",
+  "talentadore",
   "schema_org",
   "own_page",
   "unsupported",
@@ -68,6 +69,8 @@ export type CareerPlatform = (typeof CAREER_PLATFORMS)[number];
  *   `{company}.bamboohr.com/careers` (задача 6.26).
  * - `pinpointhq.com` - кар'єрна сторінка Pinpoint на субдомені компанії
  *   (задача 6.27).
+ * - `ats.talentadore.com` - JSON вакансій TalentAdore, `positions/{token}/json`
+ *   (задача 6.28). Сам `talentadore.com` - сайт постачальника.
  */
 const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["greenhouse.io", "greenhouse"],
@@ -86,6 +89,7 @@ const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["workable.com", "workable"],
   ["bamboohr.com", "bamboohr"],
   ["pinpointhq.com", "pinpoint"],
+  ["ats.talentadore.com", "talentadore"],
 ];
 
 /**

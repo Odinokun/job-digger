@@ -59,6 +59,7 @@ https://boards-api.greenhouse.io/v1/boards/acme/jobs
 | `responses/dps.softgarden.io/en/vacancies` | Стара дошка softgarden, DPS: серверний HTML з усіма 19 вакансіями (сторінки малює JavaScript), локації картки - кілька `location-view-item`, ID ще й у `SG.allJobLocations` | 19.11.2026 |
 | `responses/altenar.bamboohr.com/careers/list` | JSON кар'єрної сторінки BambooHR, компанія Altenar (12 вакансій; в одної порожнє `location`, місце - в `atsLocation`) | 20.11.2026 |
 | `responses/gig.pinpointhq.com/postings.json` | JSON кар'єрної сторінки Pinpoint, компанія GiG (16 вакансій з описами, 100 КБ; одна позиція в кількох містах) | 20.11.2026 |
+| `responses/ats.talentadore.com/positions/rR1TqSR/json` | JSON віджета TalentAdore, ELK Studios (3 вакансії; місто й країна плюс адреса офісу в `location`) | 20.11.2026 |
 | `responses/apply.workable.com/api/v1/widget/accounts/goreel` | JSON віджета Workable, акаунт GoReel (3 вакансії з описом компанії) | 20.11.2026 |
 | `responses/kinggroup.io/vacancies/tech` | Власна сторінка kinggroup на Framer, напрямок Tech: 10 вакансій посиланнями `./design/<slug>`, назва - `h2` у посиланні (221 КБ) | 20.11.2026 |
 | `responses/www.delasport.com/careers/index` | Власна сторінка delasport (WordPress): 6 вакансій, посилання «View & Apply», назва - `h3` у картці | 20.11.2026 |

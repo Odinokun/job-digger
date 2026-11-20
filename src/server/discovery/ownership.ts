@@ -55,6 +55,7 @@ const PLATFORM_DOMAINS = [
   "workable.com",
   "bamboohr.com",
   "pinpointhq.com",
+  "talentadore.com",
 ];
 
 /**

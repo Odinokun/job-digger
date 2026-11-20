@@ -47,6 +47,9 @@
 | `pinpoint.ts`        | Pinpoint: `readPinpoint(sourceUrl, client)`, `pinpointCompany`, `parsePinpointPostings` |
 | `pinpoint.test.ts`   | Юніт-тести парсера Pinpoint                       |
 | `pinpoint.integration.test.ts` | `readPinpoint` через фейковий вебсервер: адреса з якорем, 404 |
+| `talentadore.ts`     | TalentAdore: `readTalentAdore(sourceUrl, client)`, `talentadoreBoard`, `talentadoreBoardUrl`, `parseTalentAdorePositions` |
+| `talentadore.test.ts` | Юніт-тести парсера TalentAdore                  |
+| `talentadore.integration.test.ts` | `readTalentAdore` через фейковий вебсервер: адреса віджета, 404 |
 | `workable.ts`        | Workable: `readWorkable(sourceUrl, client)`, `workableAccount`, `parseWorkableWidget` |
 | `workable.test.ts`   | Юніт-тести парсера Workable                       |
 | `workable.integration.test.ts` | `readWorkable` через фейковий вебсервер: акаунт з адреси вакансії, регістр, 404 |
@@ -560,6 +563,33 @@ automated device… to monitor or copy any content from the Service»; чи ст
 **Правила.** Умов користування Pinpoint знайти не вдалося (`/terms` - 404, на
 `/legal` посилань на них немає). `robots.txt` кар'єрних сторінок закриває лише
 `/mydata`, `/admin`, `/companies`. Автор вирішив робити (20.11.2026).
+
+
+## TalentAdore
+
+Задача 6.28. Вакансії TalentAdore показує віджет, вбудований у кар'єрну сторінку
+компанії: скрипт `ats.talentadore.com/static/ta-json-careers.js` і елемент з адресою
+даних у `data-url` - `https://ats.talentadore.com/positions/{token}/json?v=2&…`.
+Документації немає; перевірено справжніми запитами 20.11.2026 з User-Agent
+застосунку:
+
+- без ключа; `{ version, company, generated_at, jobs }`, усі вакансії одним
+  запитом. Параметри рядка запиту віджета ми не передаємо: у ELK вони порожні, і
+  без них список той самий. Якщо віджет якоїсь компанії звужує список фільтрами
+  (`tags`, `businessUnits`), ми прочитаємо більше, ніж він показує;
+- невідомий токен - 404 з `{}`;
+- **сторінки зі списком для людей немає** (`/positions/{token}` - 404), тож адреса
+  джерела - сам JSON. Токен компанії - лише в цій адресі: посилання на вакансію
+  `/apply/{slug}/{token}` несе токен вакансії. Тому Find pages читає ще й `data-url`
+  (`ats-links.ts`), а пошуку за назвою для TalentAdore немає - токен не вгадати, і
+  підказка назви в Add company з такої адреси назви не дає.
+
+**Вакансія:** ключ - `id`, назва - `name`, посилання - `link`, локація - `city,
+country`, а без них - поле `location` (там адреса офісу).
+
+**Правила.** [Умови TalentAdore](https://www.talentadore.com/legal/terms-and-conditions)
+про автоматичне читання нічого не кажуть; `robots.txt` закриває `/api/`, `/authorize/`,
+а не `/positions/`. Автор вирішив робити (20.11.2026).
 
 ## Власна сторінка
 

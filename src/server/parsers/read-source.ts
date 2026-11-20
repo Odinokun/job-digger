@@ -12,6 +12,7 @@ import { readGreenhouse } from "./greenhouse.ts";
 import { readHurma } from "./hurma.ts";
 import { readPersonio } from "./personio.ts";
 import { readSoftgarden } from "./softgarden.ts";
+import { readTalentAdore } from "./talentadore.ts";
 import { readLever } from "./lever.ts";
 import { readOwnPage } from "./own-page.ts";
 import { readPeopleForce } from "./peopleforce.ts";
@@ -52,6 +53,7 @@ const READERS: Partial<Record<CareerPlatform, Reader>> = {
   workable: readWorkable,
   bamboohr: readBambooHr,
   pinpoint: readPinpoint,
+  talentadore: readTalentAdore,
 };
 
 /**

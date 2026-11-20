@@ -162,6 +162,13 @@
       "when": 1795213544503,
       "tag": "0022_pinpoint_platform",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1795214005008,
+      "tag": "0023_talentadore_platform",
+      "breakpoints": true
     }
   ]
 }

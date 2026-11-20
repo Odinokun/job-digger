@@ -98,6 +98,7 @@ host.endsWith("." + suffix)`. Із простим `endsWith` будь-хто м�
 | `workable.com` | workable |
 | `bamboohr.com` | bamboohr |
 | `pinpointhq.com` | pinpoint |
+| `ats.talentadore.com` | talentadore |
 | решта                                   | unsupported |
 
 Звідки взяті домени - у коментарі до `PLATFORM_DOMAINS`: у Greenhouse офіційно
