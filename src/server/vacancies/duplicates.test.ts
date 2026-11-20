@@ -102,5 +102,7 @@ describe("sourceKind", () => {
   it("calls the company's own page a site", () => {
     // schema.org JobPosting читається з власного сайту компанії (задача 3.11).
     expect(sourceKind("schema_org")).toBe("site");
+    // Сторінка за рецептом (задача 6.21).
+    expect(sourceKind("own_page")).toBe("site");
   });
 });

@@ -7,6 +7,10 @@ import { companyUrlHost } from "./url.ts";
  * тягнувся б разом із Drizzle. Enum `career_platform` будується з цього
  * масиву - значення й порядок у базі й у коді не можуть розійтися.
  *
+ * `own_page` - власна кар'єрна сторінка компанії, яку читаємо за рецептом
+ * (задача 6.21): людина підтвердила, які посилання на ній - вакансії. За
+ * адресою її не розпізнати, тож `detectPlatform` її ніколи не повертає.
+ *
  * `unsupported` - сторінку знайдено, але читати її нічим
  * (docs/discovery-and-parsing.md, розділ 6).
  */
@@ -22,6 +26,7 @@ export const CAREER_PLATFORMS = [
   "personio",
   "softgarden",
   "schema_org",
+  "own_page",
   "unsupported",
 ] as const;
 

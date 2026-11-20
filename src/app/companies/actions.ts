@@ -16,6 +16,11 @@ import { addCompany } from "@/server/companies/add";
 import { deleteCompany } from "@/server/companies/delete";
 import { findCompanyInTab, listCompanies } from "@/server/companies/list";
 import { addCareerSource, addCareerSources } from "@/server/companies/sources";
+import {
+  applyOwnPageRecipe,
+  previewOwnPage,
+  type OwnPagePreview,
+} from "@/server/companies/own-page";
 import { setSourceReferenceOnly } from "@/server/companies/reference-only";
 import { findCompaniesWithSources } from "@/server/companies/source-duplicates";
 import { updateCompany } from "@/server/companies/update";
@@ -709,6 +714,79 @@ export async function setSourceReferenceOnlyAction(
     return { ok: false };
   }
 
+  revalidateHeaderCounts();
+
+  return { ok: true, company: outcome.value.company };
+}
+
+/**
+ * Read as list, крок 1 (задача 6.21): групи посилань власної сторінки, з яких
+ * людина вибирає вакансії. Id джерела - недовірений ввід, власника й
+ * платформу перевіряє `previewOwnPage`. `failed` - неочікуваний збій.
+ */
+export async function previewOwnPageAction(
+  sourceId: unknown,
+): Promise<OwnPagePreview | { ok: false; problem: "failed" }> {
+  if (typeof sourceId !== "string") {
+    return { ok: false, problem: "not-found" };
+  }
+
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return previewOwnPage(db, httpClient, { userId: user.id, sourceId });
+  });
+
+  return outcome.ok ? outcome.value : { ok: false, problem: "failed" };
+}
+
+/**
+ * Read as list, крок 2: записує вибрану групу рецептом і повертає рядок
+ * компанії для вкладки - `null`, якщо компанія з неї пішла (Not tracked стає
+ * Tracked). Першу перевірку запускає клієнт, як після Add company.
+ */
+export async function applyOwnPageRecipeAction(
+  companyId: unknown,
+  sourceId: unknown,
+  prefix: unknown,
+  tab: unknown,
+): Promise<{ ok: true; company: CompanyListItem | null } | { ok: false }> {
+  if (
+    typeof companyId !== "string" ||
+    typeof sourceId !== "string" ||
+    typeof prefix !== "string"
+  ) {
+    return { ok: false };
+  }
+
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+    const applied = await applyOwnPageRecipe(db, {
+      userId: user.id,
+      sourceId,
+      prefix,
+    });
+
+    if (!applied.ok) {
+      return null;
+    }
+
+    return {
+      company: await findCompanyInTab(db, {
+        userId: user.id,
+        companyId,
+        tab: parseCompaniesTab(tab),
+      }),
+    };
+  });
+
+  if (!outcome.ok || outcome.value === null) {
+    return { ok: false };
+  }
+
+  // Сторінка перестала бути «not read»: число біля Companies і вкладки.
   revalidateHeaderCounts();
 
   return { ok: true, company: outcome.value.company };

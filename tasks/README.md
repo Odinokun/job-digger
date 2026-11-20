@@ -119,7 +119,7 @@ PR: #57
 | [6.18 Mark all as unread у вкладці Read](6.18-mark-all-unread-read-tab.md)                      | done    |
 | [6.19 Підсвітка рядка вакансії й автозакриття підсумку](6.19-row-hover-and-summary-timeout.md)  | done    |
 | [6.20 Дублікати вакансій між джерелами компанії](6.20-cross-source-duplicates.md) | done |
-| [6.21 Власна кар'єрна сторінка за рецептом](6.21-own-page-recipe.md) | todo |
+| [6.21 Власна кар'єрна сторінка за рецептом](6.21-own-page-recipe.md) | done |
 | [6.22 Платформа DOU](6.22-dou-platform.md) | todo |
 | [6.23 Платформа Djinni](6.23-djinni-platform.md) | todo |
 | [6.24 Платформа Jobico](6.24-jobico-platform.md) | todo |

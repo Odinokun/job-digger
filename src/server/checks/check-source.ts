@@ -18,6 +18,8 @@ export interface SourceToCheck {
   id: string;
   url: string;
   platform: CareerPlatform;
+  /** Рецепт власної сторінки (задача 6.21); в інших платформ - `null`. */
+  vacancyLinkPrefix: string | null;
 }
 
 /** Підсумок перевірки джерела - те, що черга записує в завдання і запуск. */

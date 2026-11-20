@@ -18,11 +18,13 @@ import type { CareerPlatform } from "../../lib/companies/platform.ts";
 export type SourceKind = "platform" | "site";
 
 /**
- * Платформи, які читають власний сайт компанії, а не ATS. Поки це лише
- * schema.org `JobPosting` (задача 3.11); сюди ж стане сторінка за рецептом
- * (задача 6.21).
+ * Платформи, які читають власний сайт компанії, а не ATS: schema.org
+ * `JobPosting` (задача 3.11) і сторінка за рецептом (задача 6.21).
  */
-const SITE_PLATFORMS: ReadonlySet<CareerPlatform> = new Set(["schema_org"]);
+const SITE_PLATFORMS: ReadonlySet<CareerPlatform> = new Set([
+  "schema_org",
+  "own_page",
+]);
 
 export function sourceKind(platform: CareerPlatform): SourceKind {
   return SITE_PLATFORMS.has(platform) ? "site" : "platform";

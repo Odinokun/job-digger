@@ -18,6 +18,7 @@ import { DeleteCompanyDialog } from "./delete-company-dialog";
 import { EditCompanyDialog } from "./edit-company-dialog";
 import { FindPagesDialog } from "./find-pages-dialog";
 import { LastChecked } from "./last-checked";
+import { OwnPageDialog } from "./own-page-dialog";
 import { ReferenceOnlyCheckbox } from "./reference-only-checkbox";
 
 interface CompanyCardProps {
@@ -30,6 +31,11 @@ interface CompanyCardProps {
   platformLabels: Record<CompanySource["platform"], string>;
   onSaved: (companyId: string, saved: CompanyListItem | null) => void;
   onDeleted: (companyId: string) => void;
+  /**
+   * Власній сторінці дали рецепт (задача 6.21): рядок для вкладки й перша
+   * перевірка - як після Add company.
+   */
+  onRecipeApplied: (company: CompanyListItem | null, companyId: string) => void;
   /** Щойно додана: Check now стартує сам (задача 5.09). */
   startsCheck?: boolean;
 }
@@ -48,6 +54,7 @@ export function CompanyCard({
   platformLabels,
   onSaved,
   onDeleted,
+  onRecipeApplied,
   startsCheck = false,
 }: CompanyCardProps) {
   return (
@@ -129,6 +136,18 @@ export function CompanyCard({
                   ) : (
                     <LastChecked at={source.lastSuccessAt} message="lastOk" />
                   )
+                ) : null}
+                {/* Сторінку, яку нічим прочитати, можна читати як список
+                    за рецептом (задача 6.21) або лишити посиланням (6.17);
+                    власній сторінці - змінити рецепт. */}
+                {source.platform === "unsupported" ||
+                source.platform === "own_page" ? (
+                  <OwnPageDialog
+                    companyId={company.id}
+                    source={source}
+                    tab={tab}
+                    onApplied={onRecipeApplied}
+                  />
                 ) : null}
                 {source.platform === "unsupported" ? (
                   <ReferenceOnlyCheckbox

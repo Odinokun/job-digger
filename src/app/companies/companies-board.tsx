@@ -222,6 +222,7 @@ export function CompaniesBoard({
         onLoadMore={loadMore}
         onSaved={applyRow}
         onDeleted={removeRow}
+        onRecipeApplied={addRow}
         firstCheckId={firstCheckId}
         emptyLabel={emptyLabel}
         loadMoreLabel={loadMoreLabel}
