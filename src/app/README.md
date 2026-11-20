@@ -280,8 +280,12 @@ Companies; інакше - текст самої вкладки («Усе про�
   career page URLs) і кнопка, що переходить на `/api/companies-csv` з опціями в адресі;
   браузер зберігає файл, сторінка лишається на місці. Без жодного списку кнопка
   вимкнена.
+- `settings/csv-import.tsx` - Import CSV: форма з файлом і підсумком у живому
+  регіоні. Розмір (до `CSV_IMPORT_MAX_BYTES`) перевіряється ще до відправлення:
+  більший файл Next відкинув би сам, без зрозумілого повідомлення.
 - `settings/actions.ts` - `setThemeAction` і `setLocaleAction` (лише cookie) та
-  `setAutoCheckIntervalAction` (база; хибний інтервал відхиляється).
+  `setAutoCheckIntervalAction` (база; хибний інтервал відхиляється), `importCsvAction`
+  (розмір, UTF-8, заголовок, тоді `importCompanies`).
 
 Повні шляхи тут не для краси: файлів `actions.ts` дві штуки, і коротке імʼя вже
 двозначне. Тест [`readme-coverage.test.ts`](../readme-coverage.test.ts) зараховує

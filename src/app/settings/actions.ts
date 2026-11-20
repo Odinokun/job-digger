@@ -3,9 +3,16 @@
 import { cookies } from "next/headers";
 
 import { runAction } from "@/app/action-result";
+import { revalidateHeaderCounts } from "@/app/components/header-counts";
 import { isSupportedLocale, localeCookieName } from "@/i18n/config";
+import {
+  CSV_IMPORT_MAX_BYTES,
+  type ImportCsvResult,
+} from "@/lib/csv/import-result";
 import { parseAutoCheckInterval } from "@/lib/settings/auto-check-interval";
 import { parseThemePreference, THEME_COOKIE_NAME } from "@/lib/theme";
+import { importCompanies } from "@/server/csv/import";
+import { parseCompaniesCsv } from "@/server/csv/parse";
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 import { setAutoCheckInterval } from "@/server/settings/settings";
@@ -87,4 +94,64 @@ export async function setAutoCheckIntervalAction(
   });
 
   return outcome.ok ? { ok: true } : { ok: false, reason: "unexpected" };
+}
+
+/**
+ * Import CSV (задача 6.06): файл із форми → компанії й джерела, з підсумком.
+ *
+ * Файл приходить із клієнта, тому розмір і кодування перевіряються й тут,
+ * хоч сторінка перевіряє розмір ще до відправлення. Відмова за заголовком
+ * відхиляє файл цілком - у базу не пишеться нічого.
+ */
+export async function importCsvAction(
+  _previous: ImportCsvResult | null,
+  formData: FormData,
+): Promise<ImportCsvResult> {
+  const file = formData.get("file");
+
+  if (!(file instanceof File) || file.size === 0) {
+    return { status: "refused", reason: "no-file" };
+  }
+
+  if (file.size > CSV_IMPORT_MAX_BYTES) {
+    return { status: "refused", reason: "too-large" };
+  }
+
+  let text: string;
+
+  try {
+    // `fatal`: не-UTF-8 файл - відмова, а не мовчазні знаки заміни в назвах.
+    text = new TextDecoder("utf-8", { fatal: true }).decode(
+      await file.arrayBuffer(),
+    );
+  } catch {
+    return { status: "refused", reason: "encoding" };
+  }
+
+  const parsed = parseCompaniesCsv(text);
+
+  if (!parsed.ok) {
+    return { status: "refused", reason: "header" };
+  }
+
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return importCompanies(db, { userId: user.id, rows: parsed.rows });
+  });
+
+  if (!outcome.ok) {
+    return { status: "failed-unexpectedly" };
+  }
+
+  // Нові компанії - у вкладках Companies і, можливо, в лічильнику уваги.
+  revalidateHeaderCounts();
+
+  return {
+    status: "imported",
+    ...outcome.value,
+    // Рядки, які не вдалося навіть розібрати, - теж помилки.
+    errors: outcome.value.errors + parsed.malformed,
+  };
 }

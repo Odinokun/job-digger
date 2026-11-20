@@ -230,6 +230,19 @@
       "notTracked": "Not tracked",
       "careerUrls": "Include career page URLs",
       "button": "Export CSV"
+    },
+    "import": {
+      "title": "Import CSV",
+      "file": "CSV file",
+      "button": "Import CSV",
+      "hint": "Columns: company_name, company_url, career_url and optional career_label - the same file Export CSV makes. Up to 1 MB.",
+      "summary": "Added {companies, plural, one {# company} other {# companies}} and {sources, plural, one {# career page} other {# career pages}}, skipped {duplicates, plural, one {# duplicate} other {# duplicates}}, {errors, plural, one {# row} other {# rows}} with errors.",
+      "refused": {
+        "header": "This is not a Job Digger CSV: the first row must name the columns company_name, company_url, career_url and optionally career_label. Nothing was imported.",
+        "encoding": "The file is not in UTF-8. Save it as CSV UTF-8 and try again. Nothing was imported.",
+        "too-large": "The file is larger than 1 MB.",
+        "no-file": "Choose a CSV file first."
+      }
     }
   },
   "Common": {

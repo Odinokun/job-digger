@@ -18,6 +18,7 @@
 | `theme.ts`             | вибір оформлення (Light / Dark / System), імʼя cookie і розбір її значення  |
 | `csv/export-options.ts` | опції Export CSV, `exportCsvHref` і `parseExportOptions` - опції в адресі `/api/companies-csv` |
 | `csv/export-options.test.ts` | юніт-тести опцій |
+| `csv/import-result.ts` | `CSV_IMPORT_MAX_BYTES` (1 000 000 байтів) і `ImportCsvResult` - відповідь дії імпорту |
 | `settings/auto-check-interval.ts` | інтервали автоперевірки (3, 6, 12, 24 год, за замовчуванням 6) і `parseAutoCheckInterval` - `null` на будь-що поза списком |
 | `settings/auto-check-interval.test.ts` | юніт-тести інтервалів |
 

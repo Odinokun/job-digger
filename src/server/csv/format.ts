@@ -20,7 +20,7 @@ export type CsvRow = Record<(typeof CSV_COLUMNS)[number], string>;
  * за чотири символи з docs/security.md - ще Tab, CR, LF і повноширинні
  * варіанти, які деякі локалі теж читають як формулу.
  */
-const FORMULA_STARTS = new Set([
+export const FORMULA_STARTS = new Set([
   "=",
   "+",
   "-",

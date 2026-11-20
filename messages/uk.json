@@ -230,6 +230,19 @@
       "notTracked": "Без джерел",
       "careerUrls": "Додати адреси карʼєрних сторінок",
       "button": "Експортувати CSV"
+    },
+    "import": {
+      "title": "Імпорт CSV",
+      "file": "Файл CSV",
+      "button": "Імпортувати CSV",
+      "hint": "Колонки: company_name, company_url, career_url і необовʼязкова career_label - той самий файл, що дає експорт. До 1 МБ.",
+      "summary": "Додано {companies, plural, one {# компанію} few {# компанії} many {# компаній} other {# компанії}} і {sources, plural, one {# карʼєрну сторінку} few {# карʼєрні сторінки} many {# карʼєрних сторінок} other {# карʼєрної сторінки}}, пропущено {duplicates, plural, one {# дублікат} few {# дублікати} many {# дублікатів} other {# дубліката}}, {errors, plural, one {# рядок} few {# рядки} many {# рядків} other {# рядка}} з помилкою.",
+      "refused": {
+        "header": "Це не CSV Job Digger: перший рядок має називати колонки company_name, company_url, career_url і, за бажанням, career_label. Нічого не імпортовано.",
+        "encoding": "Файл не в UTF-8. Збережіть його як CSV UTF-8 і спробуйте ще раз. Нічого не імпортовано.",
+        "too-large": "Файл більший за 1 МБ.",
+        "no-file": "Спершу виберіть файл CSV."
+      }
     }
   },
   "Common": {
