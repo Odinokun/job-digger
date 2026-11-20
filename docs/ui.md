@@ -80,7 +80,7 @@ Check now (зокрема неактивна під час загальної п
 
 Mark all as read / Mark all as unread для компанії вже в коді - [`src/app/README.md`](../src/app/README.md) (`company-read-buttons.tsx`) і [`src/server/vacancies/README.md`](../src/server/vacancies/README.md#позначки-користувача).
 
-Delete і його діалог підтвердження вже в коді - [`src/app/README.md`](../src/app/README.md#рішення-щодо-heroui) і [`src/server/companies/README.md`](../src/server/companies/README.md#видалення-компанії). Діалог називає й числа вакансій («Разом із нею буде видалено 14 вакансій, з них 2 в обраному»). Лишилося незробленим: історична агрегована статистика має залишатися після видалення - вона чекає на таблицю `check_runs` (задача 4.01).
+Delete і його діалог підтвердження вже в коді - [`src/app/README.md`](../src/app/README.md#рішення-щодо-heroui) і [`src/server/companies/README.md`](../src/server/companies/README.md#видалення-компанії). Діалог називає й числа вакансій («Разом із нею буде видалено 14 вакансій, з них 2 в обраному»). Історія перевірок після видалення лишається: лічильники History зберігаються в самому рядку `check_runs`, а не рахуються з видалених завдань.
 
 Окреме джерело прибирається через Edit: у модальному вікні є список джерел компанії з кнопкою видалення. Якщо прибрати останнє джерело, компанія переходить у Not tracked зі статусом Not checked.
 

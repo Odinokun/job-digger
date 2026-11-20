@@ -99,13 +99,19 @@ PR: #57
 | [5.13 ATS на домені компанії](5.13-ats-on-company-domain.md)                                     | backlog |
 | [5.14 Find pages для однієї компанії на Not tracked](5.14-find-pages-not-tracked-company.md)     | done    |
 | [5.15 Відомі ATS без парсера](5.15-known-ats-without-parser.md)                                  | done    |
-| [6.01 Таблиця settings і сторінка Settings](6.01-settings-page.md)                               | backlog |
-| [6.02 Розрахунок часу наступної автоперевірки](6.02-next-auto-check-time.md)                     | backlog |
-| [6.03 Автоперевірка локально і перевірка на старті](6.03-auto-check-local.md)                    | backlog |
-| [6.04 AUTO_CHECK=off і спільні ліміти через ENV](6.04-auto-check-env-limits.md)                  | backlog |
-| [6.05 CSV Export з опціями](6.05-csv-export.md)                                                  | backlog |
-| [6.06 CSV Import з підсумком](6.06-csv-import.md)                                                | backlog |
-| [6.07 E2E: CSV туди й назад](6.07-e2e-csv-roundtrip.md)                                          | backlog |
+| [6.01 Таблиця settings і сторінка Settings](6.01-settings-page.md)                               | todo    |
+| [6.02 Розрахунок часу наступної автоперевірки](6.02-next-auto-check-time.md)                     | todo    |
+| [6.03 Автоперевірка локально і перевірка на старті](6.03-auto-check-local.md)                    | todo    |
+| [6.04 AUTO_CHECK=off і спільні ліміти через ENV](6.04-auto-check-env-limits.md)                  | todo    |
+| [6.05 CSV Export з опціями](6.05-csv-export.md)                                                  | todo    |
+| [6.06 CSV Import з підсумком](6.06-csv-import.md)                                                | todo    |
+| [6.07 E2E: CSV туди й назад](6.07-e2e-csv-roundtrip.md)                                          | todo    |
+| [6.08 Окремий робочий екземпляр застосунку](6.08-separate-work-instance.md)                      | todo    |
+| [6.09 Резервні копії робочої бази](6.09-database-backups.md)                                     | todo    |
+| [6.10 Автозапуск робочого екземпляра](6.10-autostart-on-login.md)                                | todo    |
+| [6.11 Лічильник проблемних джерел у меню](6.11-failing-sources-counter.md)                       | todo    |
+| [6.12 Подвоєна назва в модалці Add](6.12-add-dialog-doubled-name.md)                             | todo    |
+| [6.13 Check now під час загальної перевірки](6.13-check-now-via-queue.md)                        | todo    |
 | [7.01 Neon: проєкт і підключення](7.01-neon-setup.md)                                            | backlog |
 | [7.02 API-маршрут обробника розкладу](7.02-schedule-handler-route.md)                            | backlog |
 | [7.03 Самоперезапуск черги на Vercel](7.03-vercel-queue-restart.md)                              | backlog |
@@ -116,7 +122,6 @@ PR: #57
 | [7.08 Перший деплой на Vercel](7.08-first-vercel-deploy.md)                                      | backlog |
 | [7.09 Пін GitHub Actions і Dependabot](7.09-pin-actions-dependabot.md)                           | backlog |
 | [7.10 Підключати CSS лише тих компонентів HeroUI, які використовуємо](7.10-heroui-css-subset.md) | backlog |
-| [Лічильник проблемних джерел у меню](failing-sources-counter.md)                                 | analyze |
 | [Ручні перевірки лише по перших сторінках](first-page-only-manual-checks.md)                     | analyze |
 | [Розібратися з уразливостями у npm audit](npm-audit-vulnerabilities.md)                          | backlog |
 | [Розкласти документацію за частинами застосунку](split-docs-by-app-part.md)                      | analyze |
