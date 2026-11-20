@@ -17,6 +17,7 @@ import {
   useRef,
   useState,
   useTransition,
+  type FocusEvent,
 } from "react";
 
 import { WithTooltip } from "@/app/components/icon-button";
@@ -231,7 +232,7 @@ export function AddCompanyDialog({
    * до домену шлях (`bosch.com` - `bosch.com/careers`), побачив би, що підказка
    * знову обрізала адресу до домену.
    */
-  function suggestFromUrl() {
+  function suggestFromUrl(nextFocus: EventTarget | null) {
     if (isSuggested || fields.url.trim() === "") {
       return;
     }
@@ -248,19 +249,25 @@ export function AddCompanyDialog({
       return;
     }
 
+    // Підказка приходить на виході з поля адреси - тобто тоді, коли фокус уже
+    // в наступному полі. Якщо це поле назви, користувач клікнув туди, щоб
+    // написати назву сам: вписана в цю мить підказка склеїлася б із його
+    // текстом («AcmeAcme Corp», задача 6.12). Виділити підказку, щоб друк її
+    // замінив, у цю мить не можна: фокус іще не в полі назви (перевірено).
+    const isTypingName =
+      nextFocus instanceof HTMLInputElement && nextFocus.name === "name";
+    const suggestsName =
+      !editedByHand.name && !isTypingName && suggestion.name !== "";
+    const suggestsCareerUrl =
+      !editedByHand.careerUrl && suggestion.careerUrl !== "";
+
     setSuggested(true);
     setFields((previous) => ({
       // Адреса ATS головного сайту не дає, і поле стає порожнім свідомо: сама
       // адреса переїхала в карʼєрне поле, а сайт компанії вписує користувач.
       url: suggestion.url,
-      name:
-        editedByHand.name || suggestion.name === ""
-          ? previous.name
-          : suggestion.name,
-      careerUrl:
-        editedByHand.careerUrl || suggestion.careerUrl === ""
-          ? previous.careerUrl
-          : suggestion.careerUrl,
+      name: suggestsName ? suggestion.name : previous.name,
+      careerUrl: suggestsCareerUrl ? suggestion.careerUrl : previous.careerUrl,
     }));
   }
 
@@ -465,8 +472,8 @@ export function AddCompanyDialog({
                   name="url"
                   value={fields.url}
                   onChange={(value) => changeField("url", value)}
-                  onBlur={() => {
-                    suggestFromUrl();
+                  onBlur={(event: FocusEvent) => {
+                    suggestFromUrl(event.relatedTarget);
                     checkAddress("url");
                   }}
                   isInvalid={urlError !== null}
