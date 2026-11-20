@@ -73,7 +73,8 @@ export const ATTENTION_FAILURES = 2;
  * Підзапит «компанія потребує уваги» (задача 6.11): є сторінка, яку ми не
  * читаємо (`unsupported`, у Tracked чи Not tracked), або відстежуване джерело
  * падає `ATTENTION_FAILURES` разів поспіль і більше. Збій сторінки без
- * відстеження не рахується - її не перевіряють.
+ * відстеження не рахується - її не перевіряють. Сторінка, яку людина позначила
+ * «лише посиланням» (задача 6.17), теж не рахується.
  */
 function needsAttentionSubquery(
   db: NodePgDatabase,
@@ -86,7 +87,10 @@ function needsAttentionSubquery(
       and(
         eq(careerSources.companyId, companyId),
         or(
-          eq(careerSources.platform, "unsupported"),
+          and(
+            eq(careerSources.platform, "unsupported"),
+            eq(careerSources.isReferenceOnly, false),
+          ),
           and(
             eq(careerSources.isTracked, true),
             gte(careerSources.consecutiveFailures, ATTENTION_FAILURES),
@@ -191,6 +195,7 @@ async function attachDetails(
       label: careerSources.label,
       platform: careerSources.platform,
       isTracked: careerSources.isTracked,
+      isReferenceOnly: careerSources.isReferenceOnly,
       lastCheckedAt: careerSources.lastCheckedAt,
       lastSuccessAt: careerSources.lastSuccessAt,
       consecutiveFailures: careerSources.consecutiveFailures,

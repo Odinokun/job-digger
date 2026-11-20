@@ -185,6 +185,7 @@ describe("listCompanies", () => {
         url: "https://boards.greenhouse.io/bosch",
         platform: "greenhouse",
         isTracked: true,
+        isReferenceOnly: false,
         label: null,
         lastCheck: null,
         lastSuccessAt: null,
@@ -195,6 +196,7 @@ describe("listCompanies", () => {
         url: "https://jobs.lever.co/bosch",
         platform: "lever",
         isTracked: true,
+        isReferenceOnly: false,
         label: "Remote Canada",
         lastCheck: null,
         lastSuccessAt: null,
@@ -423,6 +425,30 @@ describe("Needs attention", () => {
     expect(await attentionNames(user.id)).toEqual(["Acme"]);
   });
 
+  it("leaves out a page the user marked as reference only", async () => {
+    // Задача 6.17: власна сторінка kinggroup, яку нічим прочитати, поруч із
+    // PeopleForce, що читається. Позначена - більше не тримає компанію тут, а
+    // в рядку джерела позначку видно.
+    const user = await seedSystemUser(testDb);
+    const kinggroup = await insertTracked(user.id, "Kinggroup");
+    const ownPage = await addSource(
+      kinggroup.id,
+      "https://kinggroup.io/vacancies/tech",
+      { platform: "unsupported", isTracked: false, isReferenceOnly: true },
+    );
+
+    expect(await attentionNames(user.id)).toEqual([]);
+
+    const found = await findCompanyInTab(testDb, {
+      userId: user.id,
+      companyId: kinggroup.id,
+      tab: "tracked",
+    });
+    expect(
+      found?.sources.find((source) => source.id === ownPage.id),
+    ).toMatchObject({ isReferenceOnly: true });
+  });
+
   it("takes a source that failed twice in a row, but not once", async () => {
     // Одна невдача - мережа моргнула, смикати користувача не варто.
     const user = await seedSystemUser(testDb);
@@ -510,6 +536,7 @@ describe("findCompanyInTab", () => {
           url: "https://boards.greenhouse.io/bosch",
           platform: "greenhouse",
           isTracked: true,
+          isReferenceOnly: false,
           label: null,
           lastCheck: null,
           lastSuccessAt: null,

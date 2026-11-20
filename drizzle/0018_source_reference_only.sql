@@ -1,0 +1,1 @@
+ALTER TABLE "career_sources" ADD COLUMN "is_reference_only" boolean DEFAULT false NOT NULL;

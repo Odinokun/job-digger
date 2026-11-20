@@ -10,6 +10,7 @@ function source(overrides: Partial<CompanySource> = {}): CompanySource {
     label: null,
     platform: "greenhouse",
     isTracked: true,
+    isReferenceOnly: false,
     lastCheck: "ok",
     lastSuccessAt: new Date("2026-11-19T10:00:00Z"),
     isChecking: false,
