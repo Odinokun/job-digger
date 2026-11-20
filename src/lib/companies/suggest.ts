@@ -51,6 +51,7 @@ const SUBDOMAIN_SLUG_PLATFORMS: CareerPlatform[] = [
   "personio",
   "softgarden",
   "bamboohr",
+  "pinpoint",
 ];
 
 /**

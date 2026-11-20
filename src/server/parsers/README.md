@@ -44,6 +44,9 @@
 | `bamboohr.ts`        | BambooHR: `readBambooHr(sourceUrl, client)`, `bamboohrCompany`, `parseBambooHrList` |
 | `bamboohr.test.ts`   | Юніт-тести парсера BambooHR                       |
 | `bamboohr.integration.test.ts` | `readBambooHr` через фейковий вебсервер і сервер, що переадресовує невідому компанію на сайт BambooHR |
+| `pinpoint.ts`        | Pinpoint: `readPinpoint(sourceUrl, client)`, `pinpointCompany`, `parsePinpointPostings` |
+| `pinpoint.test.ts`   | Юніт-тести парсера Pinpoint                       |
+| `pinpoint.integration.test.ts` | `readPinpoint` через фейковий вебсервер: адреса з якорем, 404 |
 | `workable.ts`        | Workable: `readWorkable(sourceUrl, client)`, `workableAccount`, `parseWorkableWidget` |
 | `workable.test.ts`   | Юніт-тести парсера Workable                       |
 | `workable.integration.test.ts` | `readWorkable` через фейковий вебсервер: акаунт з адреси вакансії, регістр, 404 |
@@ -536,6 +539,27 @@ BEE Partment, Crown) - фід schema.org `DataFeed` на `/jobs.feed.json` (на
 automated device… to monitor or copy any content from the Service»; чи стосується він
 відвідувача публічної кар'єрної сторінки - неоднозначно. `robots.txt` компанійних
 піддоменів нічого не забороняє. Автор вирішив робити (20.11.2026).
+
+
+## Pinpoint
+
+Задача 6.27. Документації публічного JSON ми не знайшли. Читаємо
+`https://{company}.pinpointhq.com/postings.json`; є ще `/jobs.rss`, але JSON
+повніший. Перевірено справжніми запитами 20.11.2026 з User-Agent застосунку:
+
+- без ключа; `{ data: [...] }`, усі вакансії одним запитом разом із повними
+  описами (у GiG - 100 КБ на 16 вакансій, далеко від ліміту 5 МБ);
+- невідома компанія і службові піддомени (`www`, `app`) - 404.
+
+**Вакансія:** ключ - `id`, назва - `title`, посилання - `url`. Локація - місто й
+регіон без повторів («Madrid, Madrid» → «Madrid»; у даних трапляються пробіли в
+кінці) і «remote» для `workplace_type: "remote"`. Одна позиція в кількох містах -
+кілька записів із різними `id`: це різні вакансії й на сторінці Pinpoint, тож і в
+нас.
+
+**Правила.** Умов користування Pinpoint знайти не вдалося (`/terms` - 404, на
+`/legal` посилань на них немає). `robots.txt` кар'єрних сторінок закриває лише
+`/mydata`, `/admin`, `/companies`. Автор вирішив робити (20.11.2026).
 
 ## Власна сторінка
 

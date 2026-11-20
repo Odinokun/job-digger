@@ -43,8 +43,9 @@ describe("knownAtsName", () => {
     expect(knownAtsName("https://jobs.lever.co/acme")).toBeNull();
     // Workable отримав парсер у задачі 6.25.
     expect(knownAtsName("https://apply.workable.com/acme/")).toBeNull();
-    // BambooHR - у задачі 6.26.
+    // BambooHR - у задачі 6.26, Pinpoint - у 6.27.
     expect(knownAtsName("https://acme.bamboohr.com/careers")).toBeNull();
+    expect(knownAtsName("https://acme.pinpointhq.com/")).toBeNull();
   });
 
   it("returns null for a company's own page and for garbage", () => {

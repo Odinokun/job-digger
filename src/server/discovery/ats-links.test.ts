@@ -94,6 +94,17 @@ describe("atsLinksOnPage", () => {
     ]);
   });
 
+  it("turns Pinpoint posting links into the company's careers page", () => {
+    // Задача 6.27.
+    const html = `
+      <a href="https://acme.pinpointhq.com/en/postings/1a2b">Designer</a>
+      <a href="https://acme.pinpointhq.com/en/postings/3c4d">Engineer</a>`;
+
+    expect(atsLinksOnPage(html, PAGE)).toEqual([
+      { url: "https://acme.pinpointhq.com/", platform: "pinpoint" },
+    ]);
+  });
+
   it("turns Workable job links into the account's careers page", () => {
     // Задача 6.25: посилання на вакансії одного акаунта - одна знахідка.
     const html = `
