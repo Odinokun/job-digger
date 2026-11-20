@@ -16,6 +16,8 @@
 | `checks/status-poller.ts` | `createStatusPoller` - коли опитувати сервер про стан перевірки і коли здатися; `isBusy` - чи йде загальна перевірка або Find new pages |
 | `checks/status-poller.test.ts` | юніт-тести опитувача на фейковому годиннику |
 | `theme.ts`             | вибір оформлення (Light / Dark / System), імʼя cookie і розбір її значення  |
+| `csv/export-options.ts` | опції Export CSV, `exportCsvHref` і `parseExportOptions` - опції в адресі `/api/companies-csv` |
+| `csv/export-options.test.ts` | юніт-тести опцій |
 | `settings/auto-check-interval.ts` | інтервали автоперевірки (3, 6, 12, 24 год, за замовчуванням 6) і `parseAutoCheckInterval` - `null` на будь-що поза списком |
 | `settings/auto-check-interval.test.ts` | юніт-тести інтервалів |
 

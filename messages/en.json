@@ -223,6 +223,13 @@
       "label": "Check interval",
       "hours": "{hours} h",
       "hint": "How often Job Digger checks all tracked companies on its own, counted from the start of the last general check."
+    },
+    "export": {
+      "title": "Export CSV",
+      "tracked": "Tracked",
+      "notTracked": "Not tracked",
+      "careerUrls": "Include career page URLs",
+      "button": "Export CSV"
     }
   },
   "Common": {
