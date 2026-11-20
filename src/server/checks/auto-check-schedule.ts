@@ -14,6 +14,12 @@ import { checkRuns } from "../db/schema.ts";
 const HOUR_MS = 3_600_000;
 
 /**
+ * На старті застосунку загальна перевірка йде одразу, якщо остання стартувала
+ * давніше за це (docs/checks-and-queue.md, розділ 8, «Локально»).
+ */
+export const STARTUP_CHECK_AFTER_MS = HOUR_MS;
+
+/**
  * Коли настає наступна автоперевірка. `null` - загальної перевірки ще не було,
  * і чекати нема чого: вона потрібна одразу.
  *
@@ -45,6 +51,24 @@ export function isAutoCheckDue({
   const next = nextAutoCheckAt(lastStartedAt, intervalHours);
 
   return next === null || now.getTime() >= next.getTime();
+}
+
+/**
+ * Чи йти загальній перевірці на старті застосунку: остання стартувала понад
+ * годину тому або її не було. Інакше відлік продовжується за інтервалом
+ * (`isAutoCheckDue`).
+ */
+export function isStartupCheckDue({
+  lastStartedAt,
+  now,
+}: {
+  lastStartedAt: Date | null;
+  now: Date;
+}): boolean {
+  return (
+    lastStartedAt === null ||
+    now.getTime() - lastStartedAt.getTime() > STARTUP_CHECK_AFTER_MS
+  );
 }
 
 /**

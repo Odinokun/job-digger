@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { isAutoCheckDue, nextAutoCheckAt } from "./auto-check-schedule.ts";
+import {
+  isAutoCheckDue,
+  isStartupCheckDue,
+  nextAutoCheckAt,
+} from "./auto-check-schedule.ts";
 
 const lastStart = new Date("2026-11-20T09:00:00Z");
 
@@ -76,5 +80,34 @@ describe("isAutoCheckDue", () => {
         now: hoursAfter(lastStart, -2),
       }),
     ).toBe(false);
+  });
+});
+
+describe("isStartupCheckDue", () => {
+  // docs/checks-and-queue.md, розділ 8, «Локально»: на старті застосунку
+  // загальна перевірка йде одразу, якщо остання була понад годину тому.
+  it("is due when the last general check is more than an hour old", () => {
+    expect(
+      isStartupCheckDue({
+        lastStartedAt: lastStart,
+        now: new Date(hoursAfter(lastStart, 1).getTime() + 1),
+      }),
+    ).toBe(true);
+  });
+
+  it("waits when the last general check is an hour old or newer", () => {
+    // Тоді відлік просто продовжується за інтервалом.
+    expect(
+      isStartupCheckDue({
+        lastStartedAt: lastStart,
+        now: hoursAfter(lastStart, 1),
+      }),
+    ).toBe(false);
+  });
+
+  it("is due when there has never been a general check", () => {
+    expect(isStartupCheckDue({ lastStartedAt: null, now: lastStart })).toBe(
+      true,
+    );
   });
 });
