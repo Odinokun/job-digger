@@ -12,6 +12,7 @@ import { readHurma } from "./hurma.ts";
 import { readPersonio } from "./personio.ts";
 import { readSoftgarden } from "./softgarden.ts";
 import { readLever } from "./lever.ts";
+import { readOwnPage } from "./own-page.ts";
 import { readPeopleForce } from "./peopleforce.ts";
 import type { ParseResult } from "./types.ts";
 import type { ReadDepth } from "./vacancies-to-check.ts";
@@ -49,12 +50,27 @@ const READERS: Partial<Record<CareerPlatform, Reader>> = {
 
 /**
  * Вакансії джерела або `null`, якщо для платформи ще немає парсера.
+ *
+ * Власна сторінка (`own_page`, задача 6.21) читається не за платформою, а за
+ * рецептом джерела - `vacancyLinkPrefix`, тож вона поза `READERS`. Без
+ * рецепта її читати нічим - `unreadable`: рецепт і платформа пишуться разом,
+ * і такого рядка бути не має.
  */
 export async function readSource(
-  source: { url: string; platform: CareerPlatform },
+  source: {
+    url: string;
+    platform: CareerPlatform;
+    vacancyLinkPrefix?: string | null;
+  },
   client: HttpClient,
   depth: ReadDepth = "full",
 ): Promise<ParseResult | null> {
+  if (source.platform === "own_page") {
+    return source.vacancyLinkPrefix == null
+      ? { ok: false, error: { reason: "unreadable" } }
+      : readOwnPage(source.url, source.vacancyLinkPrefix, client);
+  }
+
   const reader = READERS[source.platform];
 
   return reader === undefined ? null : reader(source.url, client, depth);

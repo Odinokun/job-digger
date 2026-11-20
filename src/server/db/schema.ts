@@ -135,6 +135,11 @@ export const careerSources = pgTable(
     // Needs attention і бейджі «N pages not read». Лише для `unsupported` -
     // перевіряє дія, що ставить позначку.
     isReferenceOnly: boolean("is_reference_only").notNull().default(false),
+    // Рецепт власної сторінки (платформа `own_page`, задача 6.21): вакансії -
+    // посилання, чия адреса - цей префікс (хост і шлях до останнього `/`) плюс
+    // ще один сегмент. Наприклад `kinggroup.io/vacancies/design/`. У решти
+    // платформ - `null`.
+    vacancyLinkPrefix: text("vacancy_link_prefix"),
     // Скільки перевірок підряд завершилися помилкою. Після збою вакансії не
     // видаляються, тому без лічильника застарілі дані не відрізнити від свіжих.
     consecutiveFailures: integer("consecutive_failures").notNull().default(0),

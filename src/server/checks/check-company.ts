@@ -51,6 +51,7 @@ export async function checkCompany(
       id: careerSources.id,
       url: careerSources.url,
       platform: careerSources.platform,
+      vacancyLinkPrefix: careerSources.vacancyLinkPrefix,
     })
     .from(careerSources)
     .where(

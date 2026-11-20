@@ -37,6 +37,7 @@ export async function runTask(
       id: careerSources.id,
       url: careerSources.url,
       platform: careerSources.platform,
+      vacancyLinkPrefix: careerSources.vacancyLinkPrefix,
     })
     .from(careerSources)
     .where(eq(careerSources.id, claimed.sourceId));
