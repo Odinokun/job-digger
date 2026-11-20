@@ -177,7 +177,8 @@ Companies; інакше - текст самої вкладки («Усе про�
   successfully»: після збою вакансії не видаляються, і без цієї дати мертві
   виглядали б як живі (docs/ui.md, розділ 4.2). Сторінка, яку ми не читаємо
   (Unsupported), підписана кольором уваги, а поруч зі статусом - бейдж «N pages
-  not read» (задача 6.11). Дії - Check now чи Find pages - визначає сама
+  not read» (задача 6.11); позначена «лише посиланням» - звичайним кольором і без
+  бейджа (задача 6.17). Дії - Check now чи Find pages - визначає сама
   компанія (`isTrackedCompany`), а не вкладка: на Needs attention змішані обидві.
 - `company-status-chip.tsx` - статус на вкладці Tracked: OK, Has errors, Checking;
   клієнтський. Сам статус рахує `lib/companies/company-status.ts`, а Checking під
@@ -237,6 +238,10 @@ Companies; інакше - текст самої вкладки («Усе про�
   `findingNewPages` у стані опитування, спінер крутиться в самій кнопці. Коли
   пошук закінчився, `companies-board.tsx` перечитує показані рядки, як після Check all
   (`isBusy` з `lib/checks/status-poller.ts`).
+- `reference-only-checkbox.tsx` - галочка Link only у рядку сторінки Unsupported
+  (задача 6.17, docs/ui.md, розділ 4.3.1); клієнтський. Відповідь дії - рядок
+  компанії для поточної вкладки, на Needs attention буває `null`, і компанія
+  зникає зі списку, як після Edit.
 - `company-read-buttons.tsx` - Mark all as read / Mark all as unread у картці, лише
   коли в компанії є вакансії; клієнтський. Без діалогу, результат - сповіщення з
   кількістю, бо на сторінці Companies інакше нічого видимо не змінюється.

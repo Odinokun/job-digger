@@ -2,7 +2,10 @@
 
 import { runAction } from "@/app/action-result";
 import { revalidateHeaderCounts } from "@/app/components/header-counts";
-import { parseCompaniesTab } from "@/lib/companies/company-list";
+import {
+  parseCompaniesTab,
+  type CompanyListItem,
+} from "@/lib/companies/company-list";
 import { absoluteCompanyUrl, normalizeCompanyUrl } from "@/lib/companies/url";
 import type { Cursor } from "@/lib/pagination/cursor";
 import { startCheckAll } from "@/server/checks/check-all";
@@ -13,6 +16,7 @@ import { addCompany } from "@/server/companies/add";
 import { deleteCompany } from "@/server/companies/delete";
 import { findCompanyInTab, listCompanies } from "@/server/companies/list";
 import { addCareerSource, addCareerSources } from "@/server/companies/sources";
+import { setSourceReferenceOnly } from "@/server/companies/reference-only";
 import { findCompaniesWithSources } from "@/server/companies/source-duplicates";
 import { updateCompany } from "@/server/companies/update";
 import { discoverSources } from "@/server/discovery/discover";
@@ -652,4 +656,60 @@ export async function setCompanyVacanciesReadAction(
   revalidateHeaderCounts();
 
   return { ok: true, changed: outcome.value };
+}
+
+/**
+ * Позначка «лише посилання» на сторінці Unsupported (задача 6.17).
+ *
+ * Аргументи - недовірений ввід: id і власника перевіряє
+ * `setSourceReferenceOnly`, вкладку - `parseCompaniesTab`. Відповідь - рядок
+ * компанії так, як його тепер бачить вкладка: на Needs attention позначена
+ * компанія може з неї зникнути, тоді `company: null`. `revalidateHeaderCounts` -
+ * заради числа біля Companies у шапці й лічильника вкладки.
+ */
+export async function setSourceReferenceOnlyAction(
+  companyId: unknown,
+  sourceId: unknown,
+  referenceOnly: unknown,
+  tab: unknown,
+): Promise<{ ok: true; company: CompanyListItem | null } | { ok: false }> {
+  if (
+    typeof companyId !== "string" ||
+    typeof sourceId !== "string" ||
+    typeof referenceOnly !== "boolean"
+  ) {
+    return { ok: false };
+  }
+
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+    const result = await setSourceReferenceOnly(db, {
+      userId: user.id,
+      sourceId,
+      referenceOnly,
+    });
+
+    if (!result.ok) {
+      return null;
+    }
+
+    return {
+      company: await findCompanyInTab(db, {
+        userId: user.id,
+        companyId,
+        tab: parseCompaniesTab(tab),
+      }),
+    };
+  });
+
+  if (!outcome.ok || outcome.value === null) {
+    // `null` тут - відмова позначки, а не компанія, що пішла з вкладки:
+    // `findCompanyInTab` викликається лише після успіху.
+    return { ok: false };
+  }
+
+  revalidateHeaderCounts();
+
+  return { ok: true, company: outcome.value.company };
 }

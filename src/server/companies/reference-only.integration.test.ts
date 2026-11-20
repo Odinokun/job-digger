@@ -95,4 +95,17 @@ describe("setSourceReferenceOnly", () => {
     ).toEqual({ ok: false });
     expect(await readFlag(source.id)).toBe(false);
   });
+
+  it("answers no for an id that is not a uuid", async () => {
+    // Id приходить аргументом Server Action - це будь-який рядок.
+    const user = await seedSystemUser(testDb);
+
+    expect(
+      await setSourceReferenceOnly(testDb, {
+        userId: user.id,
+        sourceId: "not-a-uuid",
+        referenceOnly: true,
+      }),
+    ).toEqual({ ok: false });
+  });
 });

@@ -115,7 +115,7 @@ PR: #57
 | [6.14 Чекбокс у темній темі](6.14-dark-theme-checkbox.md)                                        | done    |
 | [6.15 Посилання на знахідки у Find pages](6.15-found-pages-links.md)                             | done    |
 | [6.16 Ліміт у вакансіях, а не в сторінках](6.16-vacancy-limit-and-quick-checks.md)               | done    |
-| [6.17 Власна сторінка вакансій як «лише посилання»](6.17-reference-only-pages.md)                | todo    |
+| [6.17 Власна сторінка вакансій як «лише посилання»](6.17-reference-only-pages.md)                | done    |
 | [6.18 Mark all as unread у вкладці Read](6.18-mark-all-unread-read-tab.md)                      | todo    |
 | [7.01 Neon: проєкт і підключення](7.01-neon-setup.md)                                            | backlog |
 | [7.02 API-маршрут обробника розкладу](7.02-schedule-handler-route.md)                            | backlog |

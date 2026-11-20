@@ -8,6 +8,7 @@
 | Шлях                   | Що в ньому                                                                  |
 | ---------------------- | --------------------------------------------------------------------------- |
 | `companies/`           | адреси й назви компаній, платформи, типи списку - [README](companies/README.md) |
+| `uuid.ts`              | `isUuid` - форма UUID для id із клієнта                                      |
 | `pagination/cursor.ts` | курсор keyset-пагінації та його розбір із недовіреного значення             |
 | `vacancies/vacancy-list.ts` | вкладки Jobs (`JOBS_TABS`, `parseJobsTab`, `belongsToJobsTab`), тип рядка `VacancyListItem`, `patchVacancy` для оптимістичних дій і `countNewVacancies` для сповіщення про нові |
 | `vacancies/vacancy-list.test.ts` | юніт-тести вкладок, `patchVacancy` і `countNewVacancies` |

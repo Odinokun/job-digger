@@ -180,6 +180,9 @@
       "markUnread": "Mark all as unread",
       "markedRead": "{count, plural, =0 {{name} has no vacancies to mark.} one {# vacancy of {name} marked as read.} other {# vacancies of {name} marked as read.}}",
       "markedUnread": "{count, plural, =0 {{name} has no vacancies to mark.} one {# vacancy of {name} marked as unread.} other {# vacancies of {name} marked as unread.}}"
+    },
+    "referenceOnly": {
+      "label": "Link only"
     }
   },
   "Errors": {

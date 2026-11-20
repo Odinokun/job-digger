@@ -61,6 +61,22 @@ test("adds a company from one address, edits it and deletes it", async ({
   await expect(companyCard(page, "Bosch Group")).toBeVisible();
   await expect(companyCard(page, "Bosch")).toHaveCount(0);
 
+  // «Лише посилання» (задача 6.17): сторінку, яку нічим прочитати, людина
+  // позначає сама, і вона перестає рахуватися непрочитаною. Клік - по підпису:
+  // сам `<input>` HeroUI ховає під намальованою галочкою.
+  const card = companyCard(page, "Bosch Group");
+  await expect(card).toContainText("1 page not read");
+  await card.getByText("Link only", { exact: true }).click();
+  await expect(card.getByRole("checkbox", { name: "Link only" })).toBeChecked();
+  await expect(card).not.toContainText("page not read");
+
+  await page.reload();
+  await expect(
+    companyCard(page, "Bosch Group").getByRole("checkbox", {
+      name: "Link only",
+    }),
+  ).toBeChecked();
+
   // Видалення - лише після підтвердження.
   await companyCard(page, "Bosch Group")
     .getByRole("button", { name: "Delete company" })

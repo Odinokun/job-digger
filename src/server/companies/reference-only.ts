@@ -1,6 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
+import { isUuid } from "../../lib/uuid.ts";
 import { careerSources, companies } from "../db/schema.ts";
 
 /**
@@ -12,7 +13,8 @@ import { careerSources, companies } from "../db/schema.ts";
  * сховати. Автоматично позначка не ставиться: застосунок не знає, чи на сайті
  * немає вакансій, яких нема в ATS.
  *
- * `{ ok: false }` - джерела немає, воно чуже або читається парсером. Причини не
+ * `{ ok: false }` - джерела немає, воно чуже, читається парсером або id не у
+ * формі UUID. Причини не
  * розрізняються: кнопка є лише в рядку Unsupported, тож відмова означає, що
  * список застарів, і відповідь на неї одна - перечитати його.
  */
@@ -24,6 +26,10 @@ export async function setSourceReferenceOnly(
     referenceOnly,
   }: { userId: string; sourceId: string; referenceOnly: boolean },
 ): Promise<{ ok: boolean }> {
+  if (!isUuid(sourceId)) {
+    return { ok: false };
+  }
+
   // Власника перевіряє підзапит: id джерела приходить із клієнта.
   const ownCompanies = db
     .select({ id: companies.id })
