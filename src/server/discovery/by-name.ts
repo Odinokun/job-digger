@@ -29,8 +29,11 @@ const BOARD_BY_SLUG: Array<[CareerPlatform, (slug: string) => string]> = [
   ["softgarden", (slug) => `https://${slug}.softgarden.io/en/vacancies`],
 ];
 
-/** Дошка, знайдена за назвою, і скільки на ній вакансій зараз. */
-export type BoardByName = BoardUrl & { vacancies: number };
+/**
+ * Дошка, знайдена за назвою, і скільки вакансій на її першій сторінці;
+ * `more` - сторінок більше (задача 6.16).
+ */
+export type BoardByName = BoardUrl & { vacancies: number; more: boolean };
 
 /** Мітки хоста, що не є назвою компанії: `www.acme.com`, `careers.acme.com`. */
 const SERVICE_LABELS = new Set([
@@ -105,9 +108,14 @@ export async function findBoardsByName(
 
   const read = await Promise.all(
     candidates.map(async (board) => {
-      const result = await readSource(board, client);
+      // Лише перша сторінка, як і пробне читання в `discover.ts`.
+      const result = await readSource(board, client, "first-page");
       return result?.ok
-        ? { ...board, vacancies: result.vacancies.length }
+        ? {
+            ...board,
+            vacancies: result.vacancies.length,
+            more: result.truncated === true,
+          }
         : null;
     }),
   );

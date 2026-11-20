@@ -139,6 +139,8 @@ describe("readHurma", () => {
       );
 
       expect(result.ok && result.vacancies).toHaveLength(4);
+      // Список не дочитано - життєвий цикл не має нічого закривати (6.16).
+      expect(result.ok && result.truncated).toBe(true);
     });
 
     expect(requested).toHaveLength(2);
@@ -161,5 +163,40 @@ describe("readHurma", () => {
     );
 
     expect(result).toEqual({ ok: false, error: { reason: "unreadable" } });
+  });
+});
+
+describe("read depth (task 6.16)", () => {
+  it("reads only the first page for a first-page check and says the list may go on", async () => {
+    const requested: string[] = [];
+
+    await withServer(pagedApi(9, requested), async (origin) => {
+      const result = await readHurma(
+        "https://acme.hurma.work/public-vacancies",
+        clientFor(origin),
+        {
+          depth: "first-page",
+        },
+      );
+
+      expect(result.ok && result.truncated).toBe(true);
+    });
+
+    expect(requested).toHaveLength(1);
+  });
+
+  it("does not mark a list read to its end as truncated", async () => {
+    const requested: string[] = [];
+
+    await withServer(pagedApi(5, requested), async (origin) => {
+      const result = await readHurma(
+        "https://acme.hurma.work/public-vacancies",
+        clientFor(origin),
+        { maxPages: 10 },
+      );
+
+      expect(result.ok && result.vacancies.length).toBeGreaterThan(0);
+      expect(result.ok && result.truncated).toBeUndefined();
+    });
   });
 });

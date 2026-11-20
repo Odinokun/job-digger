@@ -48,7 +48,13 @@ export async function runTask(
   try {
     // Момент перевірки - момент захоплення: від нього рахуються дата
     // виявлення нових вакансій і стан джерела.
-    outcome = (await checkSource(db, client, source, claimed.lockedAt)) ?? {
+    outcome = (await checkSource(
+      db,
+      client,
+      source,
+      claimed.lockedAt,
+      claimed.readDepth,
+    )) ?? {
       // Платформа без парсера: перевіряти нічого, і це не помилка - так само,
       // як у Check now.
       ok: true,

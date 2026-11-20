@@ -39,6 +39,8 @@ describe("claimTask", () => {
       runId: null,
       attempts: 1,
       lockedAt: now,
+      // Типова глибина завдання - повне читання (задача 6.16).
+      readDepth: "full",
     });
     expect(await statusOf(id)).toMatchObject({
       status: "running",

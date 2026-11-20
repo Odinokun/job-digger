@@ -52,7 +52,11 @@ export async function syncSourceVacancies(
 
     return {
       newVacancies: await upsertSeen(tx, sourceId, result.vacancies, checkedAt),
-      removedVacancies: await removeGone(tx, sourceId, checkedAt),
+      // Обірваний список (ліміт чи перша сторінка) не каже, що решта
+      // зникла: її просто не читали (задача 6.16).
+      removedVacancies: result.truncated
+        ? 0
+        : await removeGone(tx, sourceId, checkedAt),
     };
   });
 }

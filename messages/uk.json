@@ -155,6 +155,7 @@
       "found": {
         "title": "Знайдені сторінки",
         "vacancies": "{count, plural, one {# вакансія} few {# вакансії} many {# вакансій} other {# вакансії}}",
+        "vacanciesMore": "{count}+ вакансій",
         "ownPage": "Власна сторінка",
         "notSupported": "поки не підтримується",
         "readFailed": "не вдалося прочитати, спробуй пізніше",

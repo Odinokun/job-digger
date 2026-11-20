@@ -45,7 +45,7 @@ describe("discoverSources", () => {
         url: "https://jobs.lever.co/leverdemo",
         platform: "lever",
         via: "site",
-        trial: { kind: "read", vacancies: 10 },
+        trial: { kind: "read", vacancies: 10, more: false },
         ownership: null,
       },
     ]);
@@ -119,7 +119,7 @@ describe("discoverSources", () => {
         url: "https://jobs.lever.co/leverdemo",
         platform: "lever",
         via: "site",
-        trial: { kind: "read", vacancies: 10 },
+        trial: { kind: "read", vacancies: 10, more: false },
         ownership: null,
       },
     ]);
@@ -134,7 +134,7 @@ describe("discoverSources", () => {
         url: "https://jobs.ashbyhq.com/linear",
         platform: "ashby",
         via: "name",
-        trial: { kind: "read", vacancies: 33 },
+        trial: { kind: "read", vacancies: 33, more: false },
         ownership: { kind: "unknown" },
       },
     ]);
@@ -154,7 +154,7 @@ describe("discoverSources", () => {
         url: "https://jobs.ashbyhq.com/linear",
         platform: "ashby",
         via: "name",
-        trial: { kind: "read", vacancies: 33 },
+        trial: { kind: "read", vacancies: 33, more: false },
         ownership: { kind: "confirmed" },
       },
     ]);
@@ -172,7 +172,7 @@ describe("discoverSources", () => {
         url: "https://jobs.ashbyhq.com/linear",
         platform: "ashby",
         via: "name",
-        trial: { kind: "read", vacancies: 33 },
+        trial: { kind: "read", vacancies: 33, more: false },
         ownership: { kind: "other", site: "linear.app" },
       },
     ]);

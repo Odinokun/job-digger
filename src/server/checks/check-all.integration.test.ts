@@ -58,7 +58,11 @@ describe("startCheckAll", () => {
     );
     const second = await companyWith(user.id, { board: "linear" });
 
-    const result = await startCheckAll(testDb, { userId: user.id, now });
+    const result = await startCheckAll(testDb, {
+      userId: user.id,
+      depthMode: "first-page",
+      now,
+    });
 
     expect(result).toEqual({ ok: true, runId: expect.any(String), total: 3 });
     if (!result.ok) return;
@@ -84,6 +88,55 @@ describe("startCheckAll", () => {
     }
   });
 
+  it("asks every source for its first page in a manual Check all", async () => {
+    const user = await seedSystemUser(testDb);
+    await companyWith(user.id, { board: "discord" }, { board: "linear" });
+
+    await startCheckAll(testDb, {
+      userId: user.id,
+      depthMode: "first-page",
+      now,
+    });
+
+    const tasks = await testDb.select().from(checkTasks);
+    expect(tasks.map((task) => task.readDepth)).toEqual([
+      "first-page",
+      "first-page",
+    ]);
+  });
+
+  it("reads in full in an auto check only the sources not read in full for a day", async () => {
+    // Задача 6.16: повне читання в автоперевірці - раз на добу на джерело.
+    const user = await seedSystemUser(testDb);
+    const [fresh, stale, never] = await companyWith(
+      user.id,
+      { board: "fresh" },
+      { board: "stale" },
+      { board: "never" },
+    );
+    const hour = 60 * 60 * 1000;
+    await testDb
+      .update(careerSources)
+      .set({ lastFullReadAt: new Date(now.getTime() - 2 * hour) })
+      .where(eq(careerSources.id, fresh));
+    await testDb
+      .update(careerSources)
+      .set({ lastFullReadAt: new Date(now.getTime() - 25 * hour) })
+      .where(eq(careerSources.id, stale));
+
+    await startCheckAll(testDb, { userId: user.id, depthMode: "auto", now });
+
+    const depthOf = new Map(
+      (await testDb.select().from(checkTasks)).map((task) => [
+        task.sourceId,
+        task.readDepth,
+      ]),
+    );
+    expect(depthOf.get(fresh)).toBe("first-page");
+    expect(depthOf.get(stale)).toBe("full");
+    expect(depthOf.get(never)).toBe("full");
+  });
+
   it("leaves out untracked sources and companies of other users", async () => {
     // Not tracked ніколи не бере участі в Check all (docs/ui.md, розділ 4.3).
     const user = await seedSystemUser(testDb);
@@ -99,7 +152,11 @@ describe("startCheckAll", () => {
       .returning();
     await companyWith(other.id, { board: "linear" });
 
-    const result = await startCheckAll(testDb, { userId: user.id, now });
+    const result = await startCheckAll(testDb, {
+      userId: user.id,
+      depthMode: "first-page",
+      now,
+    });
 
     expect(result).toMatchObject({ ok: true, total: 1 });
     const tasks = await testDb.select().from(checkTasks);
@@ -109,9 +166,19 @@ describe("startCheckAll", () => {
   it("refuses to start while the user's check is still running", async () => {
     const user = await seedSystemUser(testDb);
     await companyWith(user.id, { board: "discord" });
-    await startCheckAll(testDb, { userId: user.id, now });
+    await startCheckAll(testDb, {
+      userId: user.id,
+      depthMode: "first-page",
+      now,
+    });
 
-    expect(await startCheckAll(testDb, { userId: user.id, now })).toEqual({
+    expect(
+      await startCheckAll(testDb, {
+        userId: user.id,
+        depthMode: "first-page",
+        now,
+      }),
+    ).toEqual({
       ok: false,
       reason: "already-running",
     });
@@ -124,8 +191,8 @@ describe("startCheckAll", () => {
     await companyWith(user.id, { board: "discord" });
 
     const results = await Promise.all([
-      startCheckAll(testDb, { userId: user.id, now }),
-      startCheckAll(testDb, { userId: user.id, now }),
+      startCheckAll(testDb, { userId: user.id, depthMode: "first-page", now }),
+      startCheckAll(testDb, { userId: user.id, depthMode: "first-page", now }),
     ]);
 
     expect(results.filter((result) => result.ok)).toHaveLength(1);
@@ -137,7 +204,13 @@ describe("startCheckAll", () => {
     const user = await seedSystemUser(testDb);
     await companyWith(user.id, { board: "acme", isTracked: false });
 
-    expect(await startCheckAll(testDb, { userId: user.id, now })).toEqual({
+    expect(
+      await startCheckAll(testDb, {
+        userId: user.id,
+        depthMode: "first-page",
+        now,
+      }),
+    ).toEqual({
       ok: false,
       reason: "nothing-to-check",
     });
@@ -147,16 +220,24 @@ describe("startCheckAll", () => {
   it("starts again once the previous check has finished", async () => {
     const user = await seedSystemUser(testDb);
     await companyWith(user.id, { board: "discord" });
-    const first = await startCheckAll(testDb, { userId: user.id, now });
+    const first = await startCheckAll(testDb, {
+      userId: user.id,
+      depthMode: "first-page",
+      now,
+    });
     if (!first.ok) throw new Error("first check did not start");
     await testDb
       .update(checkRuns)
       .set({ finishedAt: now })
       .where(eq(checkRuns.id, first.runId));
 
-    expect(await startCheckAll(testDb, { userId: user.id, now })).toMatchObject(
-      { ok: true },
-    );
+    expect(
+      await startCheckAll(testDb, {
+        userId: user.id,
+        depthMode: "first-page",
+        now,
+      }),
+    ).toMatchObject({ ok: true });
   });
 
   it("is not blocked forever by a run that stopped moving", async () => {
@@ -165,17 +246,29 @@ describe("startCheckAll", () => {
     // (docs/checks-and-queue.md, розділ 8).
     const user = await seedSystemUser(testDb);
     await companyWith(user.id, { board: "discord" });
-    await startCheckAll(testDb, { userId: user.id, now });
+    await startCheckAll(testDb, {
+      userId: user.id,
+      depthMode: "first-page",
+      now,
+    });
     const later = new Date(now.getTime() + IDLE_RUN_MS + 60_000);
 
     expect(
-      await startCheckAll(testDb, { userId: user.id, now: later }),
+      await startCheckAll(testDb, {
+        userId: user.id,
+        depthMode: "first-page",
+        now: later,
+      }),
     ).toEqual({ ok: false, reason: "already-running" });
 
     await finalizeRuns(testDb, { now: later });
 
     expect(
-      await startCheckAll(testDb, { userId: user.id, now: later }),
+      await startCheckAll(testDb, {
+        userId: user.id,
+        depthMode: "first-page",
+        now: later,
+      }),
     ).toMatchObject({ ok: true });
   });
 });

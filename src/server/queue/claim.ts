@@ -5,6 +5,7 @@ import { asc, count, eq, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { checkTasks } from "../db/schema.ts";
+import type { ReadDepth } from "../parsers/vacancies-to-check.ts";
 
 /**
  * Ключ advisory lock, яким серіалізуються захоплення. Число довільне - головне,
@@ -28,7 +29,12 @@ export type ClaimedTask = {
   attempts: number;
   lockedAt: Date;
 } & (
-  | { kind: "check"; sourceId: string }
+  | {
+      kind: "check";
+      sourceId: string;
+      /** Скільки читати (задача 6.16): Check all - перша сторінка тощо. */
+      readDepth: ReadDepth;
+    }
   /** Find new pages для компанії (задача 5.10). */
   | { kind: "discover"; companyId: string }
 );
@@ -75,13 +81,14 @@ export async function claimTask(
         companyId: checkTasks.companyId,
         runId: checkTasks.runId,
         attempts: checkTasks.attempts,
+        readDepth: checkTasks.readDepth,
       });
 
-    const { kind, sourceId, companyId, ...rest } = claimed;
+    const { kind, sourceId, companyId, readDepth, ...rest } = claimed;
     // Ціль відповідає виду - це тримає CHECK `check_tasks_target_matches_kind`,
     // але компілятор про нього не знає.
     if (kind === "check" && sourceId !== null) {
-      return { ...rest, lockedAt: now, kind, sourceId };
+      return { ...rest, lockedAt: now, kind, sourceId, readDepth };
     }
     if (kind === "discover" && companyId !== null) {
       return { ...rest, lockedAt: now, kind, companyId };

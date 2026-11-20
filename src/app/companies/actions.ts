@@ -312,8 +312,10 @@ export async function startCheckAllAction(): Promise<StartCheckAllResult> {
     const db = getDb();
     const user = await getSystemUser(db);
 
+    // Ручний Check all - лише перша сторінка кожного джерела (задача 6.16).
     const started = await startCheckAll(db, {
       userId: user.id,
+      depthMode: "first-page",
       now: new Date(),
     });
 

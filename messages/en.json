@@ -155,6 +155,7 @@
       "found": {
         "title": "Found pages",
         "vacancies": "{count, plural, one {# vacancy} other {# vacancies}}",
+        "vacanciesMore": "{count}+ vacancies",
         "ownPage": "Own page",
         "notSupported": "not supported yet",
         "readFailed": "couldn't read it, try again later",

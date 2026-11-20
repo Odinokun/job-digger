@@ -165,6 +165,39 @@ describe("syncSourceVacancies", () => {
     ]);
   });
 
+  it("closes nothing after a truncated list, only adds and updates", async () => {
+    // Список обірвано лімітом чи першою сторінкою: вакансії за ним не
+    // зникли, їх просто не читали (задача 6.16).
+    const sourceId = await greenhouseSource();
+    await sync(
+      sourceId,
+      ok(parsed("101"), parsed("102"), parsed("103")),
+      FIRST_CHECK,
+    );
+    await testDb
+      .update(vacancies)
+      .set({ isFavorite: true })
+      .where(eq(vacancies.key, "id:103"));
+
+    const counts = await sync(
+      sourceId,
+      {
+        ok: true,
+        vacancies: [parsed("101"), parsed("104")],
+        skipped: 0,
+        truncated: true,
+      },
+      SECOND_CHECK,
+    );
+
+    expect(counts).toEqual({ newVacancies: 1, removedVacancies: 0 });
+    expect(await rowsOf(sourceId)).toEqual(
+      ["id:101", "id:102", "id:103", "id:104"].map((key) =>
+        expect.objectContaining({ key, closedAt: null }),
+      ),
+    );
+  });
+
   it("deletes every vacancy when a successful check finds none", async () => {
     const sourceId = await greenhouseSource();
     await sync(sourceId, ok(parsed("101")), FIRST_CHECK);

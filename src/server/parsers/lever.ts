@@ -11,7 +11,7 @@ import {
   UNREADABLE,
   type ReadVacancy,
 } from "./shared.ts";
-import { PAGES_TO_CHECK } from "./pages-to-check.ts";
+import { pagesToRead, type ReadDepth } from "./vacancies-to-check.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 /** Регіон Lever: від нього залежить хост API (`api.lever.co` чи `api.eu.lever.co`). */
@@ -134,8 +134,9 @@ export async function readLever(
   client: HttpClient,
   {
     pageSize = LEVER_PAGE_SIZE,
-    maxPages = PAGES_TO_CHECK,
-  }: { pageSize?: number; maxPages?: number } = {},
+    depth = "full",
+    maxPages = pagesToRead({ pageSize, depth }),
+  }: { pageSize?: number; depth?: ReadDepth; maxPages?: number } = {},
 ): Promise<ParseResult> {
   const found = leverSite(sourceUrl);
 
@@ -146,6 +147,8 @@ export async function readLever(
   const base = `https://${API_HOSTS[found.region]}/v0/postings/${encodeURIComponent(found.site)}`;
   const vacancies: ParsedVacancy[] = [];
   let skipped = 0;
+  // Стає `false`, лише коли список скінчився сам, а не на ліміті.
+  let truncated = true;
 
   for (let page = 0; page < maxPages; page += 1) {
     const fetched = await fetchJson(
@@ -169,9 +172,12 @@ export async function readLever(
     // Неповна сторінка - остання. Повна може бути й останньою: тоді наступна
     // прийде порожньою. Пропущені записи теж займали місце на сторінці.
     if (parsed.vacancies.length + parsed.skipped < pageSize) {
+      truncated = false;
       break;
     }
   }
 
-  return { ok: true, vacancies, skipped };
+  return truncated
+    ? { ok: true, vacancies, skipped, truncated: true }
+    : { ok: true, vacancies, skipped };
 }

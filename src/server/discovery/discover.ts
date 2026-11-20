@@ -26,7 +26,15 @@ import { boardOwnership, type BoardOwnership } from "./ownership.ts";
  *   тимчасовим, тому окремо від `unsupported`.
  */
 export type TrialRead =
-  | { kind: "read"; vacancies: number }
+  | {
+      kind: "read";
+      vacancies: number;
+      /**
+       * Прочитано лише першу сторінку, а далі є ще (задача 6.16): у списку
+       * «10+ vacancies». Повністю дошку прочитає перша перевірка після Save.
+       */
+      more: boolean;
+    }
   | { kind: "unsupported" }
   | { kind: "failed" };
 
@@ -107,7 +115,11 @@ export async function discoverCompany(
         url: board.url,
         platform: board.platform,
         via: "name" as const,
-        trial: { kind: "read" as const, vacancies: board.vacancies },
+        trial: {
+          kind: "read" as const,
+          vacancies: board.vacancies,
+          more: board.more,
+        },
         ownership:
           company.siteUrl === null
             ? { kind: "unknown" as const }
@@ -168,19 +180,27 @@ async function discoverOnSite(
   return [...read, ...pages];
 }
 
-/** Пробне читання дошки тим самим парсером, що й перевірка. */
+/**
+ * Пробне читання дошки тим самим парсером, що й перевірка, але лише першої
+ * сторінки (задача 6.16): модалка не чекає хвилинами, а повністю дошку
+ * прочитає перша перевірка після Save.
+ */
 async function trialRead(
   board: BoardUrl,
   client: HttpClient,
 ): Promise<TrialRead> {
-  const result = await readSource(board, client);
+  const result = await readSource(board, client, "first-page");
 
   if (result === null) {
     return { kind: "unsupported" };
   }
 
   return result.ok
-    ? { kind: "read", vacancies: result.vacancies.length }
+    ? {
+        kind: "read",
+        vacancies: result.vacancies.length,
+        more: result.truncated === true,
+      }
     : { kind: "failed" };
 }
 

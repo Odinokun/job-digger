@@ -9,8 +9,10 @@
 
 | Файл                                | Роль                                                              |
 | ----------------------------------- | ----------------------------------------------------------------- |
-| `check-source.ts`                   | `checkSource(db, client, source, checkedAt)` - перевірка одного джерела і її підсумок |
-| `check-all.ts`                      | `startCheckAll(db, { userId, now })` - поставити Check all у чергу |
+| `check-source.ts`                   | `checkSource(db, client, source, checkedAt, depth)` - перевірка одного джерела і її підсумок; записує `last_full_read_at` |
+| `check-all.ts`                      | `startCheckAll(db, { userId, depthMode, now })` - поставити Check all у чергу з глибиною кожного завдання |
+| `read-depth.ts` | `taskReadDepth` - глибина завдання загальної перевірки («Глибина читання» нижче) |
+| `read-depth.test.ts` | Ручний Check all, автоперевірка до й після доби від повного читання |
 | `check-all.integration.test.ts`     | Які джерела потрапляють у запуск; одна активна перевірка          |
 | `find-new-pages.ts` | `startFindNewPages(db, { userId, now })` - поставити Find new pages у чергу; `isFindingNewPages` - чи він триває |
 | `find-new-pages.integration.test.ts` | Які компанії шукаються; один пошук на користувача, зокрема при одночасних кліках |
@@ -32,6 +34,25 @@
 | `history.integration.test.ts`       | Пʼять показників, порядок, курсор, чужі й незавершені не видно    |
 | `check-company.ts`                  | `checkCompany(db, client, { userId, companyId, checkedAt })` - Check now |
 | `check-company.integration.test.ts` | Інтеграційні тести на справжній базі й фейковому вебсервері        |
+
+## Глибина читання
+
+Рішення автора 20.11.2026 (задача 6.16): скільки сторінок читає перевірка, залежить
+від того, хто її запустив. Стосується лише платформ, що читають сторінками; решта
+завжди віддає весь список.
+
+| Перевірка | Читає |
+| --- | --- |
+| Check all вручну | лише першу сторінку |
+| Автоперевірка | повністю, якщо джерело не читалось повністю добу й довше (`career_sources.last_full_read_at`); інакше першу сторінку |
+| Check now компанії, перша перевірка після Save | повністю |
+| Retry невдалих | як завдання, що впало (`check_tasks.read_depth`) |
+| Пробне читання Find pages і Find new pages | першу сторінку, «10+ vacancies» (`src/server/discovery`) |
+
+Неповне читання нічого не закриває (`src/server/parsers`, «Ліміт вакансій і
+глибина»), тож зниклі вакансії помічаються лише на повному - щонайпізніше через
+добу. Повним читанням рахується успішне читання з `full` або список, що скінчився
+сам навіть з першої сторінки.
 
 ## Check now
 
