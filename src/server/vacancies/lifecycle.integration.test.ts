@@ -1,8 +1,9 @@
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
 import { careerSources, companies, vacancies } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
+import { untilSomeoneWaitsForLock } from "../db/testing/locks.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import type { ParsedVacancy, ParseResult } from "../parsers/types.ts";
 import { syncSourceVacancies } from "./lifecycle.ts";
@@ -50,23 +51,6 @@ function ok(...list: ParsedVacancy[]): ParseResult {
 
 function sync(sourceId: string, result: ParseResult, checkedAt: Date) {
   return syncSourceVacancies(testDb, { sourceId, result, checkedAt });
-}
-
-/**
- * Чекає, поки якийсь запит у тестовій базі стане в чергу за блокуванням -
- * так тест знає, що гонка справді сталася, а не що перевірка просто не встигла.
- */
-async function untilSomeoneWaitsForLock(): Promise<void> {
-  for (let attempt = 0; attempt < 100; attempt++) {
-    const { rows } = await testDb.execute<{ waiting: number }>(sql`
-      select count(*)::int as waiting from pg_stat_activity
-      where datname = current_database() and wait_event_type = 'Lock'
-    `);
-    if (rows[0].waiting > 0) return;
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  }
-
-  throw new Error("No query started waiting for a lock");
 }
 
 async function rowsOf(sourceId: string) {
