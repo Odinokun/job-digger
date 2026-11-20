@@ -46,7 +46,7 @@ Tracked · Not tracked
 
 Дії: Mark as Read / Mark as unread (перемикач), Favorite / Remove from Favorites, відкриття оригінальної вакансії в новій вкладці. Уже в коді - [`src/app/README.md`](../src/app/README.md#компоненти); оптимістичне оновлення з відкатом - задача 3.21.
 
-Кнопка **Mark all as read** у вкладці Unread із діалогом підтвердження - уже в коді, [`src/app/README.md`](../src/app/README.md) (`_jobs/mark-all-read.tsx`). Діалог підтвердження є лише для цієї загальної дії.
+Кнопки **Mark all as read** у вкладці Unread і **Mark all as unread** у вкладці Read (задача 6.18) з діалогом підтвердження - уже в коді, [`src/app/README.md`](../src/app/README.md) (`_jobs/mark-all.tsx`). Діалог підтвердження є лише для цих двох загальних дій.
 
 Дія стосується вакансій, виявлених до моменту підтвердження, а не лише тих 50, що встигли завантажитися в список: межа - дата виявлення на час натискання. Вакансії, знайдені під час самої дії, лишаються Unread ([розділ 7](discovery-and-parsing.md)).
 

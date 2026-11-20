@@ -6,8 +6,10 @@ import { seedSystemUser } from "../db/system-user.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import {
   findVacancy,
+  countRead,
   countUnread,
   markAllRead,
+  markAllUnread,
   setCompanyVacanciesRead,
   setVacancyFavorite,
   setVacancyRead,
@@ -403,6 +405,73 @@ describe("markAllRead", () => {
       expect(await markAllRead(testDb, { userId, asOf })).toBe(0);
     }
     expect((await stored(ids[0])).isRead).toBe(false);
+  });
+});
+
+describe("countRead", () => {
+  it("counts every vacancy of the Read tab, not just a loaded page", async () => {
+    const { userId } = await seedVacancies(
+      { isRead: true },
+      { isRead: true, isFavorite: true },
+      {},
+      // Закрита живе лише у Favorites, у вкладці Read її немає.
+      { isRead: true, closedAt: DETECTED, isFavorite: true },
+    );
+
+    expect(await countRead(testDb, { userId })).toBe(2);
+  });
+
+  it("does not count another user's vacancies", async () => {
+    await seedVacancies({ isRead: true });
+
+    expect(await countRead(testDb, { userId: await stranger() })).toBe(0);
+  });
+});
+
+describe("markAllUnread", () => {
+  // Задача 6.18: межі немає - у вкладку Read потрапляє лише прочитане самою
+  // людиною, перевірка туди нічого не додає.
+  it("returns every vacancy of the Read tab to Unread", async () => {
+    const { userId, ids } = await seedVacancies(
+      { isRead: true },
+      { isRead: true, isFavorite: true },
+      {},
+    );
+
+    expect(await markAllUnread(testDb, { userId })).toBe(2);
+    expect((await stored(ids[0])).isRead).toBe(false);
+    expect((await stored(ids[1])).isRead).toBe(false);
+  });
+
+  it("leaves a closed vacancy as it is", async () => {
+    // Закрита - лише у Favorites; Mark all as unread діє на вкладку Read.
+    const { userId, ids } = await seedVacancies({
+      isRead: true,
+      closedAt: DETECTED,
+      isFavorite: true,
+    });
+
+    expect(await markAllUnread(testDb, { userId })).toBe(0);
+    expect((await stored(ids[0])).isRead).toBe(true);
+  });
+
+  it("changes only the read mark", async () => {
+    const { userId, ids } = await seedVacancies({
+      isRead: true,
+      isFavorite: true,
+    });
+    const before = await stored(ids[0]);
+
+    await markAllUnread(testDb, { userId });
+
+    expect(await stored(ids[0])).toEqual({ ...before, isRead: false });
+  });
+
+  it("does not touch another user's vacancies", async () => {
+    const { ids } = await seedVacancies({ isRead: true });
+
+    expect(await markAllUnread(testDb, { userId: await stranger() })).toBe(0);
+    expect((await stored(ids[0])).isRead).toBe(true);
   });
 });
 

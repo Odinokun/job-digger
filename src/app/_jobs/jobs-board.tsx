@@ -26,7 +26,7 @@ import {
   setVacancyFavoriteAction,
   setVacancyReadAction,
 } from "./actions";
-import { MarkAllRead } from "./mark-all-read";
+import { MarkAll } from "./mark-all";
 import { useNewVacanciesNotice } from "./new-vacancies-notice";
 import { VacancyRow } from "./vacancy-row";
 
@@ -178,9 +178,12 @@ export function JobsBoard({
 
       <div className="mt-4">{tabs}</div>
 
-      {tab === "unread" && visible.length > 0 ? (
+      {(tab === "unread" || tab === "read") && visible.length > 0 ? (
         <div className="mt-4 flex justify-end">
-          <MarkAllRead onMarked={clearList} />
+          <MarkAll
+            target={tab === "unread" ? "read" : "unread"}
+            onMarked={clearList}
+          />
         </div>
       ) : null}
 

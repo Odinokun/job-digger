@@ -11,8 +11,10 @@ import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 import { listVacancies } from "@/server/vacancies/list";
 import {
+  countRead,
   countUnread,
   markAllRead,
+  markAllUnread,
   setVacancyFavorite,
   setVacancyRead,
 } from "@/server/vacancies/marks";
@@ -150,6 +152,47 @@ export async function markAllReadAction(
     const user = await getSystemUser(db);
 
     return markAllRead(db, { userId: user.id, asOf });
+  });
+
+  if (!outcome.ok) {
+    return { ok: false };
+  }
+
+  revalidateHeaderCounts();
+
+  return { ok: true, marked: outcome.value };
+}
+
+/**
+ * Mark all as unread, крок 1: скільки вакансій у вкладці Read - число для
+ * діалогу (задача 6.18).
+ */
+export async function countReadAction(): Promise<
+  { ok: true; count: number } | { ok: false }
+> {
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return countRead(db, { userId: user.id });
+  });
+
+  return outcome.ok ? { ok: true, count: outcome.value } : { ok: false };
+}
+
+/**
+ * Mark all as unread, крок 2: усі вакансії вкладки Read - знову в Unread.
+ * Аргументів немає, тож і недовіреного вводу теж; межі немає свідомо
+ * (`markAllUnread`).
+ */
+export async function markAllUnreadAction(): Promise<
+  { ok: true; marked: number } | { ok: false }
+> {
+  const outcome = await runAction(async () => {
+    const db = getDb();
+    const user = await getSystemUser(db);
+
+    return markAllUnread(db, { userId: user.id });
   });
 
   if (!outcome.ok) {
