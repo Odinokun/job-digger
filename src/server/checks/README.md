@@ -19,6 +19,8 @@
 | `failed-sources.ts`                 | `listFailedSources`, `retryFailedSources` - Failed Sources Drawer |
 | `failed-sources.integration.test.ts` | Які джерела в drawer, що з ними робить Retry                     |
 | `auto-check-schedule.ts` | `nextAutoCheckAt`, `isAutoCheckDue` - розклад автоперевірки (6.02); `isStartupCheckDue` - перевірка на старті (6.03); `lastGeneralCheckStartedAt` - від чого відлік |
+| `auto-check.ts` | `runAutoChecks(db, { now, isStartup })` - один прохід розкладу по всіх користувачах (6.03) |
+| `auto-check.integration.test.ts` | Інтервал, вибір користувача, правило старту, перевірка, що йде, кілька користувачів |
 | `auto-check-env.ts` | `parseAutoCheckEnabled` - змінна `AUTO_CHECK` (`off` вимикає автоперевірки) |
 | `auto-check-env.test.ts` | `on`/порожньо, `off`, хибне значення - помилка |
 | `auto-check-schedule.test.ts` | Відлік від старту, пропущений час не накопичується, змінений інтервал діє одразу |
