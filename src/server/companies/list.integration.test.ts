@@ -348,6 +348,7 @@ describe("countCompaniesByTab", () => {
     expect(await countCompaniesByTab(testDb, user.id)).toEqual({
       tracked: 2,
       notTracked: 1,
+      attention: 0,
     });
   });
 
@@ -362,7 +363,128 @@ describe("countCompaniesByTab", () => {
     expect(await countCompaniesByTab(testDb, owner.id)).toEqual({
       tracked: 0,
       notTracked: 0,
+      attention: 0,
     });
+  });
+});
+
+describe("Needs attention", () => {
+  // Задача 6.11: компанія потребує уваги, якщо в неї є сторінка, яку ми не
+  // читаємо, або відстежуване джерело падає кілька разів поспіль.
+  async function addSource(
+    companyId: string,
+    url: string,
+    values: Partial<typeof careerSources.$inferInsert> = {},
+  ) {
+    const [source] = await testDb
+      .insert(careerSources)
+      .values({
+        companyId,
+        url,
+        normalizedUrl: normalizedSourceUrl(url),
+        platform: "greenhouse",
+        ...values,
+      })
+      .returning();
+
+    return source;
+  }
+
+  async function attentionNames(userId: string) {
+    const { items } = await listCompanies(testDb, {
+      userId,
+      tab: "attention",
+    });
+
+    return items.map((company) => company.name);
+  }
+
+  it("takes a tracked company that also has a page we cannot read", async () => {
+    const user = await seedSystemUser(testDb);
+    const mozilla = await insertTracked(user.id, "Mozilla");
+    await insertTracked(user.id, "Bosch");
+    await addSource(mozilla.id, "https://mozilla.org/careers/listings", {
+      platform: "unsupported",
+      isTracked: false,
+    });
+
+    expect(await attentionNames(user.id)).toEqual(["Mozilla"]);
+  });
+
+  it("takes a not tracked company whose only page we cannot read", async () => {
+    const user = await seedSystemUser(testDb);
+    const acme = await insertUntracked(user.id, "Acme");
+    await insertUntracked(user.id, "Globex");
+    await addSource(acme.id, "https://acme.com/careers", {
+      platform: "unsupported",
+      isTracked: false,
+    });
+
+    expect(await attentionNames(user.id)).toEqual(["Acme"]);
+  });
+
+  it("takes a source that failed twice in a row, but not once", async () => {
+    // Одна невдача - мережа моргнула, смикати користувача не варто.
+    const user = await seedSystemUser(testDb);
+    const bosch = await insertTracked(user.id, "Bosch");
+    const cisco = await insertTracked(user.id, "Cisco");
+    await testDb
+      .update(careerSources)
+      .set({ consecutiveFailures: 2 })
+      .where(eq(careerSources.companyId, bosch.id));
+    await testDb
+      .update(careerSources)
+      .set({ consecutiveFailures: 1 })
+      .where(eq(careerSources.companyId, cisco.id));
+
+    expect(await attentionNames(user.id)).toEqual(["Bosch"]);
+  });
+
+  it("ignores failures of a source that is not tracked", async () => {
+    // Сторінку без відстеження не перевіряють, її давній збій - не новина.
+    const user = await seedSystemUser(testDb);
+    const acme = await insertUntracked(user.id, "Acme");
+    await addSource(acme.id, "https://boards.greenhouse.io/acme", {
+      isTracked: false,
+      consecutiveFailures: 5,
+    });
+
+    expect(await attentionNames(user.id)).toEqual([]);
+  });
+
+  it("counts companies that need attention next to both tabs", async () => {
+    const user = await seedSystemUser(testDb);
+    const mozilla = await insertTracked(user.id, "Mozilla");
+    await insertTracked(user.id, "Bosch");
+    await addSource(mozilla.id, "https://mozilla.org/careers/listings", {
+      platform: "unsupported",
+      isTracked: false,
+    });
+    // Дві сторінки, які ми не читаємо, - однаково одна компанія.
+    await addSource(mozilla.id, "https://mozilla.org/careers/listings?de", {
+      platform: "unsupported",
+      isTracked: false,
+    });
+
+    expect(await countCompaniesByTab(testDb, user.id)).toEqual({
+      tracked: 2,
+      notTracked: 0,
+      attention: 1,
+    });
+  });
+
+  it("answers null once the company no longer needs attention", async () => {
+    // Так список прибирає рядок, коли користувач видалив непрочитану сторінку.
+    const user = await seedSystemUser(testDb);
+    const bosch = await insertTracked(user.id, "Bosch");
+
+    expect(
+      await findCompanyInTab(testDb, {
+        userId: user.id,
+        companyId: bosch.id,
+        tab: "attention",
+      }),
+    ).toBeNull();
   });
 });
 

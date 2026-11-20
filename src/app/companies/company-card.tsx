@@ -1,10 +1,12 @@
-import { Card } from "@heroui/react";
+import { Card, Chip } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
-import type {
-  CompaniesTab,
-  CompanyListItem,
-  CompanySource,
+import {
+  isTrackedCompany,
+  notReadSourceCount,
+  type CompaniesTab,
+  type CompanyListItem,
+  type CompanySource,
 } from "@/lib/companies/company-list";
 import { knownAtsName } from "@/lib/companies/known-ats";
 
@@ -20,7 +22,7 @@ interface CompanyCardProps {
   company: CompanyListItem;
   /** Вкладка списку: модалка Edit повертає рядок саме для неї. */
   tab: CompaniesTab;
-  /** Підпис статусу - лише там, де він щось означає, тобто на вкладці Not tracked. */
+  /** Підпис статусу - лише там, де він щось означає, тобто в компанії Not tracked. */
   statusLabel?: string;
   noSourcesLabel: string;
   platformLabels: Record<CompanySource["platform"], string>;
@@ -89,8 +91,16 @@ export function CompanyCard({
                 className="flex flex-wrap items-baseline gap-2"
               >
                 {/* Відома ATS без парсера - її назва замість «Unsupported»
-                    (задача 5.15): так видно, які парсери потрібні. */}
-                <span className="font-medium">
+                    (задача 5.15): так видно, які парсери потрібні. Сторінку,
+                    яку ми не читаємо, підписано кольором уваги (задача 6.11):
+                    поруч може стояти зелений OK, а він про те, що читається. */}
+                <span
+                  className={
+                    source.platform === "unsupported"
+                      ? "font-medium text-counter"
+                      : "font-medium"
+                  }
+                >
                   {knownAtsName(source.url) ?? platformLabels[source.platform]}
                 </span>
                 {/* Підпис стоїть перед адресою, бо саме він розрізняє джерела
@@ -128,17 +138,23 @@ export function CompanyCard({
         {/* Ліворуч - статус на Not tracked або час останньої перевірки на
             Tracked: на Not tracked перевіряти нічого. */}
         {statusLabel !== undefined ? (
-          <span className="text-sm text-muted">{statusLabel}</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <NotReadChip sources={company.sources} />
+            <span className="text-sm text-muted">{statusLabel}</span>
+          </div>
         ) : (
           <div className="flex flex-wrap items-center gap-2">
             <CompanyStatusChip sources={company.sources} />
+            <NotReadChip sources={company.sources} />
             {company.lastCheckedAt === null ? null : (
               <LastChecked at={company.lastCheckedAt} />
             )}
           </div>
         )}
         <div className="flex items-center gap-2">
-          {tab === "tracked" ? (
+          {/* Дії визначає компанія, а не вкладка: на Needs attention змішані
+              Tracked і Not tracked (задача 6.11). */}
+          {isTrackedCompany(company.sources) ? (
             <CheckNowButton
               companyId={company.id}
               tab={tab}
@@ -172,6 +188,24 @@ export function CompanyCard({
         </div>
       </Card.Footer>
     </Card>
+  );
+}
+
+/**
+ * Скільки сторінок компанії ми не читаємо (задача 6.11). Бейдж уваги, а не Has
+ * errors: Unsupported - постійний стан, Retry його не лагодить. Суцільний, як
+ * решта бейджів статусу (src/app/README.md, «Тема Ink»).
+ */
+function NotReadChip({ sources }: { sources: CompanySource[] }) {
+  const t = useTranslations("CompaniesPage");
+  const count = notReadSourceCount(sources);
+
+  if (count === 0) return null;
+
+  return (
+    <Chip size="sm" className="bg-highlight text-highlight-foreground">
+      {t("notRead", { count })}
+    </Chip>
   );
 }
 

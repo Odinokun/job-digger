@@ -1,9 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
 import { runAction } from "@/app/action-result";
-import { revalidateUnreadCount } from "@/app/components/unread-count";
+import { revalidateHeaderCounts } from "@/app/components/header-counts";
 import { parseCompaniesTab } from "@/lib/companies/company-list";
 import { absoluteCompanyUrl, normalizeCompanyUrl } from "@/lib/companies/url";
 import type { Cursor } from "@/lib/pagination/cursor";
@@ -107,8 +105,8 @@ export async function addCompanyAction(
     return { status: "failed", result };
   }
 
-  // Рядок список вставить сам, а лічильники вкладок рендерить сервер.
-  revalidatePath("/companies");
+  // Рядок список вставить сам, а лічильники вкладок і шапки рендерить сервер.
+  revalidateHeaderCounts();
 
   return {
     status: "added",
@@ -299,7 +297,7 @@ export async function checkCompanyNowAction(
   }
 
   // Перевірка додає й прибирає вакансії - лічильник непрочитаних у шапці.
-  revalidateUnreadCount();
+  revalidateHeaderCounts();
 
   return { ok: true, company: outcome.value };
 }
@@ -421,7 +419,7 @@ export async function updateCompanyAction(
   // Рядок список оновить сам, а от лічильники вкладок рендерить сервер:
   // компанія без джерел переїжджає між Tracked і Not tracked. Прибране джерело
   // забирає свої вакансії - тож і лічильник непрочитаних у шапці.
-  revalidateUnreadCount();
+  revalidateHeaderCounts();
 
   return { status: "saved", company: result.company };
 }
@@ -459,7 +457,7 @@ export async function deleteCompanyAction(
 
   // Рядок список прибере сам, а лічильники вкладок рендерить сервер. Разом із
   // компанією зникають її вакансії - тож і лічильник непрочитаних у шапці.
-  revalidateUnreadCount();
+  revalidateHeaderCounts();
 
   return { status: "deleted" };
 }
@@ -517,9 +515,9 @@ export async function addCareerSourceAction(
     return { status: "failed", result };
   }
 
-  // Рядок список замінить сам, а лічильники вкладок рендерить сервер: із новим
-  // джерелом компанія переїжджає з Not tracked у Tracked.
-  revalidatePath("/companies");
+  // Рядок список замінить сам, а лічильники вкладок і шапки рендерить сервер:
+  // із новим джерелом компанія переїжджає з Not tracked у Tracked.
+  revalidateHeaderCounts();
 
   return { status: "added", companyId: company, company: result.company };
 }
@@ -577,9 +575,9 @@ export async function addFoundPagesAction(
     return { status: "failed", result };
   }
 
-  // Лічильники вкладок рендерить сервер: із джерелом, що читається, компанія
-  // переїжджає з Not tracked у Tracked.
-  revalidatePath("/companies");
+  // Лічильники вкладок і шапки рендерить сервер: із джерелом, що читається,
+  // компанія переїжджає з Not tracked у Tracked.
+  revalidateHeaderCounts();
 
   return { status: "added", companyId: company, company: result.company };
 }
@@ -626,7 +624,7 @@ function addedSource(
 /**
  * Mark all as read / Mark all as unread для компанії (docs/ui.md, розділ 4.2).
  * Аргументи - недовірений ввід: id перевіряє `setCompanyVacanciesRead` (UUID і
- * власник), а позначка має бути саме булевою. `revalidateUnreadCount` - заради
+ * власник), а позначка має бути саме булевою. `revalidateHeaderCounts` - заради
  * лічильника в шапці і щоб Jobs, відкритий одразу після дії, не показав список
  * до запису (задача 3.22).
  */
@@ -649,7 +647,7 @@ export async function setCompanyVacanciesReadAction(
     return { ok: false };
   }
 
-  revalidateUnreadCount();
+  revalidateHeaderCounts();
 
   return { ok: true, changed: outcome.value };
 }

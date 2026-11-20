@@ -3,6 +3,7 @@
     "ariaLabel": "Main",
     "jobs": "Jobs",
     "companies": "Companies",
+    "attentionCount": "{count, plural, one {# company needs attention} other {# companies need attention}}",
     "history": "History",
     "settings": "Settings",
     "checking": "Checking {checked}/{total}"
@@ -45,8 +46,10 @@
     "tabsLabel": "Company lists",
     "tracked": "Tracked",
     "notTracked": "Not tracked",
+    "attention": "Needs attention",
     "emptyTracked": "No company is tracked yet.",
     "emptyNotTracked": "Every company has at least one career page that is tracked.",
+    "emptyAttention": "Nothing needs attention: every career page is read and none keeps failing.",
     "noSources": "No career pages yet.",
     "checkNow": "Check now",
     "generalCheckRunning": "A general check is running",
@@ -59,6 +62,7 @@
     "lastChecked": "Last checked: {time}",
     "lastOk": "Last ok: {time}",
     "neverOk": "Never checked successfully",
+    "notRead": "{count, plural, one {# page not read} other {# pages not read}}",
     "checkStatus": {
       "ok": "OK",
       "hasErrors": "Has errors",

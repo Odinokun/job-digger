@@ -13,7 +13,7 @@ import "./globals.css";
 import { AppHeader } from "./components/app-header";
 import { CheckStatusProvider } from "./components/check-status-provider";
 import { CheckSummary } from "./components/check-summary";
-import { getUnreadCount } from "./components/unread-count";
+import { getUnreadCount } from "./components/header-counts";
 import { ThemeScript } from "./theme-script";
 
 // Тема «Ink»: Instrument Sans у тілі, Space Grotesk на заголовках і назвах

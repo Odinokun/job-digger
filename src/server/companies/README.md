@@ -11,7 +11,7 @@
 | Файл            | Що в ньому                                                       |
 | --------------- | ---------------------------------------------------------------- |
 | `duplicates.ts` | `findCompanyUrlConflict` - що вже є серед компаній користувача    |
-| `list.ts`       | `listCompanies`, `findCompanyInTab` і `countCompaniesByTab`       |
+| `list.ts`       | `listCompanies`, `findCompanyInTab` і `countCompaniesByTab`; вкладка Needs attention - `needsAttentionSubquery` (задача 6.11) |
 | `add.ts`        | `addCompany` - додавання компанії з карʼєрною сторінкою з поля і вибраними знахідками Find pages |
 | `update.ts`     | `updateCompany` - перейменування, видалення й додавання карʼєрних джерел |
 | `sources.ts`    | `addCareerSource` - джерело до вже доданої компанії; `addCareerSources` - кілька одним Save, усе або нічого (Find pages на Not tracked); `companySources` |
