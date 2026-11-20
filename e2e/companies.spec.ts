@@ -73,3 +73,20 @@ test("adds a company from one address, edits it and deletes it", async ({
 
   await expect(companyCard(page, "Bosch Group")).toHaveCount(0);
 });
+
+// Задача 6.12: підказка назви приходить на виході з поля адреси - тобто саме
+// тоді, коли фокус переходить у поле назви. Друк одразу після кліку
+// дописувався до підказки («AcmeAcme Corp»).
+test("a name typed right after the address replaces the suggestion", async ({
+  page,
+}) => {
+  await page.goto("/companies");
+  await page.getByRole("button", { name: "Add company" }).click();
+  const addDialog = page.getByRole("dialog", { name: "Add company" });
+
+  await addDialog.getByLabel("Company website").fill("https://acme.example");
+  await addDialog.getByLabel("Company name").click();
+  await page.keyboard.type("Acme Corp");
+
+  await expect(addDialog.getByLabel("Company name")).toHaveValue("Acme Corp");
+});
