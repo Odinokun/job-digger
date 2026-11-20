@@ -7,5 +7,10 @@ export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const { startQueueWorker } = await import("@/server/queue/start");
     startQueueWorker();
+
+    // Розклад лише ставить загальну перевірку в чергу - виконує її цикл вище.
+    const { startAutoChecks } =
+      await import("@/server/checks/start-auto-checks");
+    startAutoChecks();
   }
 }
