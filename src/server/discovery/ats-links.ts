@@ -12,9 +12,11 @@ import { boardKey, boardUrlOf, type BoardUrl } from "./board-url.ts";
 
 /**
  * Де на сторінці бувають адреси дошок: звичайне посилання, вбудована дошка в
- * iframe (Ashby) і скрипт вбудовування (Greenhouse - `embed/job_board/js?for=`).
+ * iframe (Ashby), скрипт вбудовування (Greenhouse - `embed/job_board/js?for=`)
+ * і адреса даних віджета (TalentAdore - `data-url`, задача 6.28). Чужі адреси
+ * відсіює `boardUrlOf`, тож загальний `data-url` нічого зайвого не додає.
  */
-const ADDRESSES = "a[href], iframe[src], script[src]";
+const ADDRESSES = "a[href], iframe[src], script[src], [data-url]";
 
 /**
  * Дошки ATS, на які веде сторінка, - по одній на дошку, у порядку появи.
@@ -31,7 +33,10 @@ export function atsLinksOnPage(html: string, pageUrl: string): BoardUrl[] {
   // групами за видом.
   $(ADDRESSES).each((_, element) => {
     const $element = $(element);
-    const address = $element.attr("href") ?? $element.attr("src");
+    const address =
+      $element.attr("href") ??
+      $element.attr("src") ??
+      $element.attr("data-url");
     const board = address === undefined ? null : boardOf(address, pageUrl);
 
     if (board !== null && !found.has(boardKey(board))) {

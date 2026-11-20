@@ -116,6 +116,12 @@ function companyNameFromPlatformUrl(
   host: string,
   platform: CareerPlatform,
 ): string {
+  // У TalentAdore в адресі лише токен компанії (`positions/rR1TqSR`), а не
+  // назва - підказувати нічого (задача 6.28).
+  if (platform === "talentadore") {
+    return "";
+  }
+
   const slug =
     platform === "cleverstaff"
       ? cleverstaffAlias(normalizedUrl, host)

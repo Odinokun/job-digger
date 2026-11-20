@@ -47,6 +47,7 @@ export default async function CompaniesPage({
     workable: t("platforms.workable"),
     bamboohr: t("platforms.bamboohr"),
     pinpoint: t("platforms.pinpoint"),
+    talentadore: t("platforms.talentadore"),
     schema_org: t("platforms.schemaOrg"),
     own_page: t("platforms.ownPage"),
     unsupported: t("platforms.unsupported"),

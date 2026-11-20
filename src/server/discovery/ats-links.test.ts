@@ -105,6 +105,21 @@ describe("atsLinksOnPage", () => {
     ]);
   });
 
+  it("finds a TalentAdore board in the data address of its widget", () => {
+    // Задача 6.28: сторінка ELK Studios не має посилань на TalentAdore -
+    // адреса JSON лише в `data-url` віджета.
+    const html = `
+      <script src="https://ats.talentadore.com/static/ta-json-careers.js"></script>
+      <div class="ta-careers" data-url="https://ats.talentadore.com/positions/rR1TqSR/json?v=2&amp;language="></div>`;
+
+    expect(atsLinksOnPage(html, PAGE)).toEqual([
+      {
+        url: "https://ats.talentadore.com/positions/rR1TqSR/json",
+        platform: "talentadore",
+      },
+    ]);
+  });
+
   it("turns Workable job links into the account's careers page", () => {
     // Задача 6.25: посилання на вакансії одного акаунта - одна знахідка.
     const html = `

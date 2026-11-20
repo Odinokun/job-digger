@@ -20,6 +20,10 @@ import { hurmaBoardUrl, hurmaCompany } from "../parsers/hurma.ts";
 import { personioBoard } from "../parsers/personio.ts";
 import { pinpointCompany } from "../parsers/pinpoint.ts";
 import { softgardenBoardUrl, softgardenSource } from "../parsers/softgarden.ts";
+import {
+  talentadoreBoard,
+  talentadoreBoardUrl,
+} from "../parsers/talentadore.ts";
 import { workableAccount } from "../parsers/workable.ts";
 import { leverSite } from "../parsers/lever.ts";
 import { peopleforceSite } from "../parsers/peopleforce.ts";
@@ -118,6 +122,13 @@ const BOARDS: Array<[CareerPlatform, BoardOf]> = [
     (link) => {
       const company = pinpointCompany(link);
       return company === null ? null : `https://${company}.pinpointhq.com/`;
+    },
+  ],
+  [
+    "talentadore",
+    (link) => {
+      const token = talentadoreBoard(link);
+      return token === null ? null : talentadoreBoardUrl(token);
     },
   ],
   [
