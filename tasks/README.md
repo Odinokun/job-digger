@@ -112,6 +112,10 @@ PR: #57
 | [6.11 Компанії, що потребують уваги](6.11-companies-needing-attention.md)                        | done    |
 | [6.12 Подвоєна назва в модалці Add](6.12-add-dialog-doubled-name.md)                             | done    |
 | [6.13 Check now під час загальної перевірки](6.13-check-now-via-queue.md)                        | done    |
+| [6.14 Чекбокс у темній темі](6.14-dark-theme-checkbox.md)                                        | done    |
+| [6.15 Посилання на знахідки у Find pages](6.15-found-pages-links.md)                             | todo    |
+| [6.16 Ліміт у вакансіях, а не в сторінках](6.16-vacancy-limit-and-quick-checks.md)               | todo    |
+| [6.17 Власна сторінка вакансій як «лише посилання»](6.17-reference-only-pages.md)                | todo    |
 | [7.01 Neon: проєкт і підключення](7.01-neon-setup.md)                                            | backlog |
 | [7.02 API-маршрут обробника розкладу](7.02-schedule-handler-route.md)                            | backlog |
 | [7.03 Самоперезапуск черги на Vercel](7.03-vercel-queue-restart.md)                              | backlog |
@@ -122,6 +126,5 @@ PR: #57
 | [7.08 Перший деплой на Vercel](7.08-first-vercel-deploy.md)                                      | backlog |
 | [7.09 Пін GitHub Actions і Dependabot](7.09-pin-actions-dependabot.md)                           | backlog |
 | [7.10 Підключати CSS лише тих компонентів HeroUI, які використовуємо](7.10-heroui-css-subset.md) | backlog |
-| [Ручні перевірки лише по перших сторінках](first-page-only-manual-checks.md)                     | analyze |
 | [Розібратися з уразливостями у npm audit](npm-audit-vulnerabilities.md)                          | backlog |
 | [Розкласти документацію за частинами застосунку](split-docs-by-app-part.md)                      | analyze |
