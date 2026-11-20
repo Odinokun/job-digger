@@ -118,6 +118,15 @@ PR: #57
 | [6.17 Власна сторінка вакансій як «лише посилання»](6.17-reference-only-pages.md)                | done    |
 | [6.18 Mark all as unread у вкладці Read](6.18-mark-all-unread-read-tab.md)                      | done    |
 | [6.19 Підсвітка рядка вакансії й автозакриття підсумку](6.19-row-hover-and-summary-timeout.md)  | done    |
+| [6.20 Дублікати вакансій між джерелами компанії](6.20-cross-source-duplicates.md) | todo |
+| [6.21 Власна кар'єрна сторінка за рецептом](6.21-own-page-recipe.md) | todo |
+| [6.22 Платформа DOU](6.22-dou-platform.md) | todo |
+| [6.23 Платформа Djinni](6.23-djinni-platform.md) | todo |
+| [6.24 Платформа Jobico](6.24-jobico-platform.md) | todo |
+| [6.25 Парсер Workable](6.25-workable-parser.md) | todo |
+| [6.26 Парсер BambooHR](6.26-bamboohr-parser.md) | todo |
+| [6.27 Парсер Pinpoint](6.27-pinpoint-parser.md) | todo |
+| [6.28 Парсер TalentAdore](6.28-talentadore-parser.md) | todo |
 | [7.01 Neon: проєкт і підключення](7.01-neon-setup.md)                                            | backlog |
 | [7.02 API-маршрут обробника розкладу](7.02-schedule-handler-route.md)                            | backlog |
 | [7.03 Самоперезапуск черги на Vercel](7.03-vercel-queue-restart.md)                              | backlog |
