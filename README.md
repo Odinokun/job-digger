@@ -103,14 +103,36 @@ cd ~/code
 git clone git@github.com:Odinokun/job-digger.git job-digger-app
 cd job-digger-app
 nvm use
-cp ../job-digger/.env .env   # далі в DATABASE_URL замінити назву бази на job_digger_app
+cp ../job-digger/.env .env   # далі див. нижче: DATABASE_URL і BACKUP_DIR
 docker exec job-digger-db createdb -U job_digger job_digger_app   # -U - POSTGRES_USER з .env
-npm run app:update            # залежності, міграції, збірка
+npm run app:update            # залежності, копія бази, міграції, збірка
 npm run db:seed               # системний користувач
 npm run app                   # http://127.0.0.1:3100
 ```
 
+У `.env` клону змінюються лише два рядки. У `DATABASE_URL` - тільки назва бази в кінці, після останнього `/`; користувач на початку адреси лишається `job_digger`:
+
+```bash
+DATABASE_URL=postgres://job_digger:<пароль>@127.0.0.1:5432/job_digger_app
+BACKUP_DIR="/абсолютний/шлях/до/наявної/теки"
+```
+
 Після кожного merge у `main` - зупинити сервер (Ctrl+C), `npm run app:update`, `npm run app`. `app:update` відмовляється працювати не на `main` і виконує `git pull --ff-only`, `npm ci`, `npm run db:migrate` (на базу з `.env` цієї теки) і `npm run build`. Нова міграція в робочій базі зʼявляється лише так - після merge, а не з гілки розробки.
+
+### Резервні копії
+
+Копія робочої бази - файл `job_digger_app-<час UTC>.dump` (формат `pg_dump -Fc`) у теці `BACKUP_DIR` (рішення автора 20.11.2026: тека в iCloud Drive, тримаємо 30 копій). Робиться сама: `npm run app` - якщо остання копія старша за добу, `npm run app:update` - завжди, перед міграціями. Не вдалася копія - сервер не стартує, а оновлення не йде далі. Зробити копію руками - `npm run db:backup`. Логіка - [`src/server/db/backup.ts`](src/server/db/backup.ts).
+
+Відновлення (перевірено 20.11.2026: копія бази розробки, відновлена в порожню базу, збіглася з оригіналом рядок у рядок, разом із журналом міграцій). Спершу зупинити `npm run app`, бо `dropdb` не видаляє базу з відкритими підключеннями:
+
+```bash
+docker exec job-digger-db dropdb -U job_digger --if-exists job_digger_app
+docker exec job-digger-db createdb -U job_digger job_digger_app
+docker exec -i job-digger-db pg_restore -U job_digger -d job_digger_app --no-owner < "<шлях до файлу .dump>"
+npm run app
+```
+
+Якщо зник увесь том Docker, спершу `docker compose up -d` у теці розробки: контейнер створить базу розробки, а `job_digger_app` - ні, тож `createdb` вище потрібен.
 
 Cookie не розділяються за портом ([RFC 6265, розділ 8.5](https://www.rfc-editor.org/rfc/rfc6265#section-8.5)), тож мова й тема на портах 3000 і 3100 спільні.
 
@@ -138,6 +160,7 @@ Cookie не розділяються за портом ([RFC 6265, розділ 
 | `npm run db:migrate`   | Застосувати нові міграції до бази                      |
 | `npm run db:seed`      | Створити системного користувача (запуск повторюваний)  |
 | `npm run db:seed:demo` | Додати демо-компанії для ручної перевірки (лише локально) |
+| `npm run db:backup`    | Резервна копія бази в `BACKUP_DIR` ([деталі](#резервні-копії)) |
 | `npm run db:check`     | Перевірити підключення до бази й показати її версію    |
 | `npm run db:psql`      | psql у контейнері бази (потрібна піднята база)         |
 
