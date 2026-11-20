@@ -47,10 +47,16 @@ test("Find pages turns a company site into tracked vacancies", async ({
   // Назву компанії пошук заповнює сам; її можна змінити.
   await expect(dialog.getByLabel("Company name")).not.toHaveValue("");
 
+  // Адресу знахідки можна відкрити, щоб перевірити її перед вибором
+  // (задача 6.15): посилання в новій вкладці, поза підписом галочки.
+  const link = found.getByRole("link", { name: BOARD.url });
+  await expect(link).toHaveAttribute("target", "_blank");
+  await expect(link).toHaveAttribute("rel", "noopener noreferrer");
+
   // Джерело для відстеження вибирає користувач. Клік - по підпису, як
   // зробила б людина: сам `<input>` HeroUI ховає під намальованою галочкою, і
   // `check()` на ньому не дістає (перехоплює `checkbox__control`).
-  await found.getByText(BOARD.url).click();
+  await found.getByText(BOARD.platform, { exact: true }).click();
   await expect(found.getByRole("checkbox")).toBeChecked();
   await dialog.getByRole("button", { name: "Save" }).click();
   await expect(dialog).toBeHidden();

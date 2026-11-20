@@ -84,12 +84,23 @@ export function FoundPages({
                       </Chip>
                     )}
                   </span>
-                  <span className="truncate font-mono text-sm text-muted">
-                    {finding.url}
-                  </span>
                 </span>
               </Checkbox.Content>
             </Checkbox>
+            {/* Адреса - поза `Checkbox.Content`: той є `<label>` із
+                `select-none`, тож усередині клік перемикав би галочку, а
+                текст не виділявся б. Тут її можна відкрити й скопіювати, щоб
+                перевірити знахідку перед вибором (задача 6.15). Відступ
+                `pl-7` = галочка `size-4` + проміжок `gap-3`, адреса стоїть
+                під назвою платформи. */}
+            <a
+              href={finding.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block pl-7 font-mono text-sm break-all text-muted underline underline-offset-2"
+            >
+              {finding.url}
+            </a>
           </li>
         ))}
       </ul>
