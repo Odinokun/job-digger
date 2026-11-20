@@ -34,14 +34,20 @@ export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
   // всередині лівого блоку (`min-w-0`), а не виштовхує їх на новий рядок.
   // Вужче - місця на два стовпці немає, і вони стають під назву. Вирівнювання
   // по верху: при назві у два рядки дії стоять навпроти її початку.
+  //
+  // Рядок під мишею трохи світлішає - фон картки `bg-surface` із плавним
+  // переходом (задача 6.19). Щоб текст лишився на одній лінії із заголовком
+  // сторінки, фон виходить у поле сторінки: `-mx-4 px-4`. Поле не менше 16px,
+  // а `hover:` у Tailwind v4 спрацьовує лише там, де є миша.
   return (
-    <div className="relative flex flex-wrap items-start justify-between gap-x-6 gap-y-1 py-3 sm:flex-nowrap">
+    <div className="relative -mx-4 flex flex-wrap items-start justify-between gap-x-6 gap-y-1 rounded-lg px-4 py-3 transition-colors hover:bg-surface sm:flex-nowrap">
       {vacancy.isRead ? null : (
         // Центр крапки - на середині першого рядка назви: py-3 + половина
-        // висоти рядка 24px. Ліворуч у полі сторінки, яке не менше 16px.
+        // висоти рядка 24px. По горизонталі - у відступі `px-4`, за 10px
+        // ліворуч від назви, тож усередині підсвіченого фону.
         <span
           aria-hidden
-          className="absolute top-5 -left-3.5 size-2 rounded-full bg-highlight"
+          className="absolute top-5 left-0.5 size-2 rounded-full bg-highlight"
         />
       )}
       <div className="flex min-w-0 flex-col gap-1">
