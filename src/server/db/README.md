@@ -17,6 +17,8 @@ Docker - [кореневий README](../../../README.md#база-даних).
 | `seed-demo.ts`        | Раннер демо-компаній (`npm run db:seed:demo`)                     |
 | `time.ts`             | `dbTimeText` - час бази з мікросекундами для курсорів і меж, `DB_TIME_PATTERN` |
 | `check-connection.ts` | Перевірка підключення (`npm run db:check`)                         |
+| `backup.ts`           | Резервна копія `pg_dump` у `BACKUP_DIR` (`npm run db:backup`, `npm run app`) |
+| `backup-plan.ts`      | Назви файлів копій, «чи вже доба», які старі копії видаляти (тримаємо 30) |
 | [`testing/`](testing/README.md) | Обвʼязка інтеграційних тестів: тестова база й чистий стан |
 
 Згенеровані міграції лежать у `drizzle/` у корені проєкту.
