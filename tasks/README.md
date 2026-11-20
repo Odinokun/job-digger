@@ -106,9 +106,9 @@ PR: #57
 | [6.05 CSV Export з опціями](6.05-csv-export.md)                                                  | todo    |
 | [6.06 CSV Import з підсумком](6.06-csv-import.md)                                                | todo    |
 | [6.07 E2E: CSV туди й назад](6.07-e2e-csv-roundtrip.md)                                          | todo    |
-| [6.08 Окремий робочий екземпляр застосунку](6.08-separate-work-instance.md)                      | todo    |
-| [6.09 Резервні копії робочої бази](6.09-database-backups.md)                                     | todo    |
-| [6.10 Автозапуск робочого екземпляра](6.10-autostart-on-login.md)                                | todo    |
+| [6.08 Окремий робочий екземпляр застосунку](6.08-separate-work-instance.md)                      | backlog |
+| [6.09 Резервні копії робочої бази](6.09-database-backups.md)                                     | backlog |
+| [6.10 Автозапуск робочого екземпляра](6.10-autostart-on-login.md)                                | backlog |
 | [6.11 Лічильник проблемних джерел у меню](6.11-failing-sources-counter.md)                       | todo    |
 | [6.12 Подвоєна назва в модалці Add](6.12-add-dialog-doubled-name.md)                             | todo    |
 | [6.13 Check now під час загальної перевірки](6.13-check-now-via-queue.md)                        | todo    |
