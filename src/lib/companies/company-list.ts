@@ -27,12 +27,16 @@ export const DISCOVERY_STATUSES = [
 
 export type DiscoveryStatus = (typeof DISCOVERY_STATUSES)[number];
 
-/** Вкладки сторінки Companies. */
-export const COMPANIES_TABS = ["tracked", "not-tracked"] as const;
+/**
+ * Вкладки сторінки Companies. `attention` - Needs attention (задача 6.11): зріз
+ * поверх двох інших, компанія з неї лишається й у своїй Tracked чи Not tracked.
+ */
+export const COMPANIES_TABS = ["tracked", "not-tracked", "attention"] as const;
 
 /**
  * Належність до вкладки в базі не зберігається: Tracked - це «є хоч одне
- * джерело, що відстежується» (docs/ui.md, розділи 4.2 і 4.3).
+ * джерело, що відстежується» (docs/ui.md, розділи 4.2 і 4.3), Needs attention -
+ * правило в `src/server/companies/list.ts` (`needsAttentionSubquery`).
  */
 export type CompaniesTab = (typeof COMPANIES_TABS)[number];
 
@@ -92,7 +96,7 @@ export type CompanyListItem = {
  * помилка в адресі має показати звичайний список, а не порожнечу чи помилку.
  */
 export function parseCompaniesTab(value: unknown): CompaniesTab {
-  return value === "not-tracked" ? "not-tracked" : "tracked";
+  return value === "not-tracked" || value === "attention" ? value : "tracked";
 }
 
 /**

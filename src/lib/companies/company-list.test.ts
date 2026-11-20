@@ -11,6 +11,10 @@ describe("parseCompaniesTab", () => {
     expect(parseCompaniesTab("not-tracked")).toBe("not-tracked");
   });
 
+  it("reads the Needs attention tab", () => {
+    expect(parseCompaniesTab("attention")).toBe("attention");
+  });
+
   it("falls back to Tracked for anything else", () => {
     // Значення приходить із адреси або з аргумента Server Action, тож тут буває
     // будь-що: вкладка за замовчуванням краща за помилку.

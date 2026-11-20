@@ -4,9 +4,12 @@ import {
   count,
   eq,
   exists,
+  gte,
   inArray,
   notExists,
+  or,
   sql,
+  type SQL,
 } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
@@ -61,6 +64,50 @@ function trackedSourceSubquery(
 }
 
 /**
+ * Скільки невдач поспіль робить джерело проблемою для Needs attention. Одна -
+ * мережа моргнула, смикати користувача не варто (задача 6.11).
+ */
+export const ATTENTION_FAILURES = 2;
+
+/**
+ * Підзапит «компанія потребує уваги» (задача 6.11): є сторінка, яку ми не
+ * читаємо (`unsupported`, у Tracked чи Not tracked), або відстежуване джерело
+ * падає `ATTENTION_FAILURES` разів поспіль і більше. Збій сторінки без
+ * відстеження не рахується - її не перевіряють.
+ */
+function needsAttentionSubquery(
+  db: NodePgDatabase,
+  companyId: typeof companies.id,
+) {
+  return db
+    .select({ one: sql`1` })
+    .from(careerSources)
+    .where(
+      and(
+        eq(careerSources.companyId, companyId),
+        or(
+          eq(careerSources.platform, "unsupported"),
+          and(
+            eq(careerSources.isTracked, true),
+            gte(careerSources.consecutiveFailures, ATTENTION_FAILURES),
+          ),
+        ),
+      ),
+    );
+}
+
+/** Умова належності компанії до вкладки. */
+function tabCondition(db: NodePgDatabase, tab: CompaniesTab): SQL {
+  if (tab === "attention") {
+    return exists(needsAttentionSubquery(db, companies.id));
+  }
+
+  const tracked = trackedSourceSubquery(db, companies.id);
+
+  return tab === "tracked" ? exists(tracked) : notExists(tracked);
+}
+
+/**
  * Порція компаній однієї вкладки для одного користувача.
  *
  * `after` - курсор останнього показаного рядка; без нього читається початок
@@ -81,7 +128,6 @@ export async function listCompanies(
     after?: Cursor | null;
   },
 ): Promise<CompanyListPage> {
-  const tracked = trackedSourceSubquery(db, companies.id);
   const cursor = parseCursor(after);
 
   const rows = await db
@@ -95,7 +141,7 @@ export async function listCompanies(
     .where(
       and(
         eq(companies.userId, userId),
-        tab === "tracked" ? exists(tracked) : notExists(tracked),
+        tabCondition(db, tab),
         // Порівняння пари, а не двох умов через OR: у PostgreSQL
         // `(a, b) > (x, y)` - це рівно «наступний рядок за тим самим
         // порядком», і воно збігається з `ORDER BY name, id`.
@@ -240,24 +286,28 @@ async function countVacancies(
 }
 
 /**
- * Скільки компаній у кожній вкладці. Обидва числа стоять у назвах вкладок
- * одночасно, тому рахуються одним запитом.
+ * Скільки компаній у кожній вкладці. Усі числа стоять у назвах вкладок
+ * одночасно, тому рахуються одним запитом. `attention` - ще й число в меню біля
+ * Companies.
  */
 export async function countCompaniesByTab(
   db: NodePgDatabase,
   userId: string,
-): Promise<{ tracked: number; notTracked: number }> {
-  const tracked = trackedSourceSubquery(db, companies.id);
-
+): Promise<{ tracked: number; notTracked: number; attention: number }> {
   const [row] = await db
     .select({
-      tracked: count(sql`case when ${exists(tracked)} then 1 end`),
-      notTracked: count(sql`case when ${notExists(tracked)} then 1 end`),
+      tracked: count(sql`case when ${tabCondition(db, "tracked")} then 1 end`),
+      notTracked: count(
+        sql`case when ${tabCondition(db, "not-tracked")} then 1 end`,
+      ),
+      attention: count(
+        sql`case when ${tabCondition(db, "attention")} then 1 end`,
+      ),
     })
     .from(companies)
     .where(eq(companies.userId, userId));
 
-  return row ?? { tracked: 0, notTracked: 0 };
+  return row ?? { tracked: 0, notTracked: 0, attention: 0 };
 }
 
 /**
@@ -276,8 +326,6 @@ export async function findCompanyInTab(
     tab,
   }: { userId: string; companyId: string; tab: CompaniesTab },
 ): Promise<CompanyListItem | null> {
-  const tracked = trackedSourceSubquery(db, companies.id);
-
   const rows = await db
     .select({
       id: companies.id,
@@ -292,7 +340,7 @@ export async function findCompanyInTab(
         // Умова на користувача тут і є перевіркою доступу: чужа компанія
         // просто не знайдеться.
         eq(companies.userId, userId),
-        tab === "tracked" ? exists(tracked) : notExists(tracked),
+        tabCondition(db, tab),
       ),
     );
 
