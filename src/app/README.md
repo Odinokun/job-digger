@@ -264,7 +264,15 @@ Companies; інакше - текст самої вкладки («Усе про�
 - `settings/theme-switcher.tsx` - Light / Dark / System на HeroUI
   `ToggleButtonGroup`; клієнтський, бо ставить атрибут теми одразу, не чекаючи
   на мережу.
-- `settings/actions.ts` - `setThemeAction`, що лише запамʼятовує вибір у cookie.
+- `settings/language-switcher.tsx` - English / Українська. Мова - у cookie, як і
+  тема (`i18n/config.ts`); переклади рендерить сервер, тож після запису -
+  `router.refresh()`. Назви мов не перекладаються: кожна написана своєю мовою.
+- `settings/auto-check-interval-picker.tsx` - інтервал автоперевірки: 3, 6, 12 чи
+  24 години (задача 6.01), оптимістично; якщо сервер не зберіг - повертає
+  попередній вибір і показує toast. Значення - у таблиці `settings`
+  ([`server/settings`](../server/settings/README.md)).
+- `settings/actions.ts` - `setThemeAction` і `setLocaleAction` (лише cookie) та
+  `setAutoCheckIntervalAction` (база; хибний інтервал відхиляється).
 
 Повні шляхи тут не для краси: файлів `actions.ts` дві штуки, і коротке імʼя вже
 двозначне. Тест [`readme-coverage.test.ts`](../readme-coverage.test.ts) зараховує

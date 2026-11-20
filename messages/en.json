@@ -213,6 +213,16 @@
       "dark": "Dark",
       "system": "System",
       "systemHint": "System follows the setting of your device."
+    },
+    "language": {
+      "title": "Language",
+      "label": "Language"
+    },
+    "autoCheck": {
+      "title": "Automatic checks",
+      "label": "Check interval",
+      "hours": "{hours} h",
+      "hint": "How often Job Digger checks all tracked companies on its own, counted from the start of the last general check."
     }
   },
   "Common": {
