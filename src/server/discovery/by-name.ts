@@ -29,6 +29,7 @@ const BOARD_BY_SLUG: Array<[CareerPlatform, (slug: string) => string]> = [
   ["softgarden", (slug) => `https://${slug}.softgarden.io/en/vacancies`],
   ["workable", (slug) => `https://apply.workable.com/${slug}/`],
   ["bamboohr", (slug) => `https://${slug}.bamboohr.com/careers`],
+  ["pinpoint", (slug) => `https://${slug}.pinpointhq.com/`],
 ];
 
 /**

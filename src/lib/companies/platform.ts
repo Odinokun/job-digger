@@ -27,6 +27,7 @@ export const CAREER_PLATFORMS = [
   "softgarden",
   "workable",
   "bamboohr",
+  "pinpoint",
   "schema_org",
   "own_page",
   "unsupported",
@@ -65,6 +66,8 @@ export type CareerPlatform = (typeof CAREER_PLATFORMS)[number];
  *   формат `{account}.workable.com` (задача 6.25).
  * - `bamboohr.com` - кар'єрна сторінка BambooHR на субдомені компанії,
  *   `{company}.bamboohr.com/careers` (задача 6.26).
+ * - `pinpointhq.com` - кар'єрна сторінка Pinpoint на субдомені компанії
+ *   (задача 6.27).
  */
 const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["greenhouse.io", "greenhouse"],
@@ -82,6 +85,7 @@ const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["career.softgarden.de", "softgarden"],
   ["workable.com", "workable"],
   ["bamboohr.com", "bamboohr"],
+  ["pinpointhq.com", "pinpoint"],
 ];
 
 /**

@@ -54,6 +54,7 @@ const PLATFORM_DOMAINS = [
   "myworkdaysite.com",
   "workable.com",
   "bamboohr.com",
+  "pinpointhq.com",
 ];
 
 /**

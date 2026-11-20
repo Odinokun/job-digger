@@ -42,7 +42,6 @@ const KNOWN_ATS: Array<[pattern: string, name: string]> = [
   [".taleo.net", "Oracle Taleo"],
   [".successfactors.com", "SAP SuccessFactors"],
   [".successfactors.eu", "SAP SuccessFactors"],
-  [".pinpointhq.com", "Pinpoint"],
   ["ats.rippling.com", "Rippling"],
   [".homerun.co", "Homerun"],
   [".factorialhr.com", "Factorial"],

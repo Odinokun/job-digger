@@ -18,6 +18,7 @@ import {
 import { greenhouseBoardToken } from "../parsers/greenhouse.ts";
 import { hurmaBoardUrl, hurmaCompany } from "../parsers/hurma.ts";
 import { personioBoard } from "../parsers/personio.ts";
+import { pinpointCompany } from "../parsers/pinpoint.ts";
 import { softgardenBoardUrl, softgardenSource } from "../parsers/softgarden.ts";
 import { workableAccount } from "../parsers/workable.ts";
 import { leverSite } from "../parsers/lever.ts";
@@ -110,6 +111,13 @@ const BOARDS: Array<[CareerPlatform, BoardOf]> = [
       return company === null
         ? null
         : `https://${company}.bamboohr.com/careers`;
+    },
+  ],
+  [
+    "pinpoint",
+    (link) => {
+      const company = pinpointCompany(link);
+      return company === null ? null : `https://${company}.pinpointhq.com/`;
     },
   ],
   [

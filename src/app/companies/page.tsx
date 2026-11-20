@@ -46,6 +46,7 @@ export default async function CompaniesPage({
     softgarden: t("platforms.softgarden"),
     workable: t("platforms.workable"),
     bamboohr: t("platforms.bamboohr"),
+    pinpoint: t("platforms.pinpoint"),
     schema_org: t("platforms.schemaOrg"),
     own_page: t("platforms.ownPage"),
     unsupported: t("platforms.unsupported"),

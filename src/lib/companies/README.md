@@ -97,6 +97,7 @@ host.endsWith("." + suffix)`. Із простим `endsWith` будь-хто м�
 | `softgarden.io`, `career.softgarden.de` | softgarden |
 | `workable.com` | workable |
 | `bamboohr.com` | bamboohr |
+| `pinpointhq.com` | pinpoint |
 | решта                                   | unsupported |
 
 Звідки взяті домени - у коментарі до `PLATFORM_DOMAINS`: у Greenhouse офіційно
@@ -169,7 +170,7 @@ host.endsWith("." + suffix)`. Із простим `endsWith` будь-хто м�
 попередження про однаковий домен втратило б сенс.
 
 **Де в адресі ATS стоїть назва - залежить від платформи.** У Greenhouse, Lever, Ashby і
-Workable це перший сегмент шляху, у Workday, PeopleForce, Breezy HR, Hurma, Personio, softgarden і BambooHR - субдомен (`bosch.wd3.myworkdayjobs.com`), у
+Workable це перший сегмент шляху, у Workday, PeopleForce, Breezy HR, Hurma, Personio, softgarden, BambooHR і Pinpoint - субдомен (`bosch.wd3.myworkdayjobs.com`), у
 CleverStaff - другий сегмент шляху без `-vacancies` (`cleverstaff.net/i/8allocate-vacancies`).
 Перелік доменів платформ лишається один - у `platform.ts`; `suggest.ts` бере в нього
 суфікс через `platformHostSuffix`, щоб відрізнити лейбли компанії від лейблів платформи.

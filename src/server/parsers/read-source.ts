@@ -15,6 +15,7 @@ import { readSoftgarden } from "./softgarden.ts";
 import { readLever } from "./lever.ts";
 import { readOwnPage } from "./own-page.ts";
 import { readPeopleForce } from "./peopleforce.ts";
+import { readPinpoint } from "./pinpoint.ts";
 import type { ParseResult } from "./types.ts";
 import type { ReadDepth } from "./vacancies-to-check.ts";
 import { readWorkable } from "./workable.ts";
@@ -50,6 +51,7 @@ const READERS: Partial<Record<CareerPlatform, Reader>> = {
   softgarden: readSoftgarden,
   workable: readWorkable,
   bamboohr: readBambooHr,
+  pinpoint: readPinpoint,
 };
 
 /**
