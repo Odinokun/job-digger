@@ -18,6 +18,9 @@
 | `check-status.integration.test.ts`  | Активний запуск, підсумок: який пропонується і що позначає `markSummaryShown` |
 | `failed-sources.ts`                 | `listFailedSources`, `retryFailedSources` - Failed Sources Drawer |
 | `failed-sources.integration.test.ts` | Які джерела в drawer, що з ними робить Retry                     |
+| `auto-check-schedule.ts` | `nextAutoCheckAt`, `isAutoCheckDue` - розклад автоперевірки (6.02); `lastGeneralCheckStartedAt` - від чого відлік |
+| `auto-check-schedule.test.ts` | Відлік від старту, пропущений час не накопичується, змінений інтервал діє одразу |
+| `auto-check-schedule.integration.test.ts` | Остання загальна перевірка - зокрема та, що йде |
 | `history.ts`                        | `listCheckRuns` - завершені перевірки для History, по 20 з курсором |
 | `history.integration.test.ts`       | Пʼять показників, порядок, курсор, чужі й незавершені не видно    |
 | `check-company.ts`                  | `checkCompany(db, client, { userId, companyId, checkedAt })` - Check now |
