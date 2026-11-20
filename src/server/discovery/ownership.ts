@@ -52,6 +52,7 @@ const PLATFORM_DOMAINS = [
   "softgarden.de",
   "myworkdayjobs.com",
   "myworkdaysite.com",
+  "workable.com",
 ];
 
 /**

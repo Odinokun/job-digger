@@ -1,0 +1,1 @@
+ALTER TYPE "public"."career_platform" ADD VALUE 'workable' BEFORE 'schema_org';

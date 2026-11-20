@@ -41,6 +41,9 @@
 | `softgarden.ts`      | softgarden: `readSoftgarden(sourceUrl, client)`, `softgardenSource`, `softgardenBoardUrl`, `parseSoftgardenBoard` (стара дошка, HTML), `parseSoftgardenFeed` (кар'єрний сайт, JSON) |
 | `softgarden.test.ts` | Юніт-тести парсера softgarden                     |
 | `softgarden.integration.test.ts` | `readSoftgarden` через фейковий вебсервер і сервер з відповіддю 400 |
+| `workable.ts`        | Workable: `readWorkable(sourceUrl, client)`, `workableAccount`, `parseWorkableWidget` |
+| `workable.test.ts`   | Юніт-тести парсера Workable                       |
+| `workable.integration.test.ts` | `readWorkable` через фейковий вебсервер: акаунт з адреси вакансії, регістр, 404 |
 | `vacancies-to-check.ts` | `VACANCIES_TO_CHECK` - спільний ліміт вакансій для парсерів, що читають сторінками; `pagesToRead` - скільки це сторінок при глибині `ReadDepth`; `parseVacanciesToCheck` |
 | `vacancies-to-check.test.ts` | Розбір змінної і скільки сторінок читати |
 | `own-page.ts`        | Власна сторінка за рецептом (задача 6.21): `findLinkGroups` (кандидати в рецепт), `parseOwnPage` і `readOwnPage` (читання за префіксом) |
@@ -473,6 +476,36 @@ BEE Partment, Crown) - фід schema.org `DataFeed` на `/jobs.feed.json` (на
 85 вакансій, Sikla з `/de/vacancies` - 29, Crown - 111, BEE Partment - 30, неіснуючі
 дошка й сайт - `not-found`; за назвою Nuvisan знаходить свою стару дошку (8
 вакансій), належність BEE Partment до `beepartment.com` підтверджена логотипом.
+
+
+## Workable
+
+Задача 6.25. **Документованого публічного API немає:** API Workable
+([workable.readme.io](https://workable.readme.io/)) потребує ключа акаунта.
+Читаємо JSON вбудованого віджета вакансій
+`https://apply.workable.com/api/v1/widget/accounts/{account}`. Формат перевірено
+справжніми запитами 20.11.2026 з User-Agent застосунку:
+
+- без ключа; об'єкт `{ name, description, jobs }`, усі вакансії одним запитом. Чи
+  обрізає віджет довгий список, не перевірено: у GoReel лише 3 вакансії;
+- невідомий акаунт - 404;
+- **регістр важить:** `goreel` - 200, `GoReel` - 404. Адреси акаунтів пишуться
+  малими, тож `workableAccount` приводить акаунт до нижнього регістру - інакше
+  посилання `apply.workable.com/GoReel/` не читалося б.
+
+**Адреси.** Акаунт - перший сегмент шляху `apply.workable.com/{account}/…` або
+піддомен старого формату `{account}.workable.com`. Коротке посилання на вакансію
+`apply.workable.com/j/{shortcode}` акаунта не містить - знахідки з нього немає.
+
+**Вакансія:** ключ - `shortcode`, посилання - `url` (`apply.workable.com/j/{shortcode}`),
+локація - `city, country` з приміткою «remote» для `telecommuting: true`. Поле
+`locations` (кілька міст із `hidden: true`) не беремо: на сторінці Workable його не
+видно.
+
+**Правила.** [Умови Workable](https://www.workable.com/terms) - договір із
+клієнтами-роботодавцями; про відвідувачів публічної кар'єрної сторінки й
+автоматичне читання там нічого (перевірено 20.11.2026). `robots.txt`
+`apply.workable.com` нічого не забороняє.
 
 ## Власна сторінка
 

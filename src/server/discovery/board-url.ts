@@ -18,6 +18,7 @@ import { greenhouseBoardToken } from "../parsers/greenhouse.ts";
 import { hurmaBoardUrl, hurmaCompany } from "../parsers/hurma.ts";
 import { personioBoard } from "../parsers/personio.ts";
 import { softgardenBoardUrl, softgardenSource } from "../parsers/softgarden.ts";
+import { workableAccount } from "../parsers/workable.ts";
 import { leverSite } from "../parsers/lever.ts";
 import { peopleforceSite } from "../parsers/peopleforce.ts";
 import { workdaySite } from "../parsers/workday.ts";
@@ -99,6 +100,17 @@ const BOARDS: Array<[CareerPlatform, BoardOf]> = [
     (link) => {
       const source = softgardenSource(link);
       return source === null ? null : softgardenBoardUrl(source);
+    },
+  ],
+  [
+    "workable",
+    (link) => {
+      // Коротке посилання на вакансію (`/j/{shortcode}`) акаунта не містить -
+      // тоді знахідки немає.
+      const account = workableAccount(link);
+      return account === null
+        ? null
+        : `https://apply.workable.com/${encodeURIComponent(account)}/`;
     },
   ],
 ];

@@ -23,7 +23,7 @@
 | `career-pages.ts` | `careerPagesOnPage` - кар'єрні сторінки свого сайту за текстом посилання, шляхом або піддоменом; `careerPagesInSitemap` - те саме з адрес sitemap, лише за шляхом; `findSiteCareerPages` - кар'єрні сторінки сайту й дошки ATS на них |
 | `career-pages.test.ts` | Юніт-тести пошуку кар'єрних сторінок |
 | `career-pages.integration.test.ts` | `findSiteCareerPages` через фейковий вебсервер (синтетичні `globex`, `initech`, `umbrella`, `acme`) і свій сервер із редиректами |
-| `by-name.ts` | `nameSlugs` - варіанти назви дошки з назви компанії й домену; `findBoardsByName` - дошки під цими назвами на Greenhouse, Lever, Ashby, PeopleForce, Breezy HR, Hurma, Personio і softgarden |
+| `by-name.ts` | `nameSlugs` - варіанти назви дошки з назви компанії й домену; `findBoardsByName` - дошки під цими назвами на Greenhouse, Lever, Ashby, PeopleForce, Breezy HR, Hurma, Personio, softgarden і Workable |
 | `by-name.test.ts` | Юніт-тести `nameSlugs` |
 | `by-name.integration.test.ts` | `findBoardsByName` через збережені справжні дошки фейкового вебсервера |
 
@@ -46,6 +46,7 @@
 | Hurma       | `https://{company}.hurma.work/public-vacancies` |
 | Personio    | `https://{company}.jobs.personio.de` (або `.com` - як у посиланні) |
 | softgarden  | стара дошка `https://{company}.softgarden.io/en/vacancies`, кар'єрний сайт `https://{company}.career.softgarden.de` |
+| Workable    | `https://apply.workable.com/{account}/`; коротке посилання на вакансію `/j/{shortcode}` акаунта не містить - знахідки немає |
 | CleverStaff | `https://cleverstaff.net/i/{alias}-vacancies`; посилання на вакансію `/i/vacancy-{id}` лишається як є - аліас компанії дізнається парсер окремим запитом |
 
 ## Відомі ATS без парсера
@@ -117,11 +118,11 @@ Unsupported. Без цього пошук мовчки пропускав би �
 варіантів не дає.
 
 Кожен варіант пробується на Greenhouse, Lever, Ashby, PeopleForce, Breezy HR,
-Hurma, Personio (лише `.de`: `.com` віддає ті самі дошки) і softgarden (лише
+Workable, Hurma, Personio (лише `.de`: `.com` віддає ті самі дошки) і softgarden (лише
 стара дошка `softgarden.io`: адреси кар'єрних сайтів рідко дорівнюють назві -
 `engineering-crown`, `jobs-gfo-online`). Перевірка «чи є дошка» - читання дошки
-тим самим парсером, що й у перевірці: на неіснуючу дошку всі вісім платформ
-відповідають 404 (перевірено 19.11.2026).
+тим самим парсером, що й у перевірці: на неіснуючу дошку всі дев'ять платформ
+відповідають 404 (перевірено 19.11.2026, Workable - 20.11.2026).
 Сторінка Hurma сайту компанії не показує (лише назву й логотип), тож дошка Hurma,
 знайдена за назвою, завжди лишається «знайдено за назвою - перевір».
 CleverStaff за назвою не пробується: аліас чутливий до регістру (`MEV` існує,

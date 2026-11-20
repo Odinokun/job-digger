@@ -11,7 +11,6 @@ describe("knownAtsName", () => {
   });
 
   it("names an ATS that keeps the company in the path of a shared host", () => {
-    expect(knownAtsName("https://apply.workable.com/acme/")).toBe("Workable");
     expect(knownAtsName("https://jobs.smartrecruiters.com/Acme")).toBe(
       "SmartRecruiters",
     );
@@ -32,7 +31,6 @@ describe("knownAtsName", () => {
     // Підпис «Powered by BambooHR» веде на сайт постачальника, а не на дошку.
     expect(knownAtsName("https://www.bamboohr.com/")).toBeNull();
     expect(knownAtsName("https://bamboohr.com/pricing")).toBeNull();
-    expect(knownAtsName("https://www.workable.com/")).toBeNull();
   });
 
   it("is not fooled by a host that merely ends with a vendor domain", () => {
@@ -41,6 +39,8 @@ describe("knownAtsName", () => {
 
   it("knows nothing about platforms that have a parser", () => {
     expect(knownAtsName("https://jobs.lever.co/acme")).toBeNull();
+    // Workable отримав парсер у задачі 6.25.
+    expect(knownAtsName("https://apply.workable.com/acme/")).toBeNull();
   });
 
   it("returns null for a company's own page and for garbage", () => {

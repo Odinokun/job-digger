@@ -16,7 +16,7 @@
 | ------------- | ------------------------------------------------------------------------------ |
 | `url.ts`      | `normalizeCompanyUrl` - адреса в порівнянній формі, `companyUrlHost` - її хост  |
 | `platform.ts` | `CAREER_PLATFORMS`, `detectPlatform` і `platformHostSuffix`                     |
-| `known-ats.ts` | `knownAtsName` - назва відомої ATS без парсера за адресою (BambooHR, Workable ...); перелік доменів і чому лише домени - у коментарях файлу |
+| `known-ats.ts` | `knownAtsName` - назва відомої ATS без парсера за адресою (BambooHR, SmartRecruiters ...); перелік доменів і чому лише домени - у коментарях файлу |
 | `suggest.ts`  | `suggestCompanyFields` - підказки для полів модалки з однієї адреси             |
 | `career-source.ts` | `prepareCareerSource` - адреса джерела, його підпис, платформа й дублікат усередині компанії |
 | `name.ts`     | `normalizeCompanyName` і `sameCompanyName` - коли дві назви це одна компанія    |
@@ -95,6 +95,7 @@ host.endsWith("." + suffix)`. Із простим `endsWith` будь-хто м�
 | `hurma.work`                            | hurma       |
 | `jobs.personio.de`, `jobs.personio.com` | personio |
 | `softgarden.io`, `career.softgarden.de` | softgarden |
+| `workable.com` | workable |
 | решта                                   | unsupported |
 
 Звідки взяті домени - у коментарі до `PLATFORM_DOMAINS`: у Greenhouse офіційно
@@ -166,8 +167,8 @@ host.endsWith("." + suffix)`. Із простим `endsWith` будь-хто м�
 адресу ATS теж не можна: тоді всі компанії з Lever виглядали б як один домен, і
 попередження про однаковий домен втратило б сенс.
 
-**Де в адресі ATS стоїть назва - залежить від платформи.** У Greenhouse, Lever і Ashby
-це перший сегмент шляху, у Workday, PeopleForce, Breezy HR, Hurma, Personio і softgarden - субдомен (`bosch.wd3.myworkdayjobs.com`), у
+**Де в адресі ATS стоїть назва - залежить від платформи.** У Greenhouse, Lever, Ashby і
+Workable це перший сегмент шляху, у Workday, PeopleForce, Breezy HR, Hurma, Personio і softgarden - субдомен (`bosch.wd3.myworkdayjobs.com`), у
 CleverStaff - другий сегмент шляху без `-vacancies` (`cleverstaff.net/i/8allocate-vacancies`).
 Перелік доменів платформ лишається один - у `platform.ts`; `suggest.ts` бере в нього
 суфікс через `platformHostSuffix`, щоб відрізнити лейбли компанії від лейблів платформи.

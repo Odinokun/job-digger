@@ -70,13 +70,27 @@ describe("atsLinksOnPage", () => {
     // Форми дошки такої платформи ми не знаємо, тож вакансії однієї дошки
     // склеюються за платформою: першим лишається перше посилання.
     const html = `
-      <a href="https://apply.workable.com/acme/j/1/">Designer</a>
-      <a href="https://apply.workable.com/acme/j/2/">Engineer</a>
+      <a href="https://jobs.smartrecruiters.com/Acme/1-designer">Designer</a>
+      <a href="https://jobs.smartrecruiters.com/Acme/2-engineer">Engineer</a>
       <a href="https://jobs.lever.co/acme">Worldwide</a>`;
 
     expect(atsLinksOnPage(html, PAGE)).toEqual([
-      { url: "https://apply.workable.com/acme/j/1/", platform: "unsupported" },
+      {
+        url: "https://jobs.smartrecruiters.com/Acme/1-designer",
+        platform: "unsupported",
+      },
       { url: "https://jobs.lever.co/acme", platform: "lever" },
+    ]);
+  });
+
+  it("turns Workable job links into the account's careers page", () => {
+    // Задача 6.25: посилання на вакансії одного акаунта - одна знахідка.
+    const html = `
+      <a href="https://apply.workable.com/acme/j/1/">Designer</a>
+      <a href="https://apply.workable.com/acme/j/2/">Engineer</a>`;
+
+    expect(atsLinksOnPage(html, PAGE)).toEqual([
+      { url: "https://apply.workable.com/acme/", platform: "workable" },
     ]);
   });
 

@@ -8,6 +8,7 @@
 - `backlog` - задача з плану.
 - `todo` - взята в найближчу роботу.
 - `done` - зроблена.
+- `cancelled` - від задачі відмовились без коду; причина - у її файлі (наприклад, правила сервісу забороняють автоматичне читання, 6.22-6.24).
 
 Статус і чекліст змінюються в тому самому PR, що й код задачі, і `done` задача отримує останнім комітом своєї гілки. Тому в `main` таблиця завжди правдива: задача стає `done` рівно тоді, коли змерджено її PR.
 
@@ -120,10 +121,10 @@ PR: #57
 | [6.19 Підсвітка рядка вакансії й автозакриття підсумку](6.19-row-hover-and-summary-timeout.md)  | done    |
 | [6.20 Дублікати вакансій між джерелами компанії](6.20-cross-source-duplicates.md) | done |
 | [6.21 Власна кар'єрна сторінка за рецептом](6.21-own-page-recipe.md) | done |
-| [6.22 Платформа DOU](6.22-dou-platform.md) | todo |
-| [6.23 Платформа Djinni](6.23-djinni-platform.md) | todo |
-| [6.24 Платформа Jobico](6.24-jobico-platform.md) | todo |
-| [6.25 Парсер Workable](6.25-workable-parser.md) | todo |
+| [6.22 Платформа DOU](6.22-dou-platform.md) | cancelled |
+| [6.23 Платформа Djinni](6.23-djinni-platform.md) | cancelled |
+| [6.24 Платформа Jobico](6.24-jobico-platform.md) | cancelled |
+| [6.25 Парсер Workable](6.25-workable-parser.md) | done |
 | [6.26 Парсер BambooHR](6.26-bamboohr-parser.md) | todo |
 | [6.27 Парсер Pinpoint](6.27-pinpoint-parser.md) | todo |
 | [6.28 Парсер TalentAdore](6.28-talentadore-parser.md) | todo |
