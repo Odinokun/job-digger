@@ -110,7 +110,7 @@ PR: #57
 | [6.09 Резервні копії робочої бази](6.09-database-backups.md)                                     | backlog |
 | [6.10 Автозапуск робочого екземпляра](6.10-autostart-on-login.md)                                | backlog |
 | [6.11 Компанії, що потребують уваги](6.11-companies-needing-attention.md)                        | done    |
-| [6.12 Подвоєна назва в модалці Add](6.12-add-dialog-doubled-name.md)                             | todo    |
+| [6.12 Подвоєна назва в модалці Add](6.12-add-dialog-doubled-name.md)                             | done    |
 | [6.13 Check now під час загальної перевірки](6.13-check-now-via-queue.md)                        | done    |
 | [7.01 Neon: проєкт і підключення](7.01-neon-setup.md)                                            | backlog |
 | [7.02 API-маршрут обробника розкладу](7.02-schedule-handler-route.md)                            | backlog |
