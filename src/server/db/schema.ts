@@ -15,6 +15,10 @@ import {
 
 import { DISCOVERY_STATUSES } from "../../lib/companies/company-list.ts";
 import { CAREER_PLATFORMS } from "../../lib/companies/platform.ts";
+import {
+  AUTO_CHECK_INTERVALS,
+  DEFAULT_AUTO_CHECK_INTERVAL,
+} from "../../lib/settings/auto-check-interval.ts";
 import type { CheckTaskError } from "../queue/task-error.ts";
 
 /**
@@ -323,6 +327,38 @@ export const checkTasks = pgTable(
     check(
       "check_tasks_target_matches_kind",
       sql`(${table.kind} = 'check' and ${table.sourceId} is not null and ${table.companyId} is null) or (${table.kind} = 'discover' and ${table.companyId} is not null and ${table.sourceId} is null)`,
+    ),
+  ],
+);
+
+/**
+ * Особисті налаштування користувача (docs/data.md, розділ 9; задача 6.01).
+ *
+ * Один рядок на користувача, і зʼявляється він лише з першим вибором: доки
+ * його немає, діють значення за замовчуванням (`server/settings`). Тема й мова
+ * сюди не входять - вони в cookie (`lib/theme.ts`, `i18n/config.ts`).
+ */
+export const settings = pgTable(
+  "settings",
+  {
+    userId: uuid("user_id")
+      .primaryKey()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // Інтервал автоперевірки в годинах - число, а не enum: з ним рахується час
+    // наступної перевірки (6.02).
+    autoCheckIntervalHours: integer("auto_check_interval_hours")
+      .notNull()
+      .default(DEFAULT_AUTO_CHECK_INTERVAL),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    // Перелік той самий, що показує Settings: інше значення база не прийме,
+    // навіть якщо запис піде поза нашим кодом.
+    check(
+      "settings_auto_check_interval_allowed",
+      sql`${table.autoCheckIntervalHours} in (${sql.raw(AUTO_CHECK_INTERVALS.join(", "))})`,
     ),
   ],
 );
