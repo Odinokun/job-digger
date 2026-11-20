@@ -9,7 +9,9 @@
  * інакше клієнт не створиться (src/server/http/README.md).
  */
 import { createHttpClient } from "./client.ts";
+import { parseRetryAttempts } from "./retry-attempts.ts";
 
 export const httpClient = createHttpClient({
   fakeOrigin: process.env.FAKE_WEB_ORIGIN || undefined,
+  retryAttempts: parseRetryAttempts(process.env.RETRY_ATTEMPTS),
 });

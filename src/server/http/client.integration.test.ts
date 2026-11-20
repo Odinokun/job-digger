@@ -451,6 +451,40 @@ describe("createHttpClient", () => {
       expect(pauses).toEqual([1000, 2000]);
     });
 
+    it("retries as many times as it is told", async () => {
+      // RETRY_ATTEMPTS=1: одна повторна спроба з першою паузою, далі - відповідь
+      // як є.
+      respond = statuses(500, 503, 200);
+      const { pauses, sleep } = recordingSleep();
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+        sleep,
+        retryAttempts: 1,
+      });
+
+      const response = await client.get("https://site.test/flaky");
+
+      expect(response.status).toBe(503);
+      expect(pauses).toEqual([1000]);
+    });
+
+    it("does not retry at all with zero retries", async () => {
+      respond = statuses(500, 200);
+      const { pauses, sleep } = recordingSleep();
+      const client = createHttpClient({
+        fakeOrigin: origin,
+        limiter: noLimits,
+        sleep,
+        retryAttempts: 0,
+      });
+
+      const response = await client.get("https://site.test/flaky");
+
+      expect(response.status).toBe(500);
+      expect(pauses).toEqual([]);
+    });
+
     it("returns the last server error when it does not go away", async () => {
       respond = statuses(500);
       const { sleep } = recordingSleep();

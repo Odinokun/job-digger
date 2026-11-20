@@ -39,6 +39,11 @@ export interface HttpClientOptions {
   /** Поточний час у мс - для `Retry-After` у форматі дати й обмежувача. */
   now?: () => number;
   /**
+   * Скільки повторів після збою: 0-2 (`RETRY_ATTEMPTS`, `retry-attempts.ts`).
+   * За замовчуванням - усі паузи з `RETRY_PAUSES_MS`, тобто два.
+   */
+  retryAttempts?: number;
+  /**
    * Розклад запитів до хостів. За замовчуванням - `MAX_PER_HOST` одночасно і
    * `GAP_PER_HOST_MS` між стартами. Один клієнт - один розклад, тож ліміт діє на
    * всі запити, що йдуть через нього.
@@ -140,8 +145,8 @@ const MAX_REDIRECTS = 5;
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 
 /**
- * Паузи перед повторами - що далі, то довші. Повторів стільки, скільки пауз:
- * два, тобто до трьох спроб на адресу.
+ * Паузи перед повторами - що далі, то довші. Повторів стільки, скільки пауз
+ * бере `retryAttempts`: за замовчуванням два, тобто до трьох спроб на адресу.
  */
 const RETRY_PAUSES_MS = [1000, 2000];
 
@@ -235,11 +240,12 @@ async function sendWithRetries(
 ): Promise<HttpResponse> {
   const sleep = options.sleep ?? realSleep;
   const now = options.now ?? Date.now;
+  const pauses = RETRY_PAUSES_MS.slice(0, options.retryAttempts);
   let attempt = 0;
   let rateLimitWaits = 0;
 
   for (;;) {
-    const pause = RETRY_PAUSES_MS[attempt];
+    const pause = pauses[attempt];
 
     try {
       // Через обмежувач іде кожна спроба, а не лише перша: інакше повтор
