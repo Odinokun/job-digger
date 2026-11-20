@@ -28,6 +28,7 @@ const BOARD_BY_SLUG: Array<[CareerPlatform, (slug: string) => string]> = [
   // назві компанії (`engineering-crown`, `jobs-gfo-online`).
   ["softgarden", (slug) => `https://${slug}.softgarden.io/en/vacancies`],
   ["workable", (slug) => `https://apply.workable.com/${slug}/`],
+  ["bamboohr", (slug) => `https://${slug}.bamboohr.com/careers`],
 ];
 
 /**

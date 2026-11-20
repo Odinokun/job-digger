@@ -16,8 +16,8 @@
 /**
  * Шаблон → назва платформи:
  *
- * - з крапкою на початку - будь-який піддомен (`.bamboohr.com` -
- *   `acme.bamboohr.com`, компанія в піддомені);
+ * - з крапкою на початку - будь-який піддомен (`.teamtailor.com` -
+ *   `acme.teamtailor.com`, компанія в піддомені);
  * - без крапки - рівно цей хост (`jobs.jobvite.com/acme`, компанія в шляху);
  * - зі шляхом - цей хост і адреса, що починається з цього шляху
  *   (`join.com/companies/`): платформа тримає дошки на тому самому хості, що й
@@ -32,7 +32,6 @@
  * постачальників; d.vinci - клієнт `impulse`).
  */
 const KNOWN_ATS: Array<[pattern: string, name: string]> = [
-  [".bamboohr.com", "BambooHR"],
   ["jobs.smartrecruiters.com", "SmartRecruiters"],
   ["careers.smartrecruiters.com", "SmartRecruiters"],
   [".recruitee.com", "Recruitee"],

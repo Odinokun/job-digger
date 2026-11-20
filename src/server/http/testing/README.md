@@ -57,6 +57,7 @@ https://boards-api.greenhouse.io/v1/boards/acme/jobs
 | `responses/spribe.hurma.work/api/v1/public-vacancies` | Hurma, дошка Spribe, `per_page=100&page=1` (6 вакансій, одна сторінка; в одної є `residence`, в одної - `work_format: "Remote"`). Без заголовка `X-Requested-With` справжній API дає 403, фейковий сервер заголовків не читає | 19.11.2026 |
 | `responses/astrafy.jobs.personio.de/xml` | XML-фід Personio, дошка Astrafy (4 вакансії з описами, 27 КБ; у двох є `additionalOffices`). Сервер віддає його як HTML, бо файл починається з `<` - парсер на тип вмісту не дивиться | 19.11.2026 |
 | `responses/dps.softgarden.io/en/vacancies` | Стара дошка softgarden, DPS: серверний HTML з усіма 19 вакансіями (сторінки малює JavaScript), локації картки - кілька `location-view-item`, ID ще й у `SG.allJobLocations` | 19.11.2026 |
+| `responses/altenar.bamboohr.com/careers/list` | JSON кар'єрної сторінки BambooHR, компанія Altenar (12 вакансій; в одної порожнє `location`, місце - в `atsLocation`) | 20.11.2026 |
 | `responses/apply.workable.com/api/v1/widget/accounts/goreel` | JSON віджета Workable, акаунт GoReel (3 вакансії з описом компанії) | 20.11.2026 |
 | `responses/kinggroup.io/vacancies/tech` | Власна сторінка kinggroup на Framer, напрямок Tech: 10 вакансій посиланнями `./design/<slug>`, назва - `h2` у посиланні (221 КБ) | 20.11.2026 |
 | `responses/www.delasport.com/careers/index` | Власна сторінка delasport (WordPress): 6 вакансій, посилання «View & Apply», назва - `h3` у картці | 20.11.2026 |
@@ -78,7 +79,7 @@ https://boards-api.greenhouse.io/v1/boards/acme/jobs
 | `responses/initech.example/` | Головна без кар'єрних посилань; `/careers` - власна сторінка без ATS | Типові адреси (5.03) |
 | `responses/umbrella.example/` | Ні посилань, ні `/careers`; `sitemap.xml` веде на `/en/jobs`, звідти посилання на Ashby `linear` | Sitemap (5.03) |
 | `responses/wayne.example/index` | Головна з посиланням Careers на дошку Greenhouse `ghost`, якої на сервері немає | Пробне читання, що не вдалося (5.06) |
-| `responses/hooli.example/` | Головна з вакансією на BambooHR і посиланням Careers; `/careers` веде ще на дві вакансії BambooHR і на сайт самої BambooHR («Powered by») | Відома ATS без парсера: одна знахідка на платформу (5.15) |
+| `responses/hooli.example/` | Головна з вакансією на Teamtailor і посиланням Careers; `/careers` веде ще на дві вакансії Teamtailor і на сайт самого Teamtailor («Powered by»). До 6.26 тут був BambooHR, але він отримав парсер | Відома ATS без парсера: одна знахідка на платформу (5.15) |
 | `responses/acme.example/index` | Головна Acme: Careers і одна вакансія ведуть на дошку Lever `leverdemo`, плюс внутрішні посилання, LinkedIn і `mailto:` | Пошук посилань на ATS (5.02), сценарій `e2e/find-pages.spec.ts` |
 
 Оновити або додати відповідь - один запит до справжньої платформи, наприклад:

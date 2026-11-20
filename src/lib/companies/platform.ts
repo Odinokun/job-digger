@@ -26,6 +26,7 @@ export const CAREER_PLATFORMS = [
   "personio",
   "softgarden",
   "workable",
+  "bamboohr",
   "schema_org",
   "own_page",
   "unsupported",
@@ -62,6 +63,8 @@ export type CareerPlatform = (typeof CAREER_PLATFORMS)[number];
  *   Решта `softgarden.de` (`static.`, сайт) - не дошки.
  * - `workable.com` - кар'єрна сторінка `apply.workable.com/{account}` і старий
  *   формат `{account}.workable.com` (задача 6.25).
+ * - `bamboohr.com` - кар'єрна сторінка BambooHR на субдомені компанії,
+ *   `{company}.bamboohr.com/careers` (задача 6.26).
  */
 const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["greenhouse.io", "greenhouse"],
@@ -78,6 +81,7 @@ const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["softgarden.io", "softgarden"],
   ["career.softgarden.de", "softgarden"],
   ["workable.com", "workable"],
+  ["bamboohr.com", "bamboohr"],
 ];
 
 /**

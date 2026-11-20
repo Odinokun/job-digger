@@ -5,6 +5,7 @@
 import type { CareerPlatform } from "../../lib/companies/platform.ts";
 import type { HttpClient } from "../http/client.ts";
 import { readAshby } from "./ashby.ts";
+import { readBambooHr } from "./bamboohr.ts";
 import { readBreezy } from "./breezy.ts";
 import { readCleverStaff } from "./cleverstaff.ts";
 import { readGreenhouse } from "./greenhouse.ts";
@@ -48,6 +49,7 @@ const READERS: Partial<Record<CareerPlatform, Reader>> = {
   personio: readPersonio,
   softgarden: readSoftgarden,
   workable: readWorkable,
+  bamboohr: readBambooHr,
 };
 
 /**

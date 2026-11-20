@@ -9,6 +9,7 @@
 import { knownAtsName } from "../../lib/companies/known-ats.ts";
 import type { CareerPlatform } from "../../lib/companies/platform.ts";
 import { ashbyBoard } from "../parsers/ashby.ts";
+import { bamboohrCompany } from "../parsers/bamboohr.ts";
 import { breezyCompany } from "../parsers/breezy.ts";
 import {
   cleverstaffBoardUrl,
@@ -100,6 +101,15 @@ const BOARDS: Array<[CareerPlatform, BoardOf]> = [
     (link) => {
       const source = softgardenSource(link);
       return source === null ? null : softgardenBoardUrl(source);
+    },
+  ],
+  [
+    "bamboohr",
+    (link) => {
+      const company = bamboohrCompany(link);
+      return company === null
+        ? null
+        : `https://${company}.bamboohr.com/careers`;
     },
   ],
   [
