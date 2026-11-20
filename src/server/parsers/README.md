@@ -41,6 +41,9 @@
 | `softgarden.ts`      | softgarden: `readSoftgarden(sourceUrl, client)`, `softgardenSource`, `softgardenBoardUrl`, `parseSoftgardenBoard` (стара дошка, HTML), `parseSoftgardenFeed` (кар'єрний сайт, JSON) |
 | `softgarden.test.ts` | Юніт-тести парсера softgarden                     |
 | `softgarden.integration.test.ts` | `readSoftgarden` через фейковий вебсервер і сервер з відповіддю 400 |
+| `bamboohr.ts`        | BambooHR: `readBambooHr(sourceUrl, client)`, `bamboohrCompany`, `parseBambooHrList` |
+| `bamboohr.test.ts`   | Юніт-тести парсера BambooHR                       |
+| `bamboohr.integration.test.ts` | `readBambooHr` через фейковий вебсервер і сервер, що переадресовує невідому компанію на сайт BambooHR |
 | `workable.ts`        | Workable: `readWorkable(sourceUrl, client)`, `workableAccount`, `parseWorkableWidget` |
 | `workable.test.ts`   | Юніт-тести парсера Workable                       |
 | `workable.integration.test.ts` | `readWorkable` через фейковий вебсервер: акаунт з адреси вакансії, регістр, 404 |
@@ -506,6 +509,33 @@ BEE Partment, Crown) - фід schema.org `DataFeed` на `/jobs.feed.json` (на
 клієнтами-роботодавцями; про відвідувачів публічної кар'єрної сторінки й
 автоматичне читання там нічого (перевірено 20.11.2026). `robots.txt`
 `apply.workable.com` нічого не забороняє.
+
+
+## BambooHR
+
+Задача 6.26. **Документований API** BambooHR потребує ключа компанії. Читаємо JSON,
+який бере сама кар'єрна сторінка й вбудований віджет:
+`https://{company}.bamboohr.com/careers/list`. Перевірено справжніми запитами
+20.11.2026 з User-Agent застосунку:
+
+- без ключа; `{ meta: { totalCount }, result: [...] }`, усі вакансії одним запитом
+  (`totalCount` дорівнює довжині `result`);
+- **невідома компанія - не 404:** BambooHR переадресовує на `www.bamboohr.com` і
+  віддає HTML зі статусом 200. Тому `readBambooHr` порівнює хост після редиректів і
+  вважає чужий хост `not-found`;
+- посилання на вакансію в JSON немає; сторінка `/careers/{id}` відповідає 200 - її й
+  беремо.
+
+**Вакансія:** ключ - `id`, назва - `jobOpeningName`, локація - `location` (місто,
+регіон), а якщо воно порожнє - `atsLocation` (в однієї вакансії Altenar там лише
+країна). `locationType` буває «0» і «1», але не задокументоване - «remote» з нього не
+вигадуємо.
+
+**Правила.** [Умови BambooHR](https://www.bamboohr.com/legal/terms-of-service) - договір
+із клієнтами, що підписуються на сервіс. Серед обмежень є «any robot, spider, other
+automated device… to monitor or copy any content from the Service»; чи стосується він
+відвідувача публічної кар'єрної сторінки - неоднозначно. `robots.txt` компанійних
+піддоменів нічого не забороняє. Автор вирішив робити (20.11.2026).
 
 ## Власна сторінка
 

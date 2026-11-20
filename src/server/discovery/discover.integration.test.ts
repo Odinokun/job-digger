@@ -69,7 +69,7 @@ describe("discoverSources", () => {
   });
 
   it("keeps a known ATS without a parser as one unreadable finding", async () => {
-    // Головна й кар'єрна сторінка Hooli ведуть на різні вакансії BambooHR: одна
+    // Головна й кар'єрна сторінка Hooli ведуть на різні вакансії Teamtailor: одна
     // знахідка на платформу, з першого посилання. Кар'єрна сторінка - не
     // власна, бо веде на ATS (задача 5.15).
     expect(
@@ -79,7 +79,7 @@ describe("discoverSources", () => {
       ),
     ).toEqual([
       {
-        url: "https://hooli.bamboohr.com/careers/56",
+        url: "https://hooli.teamtailor.com/jobs/56-product-manager",
         platform: "unsupported",
         via: "site",
         trial: { kind: "unsupported" },

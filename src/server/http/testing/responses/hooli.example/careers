@@ -7,11 +7,11 @@
   <body>
     <h1>Open positions</h1>
     <ul>
-      <li><a href="https://hooli.bamboohr.com/careers/12?source=site">Designer</a></li>
-      <li><a href="https://hooli.bamboohr.com/careers/34">Engineer</a></li>
+      <li><a href="https://hooli.teamtailor.com/jobs/12-designer?source=site">Designer</a></li>
+      <li><a href="https://hooli.teamtailor.com/jobs/34-engineer">Engineer</a></li>
     </ul>
     <footer>
-      <a href="https://www.bamboohr.com/">Powered by BambooHR</a>
+      <a href="https://www.teamtailor.com/">Powered by Teamtailor</a>
     </footer>
   </body>
 </html>

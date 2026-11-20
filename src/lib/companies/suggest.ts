@@ -50,6 +50,7 @@ const SUBDOMAIN_SLUG_PLATFORMS: CareerPlatform[] = [
   "hurma",
   "personio",
   "softgarden",
+  "bamboohr",
 ];
 
 /**

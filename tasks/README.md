@@ -125,7 +125,7 @@ PR: #57
 | [6.23 Платформа Djinni](6.23-djinni-platform.md) | cancelled |
 | [6.24 Платформа Jobico](6.24-jobico-platform.md) | cancelled |
 | [6.25 Парсер Workable](6.25-workable-parser.md) | done |
-| [6.26 Парсер BambooHR](6.26-bamboohr-parser.md) | todo |
+| [6.26 Парсер BambooHR](6.26-bamboohr-parser.md) | done |
 | [6.27 Парсер Pinpoint](6.27-pinpoint-parser.md) | todo |
 | [6.28 Парсер TalentAdore](6.28-talentadore-parser.md) | todo |
 | [7.01 Neon: проєкт і підключення](7.01-neon-setup.md)                                            | backlog |

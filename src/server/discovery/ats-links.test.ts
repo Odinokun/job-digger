@@ -59,10 +59,10 @@ describe("atsLinksOnPage", () => {
 
   it("keeps a link to a known ATS that has no parser yet", () => {
     // Читати нічим, але адреса знадобиться, коли зʼявиться парсер (задача 5.15).
-    const html = `<a href="https://acme.bamboohr.com/careers?source=site#top">Jobs</a>`;
+    const html = `<a href="https://acme.teamtailor.com/jobs?source=site#top">Jobs</a>`;
 
     expect(atsLinksOnPage(html, PAGE)).toEqual([
-      { url: "https://acme.bamboohr.com/careers", platform: "unsupported" },
+      { url: "https://acme.teamtailor.com/jobs", platform: "unsupported" },
     ]);
   });
 
@@ -83,6 +83,17 @@ describe("atsLinksOnPage", () => {
     ]);
   });
 
+  it("turns BambooHR job links into the company's careers page", () => {
+    // Задача 6.26.
+    const html = `
+      <a href="https://acme.bamboohr.com/careers/12?source=site">Designer</a>
+      <a href="https://acme.bamboohr.com/careers/34">Engineer</a>`;
+
+    expect(atsLinksOnPage(html, PAGE)).toEqual([
+      { url: "https://acme.bamboohr.com/careers", platform: "bamboohr" },
+    ]);
+  });
+
   it("turns Workable job links into the account's careers page", () => {
     // Задача 6.25: посилання на вакансії одного акаунта - одна знахідка.
     const html = `
@@ -95,7 +106,7 @@ describe("atsLinksOnPage", () => {
   });
 
   it("ignores the website of an ATS vendor", () => {
-    const html = `<footer><a href="https://www.bamboohr.com/">Powered by BambooHR</a></footer>`;
+    const html = `<footer><a href="https://www.teamtailor.com/">Powered by Teamtailor</a></footer>`;
 
     expect(atsLinksOnPage(html, PAGE)).toEqual([]);
   });
