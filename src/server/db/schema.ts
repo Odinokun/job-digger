@@ -135,6 +135,10 @@ export const careerSources = pgTable(
     consecutiveFailures: integer("consecutive_failures").notNull().default(0),
     // Час останньої успішної перевірки: показ «Last ok: 12 days ago» - задача 4.09.
     lastSuccessAt: timestamp("last_success_at", { withTimezone: true }),
+    // Останнє успішне повне читання - усі сторінки до ліміту чи список, що
+    // скінчився сам. Автоперевірка читає повністю не частіше ніж раз на добу,
+    // решта - лише першу сторінку (задача 6.16). `null` - повністю ще не читали.
+    lastFullReadAt: timestamp("last_full_read_at", { withTimezone: true }),
     // Час останньої перевірки, успішної чи ні: «Last checked: 5 min ago» у
     // картці компанії (docs/ui.md, розділ 4.2). `null` - ще не перевірялося.
     lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
@@ -259,6 +263,16 @@ export const checkTaskPriority = pgEnum("check_task_priority", [
  */
 export const checkTaskKind = pgEnum("check_task_kind", ["check", "discover"]);
 
+/**
+ * Скільки читає завдання перевірки: лише першу сторінку чи до ліміту
+ * (`src/server/parsers/vacancies-to-check.ts`, задача 6.16). Зберігається в
+ * завданні, щоб Retry повторив саме те, що не вдалося.
+ */
+export const checkTaskReadDepth = pgEnum("check_task_read_depth", [
+  "first-page",
+  "full",
+]);
+
 export const checkTaskStatus = pgEnum("check_task_status", [
   "queued",
   "running",
@@ -292,6 +306,9 @@ export const checkTasks = pgTable(
       onDelete: "cascade",
     }),
     priority: checkTaskPriority("priority").notNull().default("background"),
+    // У `discover` не використовується. Типово `full` - так читали всі
+    // завдання до 6.16.
+    readDepth: checkTaskReadDepth("read_depth").notNull().default("full"),
     status: checkTaskStatus("status").notNull().default("queued"),
     // Скільки разів завдання захоплювали: обмежує повтори після збою.
     attempts: integer("attempts").notNull().default(0),

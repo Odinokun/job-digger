@@ -243,6 +243,29 @@ describe("retryFailedSources", () => {
     ]);
   });
 
+  it("reads as much as the check that failed", async () => {
+    // Задача 6.16: Retry після ручного Check all - перша сторінка, після
+    // повного читання - повністю.
+    const [quick, full] = await failedCheck("quick", "full");
+    await testDb
+      .update(checkTasks)
+      .set({ readDepth: "first-page" })
+      .where(eq(checkTasks.sourceId, quick));
+    const user = await seedSystemUser(testDb);
+
+    await retryFailedSources(testDb, {
+      userId: user.id,
+      sourceIds: "all",
+      now: retryAt,
+    });
+
+    const depthOf = new Map(
+      (await retryTasks()).map((row) => [row.sourceId, row.readDepth]),
+    );
+    expect(depthOf.get(quick)).toBe("first-page");
+    expect(depthOf.get(full)).toBe("full");
+  });
+
   it("retries every failed source with Retry all failed", async () => {
     const ids = await failedCheck("ghost", "phantom");
     const user = await seedSystemUser(testDb);

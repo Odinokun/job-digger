@@ -51,7 +51,8 @@ export async function runAutoChecks(
         (isStartup && isStartupCheckDue({ lastStartedAt, now }));
 
       if (due) {
-        await startCheckAll(db, { userId, now });
+        // Повністю - лише джерела, не читані повністю добу (задача 6.16).
+        await startCheckAll(db, { userId, depthMode: "auto", now });
       }
     } catch (error) {
       // Лог англійською - технічне повідомлення.

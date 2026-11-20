@@ -90,6 +90,28 @@ async function sourceRow(id: string) {
   return row;
 }
 
+/**
+ * Джерело PeopleForce Webellian: у збереженій сторінці є `rel="next"`, тож
+ * список за першою сторінкою не скінчився.
+ */
+async function webellianSource() {
+  const greenhouse = await greenhouseSource(testDb, "discord");
+  const [{ companyId }] = await testDb
+    .select({ companyId: careerSources.companyId })
+    .from(careerSources)
+    .where(eq(careerSources.id, greenhouse));
+  const [source] = await testDb
+    .insert(careerSources)
+    .values({
+      companyId,
+      url: "https://webellian.peopleforce.io/careers",
+      normalizedUrl: "webellian.peopleforce.io/careers",
+      platform: "peopleforce",
+    })
+    .returning();
+  return source;
+}
+
 describe("runTask", () => {
   it("checks the source and records the result in the task and the run", async () => {
     const sourceId = await greenhouseSource(testDb, "discord");
@@ -118,6 +140,80 @@ describe("runTask", () => {
       .where(eq(vacancies.sourceId, sourceId))
       .limit(1);
     expect(vacancy.firstDetectedAt).toEqual(claimedAt);
+  });
+
+  it("remembers a full read of the source", async () => {
+    const sourceId = await greenhouseSource(testDb, "discord");
+    const { claimed } = await claimedTaskOf(sourceId);
+
+    await run(claimed);
+
+    expect(await sourceRow(sourceId)).toMatchObject({
+      lastFullReadAt: claimedAt,
+    });
+  });
+
+  it("counts a first-page read of a list that ended by itself as a full read", async () => {
+    // Greenhouse віддає все одним запитом: перша сторінка і є весь список.
+    const sourceId = await greenhouseSource(testDb, "discord");
+    const runId = await activeRun(testDb, { sourcesTotal: 1 });
+    await task(testDb, { sourceId, runId, readDepth: "first-page" });
+    const claimed = await claimTask(testDb, { now: claimedAt, maxRunning: 5 });
+    if (claimed === null) throw new Error("nothing to claim");
+
+    await run(claimed);
+
+    expect(await sourceRow(sourceId)).toMatchObject({
+      lastFullReadAt: claimedAt,
+    });
+  });
+
+  it("reads only the first page for a first-page task and closes nothing", async () => {
+    // Задача 6.16: PeopleForce по 10 на сторінку, у Webellian сторінок більше.
+    const source = await webellianSource();
+    const earlier = minutesAfter(claimedAt, -60);
+    await testDb.insert(vacancies).values({
+      sourceId: source.id,
+      key: "id:beyond-the-first-page",
+      title: "Seen on a later page",
+      url: "https://webellian.peopleforce.io/careers/v/1",
+      firstDetectedAt: earlier,
+      lastSeenAt: earlier,
+    });
+    const runId = await activeRun(testDb, { sourcesTotal: 1 });
+    await task(testDb, { sourceId: source.id, runId, readDepth: "first-page" });
+    const claimed = await claimTask(testDb, { now: claimedAt, maxRunning: 5 });
+    if (claimed === null) throw new Error("nothing to claim");
+
+    await run(claimed);
+
+    const rows = await testDb
+      .select()
+      .from(vacancies)
+      .where(eq(vacancies.sourceId, source.id));
+    // Одна сторінка - 10 вакансій, і та, що була до перевірки, лишилась.
+    expect(rows).toHaveLength(11);
+    expect(await sourceRow(source.id)).toMatchObject({
+      lastSuccessAt: claimedAt,
+      lastFullReadAt: null,
+    });
+  });
+
+  it("counts a full task as a full read even when the list hit the limit", async () => {
+    // Пара до попереднього тесту: те саме джерело, але завдання `full`.
+    // Фейковий сервер на кожну `?page=N` віддає ту саму сторінку з
+    // `rel="next"`, тож читання впирається в ліміт.
+    const source = await webellianSource();
+    const runId = await activeRun(testDb, { sourcesTotal: 1 });
+    await task(testDb, { sourceId: source.id, runId, readDepth: "full" });
+    const claimed = await claimTask(testDb, { now: claimedAt, maxRunning: 5 });
+    if (claimed === null) throw new Error("nothing to claim");
+
+    await run(claimed);
+
+    expect(await sourceRow(source.id)).toMatchObject({
+      lastFullReadAt: claimedAt,
+    });
   });
 
   it("records a failed source as a failed task", async () => {

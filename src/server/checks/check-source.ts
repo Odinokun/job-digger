@@ -11,6 +11,7 @@ import { careerSources } from "../db/schema.ts";
 import type { HttpClient } from "../http/client.ts";
 import { readSource } from "../parsers/read-source.ts";
 import type { ParserError } from "../parsers/types.ts";
+import type { ReadDepth } from "../parsers/vacancies-to-check.ts";
 import { syncSourceVacancies } from "../vacancies/lifecycle.ts";
 
 export interface SourceToCheck {
@@ -33,14 +34,19 @@ export type SourceCheckOutcome =
 /**
  * Перевіряє джерело. `null` - для платформи ще немає парсера: таке джерело не
  * перевіряється взагалі, тож і стан перевірки в нього не змінюється.
+ *
+ * `depth` - скільки читати (задача 6.16). Повним читанням (`last_full_read_at`)
+ * рахується успішне читання з `full` або список, що скінчився сам, навіть із
+ * першої сторінки: у Greenhouse перша сторінка і є весь список.
  */
 export async function checkSource(
   db: NodePgDatabase,
   client: HttpClient,
   source: SourceToCheck,
   checkedAt: Date,
+  depth: ReadDepth = "full",
 ): Promise<SourceCheckOutcome | null> {
-  const result = await readSource(source, client);
+  const result = await readSource(source, client, depth);
 
   if (result === null) {
     return null;
@@ -60,6 +66,9 @@ export async function checkSource(
             lastCheckedAt: checkedAt,
             lastSuccessAt: checkedAt,
             consecutiveFailures: 0,
+            ...(depth === "full" || !result.truncated
+              ? { lastFullReadAt: checkedAt }
+              : {}),
           }
         : {
             lastCheckedAt: checkedAt,

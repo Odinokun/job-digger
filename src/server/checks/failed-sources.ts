@@ -11,6 +11,7 @@ import type {
   FailedSourcesList,
 } from "../../lib/checks/failed-sources.ts";
 import { checkRuns, checkTasks } from "../db/schema.ts";
+import type { ReadDepth } from "../parsers/vacancies-to-check.ts";
 import type { CheckTaskError } from "../queue/task-error.ts";
 
 interface FailedRow extends Record<string, unknown> {
@@ -23,12 +24,30 @@ interface FailedRow extends Record<string, unknown> {
   retry_status: "queued" | "running" | "succeeded" | "failed" | null;
   /** Помилка найсвіжішого невдалого Retry, якщо він був. */
   retry_error: CheckTaskError | null;
+  /** Скільки читало завдання, що впало, - Retry читає стільки ж (6.16). */
+  read_depth: ReadDepth;
+}
+
+/** Невдале джерело разом із глибиною, яку повторить Retry. */
+interface FailedWithDepth {
+  item: FailedSource;
+  readDepth: ReadDepth;
 }
 
 export async function listFailedSources(
   db: NodePgDatabase,
   { userId }: { userId: string },
 ): Promise<FailedSourcesList> {
+  const { items, canRetry } = await loadFailedSources(db, { userId });
+
+  // Глибина - внутрішня справа Retry, у drawer вона не їде.
+  return { items: items.map(({ item }) => item), canRetry };
+}
+
+async function loadFailedSources(
+  db: NodePgDatabase,
+  { userId }: { userId: string },
+): Promise<{ items: FailedWithDepth[]; canRetry: boolean }> {
   const [rows, active] = await Promise.all([
     db.execute<FailedRow>(sql`
       with last_run as (
@@ -43,6 +62,7 @@ export async function listFailedSources(
         s.url,
         s.label,
         t.error as run_error,
+        t.read_depth,
         latest.status as retry_status,
         latest_failed.error as retry_error
       from check_tasks t
@@ -73,23 +93,26 @@ export async function listFailedSources(
       .where(and(eq(checkRuns.userId, userId), isNull(checkRuns.finishedAt))),
   ]);
 
-  const items: FailedSource[] = [];
+  const items: FailedWithDepth[] = [];
   for (const row of rows.rows) {
     // Retry вдався - джерело зникає з drawer.
     if (row.retry_status === "succeeded") continue;
 
     const error = row.retry_error ?? row.run_error;
     items.push({
-      sourceId: row.source_id,
-      companyName: row.company_name,
-      url: row.url,
-      label: row.label,
-      // Без приведення: нова причина в `CheckTaskError` без пари в
-      // `FailureReason` ламає типи тут.
-      reason: error.reason,
-      httpStatus: error.reason === "bad-status" ? error.status : null,
-      isRetrying:
-        row.retry_status === "queued" || row.retry_status === "running",
+      item: {
+        sourceId: row.source_id,
+        companyName: row.company_name,
+        url: row.url,
+        label: row.label,
+        // Без приведення: нова причина в `CheckTaskError` без пари в
+        // `FailureReason` ламає типи тут.
+        reason: error.reason,
+        httpStatus: error.reason === "bad-status" ? error.status : null,
+        isRetrying:
+          row.retry_status === "queued" || row.retry_status === "running",
+      },
+      readDepth: row.read_depth,
     });
   }
 
@@ -115,23 +138,24 @@ export async function retryFailedSources(
   db: NodePgDatabase,
   { userId, sourceIds, now }: RetryFailedSourcesInput,
 ): Promise<RetryFailedSourcesResult> {
-  const { items, canRetry } = await listFailedSources(db, { userId });
+  const { items, canRetry } = await loadFailedSources(db, { userId });
 
   if (!canRetry) {
     return { ok: false, reason: "check-running" };
   }
 
   const targets = items.filter(
-    (item) =>
+    ({ item }) =>
       !item.isRetrying &&
       (sourceIds === "all" || sourceIds.includes(item.sourceId)),
   );
 
   if (targets.length > 0) {
     await db.insert(checkTasks).values(
-      targets.map((item) => ({
+      targets.map(({ item, readDepth }) => ({
         sourceId: item.sourceId,
         priority: "manual" as const,
+        readDepth,
         createdAt: now,
       })),
     );

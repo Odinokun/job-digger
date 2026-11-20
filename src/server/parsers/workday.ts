@@ -11,7 +11,7 @@ import {
   UNREADABLE,
   type ReadVacancy,
 } from "./shared.ts";
-import { PAGES_TO_CHECK } from "./pages-to-check.ts";
+import { pagesToRead, type ReadDepth } from "./vacancies-to-check.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 /** Куди йти по вакансії сайту і звідки будувати посилання на неї. */
@@ -147,7 +147,10 @@ export const WORKDAY_PAGE_SIZE = 20;
 export async function readWorkday(
   sourceUrl: string,
   client: HttpClient,
-  { maxPages = PAGES_TO_CHECK }: { maxPages?: number } = {},
+  {
+    depth = "full",
+    maxPages = pagesToRead({ pageSize: WORKDAY_PAGE_SIZE, depth }),
+  }: { depth?: ReadDepth; maxPages?: number } = {},
 ): Promise<ParseResult> {
   const site = workdaySite(sourceUrl);
 
@@ -158,6 +161,8 @@ export async function readWorkday(
   const vacancies: ParsedVacancy[] = [];
   let skipped = 0;
   let total = Infinity;
+  // Стає `false`, лише коли список скінчився сам, а не на ліміті.
+  let truncated = true;
 
   for (let page = 0; page < maxPages; page += 1) {
     const offset = page * WORKDAY_PAGE_SIZE;
@@ -190,9 +195,12 @@ export async function readWorkday(
     const read = parsed.vacancies.length + parsed.skipped;
 
     if (read < WORKDAY_PAGE_SIZE || offset + read >= total) {
+      truncated = false;
       break;
     }
   }
 
-  return { ok: true, vacancies, skipped };
+  return truncated
+    ? { ok: true, vacancies, skipped, truncated: true }
+    : { ok: true, vacancies, skipped };
 }

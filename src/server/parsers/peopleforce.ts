@@ -13,7 +13,7 @@ import {
   UNREADABLE,
   type ReadVacancy,
 } from "./shared.ts";
-import { PAGES_TO_CHECK } from "./pages-to-check.ts";
+import { pagesToRead, type ReadDepth } from "./vacancies-to-check.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 /**
@@ -160,6 +160,9 @@ function readerFor(pageUrl: string): ReadVacancy {
   };
 }
 
+/** Скільки вакансій PeopleForce показує на сторінці `/careers` (не налаштовується). */
+export const PEOPLEFORCE_PAGE_SIZE = 10;
+
 /**
  * Вакансії кар'єрного джерела на PeopleForce: сайт компанії з адреси,
  * сторінки `/careers?page=N` через HTTP-клієнт і розбір кожної. Адреса не
@@ -172,7 +175,10 @@ function readerFor(pageUrl: string): ReadVacancy {
 export async function readPeopleForce(
   sourceUrl: string,
   client: HttpClient,
-  { maxPages = PAGES_TO_CHECK }: { maxPages?: number } = {},
+  {
+    depth = "full",
+    maxPages = pagesToRead({ pageSize: PEOPLEFORCE_PAGE_SIZE, depth }),
+  }: { depth?: ReadDepth; maxPages?: number } = {},
 ): Promise<ParseResult> {
   const site = peopleforceSite(sourceUrl);
 
@@ -182,6 +188,8 @@ export async function readPeopleForce(
 
   const vacancies: ParsedVacancy[] = [];
   let skipped = 0;
+  // Стає `false`, лише коли список скінчився сам, а не на ліміті.
+  let truncated = true;
 
   for (let page = 1; page <= maxPages; page += 1) {
     const pageUrl = `${site}/careers?page=${page}`;
@@ -201,9 +209,12 @@ export async function readPeopleForce(
     skipped += parsed.skipped;
 
     if (!parsed.hasNext) {
+      truncated = false;
       break;
     }
   }
 
-  return { ok: true, vacancies, skipped };
+  return truncated
+    ? { ok: true, vacancies, skipped, truncated: true }
+    : { ok: true, vacancies, skipped };
 }

@@ -43,6 +43,7 @@ describe("findBoardsByName", () => {
         url: "https://jobs.ashbyhq.com/linear",
         platform: "ashby",
         vacancies: 33,
+        more: false,
       },
     ]);
   });
@@ -59,11 +60,28 @@ describe("findBoardsByName", () => {
         url: "https://jobs.lever.co/leverdemo",
         platform: "lever",
         vacancies: 10,
+        more: false,
       },
       {
         url: "https://team.peopleforce.io/careers",
         platform: "peopleforce",
         vacancies: 6,
+        more: false,
+      },
+    ]);
+  });
+
+  it("reads only the first page of a board and says there is more", async () => {
+    // Задача 6.16: пробне читання - перша сторінка. У збереженій сторінці
+    // Webellian є `rel="next"`, тож вакансій більше, ніж 10 прочитаних.
+    expect(
+      await findBoardsByName({ name: "Webellian", siteUrl: null }, client()),
+    ).toEqual([
+      {
+        url: "https://webellian.peopleforce.io/careers",
+        platform: "peopleforce",
+        vacancies: 10,
+        more: true,
       },
     ]);
   });

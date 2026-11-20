@@ -9,7 +9,7 @@
  * нього 403 з будь-яким User-Agent.
  */
 import type { HttpClient } from "../http/client.ts";
-import { PAGES_TO_CHECK } from "./pages-to-check.ts";
+import { pagesToRead, type ReadDepth } from "./vacancies-to-check.ts";
 import {
   collectVacancies,
   fetchJson,
@@ -132,7 +132,10 @@ function placeOf(residence: unknown, format: unknown): string | null {
 export async function readHurma(
   sourceUrl: string,
   client: HttpClient,
-  { maxPages = PAGES_TO_CHECK }: { maxPages?: number } = {},
+  {
+    depth = "full",
+    maxPages = pagesToRead({ pageSize: HURMA_PAGE_SIZE, depth }),
+  }: { depth?: ReadDepth; maxPages?: number } = {},
 ): Promise<ParseResult> {
   const company = hurmaCompany(sourceUrl);
 
@@ -143,6 +146,8 @@ export async function readHurma(
   const base = `https://${company}.${DOMAIN}/api/v1/public-vacancies`;
   const vacancies: ParsedVacancy[] = [];
   let skipped = 0;
+  // Стає `false`, лише коли список скінчився сам, а не на ліміті.
+  let truncated = true;
 
   for (let page = 1; page <= maxPages; page += 1) {
     const fetched = await fetchJson(
@@ -165,9 +170,12 @@ export async function readHurma(
     skipped += parsed.skipped;
 
     if (!hurmaHasNextPage(fetched.answer)) {
+      truncated = false;
       break;
     }
   }
 
-  return { ok: true, vacancies, skipped };
+  return truncated
+    ? { ok: true, vacancies, skipped, truncated: true }
+    : { ok: true, vacancies, skipped };
 }

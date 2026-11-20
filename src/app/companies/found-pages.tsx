@@ -72,7 +72,11 @@ export function FoundPages({
                     </span>
                     <span className="text-sm text-muted">
                       {finding.trial.kind === "read"
-                        ? t("vacancies", { count: finding.trial.vacancies })
+                        ? finding.trial.more
+                          ? t("vacanciesMore", {
+                              count: finding.trial.vacancies,
+                            })
+                          : t("vacancies", { count: finding.trial.vacancies })
                         : finding.trial.kind === "unsupported"
                           ? t("notSupported")
                           : t("readFailed")}

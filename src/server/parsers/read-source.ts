@@ -14,9 +14,18 @@ import { readSoftgarden } from "./softgarden.ts";
 import { readLever } from "./lever.ts";
 import { readPeopleForce } from "./peopleforce.ts";
 import type { ParseResult } from "./types.ts";
+import type { ReadDepth } from "./vacancies-to-check.ts";
 import { readWorkday } from "./workday.ts";
 
-type Reader = (sourceUrl: string, client: HttpClient) => Promise<ParseResult>;
+/**
+ * Глибина (`depth`) потрібна лише парсерам, що читають сторінками; решта
+ * віддає весь список одним запитом і її не бере.
+ */
+type Reader = (
+  sourceUrl: string,
+  client: HttpClient,
+  depth: ReadDepth,
+) => Promise<ParseResult>;
 
 /**
  * Парсери, які вже є. Платформа без парсера тут відсутня, а не заглушка з
@@ -26,12 +35,14 @@ type Reader = (sourceUrl: string, client: HttpClient) => Promise<ParseResult>;
 const READERS: Partial<Record<CareerPlatform, Reader>> = {
   greenhouse: readGreenhouse,
   ashby: readAshby,
-  lever: (sourceUrl, client) => readLever(sourceUrl, client),
-  workday: (sourceUrl, client) => readWorkday(sourceUrl, client),
-  peopleforce: (sourceUrl, client) => readPeopleForce(sourceUrl, client),
+  lever: (sourceUrl, client, depth) => readLever(sourceUrl, client, { depth }),
+  workday: (sourceUrl, client, depth) =>
+    readWorkday(sourceUrl, client, { depth }),
+  peopleforce: (sourceUrl, client, depth) =>
+    readPeopleForce(sourceUrl, client, { depth }),
   breezy: readBreezy,
   cleverstaff: readCleverStaff,
-  hurma: (sourceUrl, client) => readHurma(sourceUrl, client),
+  hurma: (sourceUrl, client, depth) => readHurma(sourceUrl, client, { depth }),
   personio: readPersonio,
   softgarden: readSoftgarden,
 };
@@ -42,8 +53,9 @@ const READERS: Partial<Record<CareerPlatform, Reader>> = {
 export async function readSource(
   source: { url: string; platform: CareerPlatform },
   client: HttpClient,
+  depth: ReadDepth = "full",
 ): Promise<ParseResult | null> {
   const reader = READERS[source.platform];
 
-  return reader === undefined ? null : reader(source.url, client);
+  return reader === undefined ? null : reader(source.url, client, depth);
 }

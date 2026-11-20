@@ -7,7 +7,7 @@ const SITE_BOARD: Finding = {
   url: "https://jobs.lever.co/acme",
   platform: "lever",
   via: "site",
-  trial: { kind: "read", vacancies: 3 },
+  trial: { kind: "read", vacancies: 3, more: false },
   ownership: null,
 };
 
@@ -23,7 +23,7 @@ const NAME_BOARD: Finding = {
   url: "https://jobs.ashbyhq.com/acme",
   platform: "ashby",
   via: "name",
-  trial: { kind: "read", vacancies: 2 },
+  trial: { kind: "read", vacancies: 2, more: false },
   ownership: { kind: "unknown" },
 };
 

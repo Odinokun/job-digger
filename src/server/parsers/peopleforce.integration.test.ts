@@ -12,8 +12,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createHttpClient } from "../http/client.ts";
 import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
-import { PAGES_TO_CHECK } from "./pages-to-check.ts";
 import { readPeopleForce } from "./peopleforce.ts";
+import { pagesToRead } from "./vacancies-to-check.ts";
 
 /** Розклад запитів тут не перевіряється - він має власні тести. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
@@ -167,17 +167,21 @@ describe("readPeopleForce", () => {
       });
 
       expect(result.ok && result.vacancies).toHaveLength(20);
+      // Список не дочитано - життєвий цикл не має нічого закривати (6.16).
+      expect(result.ok && result.truncated).toBe(true);
       expect(requested).toHaveLength(2);
     });
   });
 
-  it("reads Pages to check pages by default", async () => {
+  it("reads up to Vacancies to check by default", async () => {
     const requested: string[] = [];
 
     await withServer(pagedSite(1000, requested), async (origin) => {
       await readPeopleForce(ACME, clientFor(origin));
 
-      expect(requested).toHaveLength(PAGES_TO_CHECK);
+      expect(requested).toHaveLength(
+        pagesToRead({ pageSize: 10, depth: "full" }),
+      );
     });
   });
 
@@ -205,5 +209,34 @@ describe("readPeopleForce", () => {
         });
       },
     );
+  });
+});
+
+describe("read depth (task 6.16)", () => {
+  it("reads only the first page for a first-page check and says the list may go on", async () => {
+    const requested: string[] = [];
+
+    await withServer(pagedSite(1000, requested), async (origin) => {
+      const result = await readPeopleForce(ACME, clientFor(origin), {
+        depth: "first-page",
+      });
+
+      expect(result.ok && result.truncated).toBe(true);
+    });
+
+    expect(requested).toHaveLength(1);
+  });
+
+  it("does not mark a list read to its end as truncated", async () => {
+    const requested: string[] = [];
+
+    await withServer(pagedSite(23, requested), async (origin) => {
+      const result = await readPeopleForce(ACME, clientFor(origin), {
+        maxPages: 5,
+      });
+
+      expect(result.ok && result.vacancies.length).toBeGreaterThan(0);
+      expect(result.ok && result.truncated).toBeUndefined();
+    });
   });
 });

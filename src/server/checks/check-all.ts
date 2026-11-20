@@ -12,9 +12,15 @@ import {
   checkTasks,
   companies,
 } from "../db/schema.ts";
+import { type CheckAllDepthMode, taskReadDepth } from "./read-depth.ts";
 
 export interface StartCheckAllInput {
   userId: string;
+  /**
+   * Скільки читати з кожного джерела (задача 6.16): ручний Check all - лише
+   * першу сторінку, автоперевірка - `auto` (`read-depth.ts`).
+   */
+  depthMode: CheckAllDepthMode;
   /** Час запуску - Date & time у History. */
   now: Date;
 }
@@ -25,13 +31,16 @@ export type StartCheckAllResult =
 
 export async function startCheckAll(
   db: NodePgDatabase,
-  { userId, now }: StartCheckAllInput,
+  { userId, depthMode, now }: StartCheckAllInput,
 ): Promise<StartCheckAllResult> {
   return db.transaction(async (tx) => {
     // Вкладка Tracked - компанії з хоча б одним джерелом, що відстежується,
     // тож досить узяти самі такі джерела.
     const sources = await tx
-      .select({ id: careerSources.id })
+      .select({
+        id: careerSources.id,
+        lastFullReadAt: careerSources.lastFullReadAt,
+      })
       .from(careerSources)
       .innerJoin(companies, eq(companies.id, careerSources.companyId))
       .where(
@@ -60,6 +69,11 @@ export async function startCheckAll(
         sourceId: source.id,
         runId: run.id,
         priority: "background" as const,
+        readDepth: taskReadDepth({
+          mode: depthMode,
+          lastFullReadAt: source.lastFullReadAt,
+          now,
+        }),
         createdAt: now,
       })),
     );
