@@ -35,6 +35,13 @@
       "confirm": "Mark as read",
       "cancel": "Cancel"
     },
+    "markAllUnread": {
+      "open": "Mark all as unread",
+      "title": "Mark all as unread?",
+      "body": "{count, plural, one {Return # vacancy in all companies to Unread?} other {Return # vacancies in all companies to Unread?}}",
+      "confirm": "Mark as unread",
+      "cancel": "Cancel"
+    },
     "newVacancies": {
       "title": "{count, plural, one {# new vacancy} other {# new vacancies}}",
       "titleAtLeast": "{count}+ new vacancies",

@@ -147,4 +147,25 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   await expect(
     page.locator('a[href^="https://job-boards.greenhouse.io/discord/jobs/"]'),
   ).toHaveCount(BOARD_SIZE);
+
+  // Mark all as unread у вкладці Read (задача 6.18): дзеркало Mark all as read,
+  // теж через діалог із кількістю.
+  await vacancyRow(page, TITLE)
+    .getByRole("button", { name: "Mark as read" })
+    .click();
+  await expect(jobsLink).toHaveText(`Jobs ${BOARD_SIZE - 1}`);
+
+  await page.getByRole("link", { name: /^Read/ }).click();
+  await page.getByRole("button", { name: "Mark all as unread" }).click();
+  const unreadDialog = page.getByRole("alertdialog", {
+    name: "Mark all as unread?",
+  });
+  await expect(unreadDialog).toContainText(
+    "Return 1 vacancy in all companies to Unread?",
+  );
+
+  await unreadDialog.getByRole("button", { name: "Mark as unread" }).click();
+  await expect(unreadDialog).toBeHidden();
+  await expect(page.getByText("Nothing read yet.")).toBeVisible();
+  await expect(jobsLink).toHaveText(`Jobs ${BOARD_SIZE}`);
 });
