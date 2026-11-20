@@ -57,6 +57,10 @@ https://boards-api.greenhouse.io/v1/boards/acme/jobs
 | `responses/spribe.hurma.work/api/v1/public-vacancies` | Hurma, дошка Spribe, `per_page=100&page=1` (6 вакансій, одна сторінка; в одної є `residence`, в одної - `work_format: "Remote"`). Без заголовка `X-Requested-With` справжній API дає 403, фейковий сервер заголовків не читає | 19.11.2026 |
 | `responses/astrafy.jobs.personio.de/xml` | XML-фід Personio, дошка Astrafy (4 вакансії з описами, 27 КБ; у двох є `additionalOffices`). Сервер віддає його як HTML, бо файл починається з `<` - парсер на тип вмісту не дивиться | 19.11.2026 |
 | `responses/dps.softgarden.io/en/vacancies` | Стара дошка softgarden, DPS: серверний HTML з усіма 19 вакансіями (сторінки малює JavaScript), локації картки - кілька `location-view-item`, ID ще й у `SG.allJobLocations` | 19.11.2026 |
+| `responses/kinggroup.io/vacancies/tech` | Власна сторінка kinggroup на Framer, напрямок Tech: 10 вакансій посиланнями `./design/<slug>`, назва - `h2` у посиланні (221 КБ) | 20.11.2026 |
+| `responses/www.delasport.com/careers/index` | Власна сторінка delasport (WordPress): 6 вакансій, посилання «View & Apply», назва - `h3` у картці | 20.11.2026 |
+| `responses/ncube.com/career` | Власна сторінка ncube (WordPress): 12 вакансій, порожні посилання, назва - `div.vacancies__title` | 20.11.2026 |
+| `responses/a-listware.com/career` | Власна сторінка a-listware (WordPress): 30 вакансій, картка-посилання з напрямком, назвою (`career-item__position`) і локацією | 20.11.2026 |
 | `responses/spinncloud.career.softgarden.de/jobs.feed.json` | Новий кар'єрний сайт softgarden, SpiNNcloud: фід schema.org `DataFeed` (6 вакансій з описами, 67 КБ); в одної адреса з `-` замість міста | 19.11.2026 |
 | `responses/cleverstaff.net/hr/public/getVacancy` | CleverStaff, вакансія 8allocate `3ONpJV`: з неї парсер дізнається аліас компанії | 19.11.2026 |
 

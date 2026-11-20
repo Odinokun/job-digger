@@ -21,6 +21,8 @@ interface CompaniesListProps {
   onLoadMore: () => void;
   onSaved: (companyId: string, saved: CompanyListItem | null) => void;
   onDeleted: (companyId: string) => void;
+  /** Власній сторінці дали рецепт (задача 6.21) - як нова компанія. */
+  onRecipeApplied: (company: CompanyListItem | null, companyId: string) => void;
   /** Нова компанія, картка якої сама починає першу перевірку. */
   firstCheckId: string | null;
   emptyLabel: string;
@@ -45,6 +47,7 @@ export function CompaniesList({
   onLoadMore,
   onSaved,
   onDeleted,
+  onRecipeApplied,
   firstCheckId,
   emptyLabel,
   loadMoreLabel,
@@ -82,6 +85,7 @@ export function CompaniesList({
               platformLabels={platformLabels}
               onSaved={onSaved}
               onDeleted={onDeleted}
+              onRecipeApplied={onRecipeApplied}
             />
           </li>
         ))}

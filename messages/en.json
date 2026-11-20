@@ -191,6 +191,19 @@
     },
     "referenceOnly": {
       "label": "Link only"
+    },
+    "ownPage": {
+      "open": "Read as list",
+      "change": "Change list",
+      "title": "Read the page as a list",
+      "loading": "Reading the page…",
+      "unavailable": "The page could not be loaded. Check the address or try again later.",
+      "nothing": "This page has no repeating links to its own vacancy pages. It can stay a link.",
+      "choose": "Which links are vacancies? Only what the page shows is read, without Load more.",
+      "links": "{count, plural, one {# link} other {# links}}",
+      "more": "and {count} more",
+      "cancel": "Cancel",
+      "confirm": "Read these"
     }
   },
   "Errors": {
