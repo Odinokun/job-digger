@@ -1,3 +1,5 @@
+import { isUuid } from "../uuid.ts";
+
 /**
  * Курсор keyset-пагінації: останній показаний рядок.
  *
@@ -24,10 +26,6 @@ export type Cursor = {
  */
 export const MAX_CURSOR_KEY_LENGTH = 512;
 
-/** Форма UUID: курсор посилається на `id` рядка, а не на довільний текст. */
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 /**
  * Курсор із недовіреного значення або `null`, якщо воно курсором не є.
  *
@@ -50,7 +48,7 @@ export function parseCursor(value: unknown): Cursor | null {
     return null;
   }
 
-  if (typeof id !== "string" || !UUID_PATTERN.test(id)) {
+  if (typeof id !== "string" || !isUuid(id)) {
     return null;
   }
 

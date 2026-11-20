@@ -15,6 +15,7 @@
 | `add.ts`        | `addCompany` - додавання компанії з карʼєрною сторінкою з поля і вибраними знахідками Find pages |
 | `update.ts`     | `updateCompany` - перейменування, видалення й додавання карʼєрних джерел |
 | `sources.ts`    | `addCareerSource` - джерело до вже доданої компанії; `addCareerSources` - кілька одним Save, усе або нічого (Find pages на Not tracked); `companySources` |
+| `reference-only.ts` | `setSourceReferenceOnly` - позначка «лише посилання» на сторінці Unsupported (задача 6.17) |
 | `delete.ts`     | `deleteCompany` - компанія разом із усіма її джерелами            |
 | `source-duplicates.ts` | `findCompanyWithSource` - у кого вже є це карʼєрне джерело; `findCompaniesWithSources` - те саме для списку адрес одним запитом |
 

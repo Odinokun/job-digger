@@ -51,6 +51,11 @@ export type CompanySource = {
   platform: CareerPlatform;
   isTracked: boolean;
   /**
+   * Сторінку, яку нічим прочитати, людина позначила «лише посиланням»
+   * (задача 6.17): вона не рахується непрочитаною.
+   */
+  isReferenceOnly: boolean;
+  /**
    * Чим закінчилася остання перевірка джерела: `null` - ще не перевірялося.
    * Невдала - це `consecutive_failures > 0`.
    */
@@ -129,10 +134,19 @@ export function isTrackedCompany(sources: CompanySource[]): boolean {
 }
 
 /**
+ * Сторінка, яку ми не читаємо і яку людина не позначила «лише посиланням»
+ * (задачі 6.11 і 6.17). Те саме правило для бази - `needsAttentionSubquery` у
+ * `src/server/companies/list.ts`.
+ */
+export function isNotReadSource(source: CompanySource): boolean {
+  return source.platform === "unsupported" && !source.isReferenceOnly;
+}
+
+/**
  * Скільки сторінок компанії ми не читаємо - бейдж «N pages not read» (задача
  * 6.11). Unsupported - постійний стан, а не збій, тому це окремий бейдж уваги,
  * а не Has errors.
  */
 export function notReadSourceCount(sources: CompanySource[]): number {
-  return sources.filter((source) => source.platform === "unsupported").length;
+  return sources.filter(isNotReadSource).length;
 }

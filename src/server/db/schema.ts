@@ -130,6 +130,11 @@ export const careerSources = pgTable(
     // Адреса, яку нічим прочитати, зберігається без відстеження: знадобиться,
     // якщо зʼявляться нові способи читання (docs/ui.md, розділ 4.3).
     isTracked: boolean("is_tracked").notNull().default(true),
+    // Сторінку, яку нічим прочитати, людина позначила «лише посиланням»
+    // (задача 6.17): вона лишається в картці, але не рахується непрочитаною в
+    // Needs attention і бейджі «N pages not read». Лише для `unsupported` -
+    // перевіряє дія, що ставить позначку.
+    isReferenceOnly: boolean("is_reference_only").notNull().default(false),
     // Скільки перевірок підряд завершилися помилкою. Після збою вакансії не
     // видаляються, тому без лічильника застарілі дані не відрізнити від свіжих.
     consecutiveFailures: integer("consecutive_failures").notNull().default(0),

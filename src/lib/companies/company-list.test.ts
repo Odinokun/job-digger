@@ -68,6 +68,7 @@ describe("company sources", () => {
     label: null,
     platform: "greenhouse",
     isTracked: true,
+    isReferenceOnly: false,
     lastCheck: null,
     lastSuccessAt: null,
     isChecking: false,
@@ -90,5 +91,12 @@ describe("company sources", () => {
   it("counts the pages we cannot read", () => {
     expect(notReadSourceCount([source({}), unsupported, unsupported])).toBe(2);
     expect(notReadSourceCount([source({})])).toBe(0);
+  });
+
+  it("does not count a page marked as reference only", () => {
+    // Задача 6.17: людина вирішила, що ця сторінка - лише посилання.
+    const reference = { ...unsupported, isReferenceOnly: true };
+
+    expect(notReadSourceCount([unsupported, reference])).toBe(1);
   });
 });

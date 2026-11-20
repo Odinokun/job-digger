@@ -2,6 +2,7 @@ import { Card, Chip } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
 import {
+  isNotReadSource,
   isTrackedCompany,
   notReadSourceCount,
   type CompaniesTab,
@@ -17,6 +18,7 @@ import { DeleteCompanyDialog } from "./delete-company-dialog";
 import { EditCompanyDialog } from "./edit-company-dialog";
 import { FindPagesDialog } from "./find-pages-dialog";
 import { LastChecked } from "./last-checked";
+import { ReferenceOnlyCheckbox } from "./reference-only-checkbox";
 
 interface CompanyCardProps {
   company: CompanyListItem;
@@ -93,10 +95,11 @@ export function CompanyCard({
                 {/* Відома ATS без парсера - її назва замість «Unsupported»
                     (задача 5.15): так видно, які парсери потрібні. Сторінку,
                     яку ми не читаємо, підписано кольором уваги (задача 6.11):
-                    поруч може стояти зелений OK, а він про те, що читається. */}
+                    поруч може стояти зелений OK, а він про те, що читається.
+                    Позначену «лише посиланням» - звичайним (задача 6.17). */}
                 <span
                   className={
-                    source.platform === "unsupported"
+                    isNotReadSource(source)
                       ? "font-medium text-counter"
                       : "font-medium"
                   }
@@ -126,6 +129,14 @@ export function CompanyCard({
                   ) : (
                     <LastChecked at={source.lastSuccessAt} message="lastOk" />
                   )
+                ) : null}
+                {source.platform === "unsupported" ? (
+                  <ReferenceOnlyCheckbox
+                    companyId={company.id}
+                    source={source}
+                    tab={tab}
+                    onSaved={onSaved}
+                  />
                 ) : null}
               </li>
             ))}

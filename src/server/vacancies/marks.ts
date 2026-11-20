@@ -11,14 +11,8 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { VacancyListItem } from "../../lib/vacancies/vacancy-list.ts";
 import { careerSources, companies, vacancies } from "../db/schema.ts";
 import { DB_TIME_PATTERN, dbTimeText } from "../db/time.ts";
+import { isUuid } from "../../lib/uuid.ts";
 import { tabCondition, VACANCY_ROW } from "./list.ts";
-
-/**
- * Форма UUID. Id приходить аргументом Server Action, а криве значення в
- * колонці `uuid` - помилка бази, а не «не знайдено».
- */
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface VacancyRef {
   userId: string;
@@ -39,7 +33,7 @@ export async function findVacancy(
   db: NodePgDatabase,
   { userId, vacancyId }: VacancyRef,
 ): Promise<VacancyListItem | null> {
-  if (!UUID_PATTERN.test(vacancyId)) return null;
+  if (!isUuid(vacancyId)) return null;
 
   const [row] = await db
     .select(VACANCY_ROW)
@@ -60,7 +54,7 @@ export async function setVacancyRead(
   db: NodePgDatabase,
   { userId, vacancyId, isRead }: VacancyRef & { isRead: boolean },
 ): Promise<VacancyListItem | null> {
-  if (!UUID_PATTERN.test(vacancyId)) return null;
+  if (!isUuid(vacancyId)) return null;
 
   await db
     .update(vacancies)
@@ -90,7 +84,7 @@ export async function setVacancyFavorite(
   db: NodePgDatabase,
   { userId, vacancyId, isFavorite }: VacancyRef & { isFavorite: boolean },
 ): Promise<VacancyListItem | null> {
-  if (!UUID_PATTERN.test(vacancyId)) return null;
+  if (!isUuid(vacancyId)) return null;
 
   return db.transaction(async (tx) => {
     const own = and(
@@ -177,7 +171,7 @@ export async function setCompanyVacanciesRead(
     isRead,
   }: { userId: string; companyId: string; isRead: boolean },
 ): Promise<number> {
-  if (!UUID_PATTERN.test(companyId)) return 0;
+  if (!isUuid(companyId)) return 0;
 
   const companySources = db
     .select({ id: careerSources.id })
