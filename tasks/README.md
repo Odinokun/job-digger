@@ -101,7 +101,7 @@ PR: #57
 | [5.15 Відомі ATS без парсера](5.15-known-ats-without-parser.md)                                  | done    |
 | [6.01 Таблиця settings і сторінка Settings](6.01-settings-page.md)                               | done    |
 | [6.02 Розрахунок часу наступної автоперевірки](6.02-next-auto-check-time.md)                     | done    |
-| [6.03 Автоперевірка локально і перевірка на старті](6.03-auto-check-local.md)                    | todo    |
+| [6.03 Автоперевірка локально і перевірка на старті](6.03-auto-check-local.md)                    | done    |
 | [6.04 AUTO_CHECK=off і спільні ліміти через ENV](6.04-auto-check-env-limits.md)                  | todo    |
 | [6.05 CSV Export з опціями](6.05-csv-export.md)                                                  | todo    |
 | [6.06 CSV Import з підсумком](6.06-csv-import.md)                                                | todo    |
