@@ -66,6 +66,14 @@
   --field-background: oklch(1 0 0);
   --field-foreground: oklch(0.185 0.004 250);
   --field-placeholder: oklch(0.565 0.006 250);
+  /* Рамка полів і чекбоксів. У HeroUI вона типово прозора, і поле з тим самим
+     фоном, що й модалка, зникало - у темній схемі не видно було ні не
+     відміченого чекбокса, ні порожніх полів (задача 6.14). Контраст не менше
+     3:1 до фону поруч - вимога WCAG 1.4.11 до меж елементів керування:
+     3.1:1 до --background, 3.4:1 до --surface. Hover і focus HeroUI виводить
+     із неї сам. Товщина теж: HeroUI типово ставить полям 0px. */
+  --field-border: oklch(0.64 0.006 250);
+  --field-border-width: 1px;
 
   --border: oklch(0.888 0.003 250);
   --separator: oklch(0.92 0.002 250);
@@ -127,6 +135,8 @@
   --field-background: oklch(0.193 0.004 250);
   --field-foreground: oklch(0.965 0.002 250);
   --field-placeholder: oklch(0.632 0.006 250);
+  /* 3.6:1 до --background, 3.3:1 до --surface і --overlay (6.14). */
+  --field-border: oklch(0.52 0.006 250);
 
   --border: oklch(0.272 0.005 250);
   --separator: oklch(0.232 0.004 250);
