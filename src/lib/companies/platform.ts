@@ -25,6 +25,7 @@ export const CAREER_PLATFORMS = [
   "hurma",
   "personio",
   "softgarden",
+  "workable",
   "schema_org",
   "own_page",
   "unsupported",
@@ -59,6 +60,8 @@ export type CareerPlatform = (typeof CAREER_PLATFORMS)[number];
  * - `softgarden.io` (стара дошка) і `career.softgarden.de` (новий кар'єрний
  *   сайт) - два продукти softgarden, обидва на субдомені компанії (задача 3.28).
  *   Решта `softgarden.de` (`static.`, сайт) - не дошки.
+ * - `workable.com` - кар'єрна сторінка `apply.workable.com/{account}` і старий
+ *   формат `{account}.workable.com` (задача 6.25).
  */
 const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["greenhouse.io", "greenhouse"],
@@ -74,6 +77,7 @@ const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["jobs.personio.com", "personio"],
   ["softgarden.io", "softgarden"],
   ["career.softgarden.de", "softgarden"],
+  ["workable.com", "workable"],
 ];
 
 /**

@@ -16,6 +16,7 @@ import { readOwnPage } from "./own-page.ts";
 import { readPeopleForce } from "./peopleforce.ts";
 import type { ParseResult } from "./types.ts";
 import type { ReadDepth } from "./vacancies-to-check.ts";
+import { readWorkable } from "./workable.ts";
 import { readWorkday } from "./workday.ts";
 
 /**
@@ -46,6 +47,7 @@ const READERS: Partial<Record<CareerPlatform, Reader>> = {
   hurma: (sourceUrl, client, depth) => readHurma(sourceUrl, client, { depth }),
   personio: readPersonio,
   softgarden: readSoftgarden,
+  workable: readWorkable,
 };
 
 /**

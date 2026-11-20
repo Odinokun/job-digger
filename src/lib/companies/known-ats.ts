@@ -18,7 +18,7 @@
  *
  * - з крапкою на початку - будь-який піддомен (`.bamboohr.com` -
  *   `acme.bamboohr.com`, компанія в піддомені);
- * - без крапки - рівно цей хост (`apply.workable.com/acme`, компанія в шляху);
+ * - без крапки - рівно цей хост (`jobs.jobvite.com/acme`, компанія в шляху);
  * - зі шляхом - цей хост і адреса, що починається з цього шляху
  *   (`join.com/companies/`): платформа тримає дошки на тому самому хості, що й
  *   свій сайт.
@@ -33,7 +33,6 @@
  */
 const KNOWN_ATS: Array<[pattern: string, name: string]> = [
   [".bamboohr.com", "BambooHR"],
-  ["apply.workable.com", "Workable"],
   ["jobs.smartrecruiters.com", "SmartRecruiters"],
   ["careers.smartrecruiters.com", "SmartRecruiters"],
   [".recruitee.com", "Recruitee"],
