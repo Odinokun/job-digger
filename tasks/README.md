@@ -104,7 +104,7 @@ PR: #57
 | [6.03 Автоперевірка локально і перевірка на старті](6.03-auto-check-local.md)                    | done    |
 | [6.04 AUTO_CHECK=off і спільні ліміти через ENV](6.04-auto-check-env-limits.md)                  | done    |
 | [6.05 CSV Export з опціями](6.05-csv-export.md)                                                  | done    |
-| [6.06 CSV Import з підсумком](6.06-csv-import.md)                                                | todo    |
+| [6.06 CSV Import з підсумком](6.06-csv-import.md)                                                | done    |
 | [6.07 E2E: CSV туди й назад](6.07-e2e-csv-roundtrip.md)                                          | todo    |
 | [6.08 Окремий робочий екземпляр застосунку](6.08-separate-work-instance.md)                      | backlog |
 | [6.09 Резервні копії робочої бази](6.09-database-backups.md)                                     | backlog |

@@ -9,6 +9,7 @@ import { getSettings } from "@/server/settings/settings";
 
 import { AutoCheckIntervalPicker } from "./auto-check-interval-picker";
 import { CsvExport } from "./csv-export";
+import { CsvImport } from "./csv-import";
 import { LanguageSwitcher } from "./language-switcher";
 import { ThemeSwitcher } from "./theme-switcher";
 
@@ -61,6 +62,13 @@ export default async function SettingsPage() {
           {t("export.title")}
         </h2>
         <CsvExport />
+      </section>
+
+      <section className="mt-8 flex flex-col gap-3">
+        <h2 className="font-display text-lg font-semibold tracking-tight">
+          {t("import.title")}
+        </h2>
+        <CsvImport />
       </section>
     </>
   );
