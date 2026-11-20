@@ -108,7 +108,7 @@ PR: #57
 | [6.07 E2E: CSV туди й назад](6.07-e2e-csv-roundtrip.md)                                          | done    |
 | [6.08 Окремий робочий екземпляр застосунку](6.08-separate-work-instance.md)                      | done    |
 | [6.09 Резервні копії робочої бази](6.09-database-backups.md)                                     | done    |
-| [6.10 Автозапуск робочого екземпляра](6.10-autostart-on-login.md)                                | todo    |
+| [6.10 Автозапуск робочого екземпляра](6.10-autostart-on-login.md)                                | done    |
 | [6.11 Компанії, що потребують уваги](6.11-companies-needing-attention.md)                        | done    |
 | [6.12 Подвоєна назва в модалці Add](6.12-add-dialog-doubled-name.md)                             | done    |
 | [6.13 Check now під час загальної перевірки](6.13-check-now-via-queue.md)                        | done    |
