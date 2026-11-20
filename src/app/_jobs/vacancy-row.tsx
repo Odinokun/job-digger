@@ -32,9 +32,10 @@ export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
 
   // Від `sm` (640px) дата й дії завжди праворуч: довга назва переноситься
   // всередині лівого блоку (`min-w-0`), а не виштовхує їх на новий рядок.
-  // Вужче - місця на два стовпці немає, і вони стають під назву.
+  // Вужче - місця на два стовпці немає, і вони стають під назву. Вирівнювання
+  // по верху: при назві у два рядки дії стоять навпроти її початку.
   return (
-    <div className="relative flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-3 sm:flex-nowrap">
+    <div className="relative flex flex-wrap items-start justify-between gap-x-6 gap-y-1 py-3 sm:flex-nowrap">
       {vacancy.isRead ? null : (
         // Центр крапки - на середині першого рядка назви: py-3 + половина
         // висоти рядка 24px. Ліворуч у полі сторінки, яке не менше 16px.
