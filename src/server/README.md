@@ -28,6 +28,7 @@
 - [`discovery`](discovery/README.md) - пошук кар'єрних сторінок компанії за адресою її сайту.
 - [`csv`](csv/README.md) - CSV компаній для Export і Import у Settings.
 - [`settings`](settings/README.md) - налаштування користувача в базі: інтервал автоперевірки.
+- [`autostart`](autostart/README.md) - автозапуск робочого екземпляра при вході в macOS.
 - [`http`](http/README.md) - зовнішні запити: єдиний HTTP-клієнт із ввічливістю до
   сайтів, захист від SSRF і фейковий вебсервер для тестів.
 
