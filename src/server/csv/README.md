@@ -6,6 +6,8 @@ Export і Import зі сторінки Settings (docs/ui.md, розділ 10; з
 | ---------------- | ------------------------------------------------------------ |
 | `format.ts`      | `CSV_COLUMNS`, `escapeCsvCell`, `toCsv` - формат файлу        |
 | `format.test.ts` | Лапки за RFC 4180, екранування формул, BOM і CRLF            |
+| `export.ts` | `exportCompanyRows` - рядки Export CSV за вибраними опціями |
+| `export.integration.test.ts` | Рядок на компанію чи на джерело, вибір списків, компанія без сайту, чужі не потрапляють |
 
 ## Формат
 
