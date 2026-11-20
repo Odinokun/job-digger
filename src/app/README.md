@@ -26,8 +26,10 @@
 | ------------------- | --------------------------- | ------------------------------------------- |
 | `/api/check-status` | `api/check-status/route.ts` | `CheckStatus`: хід активної перевірки й непрочитані |
 | `/api/failed-sources` | `api/failed-sources/route.ts` | `FailedSourcesList`: рядки Failed Sources Drawer |
+| `/api/companies-csv` | `api/companies-csv/route.ts` | Export CSV - файл із `Content-Disposition: attachment` (задача 6.05) |
 
-- **Лише читання.** Усі зміни даних - Server Actions. Опитування - GET-маршрут, бо
+- **Лише читання.** Усі зміни даних - Server Actions. Export CSV - теж GET: браузер
+  зберігає файл сам, без того щоб тягнути його в стан сторінки. Опитування - GET-маршрут, бо
   Server Actions клієнт Next надсилає по одній: опитування раз на 3 с ставало б у
   чергу з діями користувача.
 - **Перевірка походження** - `api/same-origin.ts` (`isSameOriginRequest`), тест -
@@ -274,6 +276,10 @@ Companies; інакше - текст самої вкладки («Усе про�
   24 години (задача 6.01), оптимістично; якщо сервер не зберіг - повертає
   попередній вибір і показує toast. Значення - у таблиці `settings`
   ([`server/settings`](../server/settings/README.md)).
+- `settings/csv-export.tsx` - Export CSV: три опції (Tracked, Not tracked, Include
+  career page URLs) і кнопка, що переходить на `/api/companies-csv` з опціями в адресі;
+  браузер зберігає файл, сторінка лишається на місці. Без жодного списку кнопка
+  вимкнена.
 - `settings/actions.ts` - `setThemeAction` і `setLocaleAction` (лише cookie) та
   `setAutoCheckIntervalAction` (база; хибний інтервал відхиляється).
 

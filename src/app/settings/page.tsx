@@ -8,6 +8,7 @@ import { getSystemUser } from "@/server/db/system-user";
 import { getSettings } from "@/server/settings/settings";
 
 import { AutoCheckIntervalPicker } from "./auto-check-interval-picker";
+import { CsvExport } from "./csv-export";
 import { LanguageSwitcher } from "./language-switcher";
 import { ThemeSwitcher } from "./theme-switcher";
 
@@ -53,6 +54,13 @@ export default async function SettingsPage() {
           {t("autoCheck.title")}
         </h2>
         <AutoCheckIntervalPicker current={settings.autoCheckIntervalHours} />
+      </section>
+
+      <section className="mt-8 flex flex-col gap-3">
+        <h2 className="font-display text-lg font-semibold tracking-tight">
+          {t("export.title")}
+        </h2>
+        <CsvExport />
       </section>
     </>
   );
