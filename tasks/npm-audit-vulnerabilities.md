@@ -25,3 +25,11 @@
 **Наслідок для плану:** `npm audit --audit-level=high` у CI зараз падатиме. Спершу треба розібратися з picomatch (чи є фікс без breaking changes), і лише потім ставити цю перевірку в Actions — інакше вона заблокує кожен PR.
 
 Знайдено під час 1.15.
+
+**Стан 21.11.2026:** picomatch (high) зник сам після оновлень залежностей, лишилось 13 moderate. `npm audit fix` прибрав частину minimatch, але `eslint@10.14.0` досі тягнув `minimatch@10.2.6` - допомогло оновлення до `eslint@10.15.0` (minimatch `^11.0.5`). Лишилось 4 moderate - один ланцюжок esbuild, ризик прийнято.
+
+## Кроки
+
+- [x] `npm audit fix` і `eslint@^10.15.0` - minimatch закрито
+- [x] Перечитати GHSA-67mh-4wv8-2f99: стосується лише `serve`, а `@esbuild-kit/core-utils` викликає лише `transform`/`transformSync` - рішення в [README](../README.md#npm-audit)
+- [x] `npm audit --audit-level=high` у GitHub Actions
