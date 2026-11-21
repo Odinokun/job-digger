@@ -21,7 +21,7 @@ const SOURCE_FILE = [
   "Roundtrip One,roundtrip-one.example,https://job-boards.greenhouse.io/roundtrip-one,",
   'Roundtrip One,roundtrip-one.example,https://jobs.example/roundtrip-one?country=de,"Germany, remote"',
   "Roundtrip Two,roundtrip-two.example,,",
-  "Roundtrip Three,,https://jobs.lever.co/roundtrip-three,",
+  "Roundtrip Three,roundtrip-three.example,https://jobs.lever.co/roundtrip-three,",
   "",
 ].join("\r\n");
 

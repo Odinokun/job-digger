@@ -34,6 +34,12 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   await addDialog.getByLabel("Company website").blur();
   await expect(addDialog.getByLabel("Company name")).toHaveValue("Discord");
 
+  // Посилання на дошку заповнює кар'єрну сторінку й назву, а сайт компанії -
+  // ні, і без нього Save неактивна (задача company-site-required).
+  await expect(addDialog.getByLabel("Company website")).toHaveValue("");
+  await expect(addDialog.getByRole("button", { name: "Save" })).toBeDisabled();
+  await addDialog.getByLabel("Company website").fill("discord.com");
+
   await addDialog.getByRole("button", { name: "Save" }).click();
   await expect(addDialog).toBeHidden();
 
