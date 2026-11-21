@@ -370,11 +370,9 @@ export function AddCompanyDialog({
         ? t("errors.alreadyAdded", { name: failure.company.name })
         : null;
 
-  // Стосується пари полів, а не одного, тому стоїть окремо, а не в `FieldError`.
-  const addressError =
-    failure?.problem === "address-required" || findError !== null
-      ? t("errors.addressRequired")
-      : null;
+  // Find pages без сайту й назви: шукати нема за чим. Стосується пари полів,
+  // тому стоїть окремо, а не в `FieldError`.
+  const addressError = findError !== null ? t("errors.addressRequired") : null;
 
   const sourceFailure =
     sourceState?.status === "failed" ? sourceState.result : null;
@@ -462,13 +460,13 @@ export function AddCompanyDialog({
               <input type="hidden" name="tab" value={tab} />
               <Modal.Body className="flex flex-col gap-4">
                 {/* Адреса стоїть першою: з неї заповнюються два поля нижче. */}
-                {/* `isRequired` немає: компанію, знайдену лише на джоб-борді,
-                    сайт вигадувати не змушуємо. Правило «хоча б одна з двох
-                    адрес» стосується пари полів, тому його показує рядок над
-                    кнопками, а не підпис під полем (картка 2.17). */}
+                {/* Сайт обовʼязковий (задача company-site-required): посилання
+                    на ATS заповнює кар'єрну сторінку й назву, а сайт компанії
+                    користувач уводить сам. */}
                 <TextField
                   autoFocus
                   fullWidth
+                  isRequired
                   name="url"
                   value={fields.url}
                   onChange={(value) => changeField("url", value)}
@@ -547,10 +545,7 @@ export function AddCompanyDialog({
                     <ul className="list-inside list-disc text-muted">
                       {sameName.companies.map((company) => (
                         <li key={company.id}>
-                          {/* Компанія без сайту - саме той випадок, заради
-                              якого це попередження й зʼявилося, тому замість
-                              порожнечі тут підпис (картка 2.17). */}
-                          {company.name} - {company.url ?? t("noSite")}
+                          {company.name} - {company.url}
                         </li>
                       ))}
                     </ul>
@@ -628,7 +623,15 @@ export function AddCompanyDialog({
                 <Button slot="close" variant="secondary" type="button">
                   {t("cancel")}
                 </Button>
-                <Button type="submit" isPending={isPending}>
+                {/* Save неактивна, доки немає назви й сайту (аудит
+                    інтерфейсу, B4): порожній Save не казав, чого бракує. */}
+                <Button
+                  type="submit"
+                  isPending={isPending}
+                  isDisabled={
+                    fields.name.trim() === "" || fields.url.trim() === ""
+                  }
+                >
                   {sameDomain ? t("addAnyway") : t("save")}
                 </Button>
               </Modal.Footer>

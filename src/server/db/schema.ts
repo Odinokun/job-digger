@@ -74,13 +74,14 @@ export const companies = pgTable(
     // Головна адреса так, як її ввів користувач: зі шляхом, бо bosch.com/de і
     // bosch.com/ua - різні компанії (src/lib/companies/README.md).
     //
-    // Необовʼязкова: адреса ATS головного сайту не дає (`jobs.lever.co/spotify`),
-    // і вигадувати його за користувача нема з чого - буває і `.io`, і `.ai`
-    // (картка 2.17). Компанію тоді ідентифікує її карʼєрне джерело.
-    url: text("url"),
+    // Обовʼязкова (рішення автора 21.11.2026, задача company-site-required):
+    // до того компанія, знайдена лише на ATS, могла жити без сайту (картка
+    // 2.17), але без нього не працює пошук сторінок на сайті і дублікати
+    // ловляться лише за джерелами.
+    url: text("url").notNull(),
     // Та сама адреса в очищеній формі - лише для порівняння дублікатів.
     // Саме очищення й повідомлення про збіг - задача 2.02.
-    normalizedUrl: text("normalized_url"),
+    normalizedUrl: text("normalized_url").notNull(),
     discoveryStatus: discoveryStatus("discovery_status")
       .notNull()
       .default("not_checked"),

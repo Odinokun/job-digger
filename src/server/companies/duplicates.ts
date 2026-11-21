@@ -1,4 +1,4 @@
-import { and, asc, eq, isNotNull, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { sameCompanyName } from "../../lib/companies/name.ts";
@@ -12,14 +12,13 @@ export type ConflictingCompany = {
 };
 
 /**
- * Компанія, знайдена за назвою. Окремо від `ConflictingCompany`: сюди
- * потрапляють і компанії без головного сайту - саме через них це попередження
- * й зʼявилося (картка 2.17), тому `url` тут необовʼязковий.
+ * Компанія, знайдена за назвою. Окремо від `ConflictingCompany`: попередження
+ * про назву ловить ту саму компанію під іншим сайтом (картка 2.17).
  */
 export type NamedCompany = {
   id: string;
   name: string;
-  url: string | null;
+  url: string;
 };
 
 /**
@@ -57,11 +56,6 @@ export async function findCompanyUrlConflict(
     .where(
       and(
         eq(companies.userId, userId),
-        // Компанія без сайту не конфліктує по сайту ні з ким (картка 2.17).
-        // Умова на домен нижче відсіяла б її й сама - `NULL = ...` не
-        // істинне, - але сказати це прямо чесніше, ніж покластися на побічний
-        // ефект тричевої логіки.
-        isNotNull(companies.normalizedUrl),
         // Домен обчислюється в SQL, а не шукається через `like 'bosch.com%'`:
         // інакше bosch.com.ua вважався б тим самим доменом, що bosch.com.
         sql`split_part(split_part(${companies.normalizedUrl}, '/', 1), '?', 1) = ${domain}`,
@@ -71,29 +65,16 @@ export async function findCompanyUrlConflict(
     // так само, як їх показує список компаній - за назвою.
     .orderBy(asc(companies.name));
 
-  // Звуження типу: запит уже відсіяв рядки без адреси, але знати про це
-  // компілятор не може - колонки в схемі nullable.
-  const withUrl = rows.filter(
-    (
-      row,
-    ): row is {
-      id: string;
-      name: string;
-      url: string;
-      normalizedUrl: string;
-    } => row.url !== null && row.normalizedUrl !== null,
-  );
-
-  const exact = withUrl.find((row) => row.normalizedUrl === normalizedUrl);
+  const exact = rows.find((row) => row.normalizedUrl === normalizedUrl);
 
   if (exact) {
     return { kind: "exact", company: withoutNormalizedUrl(exact) };
   }
 
-  if (withUrl.length > 0) {
+  if (rows.length > 0) {
     return {
       kind: "same-domain",
-      companies: withUrl.map(withoutNormalizedUrl),
+      companies: rows.map(withoutNormalizedUrl),
     };
   }
 
@@ -116,12 +97,10 @@ function withoutNormalizedUrl({
 /**
  * Компанії користувача з такою самою назвою.
  *
- * Потрібні відтоді, як сайт став необовʼязковим (картка 2.17): дві картки
- * однієї компанії можуть не мати спільної адреси взагалі - в однієї лише сайт
- * `linear.com`, в іншої лише сторінка `jobs.ashbyhq.com/linear`. Перевірка по
- * сайту порівнює сайт із сайтом, перевірка по джерелу - джерело з джерелом, і
- * жодна з них такої пари не бачить. Спільним лишається тільки те, що
- * застосунок вивів з обох адрес ту саму назву.
+ * Зʼявились разом із компаніями без сайту (картка 2.17) і лишились: дві картки
+ * однієї компанії можуть не мати спільної адреси - сайти на різних доменах
+ * (`linear.app` і `linear.io`), джерела різні. Перевірка по сайту й по
+ * джерелу таку пару не бачать; спільною лишається тільки назва.
  *
  * Це **попередження, а не заборона**: дві різні компанії цілком можуть
  * називатися однаково, і рішення лишається за користувачем - як і зі спільним

@@ -14,6 +14,7 @@ import {
   setVacancyFavorite,
   setVacancyRead,
 } from "./marks.ts";
+import { companySiteValues } from "../db/testing/company-values.ts";
 
 const DETECTED = new Date("2026-11-18T10:00:00Z");
 
@@ -27,8 +28,7 @@ async function seedVacancy(
     .values({
       userId: user.id,
       name: "Discord",
-      url: null,
-      normalizedUrl: null,
+      ...companySiteValues("Discord"),
     })
     .returning();
   const [source] = await testDb
@@ -284,8 +284,7 @@ async function seedVacancies(
     .values({
       userId: user.id,
       name: "Discord",
-      url: null,
-      normalizedUrl: null,
+      ...companySiteValues("Discord"),
     })
     .returning();
   const [source] = await testDb

@@ -23,15 +23,15 @@ export interface ImportSummary {
    * сторінки для компанії, що вже є.
    */
   duplicates: number;
-  /** Рядки, які не вдалося прочитати: без назви, без адрес чи з кривою адресою. */
+  /** Рядки, які не вдалося прочитати: без назви, без сайту чи з кривою адресою. */
   errors: number;
 }
 
 /** Рядок, що пройшов перевірку. */
 interface ValidRow {
   name: string;
-  /** Очищена адреса сайту або `null` - компанія лише з карʼєрною сторінкою. */
-  companyUrl: { typed: string; normalized: string } | null;
+  /** Сайт компанії - обовʼязковий (задача company-site-required). */
+  companyUrl: { typed: string; normalized: string };
   careerUrl: string;
   /** Очищена адреса карʼєрної сторінки або `null`, якщо її немає. */
   careerNormalized: string | null;
@@ -41,8 +41,9 @@ interface ValidRow {
 /**
  * Імпортує рядки однією транзакцією.
  *
- * **Та сама компанія** - лише точний збіг очищеної адреси сайту, а компанія без
- * сайту - за своєю карʼєрною сторінкою, як в `addCompany`. Попередження «той
+ * **Та сама компанія** - лише точний збіг очищеної адреси сайту, як в
+ * `addCompany`. Рядок без сайту - помилка: сайт компанії обовʼязковий
+ * (задача company-site-required). Попередження «той
  * самий домен» і «та сама назва» тут не зупиняють: підтвердити їх у файлі
  * нікому, а на одному домені живуть і різні компанії.
  *
@@ -60,7 +61,7 @@ export async function importCompanies(
     duplicates: 0,
     errors: 0,
   };
-  // Рядки однієї компанії - разом: ключ - сайт або, без нього, сторінка.
+  // Рядки однієї компанії - разом: ключ - очищений сайт.
   const groups = new Map<string, ValidRow[]>();
 
   for (const row of rows) {
@@ -71,10 +72,7 @@ export async function importCompanies(
       continue;
     }
 
-    const key =
-      valid.companyUrl === null
-        ? `source:${valid.careerNormalized}`
-        : `site:${valid.companyUrl.normalized}`;
+    const key = valid.companyUrl.normalized;
     groups.set(key, [...(groups.get(key) ?? []), valid]);
   }
 
@@ -91,11 +89,8 @@ export async function importCompanies(
           .values({
             userId,
             name: first.name,
-            url:
-              first.companyUrl === null
-                ? null
-                : absoluteCompanyUrl(first.companyUrl.typed),
-            normalizedUrl: first.companyUrl?.normalized ?? null,
+            url: absoluteCompanyUrl(first.companyUrl.typed),
+            normalizedUrl: first.companyUrl.normalized,
           })
           .returning({ id: companies.id });
         companyId = created.id;
@@ -129,24 +124,20 @@ function validateRow(row: CsvRow): ValidRow | null {
   const typedCompanyUrl = row.company_url.trim();
   const careerUrl = row.career_url.trim();
 
-  if (name === "" || (typedCompanyUrl === "" && careerUrl === "")) {
+  if (name === "" || typedCompanyUrl === "") {
     return null;
   }
 
-  const company =
-    typedCompanyUrl === "" ? null : normalizeCompanyUrl(typedCompanyUrl);
+  const company = normalizeCompanyUrl(typedCompanyUrl);
   const career = careerUrl === "" ? null : normalizeCompanyUrl(careerUrl);
 
-  if ((company !== null && !company.ok) || (career !== null && !career.ok)) {
+  if (!company.ok || (career !== null && !career.ok)) {
     return null;
   }
 
   return {
     name,
-    companyUrl:
-      company === null
-        ? null
-        : { typed: typedCompanyUrl, normalized: company.url },
+    companyUrl: { typed: typedCompanyUrl, normalized: company.url },
     careerUrl,
     careerNormalized: career?.url ?? null,
     label: row.career_label,
@@ -159,22 +150,12 @@ async function findExisting(
   userId: string,
   row: ValidRow,
 ): Promise<string | null> {
-  if (row.companyUrl !== null) {
-    const conflict = await findCompanyUrlConflict(db, {
-      userId,
-      normalizedUrl: row.companyUrl.normalized,
-    });
-
-    return conflict.kind === "exact" ? conflict.company.id : null;
-  }
-
-  // Без сайту карʼєрна сторінка - уся ідентичність компанії (картка 2.17).
-  const owner = await findCompanyWithSource(db, {
+  const conflict = await findCompanyUrlConflict(db, {
     userId,
-    normalizedUrl: row.careerNormalized ?? "",
+    normalizedUrl: row.companyUrl.normalized,
   });
 
-  return owner?.id ?? null;
+  return conflict.kind === "exact" ? conflict.company.id : null;
 }
 
 /**

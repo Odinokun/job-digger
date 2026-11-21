@@ -8,6 +8,7 @@ import { untilSomeoneWaitsForLock } from "../db/testing/locks.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import type { ParsedVacancy, ParseResult } from "../parsers/types.ts";
 import { syncSourceVacancies } from "./lifecycle.ts";
+import { companySiteValues } from "../db/testing/company-values.ts";
 
 /**
  * Дублікати між джерелами однієї компанії (задача 6.20): та сама назва на
@@ -21,7 +22,7 @@ async function company(name = "Kinggroup"): Promise<string> {
   const user = await seedSystemUser(testDb);
   const [row] = await testDb
     .insert(companies)
-    .values({ userId: user.id, name, url: null, normalizedUrl: null })
+    .values({ userId: user.id, name, ...companySiteValues(name) })
     .returning();
 
   return row.id;

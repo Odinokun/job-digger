@@ -44,12 +44,12 @@ interface EditCompanyDialogProps {
 const EMPTY_NEW_SOURCE = { url: "", label: "" };
 
 /**
- * Модалка Edit: назва компанії, підписи карʼєрних джерел, їх видалення й
- * додавання нового.
+ * Модалка Edit: назва і сайт компанії, підписи карʼєрних джерел, їх видалення
+ * й додавання нового.
  *
- * Головний сайт компанії тут не редагується, як і адреси наявних джерел:
- * виправлення адреси в плані немає, а окремої сторінки деталей джерела - теж
- * (картка 2.05). Нове джерело вводиться руками, бо автоматичний пошук приходить
+ * Сайт редагується з задачі company-site-required: він обовʼязковий, і
+ * помилку в ньому інакше було б не виправити. Адреси наявних джерел - ні:
+ * виправлення адреси джерела в плані немає (картка 2.05). Нове джерело вводиться руками, бо автоматичний пошук приходить
  * лише із задачею 5.07, а друге джерело потрібне вже зараз: на mozilla.org
  * вакансії фільтруються за країною, і кожен фільтр - окрема сторінка
  * (картка 2.16).
@@ -78,6 +78,10 @@ export function EditCompanyDialog({
   );
 
   const [removed, setRemoved] = useState<string[]>([]);
+  // Назва й сайт контрольовані: Save неактивна, доки котресь порожнє (аудит
+  // інтерфейсу, B4), а неконтрольовану форму React скидає після надсилання.
+  const [name, setName] = useState(company.name);
+  const [siteUrl, setSiteUrl] = useState(company.url);
   // Поля підписів і блок додавання контрольовані: React скидає неконтрольовану
   // форму після надсилання, і при відмові користувач втратив би введене.
   const [labels, setLabels] = useState<Record<string, string>>({});
@@ -124,6 +128,8 @@ export function EditCompanyDialog({
    * (`react-hooks/set-state-in-effect`).
    */
   function openDialog() {
+    setName(company.name);
+    setSiteUrl(company.url);
     setRemoved([]);
     setLabels(
       Object.fromEntries(
@@ -190,6 +196,13 @@ export function EditCompanyDialog({
       ? t("errors.nameRequired")
       : failure?.problem === "not-found"
         ? t("errors.notFound")
+        : null;
+
+  const siteError =
+    failure?.problem === "company-url"
+      ? tUrlError(URL_ERROR_KEYS[failure.reason])
+      : failure?.problem === "already-added"
+        ? t("errors.siteTaken", { name: failure.company.name })
         : null;
 
   // Клієнтська відмова має перевагу: вона свіжіша за стан минулого надсилання.
@@ -267,12 +280,29 @@ export function EditCompanyDialog({
                   fullWidth
                   isRequired
                   name="name"
-                  defaultValue={company.name}
+                  value={name}
+                  onChange={setName}
                   isInvalid={nameError !== null}
                 >
                   <Label>{t("name")}</Label>
                   <Input />
                   <FieldError>{nameError}</FieldError>
+                </TextField>
+
+                {/* Сайт обовʼязковий і редагується (задача
+                    company-site-required): помилку в ньому інакше не
+                    виправити, лише видалити компанію й додати заново. */}
+                <TextField
+                  fullWidth
+                  isRequired
+                  name="url"
+                  value={siteUrl}
+                  onChange={setSiteUrl}
+                  isInvalid={siteError !== null}
+                >
+                  <Label>{t("url")}</Label>
+                  <Input />
+                  <FieldError>{siteError}</FieldError>
                 </TextField>
 
                 <div className="flex flex-col gap-2">
@@ -418,7 +448,11 @@ export function EditCompanyDialog({
                 <Button slot="close" variant="secondary" type="button">
                   {t("cancel")}
                 </Button>
-                <Button type="submit" isPending={isPending}>
+                <Button
+                  type="submit"
+                  isPending={isPending}
+                  isDisabled={name.trim() === "" || siteUrl.trim() === ""}
+                >
                   {t("save")}
                 </Button>
               </Modal.Footer>

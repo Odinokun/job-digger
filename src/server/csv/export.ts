@@ -80,7 +80,7 @@ export async function exportCompanyRows(
   const byCompany = Map.groupBy(sources, (source) => source.companyId);
 
   return rows.flatMap((company) => {
-    const base = { company_name: company.name, company_url: company.url ?? "" };
+    const base = { company_name: company.name, company_url: company.url };
     const own = byCompany.get(company.id) ?? [];
 
     return own.length === 0

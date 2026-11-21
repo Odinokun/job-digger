@@ -12,6 +12,7 @@ import { createHttpClient } from "../http/client.ts";
 import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { previewOwnPage, applyOwnPageRecipe } from "./own-page.ts";
+import { companySiteValues } from "../db/testing/company-values.ts";
 
 /**
  * Рецепт власної сторінки з картки компанії (задача 6.21): кнопка Read as
@@ -51,7 +52,7 @@ async function ownPageSource(
 ) {
   const [company] = await testDb
     .insert(companies)
-    .values({ userId, name: "Kinggroup", url: null, normalizedUrl: null })
+    .values({ userId, name: "Kinggroup", ...companySiteValues("Kinggroup") })
     .returning();
   const [source] = await testDb
     .insert(careerSources)

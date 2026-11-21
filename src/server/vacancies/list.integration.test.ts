@@ -6,13 +6,14 @@ import { careerSources, companies, users, vacancies } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import { hasAnyVacancy, listVacancies } from "./list.ts";
+import { companySiteValues } from "../db/testing/company-values.ts";
 
 /** Джерело компанії користувача - повертає його id. */
 async function sourceOf(userId: string, companyName: string): Promise<string> {
   const slug = companyName.toLowerCase();
   const [company] = await testDb
     .insert(companies)
-    .values({ userId, name: companyName, url: null, normalizedUrl: null })
+    .values({ userId, name: companyName, ...companySiteValues(companyName) })
     .returning();
   const [source] = await testDb
     .insert(careerSources)

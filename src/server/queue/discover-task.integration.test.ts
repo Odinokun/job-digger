@@ -13,6 +13,7 @@ import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { claimTask } from "./claim.ts";
 import { runDiscoverTask } from "./discover-task.ts";
 import { companyToDiscover, minutesAfter, task } from "./test-fixtures.ts";
+import { companySiteValues } from "../db/testing/company-values.ts";
 
 /** Розклад запитів тут не перевіряється - він має власні тести. */
 const noLimits: HostLimiter = { run: (_host, work) => work() };
@@ -176,7 +177,11 @@ describe("runDiscoverTask", () => {
     const user = await seedSystemUser(testDb);
     const [other] = await testDb
       .insert(companies)
-      .values({ userId: user.id, name: "Acme old" })
+      .values({
+        userId: user.id,
+        name: "Acme old",
+        ...companySiteValues("Acme old"),
+      })
       .returning();
     await testDb.insert(careerSources).values({
       companyId: other.id,

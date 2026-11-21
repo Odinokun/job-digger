@@ -391,47 +391,27 @@ describe("addCompany", () => {
     expect(await testDb.select().from(companies)).toHaveLength(2);
   });
 
-  it("adds a company found only on an ATS page, without a site", async () => {
-    const userId = await user();
-
-    const result = await addCompany(testDb, {
-      userId,
-      name: "Spotify",
-      url: "",
-      careerUrl: "jobs.lever.co/spotify",
-    });
-
-    expect(result.ok).toBe(true);
-
-    const [company] = await testDb.select().from(companies);
-
-    // Сайту немає в обох колонках: і в тій, що показується, і в тій, що
-    // служить порівнянню. Компанію далі ідентифікує її джерело.
-    expect(company.url).toBeNull();
-    expect(company.normalizedUrl).toBeNull();
-
-    const [source] = await sourcesOf(company.id);
-
-    expect(source.url).toBe("https://jobs.lever.co/spotify");
-    expect(source.platform).toBe("lever");
-  });
-
-  it("refuses a company with neither a site nor a career page", async () => {
+  it("refuses a company without a site, even with a career page (task company-site-required)", async () => {
     const userId = await user();
 
     const result = await addCompany(testDb, {
       userId,
       name: "Spotify",
       url: "   ",
-      careerUrl: "",
+      careerUrl: "jobs.lever.co/spotify",
     });
 
-    // Без жодної адреси компанію не ідентифікує ніщо й перевіряти в неї нічого.
-    expect(result).toEqual({ ok: false, problem: "address-required" });
+    // Сайт обовʼязковий: компанію, знайдену лише на ATS, без нього вже не
+    // додати (рішення автора 21.11.2026; до того - картка 2.17).
+    expect(result).toEqual({
+      ok: false,
+      problem: "company-url",
+      reason: "empty",
+    });
     expect(await testDb.select().from(companies)).toHaveLength(0);
   });
 
-  it("still refuses a site it cannot use, even though a site is optional now", async () => {
+  it("refuses a site it cannot use", async () => {
     const userId = await user();
 
     const result = await addCompany(testDb, {
@@ -449,43 +429,20 @@ describe("addCompany", () => {
     expect(await testDb.select().from(companies)).toHaveLength(0);
   });
 
-  it("lets two companies without a site live side by side", async () => {
-    const userId = await user();
-
-    await addCompany(testDb, {
-      userId,
-      name: "Spotify",
-      url: "",
-      careerUrl: "jobs.lever.co/spotify",
-    });
-
-    const result = await addCompany(testDb, {
-      userId,
-      name: "Netflix",
-      url: "",
-      careerUrl: "jobs.lever.co/netflix",
-    });
-
-    // Unique-індекс `(user_id, normalized_url)` на двох NULL не спрацьовує:
-    // у PostgreSQL NULL не дорівнює NULL (docs/18/indexes-unique).
-    expect(result.ok).toBe(true);
-    expect(await testDb.select().from(companies)).toHaveLength(2);
-  });
-
   it("refuses a career page that already belongs to another company", async () => {
     const userId = await user();
 
     await addCompany(testDb, {
       userId,
       name: "Spotify",
-      url: "",
+      url: "spotify.com",
       careerUrl: "jobs.lever.co/spotify",
     });
 
     const result = await addCompany(testDb, {
       userId,
       name: "Spotify Technology",
-      url: "",
+      url: "spotify-technology.com",
       // Та сама сторінка, записана інакше: порівняння йде по очищеній формі.
       careerUrl: "https://www.jobs.lever.co/spotify/",
     });
@@ -506,7 +463,7 @@ describe("addCompany", () => {
     await addCompany(testDb, {
       userId,
       name: "Linear",
-      url: "",
+      url: "linear.io",
       careerUrl: "jobs.ashbyhq.com/linear",
     });
 
@@ -516,9 +473,9 @@ describe("addCompany", () => {
       url: "linear.app",
     });
 
-    // Спільної адреси в цих двох карток немає взагалі: в однієї лише джерело,
-    // в іншої лише сайт. Збігається тільки назва - і це єдиний сигнал, що це
-    // та сама компанія (картка 2.17).
+    // Сайти різні (linear.io і linear.app - різні домени), спільного джерела
+    // немає. Збігається тільки назва - і це єдиний сигнал, що це та сама
+    // компанія (картка 2.17).
     expect(result).toMatchObject({
       ok: false,
       problem: "same-name",
@@ -533,7 +490,7 @@ describe("addCompany", () => {
     await addCompany(testDb, {
       userId,
       name: "Linear",
-      url: "",
+      url: "linear.io",
       careerUrl: "jobs.ashbyhq.com/linear",
     });
 
@@ -583,7 +540,7 @@ describe("addCompany", () => {
     const result = await addCompany(testDb, {
       userId: owner,
       name: "Linear",
-      url: "",
+      url: "linear.io",
       careerUrl: "jobs.ashbyhq.com/linear",
     });
 
@@ -630,32 +587,19 @@ describe("addCompany", () => {
       ]);
     });
 
-    it("takes a found page as the address of a company without a site", async () => {
-      const userId = await user();
-
-      const result = await addCompany(testDb, {
-        userId,
-        name: "Linear",
-        url: "",
-        foundUrls: ["https://jobs.ashbyhq.com/linear"],
-      });
-
-      expect(result).toEqual({ ok: true, companyId: expect.any(String) });
-    });
-
     it("refuses a found page that already belongs to another company", async () => {
       const userId = await user();
       await addCompany(testDb, {
         userId,
         name: "Spotify",
-        url: "",
+        url: "spotify.com",
         careerUrl: "jobs.lever.co/spotify",
       });
 
       const result = await addCompany(testDb, {
         userId,
         name: "Spotify AB",
-        url: "https://www.spotify.com",
+        url: "spotify.se",
         foundUrls: ["https://jobs.lever.co/spotify"],
       });
 

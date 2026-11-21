@@ -25,3 +25,21 @@ export async function resetDatabase(): Promise<void> {
     await db.$client.end();
   }
 }
+
+/**
+ * Лише порожні таблиці, без системного користувача - перед міграціями.
+ *
+ * База E2E живе між прогонами, і нова міграція може не пройти на старих
+ * даних: так `0024` (сайт компанії обовʼязковий) впала на компаніях без сайту,
+ * що лишились від минулого прогону. Порожнім таблицям міграція не страшна.
+ * Журнал міграцій drizzle лежить у схемі `drizzle`, тож його це не чіпає.
+ */
+export async function emptyTables(): Promise<void> {
+  const db = drizzle(e2eDatabaseUrl);
+
+  try {
+    await truncateAll(db);
+  } finally {
+    await db.$client.end();
+  }
+}

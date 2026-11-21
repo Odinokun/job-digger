@@ -43,6 +43,11 @@ async function addCompany(
   // ставимо свою, щоб не залежати від того, що підказка з неї зробить.
   await dialog.getByLabel("Company website").blur();
   await dialog.getByLabel("Company name").fill(company.name);
+  // Підказка перенесла адресу дошки в кар'єрну сторінку, а сайт компанії
+  // обовʼязковий - вводимо його самі.
+  await dialog
+    .getByLabel("Company website")
+    .fill(`${company.name.toLowerCase().replaceAll(" ", "-")}.example`);
 
   await dialog.getByRole("button", { name: "Save" }).click();
   await expect(dialog).toBeHidden();
