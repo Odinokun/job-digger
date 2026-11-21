@@ -66,7 +66,7 @@ export function FindPagesDialog({
 
     startFinding(async () => {
       const result = await findPagesAction(
-        company.url ?? "",
+        company.url,
         company.name,
         company.id,
       );

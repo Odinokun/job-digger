@@ -405,6 +405,7 @@ export async function updateCompanyAction(
       userId: user.id,
       companyId,
       name: readField(formData, "name"),
+      url: readField(formData, "url"),
       removeSourceIds: formData
         .getAll("removeSourceIds")
         .filter((value): value is string => typeof value === "string"),

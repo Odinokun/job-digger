@@ -114,6 +114,7 @@
       "open": "Edit",
       "title": "Edit company",
       "name": "Company name",
+      "url": "Company website",
       "sources": "Career pages",
       "noSources": "No career pages yet.",
       "remove": "Remove",
@@ -127,7 +128,8 @@
       "addSourceHint": "Optional. Every address is checked on its own, so the same page with another filter is a separate career page.",
       "errors": {
         "nameRequired": "Enter a company name.",
-        "notFound": "This company is no longer there."
+        "notFound": "This company is no longer there.",
+        "siteTaken": "Another company already has this website: {name}."
       }
     },
     "deleteCompany": {
@@ -144,7 +146,7 @@
       "name": "Company name",
       "url": "Company website",
       "urlPlaceholder": "e.g. bosch.com",
-      "urlHint": "Paste the company site or a career page - the name and the other address are filled in from it. A company that lives only on a job board can go without a site.",
+      "urlHint": "Paste the company site or a career page - the name and the other address are filled in from it. A job board link fills in the career page; the company website you enter yourself.",
       "careerUrl": "Career page",
       "careerUrlPlaceholder": "e.g. job-boards.greenhouse.io/bosch",
       "careerUrlHint": "Optional. Without it the company goes to Not tracked.",
@@ -153,7 +155,6 @@
       "cancel": "Cancel",
       "sameDomainWarning": "You already track other companies on this domain:",
       "sameNameWarning": "You already have a company with this name:",
-      "noSite": "no website",
       "addAsSource": "Add as a career page of {name}",
       "addAsSourceHint": "{name} is already added. The pasted address can become another career page of it.",
       "addAsSourceChoose": "Or add the pasted address to one of them:",
