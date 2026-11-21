@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckDouble, Envelope } from "@gravity-ui/icons";
+import { Envelope, EnvelopeOpen } from "@gravity-ui/icons";
 import { toast } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { useTransition } from "react";
@@ -21,9 +21,10 @@ interface CompanyReadButtonsProps {
  * підтвердження немає - дію легко скасувати протилежною.
  *
  * На сторінці Companies після дії нічого видимо не змінюється, тому результат
- * показує сповіщення з кількістю. Іконки - ті самі, що в рядку вакансії
- * (`_jobs/vacancy-actions.tsx`), лише прочитане - подвійна галочка. Кнопки лише
- * з іконкою - `IconButton`, з підказкою при наведенні.
+ * показує сповіщення з кількістю. Іконки - пара конвертів, як у поштових
+ * клієнтах: відкритий - позначити прочитаним, закритий - непрочитаним (аудит
+ * інтерфейсу, C1: подвійна галочка поруч із конвертом читалась як загадка).
+ * Кнопки лише з іконкою - `IconButton`, з підказкою при наведенні.
  */
 export function CompanyReadButtons({
   companyId,
@@ -59,7 +60,7 @@ export function CompanyReadButtons({
         isDisabled={isPending}
         onPress={() => mark(true)}
       >
-        <CheckDouble />
+        <EnvelopeOpen />
       </IconButton>
       <IconButton
         size="sm"
