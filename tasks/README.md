@@ -146,7 +146,7 @@ PR: #57
 | [Аудит інтерфейсу](ui-audit.md) | done |
 | [Тема: кнопки, текст, плейсхолдери](ui-theme-basics.md) | done |
 | [Телефон і сітка карток](ui-mobile-layout.md) | backlog |
-| [Картка компанії](ui-company-card.md) | backlog |
+| [Картка компанії](ui-company-card.md) | done |
 | [Діалоги компанії](ui-company-dialogs.md) | backlog |
 | [Сайт компанії обов'язковий](company-site-required.md) | backlog |
 | [Jobs, Settings, History](ui-small-screens.md) | backlog |
