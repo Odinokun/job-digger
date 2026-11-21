@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { careerSources, checkRuns, checkTasks, companies } from "./schema.ts";
 import { seedSystemUser } from "./system-user.ts";
 import { testDb } from "./testing/test-db.ts";
+import { companySiteValues } from "./testing/company-values.ts";
 
 // Drizzle обертає помилку драйвера у DrizzleQueryError, код - у `cause`.
 const UNIQUE_VIOLATION = { cause: { code: "23505" } };
@@ -62,7 +63,7 @@ async function greenhouseSource(board: string): Promise<string> {
   const user = await seedSystemUser(testDb);
   const [company] = await testDb
     .insert(companies)
-    .values({ userId: user.id, name: board, url: null, normalizedUrl: null })
+    .values({ userId: user.id, name: board, ...companySiteValues(board) })
     .returning();
   const [source] = await testDb
     .insert(careerSources)

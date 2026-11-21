@@ -16,6 +16,7 @@
 | `setup.ts`        | `beforeEach(truncateAll)` і закриття пулу після файлу тестів            |
 | `locks.ts` | `untilSomeoneWaitsForLock` - чекає, поки запит стане в чергу за блокуванням: тест гонки знає, що вона справді сталася |
 | `career-source-values.ts` | `normalizedSourceUrl` - очищена адреса для прямої вставки джерела в тестах |
+| `company-values.ts` | `companySiteValues` - унікальний сайт (`url` і `normalized_url`) для прямої вставки компанії в тестах: обидві колонки обовʼязкові |
 
 ## Як це працює
 

@@ -9,7 +9,7 @@ import { exportCompanyRows } from "./export.ts";
 async function company(
   userId: string,
   name: string,
-  url: string | null,
+  url: string,
   sources: { url: string; label?: string; isTracked?: boolean }[] = [],
 ) {
   const [row] = await testDb
@@ -121,29 +121,6 @@ describe("exportCompanyRows", () => {
     expect(await names(true, false)).toEqual(["Mozilla"]);
     expect(await names(false, true)).toEqual(["Acme"]);
     expect(await names(false, false)).toEqual([]);
-  });
-
-  it("leaves company_url empty for a company known only by its board", async () => {
-    const user = await seedSystemUser(testDb);
-    await company(user.id, "Linear", null, [
-      { url: "https://jobs.ashbyhq.com/linear" },
-    ]);
-
-    expect(
-      await exportCompanyRows(testDb, {
-        userId: user.id,
-        tracked: true,
-        notTracked: true,
-        careerUrls: true,
-      }),
-    ).toEqual([
-      {
-        company_name: "Linear",
-        company_url: "",
-        career_url: "https://jobs.ashbyhq.com/linear",
-        career_label: "",
-      },
-    ]);
   });
 
   it("never exports another user's companies", async () => {

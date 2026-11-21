@@ -11,6 +11,7 @@ import {
   companies,
 } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
+import { companySiteValues } from "../db/testing/company-values.ts";
 
 /** Компанія з одним джерелом Greenhouse - повертає id джерела. */
 export async function greenhouseSource(
@@ -20,7 +21,7 @@ export async function greenhouseSource(
   const user = await seedSystemUser(db);
   const [company] = await db
     .insert(companies)
-    .values({ userId: user.id, name: board, url: null, normalizedUrl: null })
+    .values({ userId: user.id, name: board, ...companySiteValues(board) })
     .returning();
   const [source] = await db
     .insert(careerSources)

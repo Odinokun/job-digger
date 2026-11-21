@@ -48,7 +48,7 @@ async function companiesOf(userId: string) {
 async function existing(
   userId: string,
   name: string,
-  url: string | null,
+  url: string,
   sourceUrl?: string,
 ) {
   const [company] = await testDb
@@ -56,7 +56,7 @@ async function existing(
     .values({
       userId,
       name,
-      url: url === null ? null : `https://${url}`,
+      url: `https://${url}`,
       normalizedUrl: url,
     })
     .returning();
@@ -179,9 +179,8 @@ describe("importCompanies", () => {
     ]);
   });
 
-  it("finds a company without a site by its board", async () => {
+  it("refuses a row without a company site (task company-site-required)", async () => {
     const user = await seedSystemUser(testDb);
-    await existing(user.id, "Linear", null, "https://jobs.ashbyhq.com/linear");
 
     const summary = await importCompanies(testDb, {
       userId: user.id,
@@ -191,9 +190,10 @@ describe("importCompanies", () => {
     expect(summary).toEqual({
       companiesAdded: 0,
       sourcesAdded: 0,
-      duplicates: 1,
-      errors: 0,
+      duplicates: 0,
+      errors: 1,
     });
+    expect(await testDb.select().from(companies)).toEqual([]);
   });
 
   it("counts rows repeated inside the file as duplicates", async () => {
@@ -204,8 +204,8 @@ describe("importCompanies", () => {
       rows: [
         row("Acme", "acme.com", "https://jobs.lever.co/acme"),
         row("Acme", "acme.com", "https://jobs.lever.co/acme/"),
-        row("Beta", "", "https://jobs.lever.co/beta"),
-        row("Beta", "", "https://jobs.lever.co/beta"),
+        row("Beta", "beta.com", "https://jobs.lever.co/beta"),
+        row("Beta", "beta.com", "https://jobs.lever.co/beta"),
       ],
     });
 

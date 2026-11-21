@@ -6,6 +6,7 @@ import { seedSystemUser } from "../db/system-user.ts";
 import { normalizedSourceUrl } from "../db/testing/career-source-values.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import { setSourceReferenceOnly } from "./reference-only.ts";
+import { companySiteValues } from "../db/testing/company-values.ts";
 
 async function insertSource(
   userId: string,
@@ -13,7 +14,7 @@ async function insertSource(
 ) {
   const [company] = await testDb
     .insert(companies)
-    .values({ userId, name: "Kinggroup", url: null, normalizedUrl: null })
+    .values({ userId, name: "Kinggroup", ...companySiteValues("Kinggroup") })
     .returning();
   const url =
     platform === "unsupported"

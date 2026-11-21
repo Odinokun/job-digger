@@ -17,6 +17,7 @@ import { createHttpClient, type HttpClient } from "../http/client.ts";
 import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { checkCompany } from "./check-company.ts";
+import { companySiteValues } from "../db/testing/company-values.ts";
 
 /** Розклад запитів тут не перевіряється - він має власні тести. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
@@ -63,8 +64,7 @@ async function companyWith(...sources: SourceSeed[]) {
     .values({
       userId: user.id,
       name: "Discord",
-      url: null,
-      normalizedUrl: null,
+      ...companySiteValues("Discord"),
     })
     .returning();
   const rows = await testDb

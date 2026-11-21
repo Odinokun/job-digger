@@ -5,8 +5,16 @@ import {
   prepareCareerSource,
   type PreparedCareerSource,
 } from "../../lib/companies/career-source.ts";
-import type { UrlRefusalReason } from "../../lib/companies/url.ts";
+import {
+  absoluteCompanyUrl,
+  normalizeCompanyUrl,
+  type UrlRefusalReason,
+} from "../../lib/companies/url.ts";
 import { careerSources, companies } from "../db/schema.ts";
+import {
+  findCompanyUrlConflict,
+  type ConflictingCompany,
+} from "./duplicates.ts";
 import { withPagePlatform, type PagePlatforms } from "./page-platform.ts";
 import {
   findCompanyWithSource,
@@ -17,8 +25,13 @@ import {
 export type UpdateCompanyInput = {
   userId: string;
   companyId: string;
-  /** Нова назва компанії. Головний сайт у цій модалці не редагується. */
+  /** Нова назва компанії. */
   name: string;
+  /**
+   * Головний сайт з поля модалки. Обовʼязковий, як і в Add company (задача
+   * company-site-required). `undefined` - сайт не змінюється.
+   */
+  url?: string;
   /** Джерела, позначені до видалення. Зміна застосовується на Save. */
   removeSourceIds?: string[];
   /**
@@ -46,6 +59,10 @@ export type UpdateCompanyResult =
   | { ok: true }
   | { ok: false; problem: "name-required" }
   | { ok: false; problem: "not-found" }
+  /** Сайт порожній або непридатний - як у `addCompany`. */
+  | { ok: false; problem: "company-url"; reason: UrlRefusalReason }
+  /** Такий сайт уже має інша компанія користувача. */
+  | { ok: false; problem: "already-added"; company: ConflictingCompany }
   | { ok: false; problem: "source-url"; reason: UrlRefusalReason }
   | { ok: false; problem: "source-duplicate" }
   /**
@@ -72,6 +89,7 @@ export async function updateCompany(
     userId,
     companyId,
     name,
+    url,
     removeSourceIds = [],
     sourceLabels = {},
     addSource,
@@ -82,6 +100,34 @@ export async function updateCompany(
 
   if (trimmedName === "") {
     return { ok: false, problem: "name-required" };
+  }
+
+  // Сайт перевіряється до транзакції, як і нове джерело: відмова не виконує
+  // половини роботи. Точний збіг із сайтом іншої компанії - відмова; свій
+  // незмінений сайт - не конфлікт. «Той самий домен» тут не попереджає: це
+  // правка наявної компанії, а не нова картка.
+  let site: { url: string; normalizedUrl: string } | null = null;
+
+  if (url !== undefined) {
+    const normalized = normalizeCompanyUrl(url);
+
+    if (!normalized.ok) {
+      return { ok: false, problem: "company-url", reason: normalized.reason };
+    }
+
+    const conflict = await findCompanyUrlConflict(db, {
+      userId,
+      normalizedUrl: normalized.url,
+    });
+
+    if (conflict.kind === "exact" && conflict.company.id !== companyId) {
+      return { ok: false, problem: "already-added", company: conflict.company };
+    }
+
+    site = {
+      url: absoluteCompanyUrl(url.trim()),
+      normalizedUrl: normalized.url,
+    };
   }
 
   let newSource: PreparedCareerSource | null = null;
@@ -111,7 +157,9 @@ export async function updateCompany(
     // доступ: чужий рядок не оновиться й нічого не поверне.
     const [updated] = await tx
       .update(companies)
-      .set({ name: trimmedName })
+      .set(
+        site === null ? { name: trimmedName } : { name: trimmedName, ...site },
+      )
       .where(and(eq(companies.id, companyId), eq(companies.userId, userId)))
       .returning({ id: companies.id });
 

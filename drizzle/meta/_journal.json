@@ -169,6 +169,13 @@
       "when": 1795214005008,
       "tag": "0023_talentadore_platform",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1795298717895,
+      "tag": "0024_companies_site_required",
+      "breakpoints": true
     }
   ]
 }

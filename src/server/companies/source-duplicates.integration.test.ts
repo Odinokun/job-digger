@@ -8,6 +8,7 @@ import {
   findCompaniesWithSources,
   findCompanyWithSource,
 } from "./source-duplicates.ts";
+import { companySiteValues } from "../db/testing/company-values.ts";
 
 /** Компанія без сайту з одним карʼєрним джерелом - випадок із картки 2.17. */
 async function insertCompanyWithSource(
@@ -17,7 +18,7 @@ async function insertCompanyWithSource(
 ) {
   const [company] = await testDb
     .insert(companies)
-    .values({ userId, name })
+    .values({ userId, name, ...companySiteValues(name) })
     .returning();
 
   await testDb.insert(careerSources).values({

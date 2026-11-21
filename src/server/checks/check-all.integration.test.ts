@@ -13,6 +13,7 @@ import { seedSystemUser } from "../db/system-user.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import { finalizeRuns, IDLE_RUN_MS } from "../queue/finalize.ts";
 import { startCheckAll } from "./check-all.ts";
+import { companySiteValues } from "../db/testing/company-values.ts";
 
 const now = new Date("2026-11-19T10:00:00Z");
 
@@ -29,7 +30,11 @@ async function companyWith(
 ): Promise<string[]> {
   const [company] = await testDb
     .insert(companies)
-    .values({ userId, name: sources[0].board, url: null, normalizedUrl: null })
+    .values({
+      userId,
+      name: sources[0].board,
+      ...companySiteValues(sources[0].board),
+    })
     .returning();
   const rows = await testDb
     .insert(careerSources)

@@ -6,6 +6,7 @@ import { seedSystemUser } from "../db/system-user.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import { setAutoCheckInterval } from "../settings/settings.ts";
 import { runAutoChecks } from "./auto-check.ts";
+import { companySiteValues } from "../db/testing/company-values.ts";
 
 const now = new Date("2026-11-20T12:00:00Z");
 
@@ -21,7 +22,7 @@ async function userWithTrackedCompany(email?: string) {
       : (await testDb.insert(users).values({ email }).returning())[0];
   const [company] = await testDb
     .insert(companies)
-    .values({ userId: user.id, name: "Acme", url: null, normalizedUrl: null })
+    .values({ userId: user.id, name: "Acme", ...companySiteValues("Acme") })
     .returning();
   await testDb.insert(careerSources).values({
     companyId: company.id,

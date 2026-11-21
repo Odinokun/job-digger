@@ -538,3 +538,85 @@ describe("updateCompany labelling existing sources", () => {
     expect(result).toEqual({ ok: false, problem: "source-duplicate" });
   });
 });
+
+describe("updateCompany changing the site (task company-site-required)", () => {
+  it("stores the new site in both forms", async () => {
+    const user = await seedSystemUser(testDb);
+    const { company } = await insertCompany(user.id, "Acme");
+
+    const result = await updateCompany(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      name: "Acme",
+      url: "www.acme.io/en",
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(await readCompany(company.id)).toMatchObject({
+      url: "https://www.acme.io/en",
+      normalizedUrl: "acme.io/en",
+    });
+  });
+
+  it("keeps its own site without calling it a conflict", async () => {
+    const user = await seedSystemUser(testDb);
+    const { company } = await insertCompany(user.id, "Acme");
+
+    const result = await updateCompany(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      name: "Acme Inc",
+      url: "https://acme.com/",
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(await readCompany(company.id)).toMatchObject({ name: "Acme Inc" });
+  });
+
+  it("refuses an empty or unusable site and changes nothing", async () => {
+    const user = await seedSystemUser(testDb);
+    const { company } = await insertCompany(user.id, "Acme");
+
+    for (const [url, reason] of [
+      ["   ", "empty"],
+      ["ftp://acme.com", "unsupported-scheme"],
+    ] as const) {
+      const result = await updateCompany(testDb, {
+        userId: user.id,
+        companyId: company.id,
+        name: "Renamed",
+        url,
+      });
+
+      expect(result).toEqual({ ok: false, problem: "company-url", reason });
+    }
+    expect(await readCompany(company.id)).toMatchObject({
+      name: "Acme",
+      url: "https://acme.com",
+    });
+  });
+
+  it("refuses the site of another company and changes nothing", async () => {
+    const user = await seedSystemUser(testDb);
+    const { company } = await insertCompany(user.id, "Acme");
+    await insertCompany(user.id, "Globex", "globex");
+
+    const result = await updateCompany(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      name: "Renamed",
+      url: "globex.com",
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      problem: "already-added",
+      company: { name: "Globex" },
+    });
+    expect(await readCompany(company.id)).toMatchObject({
+      name: "Acme",
+      url: "https://acme.com",
+    });
+  });
+});
+

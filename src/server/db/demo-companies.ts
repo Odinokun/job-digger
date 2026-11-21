@@ -24,10 +24,7 @@ type DemoCompany = Omit<
   typeof companies.$inferInsert,
   "id" | "userId" | "url" | "normalizedUrl" | "createdAt"
 > & {
-  /**
-   * Головний сайт у демо-даних є завжди, хоч у схемі колонка й необовʼязкова:
-   * компанію без сайту перевіряють окремі тести, а не демо-набір.
-   */
+  /** Головний сайт - обовʼязковий, як і в схемі. */
   url: string;
   sources: DemoSource[];
 };

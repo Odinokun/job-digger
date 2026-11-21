@@ -7,6 +7,7 @@ import { untilSomeoneWaitsForLock } from "../db/testing/locks.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import type { ParsedVacancy, ParseResult } from "../parsers/types.ts";
 import { syncSourceVacancies } from "./lifecycle.ts";
+import { companySiteValues } from "../db/testing/company-values.ts";
 
 const FIRST_CHECK = new Date("2026-11-01T10:00:00Z");
 const SECOND_CHECK = new Date("2026-11-02T10:00:00Z");
@@ -17,7 +18,7 @@ async function greenhouseSource(board = "discord"): Promise<string> {
   const user = await seedSystemUser(testDb);
   const [company] = await testDb
     .insert(companies)
-    .values({ userId: user.id, name: board, url: null, normalizedUrl: null })
+    .values({ userId: user.id, name: board, ...companySiteValues(board) })
     .returning();
   const [source] = await testDb
     .insert(careerSources)
