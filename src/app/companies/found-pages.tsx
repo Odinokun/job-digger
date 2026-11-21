@@ -41,7 +41,7 @@ export function FoundPages({
 
   return (
     <div className="flex flex-col gap-2">
-      <p id="found-pages-title" className="text-sm font-medium">
+      <p id="found-pages-title" className="text-sm font-semibold">
         {t("title")}
       </p>
       <ul aria-labelledby="found-pages-title" className="flex flex-col gap-3">

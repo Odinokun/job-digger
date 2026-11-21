@@ -64,7 +64,7 @@ export function CsvImport() {
           </>
         )}
       </Button>
-      <p className="text-sm text-muted">{t("hint")}</p>
+      <p className="text-hint text-muted">{t("hint")}</p>
       {/* Підсумок і відмови - живий регіон: результат приходить після
           відправлення, і читач екрана має його почути. */}
       <p role="status" className="text-sm">

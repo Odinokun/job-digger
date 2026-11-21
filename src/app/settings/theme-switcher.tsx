@@ -82,7 +82,7 @@ export function ThemeSwitcher({ current }: ThemeSwitcherProps) {
         })}
       </ToggleButtonGroup>
 
-      <p className="text-sm text-muted">{t("systemHint")}</p>
+      <p className="text-hint text-muted">{t("systemHint")}</p>
     </div>
   );
 }

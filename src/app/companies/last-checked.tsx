@@ -34,7 +34,7 @@ export function LastChecked({
   const shown = at > now ? now : at;
 
   return (
-    <span className="text-sm text-muted">
+    <span className="text-hint text-muted">
       {t(message, { time: format.relativeTime(shown, now) })}
     </span>
   );

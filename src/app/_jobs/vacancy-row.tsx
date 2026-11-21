@@ -70,7 +70,7 @@ export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
             </Chip>
           )}
         </div>
-        <div className="flex flex-wrap gap-x-4 text-sm text-muted">
+        <div className="flex flex-wrap gap-x-4 text-hint text-muted">
           <span>{vacancy.companyName}</span>
           {/* Тире не перекладається: це не слово, а знак «немає даних». */}
           <span>{vacancy.location ?? "—"}</span>
@@ -82,7 +82,7 @@ export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
       <div className="flex shrink-0 items-center gap-4">
         <time
           dateTime={vacancy.firstDetectedAt.toISOString()}
-          className="text-sm text-muted tabular-nums"
+          className="text-hint text-muted tabular-nums"
         >
           {format.dateTime(vacancy.firstDetectedAt, { dateStyle: "medium" })}
         </time>

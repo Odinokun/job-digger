@@ -481,7 +481,7 @@ export function AddCompanyDialog({
                   <Label>{t("url")}</Label>
                   <Input placeholder={t("urlPlaceholder")} />
                   <FieldError>{urlError}</FieldError>
-                  <span className="text-sm text-muted">{t("urlHint")}</span>
+                  <span className="text-hint text-muted">{t("urlHint")}</span>
                 </TextField>
 
                 {/* Пошук іде з сервера й читає чужі сайти з паузами
@@ -536,7 +536,7 @@ export function AddCompanyDialog({
                   <Label>{t("careerUrl")}</Label>
                   <Input placeholder={t("careerUrlPlaceholder")} />
                   <FieldError>{careerUrlError}</FieldError>
-                  <span className="text-sm text-muted">
+                  <span className="text-hint text-muted">
                     {t("careerUrlHint")}
                   </span>
                 </TextField>
