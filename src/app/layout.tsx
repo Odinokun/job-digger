@@ -92,10 +92,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
               провайдер обгортає обох. */}
           <CheckStatusProvider initialUnread={unread}>
             <AppHeader />
-            {/* 80rem - стоковий токен max-w-7xl. Саме токен, а не власне число:
-                перевизначати --container-5xl не стали, бо тоді клас max-w-5xl
-                означав би не 5xl. Хедер тримає ту саму ширину. */}
-            <main className="mx-auto max-w-7xl px-6 py-8">{children}</main>
+            {/* 64rem - стоковий токен max-w-5xl. Рішення автора 21.11.2026:
+                компанії в одну колонку, а рядки вакансій і таблиця History на
+                80rem розтягувались так, що дата й кнопки відривались від назви.
+                Хедер тримає ту саму ширину. */}
+            <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
             <CheckSummary />
           </CheckStatusProvider>
           {/* Регіон сповіщень. Без пропа `queue` він бере глобальну чергу -

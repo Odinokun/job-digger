@@ -26,7 +26,7 @@ export default async function CompaniesLoading() {
         <Skeleton className="h-4 w-28 rounded" />
       </div>
 
-      <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+      <ul className="mt-6 grid gap-4">
         {Array.from({ length: CARDS }, (_, card) => (
           <li key={card} className="flex flex-col gap-4 rounded-2xl border p-4">
             <Skeleton className="h-5 w-40 rounded" />
