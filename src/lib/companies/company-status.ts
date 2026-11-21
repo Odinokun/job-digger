@@ -37,3 +37,33 @@ export function companyCheckStatus(
 
   return null;
 }
+
+/** Що показує картка Tracked ліворуч у підвалі: один кольоровий бейдж і, можливо, текст. */
+export interface CardStatusBadge {
+  badge: CompanyCheckStatus | "not-read" | null;
+  /** «N pages not read» приглушеним текстом поруч, бо бейдж уже зайнятий. */
+  notReadAsText: boolean;
+}
+
+/**
+ * Один кольоровий бейдж на картку (аудит інтерфейсу, A6): чотири кольорові
+ * мітки поруч - Checking, Has errors, «2 pages not read» - зливались у шум.
+ *
+ * Бейдж отримує найважливіше: перевірка, що йде, і помилки - вони вимагають
+ * дії зараз; далі непрочитані сторінки; OK - лише коли більше нічого немає.
+ * Непрочитані сторінки поруч із Checking чи Has errors лишаються текстом.
+ */
+export function cardStatusBadge(
+  status: CompanyCheckStatus | null,
+  notReadCount: number,
+): CardStatusBadge {
+  if (status === "checking" || status === "has-errors") {
+    return { badge: status, notReadAsText: notReadCount > 0 };
+  }
+
+  if (notReadCount > 0) {
+    return { badge: "not-read", notReadAsText: false };
+  }
+
+  return { badge: status, notReadAsText: false };
+}
