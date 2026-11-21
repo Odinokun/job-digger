@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-interface NavLinkProps {
+export interface NavLinkProps {
   href: string;
   label: string;
   /**
@@ -18,6 +18,13 @@ interface NavLinkProps {
    * число без контексту нічого не каже.
    */
   countLink?: { href: string; label: string };
+  /**
+   * `bar` - у шапці, підкреслення активного знизу; `list` - рядок у бургер-меню
+   * на вузькому екрані (`mobile-nav.tsx`), крупніший і з більшою зоною дотику.
+   */
+  layout?: "bar" | "list";
+  /** Перехід за посиланням: бургер-меню закриває себе. */
+  onNavigate?: () => void;
 }
 
 /**
@@ -26,12 +33,24 @@ interface NavLinkProps {
  * компонентах, щоб стан layout зберігався між переходами.
  * https://nextjs.org/docs/app/api-reference/functions/use-pathname
  */
-export function NavLink({ href, label, count, countLink }: NavLinkProps) {
+export function NavLink({
+  href,
+  label,
+  count,
+  countLink,
+  layout = "bar",
+  onNavigate,
+}: NavLinkProps) {
   const pathname = usePathname();
   const isActive = pathname === href;
-  const className = isActive
-    ? "border-b-2 border-foreground py-2 text-sm font-medium"
-    : "border-b-2 border-transparent py-2 text-sm text-muted hover:text-foreground";
+  const className =
+    layout === "list"
+      ? isActive
+        ? "block py-3 text-base font-semibold"
+        : "block py-3 text-base text-muted hover:text-foreground"
+      : isActive
+        ? "border-b-2 border-foreground py-2 text-sm font-medium whitespace-nowrap"
+        : "border-b-2 border-transparent py-2 text-sm whitespace-nowrap text-muted hover:text-foreground";
   const number =
     count === undefined ? null : (
       <span className="font-semibold text-counter tabular-nums">{count}</span>
@@ -45,13 +64,19 @@ export function NavLink({ href, label, count, countLink }: NavLinkProps) {
           href={href}
           aria-current={isActive ? "page" : undefined}
           className={className}
+          onClick={onNavigate}
         >
           {label}
         </Link>
         <Link
           href={countLink.href}
           aria-label={countLink.label}
-          className="py-2 text-sm hover:underline"
+          className={
+            layout === "list"
+              ? "py-3 text-base hover:underline"
+              : "py-2 text-sm hover:underline"
+          }
+          onClick={onNavigate}
         >
           {number}
         </Link>
@@ -64,6 +89,7 @@ export function NavLink({ href, label, count, countLink }: NavLinkProps) {
       href={href}
       aria-current={isActive ? "page" : undefined}
       className={className}
+      onClick={onNavigate}
     >
       {label}
       {number === null ? null : <> {number}</>}

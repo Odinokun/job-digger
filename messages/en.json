@@ -6,6 +6,7 @@
     "attentionCount": "{count, plural, one {# company needs attention} other {# companies need attention}}",
     "history": "History",
     "settings": "Settings",
+    "menu": "Menu",
     "checking": "Checking {checked}/{total}"
   },
   "JobsPage": {
