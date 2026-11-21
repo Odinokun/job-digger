@@ -66,6 +66,34 @@ describe("findSiteCareerPages", () => {
     });
   });
 
+  it("takes a career page in PeopleForce markup for a PeopleForce board (task 5.13)", async () => {
+    // Careers веде на піддомен сайту, а там PeopleForce на домені компанії:
+    // за хостом його не впізнати, лише за розміткою.
+    expect(await findFor("https://kramerica.example")).toEqual({
+      boards: [
+        {
+          url: "https://jobs.kramerica.example/careers",
+          platform: "peopleforce",
+        },
+      ],
+      pages: [],
+    });
+  });
+
+  it("follows a career page one step further to a PeopleForce board on the site (task 5.13)", async () => {
+    // Як SoftConstruct: власна сторінка Careers без ATS веде на піддомен сайту
+    // з PeopleForce. Сама сторінка Careers знахідкою вже не є - дошка є.
+    expect(await findFor("https://vandelay.example")).toEqual({
+      boards: [
+        {
+          url: "https://peopleforce.vandelay.example/careers",
+          platform: "peopleforce",
+        },
+      ],
+      pages: [],
+    });
+  });
+
   it("falls back to the sitemap", async () => {
     expect(await findFor("https://umbrella.example")).toEqual({
       boards: [{ url: "https://jobs.ashbyhq.com/linear", platform: "ashby" }],

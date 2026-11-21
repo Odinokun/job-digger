@@ -19,9 +19,9 @@
 | `ats-links.ts` | `atsLinksOnPage` - дошки ATS, на які веде сторінка: посилання, iframe і скрипт вбудовування, по одній на дошку в порядку появи; `findSiteAtsLinks` - те саме для головної сторінки сайту через HTTP-клієнт |
 | `ats-links.test.ts` | Юніт-тести `atsLinksOnPage` |
 | `ats-links.integration.test.ts` | `findSiteAtsLinks` через фейковий вебсервер: синтетичний сайт `acme.example` і сайт, якого немає |
-| `career-pages.ts` | `careerPagesOnPage` - кар'єрні сторінки свого сайту за текстом посилання, шляхом або піддоменом; `careerPagesInSitemap` - те саме з адрес sitemap, лише за шляхом; `findSiteCareerPages` - кар'єрні сторінки сайту й дошки ATS на них |
+| `career-pages.ts` | `careerPagesOnPage` - кар'єрні сторінки свого сайту за текстом посилання, шляхом або піддоменом; `careerPagesInSitemap` - те саме з адрес sitemap, лише за шляхом; `findSiteCareerPages` - кар'єрні сторінки сайту й дошки ATS на них, зокрема PeopleForce на домені компанії |
 | `career-pages.test.ts` | Юніт-тести пошуку кар'єрних сторінок |
-| `career-pages.integration.test.ts` | `findSiteCareerPages` через фейковий вебсервер (синтетичні `globex`, `initech`, `umbrella`, `acme`) і свій сервер із редиректами |
+| `career-pages.integration.test.ts` | `findSiteCareerPages` через фейковий вебсервер (синтетичні `globex`, `initech`, `umbrella`, `acme`, `kramerica`, `vandelay`) і свій сервер із редиректами |
 | `by-name.ts` | `nameSlugs` - варіанти назви дошки з назви компанії й домену; `findBoardsByName` - дошки під цими назвами на Greenhouse, Lever, Ashby, PeopleForce, Breezy HR, Hurma, Personio, softgarden, Workable, BambooHR і Pinpoint |
 | `by-name.test.ts` | Юніт-тести `nameSlugs` |
 | `by-name.integration.test.ts` | `findBoardsByName` через збережені справжні дошки фейкового вебсервера |
@@ -92,6 +92,19 @@ Unsupported. Без цього пошук мовчки пропускав би �
 так знаходиться Notion, у якої посилання на Ashby є лише на `/careers`. Сторінка
 без ATS - власна сторінка компанії, і чи вона читається, вирішує пробне читання
 (5.06).
+
+**PeopleForce на домені компанії** (задача 5.13) за посиланням не впізнати: хост
+свій, `peopleforce.softconstruct.com`. Тому кар'єрна сторінка ще перевіряється на
+розмітку PeopleForce (`isPeopleForcePage`, [README парсерів](../parsers/README.md#peopleforce)):
+
+- сама сторінка в такій розмітці - дошка `{origin}/careers`;
+- сторінка без ATS, що веде на кар'єрну сторінку **іншого хоста того самого
+  сайту**, - крок далі: та сторінка читається (до трьох), і якщо вона PeopleForce,
+  дошкою стає вона, а не власна сторінка. Так у SoftConstruct: `softconstruct.com/careers`
+  → `peopleforce.softconstruct.com/careers`, 215 вакансій.
+
+Інші ATS на власному домені так не впізнаються - лише коли трапиться справжнє
+джерело (рішення автора 21.11.2026).
 
 Чого навчила справжня мережа (19.11.2026):
 
