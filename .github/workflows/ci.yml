@@ -38,6 +38,10 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
 
+      # Лише high і critical: moderate у dev-залежностях (esbuild у drizzle-kit)
+      # - прийнятий ризик, обґрунтування в README, розділ «npm audit».
+      - run: npm audit --audit-level=high
+
   tests:
     name: Tests
     runs-on: ubuntu-latest

@@ -39,6 +39,19 @@ npm run dev
 
 Два місця, де npm поводиться несподівано: `--dry-run` у цих команд усе одно змінює `package.json` (npm 11.20), а `npm install-scripts ls` бачить менше, ніж `npm ci` - `fsevents` спливає тільки при свіжій установці.
 
+### npm audit
+
+CI проганяє `npm audit --audit-level=high`: нова вразливість рівня high чи critical робить PR червоним, а moderate лише видно в лозі ([розділ CI](#ci)).
+
+**Прийнятий ризик: esbuild 0.18 у ланцюжку drizzle-kit** - [GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99), moderate. Ланцюжок: `drizzle-kit` → `@esbuild-kit/esm-loader` → `@esbuild-kit/core-utils` → `esbuild@0.18.20`. Advisory стосується лише dev-сервера esbuild (режим `serve`): він відповідає з `Access-Control-Allow-Origin: *`, і сторонній сайт може прочитати зібрані файли. `@esbuild-kit/core-utils` викликає лише `transform` і `transformSync` - разова трансформація коду, сервер не запускається, тож вразливого коду ми не виконуємо (перевірено 21.11.2026 на drizzle-kit 0.31.11).
+
+Чого не робимо:
+
+- `npm audit fix --force` - відкотив би drizzle-kit до 0.18.1, а це гірше за саму проблему;
+- `overrides` на новіший esbuild - виграшу немає, а `@esbuild-kit` написаний під API 0.18 і може зламатися.
+
+Переглянути рішення, коли drizzle-kit позбудеться `@esbuild-kit/esm-loader` (пакет deprecated на користь `tsx`, який у drizzle-kit уже є).
+
 ## База даних
 
 PostgreSQL 18 працює локально в контейнері Docker (та сама мажорна версія, що й онлайн на Neon). Потрібен запущений Docker Desktop.
@@ -214,7 +227,7 @@ npx playwright install chromium
 
 | Job              | Що виконує                                                                           |
 | ---------------- | ------------------------------------------------------------------------------------ |
-| `Lint and types` | `npm run format:check`, `npm run lint`, `npm run typecheck`                          |
+| `Lint and types` | `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm audit --audit-level=high` ([чому high](#npm-audit)) |
 | `Tests`          | `npm run test:unit`, `npm run test:integration`, `npm run test:e2e` (збірку робить сам Playwright) |
 
 Версія Node береться з [`.nvmrc`](.nvmrc) - локально й на CI вона одна.
@@ -228,7 +241,7 @@ npx playwright install chromium
 Відтворити прогін CI локально:
 
 ```bash
-npm run format:check && npm run lint && npm run typecheck
+npm run format:check && npm run lint && npm run typecheck && npm audit --audit-level=high
 npm test
 CI=1 npm run test:e2e
 ```
