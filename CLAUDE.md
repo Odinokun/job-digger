@@ -55,9 +55,10 @@ Next.js 16 має зміни проти тренувальних даних мо
 - **Одне кар'єрне джерело = одне завдання.** Компанія з трьома джерелами дає три завдання. Прогрес, помилки і Retry рахуються по джерелах.
 - **Черга живе в PostgreSQL**, не в пам'яті Next.js: завдання захоплюються так, щоб два процеси не взяли одне й те саме, а завислі повертаються в чергу. Локально - фоновий цикл у сервері Next.js, на Vercel - функція до 4,5 хв, яка перезапускає себе.
 - Одночасно виконується не більше 5 джерел - спільний ліміт для всіх користувачів, задається через ENV.
-- Одна загальна перевірка одночасно на користувача. Деталі - [docs/checks-and-queue.md](docs/checks-and-queue.md).
+- Одна загальна перевірка одночасно на користувача. Деталі - [src/server/checks/README.md](src/server/checks/README.md) і [src/server/queue/README.md](src/server/queue/README.md).
+- **Нова платформа (парсер)** - лише під справжнє джерело (рішення автора 18.11.2026) і за чеклістом [«Як додати платформу»](src/server/parsers/README.md#як-додати-платформу): парсер зачіпає й міграцію enum платформ, розпізнавання адреси, пошук за назвою, фейковий сервер і переклади.
 
-Таблиці: `users`, `companies`, `career_sources`, `vacancies`, `check_runs`, `check_tasks`, `settings` ([docs/data.md](docs/data.md)). Для локальної версії - один системний користувач, але дані завжди ізольовані за користувачем.
+Таблиці: `users`, `companies`, `career_sources`, `vacancies`, `check_runs`, `check_tasks`, `settings` ([src/server/db/README.md](src/server/db/README.md)). Для локальної версії - один системний користувач, але дані завжди ізольовані за користувачем.
 
 Екрани: **Jobs** (Unread / Read / Favorites / All), **Companies** (Tracked / Not tracked), **History**, **Settings** ([docs/ui.md](docs/ui.md)).
 
@@ -138,80 +139,10 @@ E2E живуть окремо від Vitest: тека `e2e/`, файли `*.spec
 - **Класи Tailwind перевіряє ESLint** (`eslint-plugin-tailwindcss`, конфіг `recommended`): друкарська помилка в класі - `no-custom-classname`, суперечливі класи типу `p-2 p-3` - `no-contradicting-classname` (це error, він блокує крок), а `enforces-shorthand` і `enforces-canonical-classname` пропонують коротший запис. Правило `classnames-order` вимкнене: порядок класів - робота Prettier. Налаштування `cssConfigPath` у `eslint.config.mjs` вказує на `src/app/globals.css` і для Tailwind v4 обовʼязкове.
 - Власні класи HeroUI (`button--primary` і подібні) ESLint вважає невідомими і дає warning. Це нормально: у `className` ми пишемо утиліти Tailwind, а не внутрішні класи бібліотеки. Якщо колись знадобиться писати їх руками - у правило додається `whitelist`.
 
-## Дозволи Claude Code
+## Claude Code
 
-Permissions живуть у `.claude/settings.json` поруч із хуками - у git, бо це правило проєкту, а не особиста звичка. Переглянути й змінити інтерактивно - команда `/permissions`.
+Дозволи, хуки й скіли - у `.claude/`, подробиці й обґрунтування - [`.claude/README.md`](.claude/README.md). Читати перед будь-якою правкою `.claude/settings.json`, хуків чи скілів.
 
-- **`allow`** - те, що Claude виконує без питання: прогін тестів (і через `npm`, і точковий `npx vitest`), лінт, `format:check`, `build`, `db:check`, `tsc`, `prettier`, `eslint`, `playwright`, `docker compose ps/logs` і `git commit`.
-- **`ask`** - дії назовні, на яких Claude зупиняється й питає автора: `git push`, `gh pr create`, `gh pr merge`.
-- **`deny`** - заборонено повністю: `rm -rf`, `git push --force`, `git reset --hard`, `git clean`, `git commit --amend`, `docker compose down -v` (стирає том із локальною базою) і читання `.env` та `.env.*`, крім `.env.example`.
-
-**Чому дії назовні саме в `ask`, а не просто поза списками.** Сесія працює в
-auto mode (`permissions.defaultMode: "auto"` в особистих налаштуваннях), і в
-цьому режимі дію, яка не збіглася з жодним правилом, оцінює не автор, а фоновий
-класифікатор - окрема модель, яка не бачить «ок» у діалозі. На `git push`,
-`gh pr create` і `git commit` він раз за разом відповідав «Destructive or
-Unwanted Actions» без жодної зміни в репозиторії, а та сама команда то
-проходила, то ні. Правила `deny` і `ask` перевіряються **до** класифікатора, і
-дію з правилом `ask` він перехопити не може: «The classifier cannot auto-approve
-a matching action» ([документація](https://code.claude.com/docs/en/auto-mode-config)).
-Тож `ask` - єдиний спосіб справді отримати питання, а не лотерею.
-
-**`git commit` у `allow` з 16.11.2026.** Правило «коміт лише після перегляду
-автором» тримається не на дозволі, а на процесі: Claude показує текст коміту й
-чекає окремого «ок». Технічний дозвіл цього не змінює. Поруч у `deny` стоїть
-`git commit --amend`: він переписує коміт, який міг бути зроблений до сесії, і
-такого випадку правило процесу не покриває.
-
-**`.env.example` і негація.** `Read(./.env.*)` блокує й `.env.example`, хоча той
-у git і є єдиним переліком змінних середовища. Виняток робиться gitignore-негацією
-`Read(!.env.example)`, і вона має стояти **після** ширшого правила та в тому
-самому файлі налаштувань - `allow` винятку з `deny` не робить. Сам `.env`
-лишається закритим свідомо: значення секретів не мають потрапляти в транскрипт
-сесії.
-
-Деталі синтаксису - [документація Claude Code](https://code.claude.com/docs/en/permissions). Коротко, що варто знати при правках:
-
-- **Правила перечитуються під час сесії.** Claude Code стежить за файлами налаштувань: «Claude Code watches your settings files and reloads them when they change, so it applies most edits to the running session without a restart» ([документація](https://code.claude.com/docs/en/settings)). Дозволи беруться з файлу на диску, тому в гілці, куди ця правка ще не дійшла, `ask` на `git push` не діє: 16.11.2026 push із `feat/national-site-path` відбив класифікатор, а з цієї гілки той самий push пройшов у тій самій сесії. Старий протилежний висновок («правило, змерджене в 11:46, не діяло на сесію з 10:53») мав іншу причину: merge у `main` не чіпає `settings.json` у робочому дереві feature-гілки.
-- Порядок перевірки - `deny`, потім `ask`, потім `allow`; перший збіг виграє, і `allow` не робить винятку з `deny`.
-- `ls`, `cat`, `grep`, `head`, `find` і read-only `git` дозволені за замовчуванням, вносити їх не потрібно.
-- Правило `Read(...)` у `deny` діє не лише на інструмент Read, а й на команди Bash, які Claude Code розпізнає як читання файлу: `cat`, `head`, `tail`, `sed`, `tee`.
-- Налаштування класифікатора (`autoMode`) із проєктного `.claude/settings.json` **не читаються** - тільки з `~/.claude/settings.json`. Подивитися його правила: `claude auto-mode defaults`, ефективний конфіг - `claude auto-mode config`.
-- У складеній команді кожна частина має бути дозволена окремо, тож `allow` на тести не відкриває `npm test && rm -rf /`.
-- Правила, що намагаються обмежити **аргументи**, крихкі: `docker compose down -v` ловиться, а інший запис того самого прапорця - ні. Тому поруч стоїть і `--volumes`.
-- Списки з різних файлів налаштувань не заміщаються, а складаються.
-- Вибір «не питати більше» в промпті дописує правило не сюди, а в особистий `.claude/settings.local.json`. Він поза git - і тому ж поза Prettier (`.prettierignore`), інакше `format:check` падав би на файлі, якого в репозиторії немає. Щоб скасувати таке правило, його видаляють із цього файлу.
-
-## Хуки Claude Code
-
-Налаштування - `.claude/settings.json`, скрипти - `.claude/hooks/`. Усе в git: зміна хука проходить рев'ю так само, як зміна залежності, бо хуки виконуються автоматично з правами автора.
-
-| Подія         | Що робить                                                                          |
-| ------------- | ---------------------------------------------------------------------------------- |
-| `PreToolUse`  | `protect-files.sh` блокує Write/Edit у `.env*` (крім `.env.example`), `package-lock.json` і міграції в `drizzle/` |
-| `PostToolUse` | `format-file.sh` проганяє Prettier і `eslint --fix` на зміненому файлі проєкту     |
-| `Notification`| `notify.sh` показує системне повідомлення, коли Claude чекає на ввід                |
-
-- Новий скрипт у `.claude/hooks/` обов'язково з бітом виконання (`chmod +x`): без нього хук падає беззвучно, і захист лише здається налаштованим.
-- `protect-files.sh` блокує тільки Write/Edit, не `Bash`. Лок-файл і секрети це від команд у терміналі не захищає.
-- Повідомлення хуків ідуть у stderr: те, що хук пише в stdout, до Claude не доходить.
-- `format-file.sh` пропускає файли поза коренем проєкту: там немає `eslint.config.*`, ESLint виходить із кодом 2 і крок виглядає як невдалий, хоча файл записано. Перевірка живе в скрипті, а не в полі `if` хука, бо `if` тримає рівно одне permission-правило - одним правилом не покрити і `Write`, і `Edit`.
-
-## Скіли Claude Code
-
-| Скіл                          | Автор       | Навіщо                                                    | Коли   |
-| ----------------------------- | ----------- | --------------------------------------------------------- | ------ |
-| `vercel-react-best-practices` | Vercel      | Правила продуктивності React/Next.js                      | Етап 1 |
-| `tdd`                         | Matt Pocock | Що таке добрий тест, seams, анти-патерни, правила циклу    | Етап 1 |
-| `heroui-react`                | HeroUI      | Компоненти, пропси й теми HeroUI v3                       | Етап 1 |
-| `frontend-design`             | Anthropic   | Палітра, типографіка, калібрування проти шаблонних рішень  | Етап 2 |
-| `grill-me`                    | Matt Pocock | Точка входу: стрес-тест плану й ідей з колонки Analyze    | Етап 1 |
-| `grilling`                    | Matt Pocock | Сам сценарій інтерв'ю, який викликає `grill-me`           | Етап 1 |
-| `neon-postgres`               | Neon        | Підключення до Neon, пул з'єднань, гілки бази             | Етап 7 |
-
-- Скіли ставляться **лише в проєкт** через `npx skills add`, не через `curl | bash`. Вони потрапляють у git, оновлення - лише через PR. CLI кладе файли в `.agents/skills/`, у `.claude/skills/` робить симлінки на них, а джерело й хеш кожного скіла пише в `skills-lock.json` у корені - у git ідуть усі три. За замовчуванням CLI надсилає анонімну телеметрію для рейтингу на skills.sh; вимикається `DISABLE_TELEMETRY=1`, а `DO_NOT_TRACK=1` вимикає ще й запити на аудит.
-- `tdd` вимагає узгодити seams (публічні межі, на яких тестуємо) до написання тестів і виносить рефакторинг за межі циклу red → green - у рев'ю. `grill-me` - заглушка на 157 байт, яка викликає `grilling`: без другого скіла перший неробочий. Єдині виконувані файли серед встановленого - 6 скриптів `heroui-react`, які читають документацію з `mcp-api.heroui.com`, `heroui.com` і `raw.githubusercontent.com`; нічого не записують і запускаються лише на явний виклик.
-- `frontend-design` - два файли (`SKILL.md` і `LICENSE.txt`), нуль виконуваних. Він потрібен тому, що вбудовані настанови з дизайну Claude Code застосовує лише коли публікує Artifact: на правки `globals.css` і компонентів у самому застосунку вони не діють. Головне в ньому - калібрувальний перелік ознак згенерованого дизайну (ALL-CAPS лейбли, мета через «·», моноспейс для підписів, однакові скруглені картки) і вимога ревізувати план проти брифу до написання коду.
-- Перед встановленням Claude читає `SKILL.md` і скрипти скіла й коротко пояснює, що вони роблять. При оновленні - повторна перевірка аудитів безпеки на skills.sh (Gen Agent Trust Hub, Socket, Snyk).
-- **Ставить автор:** скіли встановлює CLI `npx skills add`, тож запускає його автор. Заборони на запис у `.claude/` немає - Claude туди пише, коли це потрібно (наприклад, у `.claude/hooks/`).
-- Не беремо: `theme-factory` із того самого репозиторію Anthropic (10 готових тем у hex, розрахованих на слайди й лендинги: нічого про темну схему, `oklch` і токени компонентної бібліотеки - для HeroUI його довелося б перекладати руками), скіли для Drizzle і Playwright (є лише неофіційні), окремий скіл Next.js (документація постачається в `node_modules/next/dist/docs` і відповідає встановленій версії), Feature-Sliced Design, Git Commit, Ponytail, agent-browser, find-skills.
+- **`ask`** на `git push`, `gh pr create`, `gh pr merge`: Claude зупиняється й питає. **`deny`**: `rm -rf`, `git push --force`, `git reset --hard`, `git clean`, `git commit --amend`, `docker compose down -v`, читання `.env*` (крім `.env.example`).
+- **Хуки:** `protect-files.sh` блокує Write/Edit у `.env*`, `package-lock.json` і `drizzle/`; `format-file.sh` проганяє Prettier і `eslint --fix` після кожного Write/Edit; `notify.sh` - сповіщення, коли Claude чекає на ввід. Новий скрипт хука - обов'язково з `chmod +x`.
+- **Скіли:** `tdd`, `heroui-react`, `vercel-react-best-practices`, `frontend-design`, `grill-me` + `grilling`; на етапі 7 - `neon-postgres`. Ставить автор через `npx skills add`, лише в проєкт; перед встановленням Claude читає `SKILL.md` і скрипти скіла.
