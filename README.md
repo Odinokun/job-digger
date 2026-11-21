@@ -117,7 +117,7 @@ DATABASE_URL=postgres://job_digger:<пароль>@127.0.0.1:5432/job_digger_app
 BACKUP_DIR="/абсолютний/шлях/до/наявної/теки"
 ```
 
-Після кожного merge у `main` - зупинити сервер (Ctrl+C), `npm run app:update`, `npm run app`. `app:update` відмовляється працювати не на `main` і виконує `git pull --ff-only`, `npm ci`, `npm run db:migrate` (на базу з `.env` цієї теки) і `npm run build`. Нова міграція в робочій базі зʼявляється лише так - після merge, а не з гілки розробки.
+Після кожного merge у `main` - зупинити сервер (Ctrl+C), `npm run app:update`, `npm run app` (з автозапуском - `npm run app:restart`, див. нижче). `app:update` відмовляється працювати не на `main` і виконує `git pull --ff-only`, `npm ci`, копію бази (`npm run db:backup`), `npm run db:migrate` (на базу з `.env` цієї теки) і `npm run build`. Нова міграція в робочій базі зʼявляється лише так - після merge, а не з гілки розробки.
 
 ### Резервні копії
 

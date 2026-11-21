@@ -140,3 +140,4 @@ PR: #57
 | [7.10 Підключати CSS лише тих компонентів HeroUI, які використовуємо](7.10-heroui-css-subset.md) | backlog |
 | [Розібратися з уразливостями у npm audit](npm-audit-vulnerabilities.md)                          | backlog |
 | [Розкласти документацію за частинами застосунку](split-docs-by-app-part.md)                      | analyze |
+| [Звірити документацію з кодом](docs-sync-with-code.md)                                           | todo    |

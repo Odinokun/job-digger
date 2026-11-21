@@ -4,8 +4,7 @@
 
 ## 9. База даних
 
-Таблиці, які вже є в коді (`users`, `companies`, `career_sources`, `vacancies`,
-`check_runs`, `check_tasks`), описані схемою Drizzle, а рішення щодо них - у
+Усі таблиці нижче вже є в коді: їх описує схема Drizzle, а рішення щодо них - у
 [README бази](../src/server/db/README.md).
 
 Пропонована логічна модель:
