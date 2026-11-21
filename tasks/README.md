@@ -143,3 +143,10 @@ PR: #57
 | [Звірити документацію з кодом](docs-sync-with-code.md)                                           | done    |
 | [Помітна вибрана кнопка в перемикачах Settings](toggle-button-selected-contrast.md)              | done    |
 | [Картка компанії оновлюється після Read as list](own-page-card-refresh.md)                       | done    |
+| [Аудит інтерфейсу](ui-audit.md) | done |
+| [Тема: кнопки, текст, плейсхолдери](ui-theme-basics.md) | backlog |
+| [Телефон і сітка карток](ui-mobile-layout.md) | backlog |
+| [Картка компанії](ui-company-card.md) | backlog |
+| [Діалоги компанії](ui-company-dialogs.md) | backlog |
+| [Сайт компанії обов'язковий](company-site-required.md) | backlog |
+| [Jobs, Settings, History](ui-small-screens.md) | backlog |
