@@ -51,6 +51,7 @@ https://boards-api.greenhouse.io/v1/boards/acme/jobs
 | `responses/jobs.ashbyhq.com/linear` | Сторінка дошки Ashby Linear для людей, HTML 26 КБ: дошку малює JavaScript, а сайт організації (`publicWebsite: linear.app`) лежить у JSON сторінки | 19.11.2026 |
 | `responses/team.peopleforce.io/careers` | Сторінка кар'єри самої PeopleForce, HTML (6 вакансій, одна сторінка) | 18.11.2026 |
 | `responses/webellian.peopleforce.io/careers` | Сторінка кар'єри Webellian на PeopleForce, `?page=1` - 10 вакансій з 23, є посилання на наступну сторінку | 18.11.2026 |
+| `responses/peopleforce.softconstruct.com/careers` | PeopleForce на домені компанії, SoftConstruct, `?page=1` - 10 вакансій з 215 (515 КБ - фільтр на сотні відділів). Старіша розмітка: у посилання «далі» немає `rel="next"` (задача 5.13) | 21.11.2026 |
 | `responses/breezy.breezy.hr/json` | Публічний JSON дошки самої Breezy HR (3 вакансії) | 19.11.2026 |
 | `responses/jobs.breezy.hr/json` | Публічний JSON другої дошки Breezy HR: одна віддалена вакансія (`is_remote: true`) | 19.11.2026 |
 | `responses/cleverstaff.net/hr/public/getAllOpenVacancy` | CleverStaff, дошка 8allocate (8 віддалених вакансій, з описами - 196 КБ). Рядок запиту сервер ігнорує, тож це відповідь на будь-який аліас | 19.11.2026 |

@@ -43,6 +43,25 @@ export function peopleforceSite(sourceUrl: string): string | null {
   return `https://${url.hostname}`;
 }
 
+/**
+ * Чи це сторінка кар'єри PeopleForce, хоч би на якій адресі (задача 5.13):
+ * компанія може тримати PeopleForce на своєму домені
+ * (`peopleforce.softconstruct.com`), і за хостом його не впізнати.
+ *
+ * Ознак дві, і потрібні обидві: список `#results`, який читає парсер, і підпис
+ * «Powered by PeopleForce» (`.credit` з посиланням на `peopleforce.io`) - він
+ * є на кожній збереженій сторінці. Одне посилання на `peopleforce.io` - ще не
+ * дошка: так пише будь-яка сторінка, що згадує цей HR-сервіс.
+ */
+export function isPeopleForcePage(html: string): boolean {
+  const $ = cheerio.load(html);
+
+  return (
+    $("#results").length === 1 &&
+    $('.credit a[href^="https://peopleforce.io"]').length > 0
+  );
+}
+
 /** Сторінка списку: вакансії і чи є після неї ще одна. */
 export type PeopleForcePage =
   | (Extract<ParseResult, { ok: true }> & { hasNext: boolean })
@@ -66,6 +85,12 @@ const RANGE = /^(\d+)\s*-\s*(\d+)$/;
  *
  * `externalId` - числовий ID зі шляху, посилання - шлях від адреси сторінки,
  * локація - текст поруч з іконкою мітки на карті.
+ *
+ * Чи є наступна сторінка - теж з лічильника: Y менше за N. Посилання «далі»
+ * в PeopleForce буває різним - у новій розмітці з `rel="next"`, у старішій
+ * (SoftConstruct на власному домені, 21.11.2026) лише з `aria-label="next"`.
+ * Пропущене посилання прочитало б 10 вакансій з 215 як увесь список, а решту
+ * перевірка вважала б закритими.
  */
 export function parsePeopleForcePage(
   html: string,
@@ -104,10 +129,13 @@ export function parsePeopleForcePage(
   }
 
   const range = RANGE.exec(counter[0] ?? "");
+  const total = /^\d+$/.test(counter[1] ?? "") ? Number(counter[1]) : null;
 
   if (
     counter.length !== 2 ||
     range === null ||
+    total === null ||
+    Number(range[2]) > total ||
     cards.length !== Number(range[2]) - Number(range[1]) + 1
   ) {
     return UNREADABLE;
@@ -119,10 +147,7 @@ export function parsePeopleForcePage(
     return result;
   }
 
-  return {
-    ...result,
-    hasNext: results.find('nav[aria-label="pager"] a[rel="next"]').length > 0,
-  };
+  return { ...result, hasNext: Number(range[2]) < total };
 }
 
 function readerFor(pageUrl: string): ReadVacancy {
@@ -168,9 +193,10 @@ export const PEOPLEFORCE_PAGE_SIZE = 10;
  * сторінки `/careers?page=N` через HTTP-клієнт і розбір кожної. Адреса не
  * PeopleForce - `unreadable` без жодного запиту.
  *
- * Наступна сторінка - лише за посиланням `rel="next"`: номер за межею списку
- * PeopleForce не відхиляє, а віддає останню сторінку ще раз (перевірено на
- * Webellian 18.11.2026). Збій будь-якої сторінки - збій усього джерела.
+ * Наступна сторінка - лише поки лічильник каже, що список не скінчився
+ * (`parsePeopleForcePage`): номер за межею списку PeopleForce не відхиляє, а
+ * віддає останню сторінку ще раз (перевірено на Webellian 18.11.2026). Збій
+ * будь-якої сторінки - збій усього джерела.
  */
 export async function readPeopleForce(
   sourceUrl: string,

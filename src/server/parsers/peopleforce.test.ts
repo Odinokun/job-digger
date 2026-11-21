@@ -2,7 +2,11 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-import { parsePeopleForcePage, peopleforceSite } from "./peopleforce.ts";
+import {
+  isPeopleForcePage,
+  parsePeopleForcePage,
+  peopleforceSite,
+} from "./peopleforce.ts";
 
 /** Справжня сторінка кар'єри PeopleForce (src/server/http/testing). */
 function saved(host: string): string {
@@ -16,6 +20,8 @@ function saved(host: string): string {
 const team = saved("team.peopleforce.io");
 /** Webellian: перша сторінка з трьох, 10 вакансій з 23. */
 const webellian = saved("webellian.peopleforce.io");
+/** SoftConstruct: PeopleForce на домені компанії, 10 вакансій з 215 (задача 5.13). */
+const softconstruct = saved("peopleforce.softconstruct.com");
 
 const TEAM_PAGE = "https://team.peopleforce.io/careers?page=1";
 
@@ -27,21 +33,15 @@ const TEAM_PAGE = "https://team.peopleforce.io/careers?page=1";
 function page({
   counter,
   cards,
-  next = false,
 }: {
   counter?: [string, string];
   cards: string[];
-  next?: boolean;
 }): string {
   const counterHtml =
     counter === undefined
       ? `<div>There are currently no vacancies.</div>`
       : `<div>Displaying <strong>${counter[0]}</strong> of <strong>${counter[1]}</strong> in total</div>`;
-  const pager = next
-    ? `<nav aria-label="pager"><a href="/careers?page=2" rel="next">2</a></nav>`
-    : "";
-
-  return `<!doctype html><html><body><div id="results">${counterHtml}<div>${cards.join("")}</div>${pager}</div></body></html>`;
+  return `<!doctype html><html><body><div id="results">${counterHtml}<div>${cards.join("")}</div></div></body></html>`;
 }
 
 function card(href: string, title: string, location?: string): string {
@@ -79,6 +79,31 @@ describe("peopleforceSite", () => {
   });
 });
 
+describe("isPeopleForcePage", () => {
+  it("recognises a real PeopleForce career page on any address", () => {
+    expect(isPeopleForcePage(team)).toBe(true);
+    expect(isPeopleForcePage(webellian)).toBe(true);
+    expect(isPeopleForcePage(softconstruct)).toBe(true);
+  });
+
+  it("does not take a job list without the PeopleForce credit for one", () => {
+    expect(isPeopleForcePage(page({ cards: [] }))).toBe(false);
+  });
+
+  it("does not take a page that only links to PeopleForce for one", () => {
+    expect(
+      isPeopleForcePage(
+        `<html><body><div class="credit">Powered by <a href="https://peopleforce.io">PeopleForce</a></div></body></html>`,
+      ),
+    ).toBe(false);
+    expect(
+      isPeopleForcePage(
+        `<html><body><div id="results"></div><a href="https://peopleforce.io">HR software</a></body></html>`,
+      ),
+    ).toBe(false);
+  });
+});
+
 describe("parsePeopleForcePage", () => {
   it("reads every job of a real one-page list", () => {
     const result = parsePeopleForcePage(team, TEAM_PAGE);
@@ -91,6 +116,19 @@ describe("parsePeopleForcePage", () => {
       url: "https://team.peopleforce.io/careers/v/253193-integration-engineer-polish-erp-connectors",
       location: "Poland",
     });
+  });
+
+  it("reads a real list on the company's own domain", () => {
+    const result = parsePeopleForcePage(
+      softconstruct,
+      "https://peopleforce.softconstruct.com/careers?page=1",
+    );
+
+    expect(result.ok && result.vacancies).toHaveLength(10);
+    expect(result.ok && result.hasNext).toBe(true);
+    expect(result.ok && result.vacancies[0]?.url).toMatch(
+      /^https:\/\/peopleforce\.softconstruct\.com\/careers\/v\/\d+/,
+    );
   });
 
   it("sees the next page of a real paged list", () => {
@@ -172,6 +210,18 @@ describe("parsePeopleForcePage", () => {
         page({
           counter: ["1 - 2", "2"],
           cards: [card("/careers/v/7-a", "A"), card("/careers/apply", "B")],
+        }),
+        TEAM_PAGE,
+      ),
+    ).toEqual(UNREADABLE);
+  });
+
+  it("fails on a counter that ends past its own total", () => {
+    expect(
+      parsePeopleForcePage(
+        page({
+          counter: ["1 - 2", "1"],
+          cards: [card("/careers/v/1-a", "A"), card("/careers/v/2-b", "B")],
         }),
         TEAM_PAGE,
       ),

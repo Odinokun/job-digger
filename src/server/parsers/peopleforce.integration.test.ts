@@ -64,9 +64,9 @@ async function withServer(
 
 /**
  * Сайт кар'єри з `total` вакансіями по `perPage` на сторінці в розмітці
- * PeopleForce: лічильник, картки і посилання `rel="next"`, поки сторінка не
- * остання. Як справжній (перевірено на Webellian 18.11.2026), номер за межею
- * віддає останню сторінку.
+ * PeopleForce: лічильник, картки і, поки сторінка не остання, посилання
+ * `rel="next"` - як на справжній, хоч парсер іде за лічильником. Як справжній
+ * (перевірено на Webellian 18.11.2026), номер за межею віддає останню сторінку.
  */
 function pagedSite(total: number, requested: string[], perPage = 10) {
   return (request: IncomingMessage, response: ServerResponse) => {
