@@ -25,6 +25,8 @@ Cache Components і React Compiler вимкнені свідомо. Playwright -
 
 Тема застосунку - «Ink»: токени в `src/app/globals.css`, шрифти в `src/app/layout.tsx`. Правила, обмеження на тон accent і рішення щодо бейджів - [src/app/README.md](src/app/README.md#тема-ink).
 
+**Правила інтерфейсу** (шкала тексту, кнопки, плейсхолдери, кольори станів, телефон) - [src/app/README.md](src/app/README.md#правила-інтерфейсу). Перед правкою інтерфейсу прочитати, після - знімки в обох темах на 1280 і 390 px.
+
 **Кожна кнопка лише з іконкою має підказку при наведенні** - через `IconButton` із `src/app/components/icon-button.tsx`, а не `Button isIconOnly`. Деталі - [src/app/README.md](src/app/README.md#кнопки-лише-з-іконкою).
 
 Світла, темна чи системна - вибір у cookie `theme`, як і мова. Атрибутом `data-theme` володіє inline-скрипт, а не React: чому саме так і чим це загрожує при правках layout - [src/app/README.md](src/app/README.md#перемикання-теми).
