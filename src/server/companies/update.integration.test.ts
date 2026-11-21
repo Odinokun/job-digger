@@ -249,6 +249,27 @@ describe("updateCompany adding a career source", () => {
     );
   });
 
+  it("tracks a page its content showed to be PeopleForce (task 5.13)", async () => {
+    const user = await seedSystemUser(testDb);
+    const { company } = await insertCompany(user.id, "Acme");
+
+    await updateCompany(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      name: "Acme",
+      addSource: { url: "jobs.acme.com/careers" },
+      pagePlatforms: new Map([["jobs.acme.com/careers", "peopleforce"]]),
+    });
+
+    expect(await readSources(company.id)).toContainEqual(
+      expect.objectContaining({
+        url: "https://jobs.acme.com/careers",
+        platform: "peopleforce",
+        isTracked: true,
+      }),
+    );
+  });
+
   it("refuses an address it cannot use and changes nothing", async () => {
     const user = await seedSystemUser(testDb);
     const { company } = await insertCompany(user.id, "Acme");

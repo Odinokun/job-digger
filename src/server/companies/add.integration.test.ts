@@ -118,6 +118,27 @@ describe("addCompany", () => {
     expect(source.isTracked).toBe(false);
   });
 
+  it("tracks a page its content showed to be PeopleForce (task 5.13)", async () => {
+    const userId = await user();
+
+    const result = await addCompany(testDb, {
+      userId,
+      name: "SoftConstruct",
+      url: "https://www.softconstruct.com",
+      careerUrl: "https://peopleforce.softconstruct.com/careers",
+      pagePlatforms: new Map([
+        ["peopleforce.softconstruct.com/careers", "peopleforce"],
+      ]),
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const [source] = await sourcesOf(result.companyId);
+    expect(source.platform).toBe("peopleforce");
+    expect(source.isTracked).toBe(true);
+  });
+
   it("saves a company without a career page at all", async () => {
     const userId = await user();
 

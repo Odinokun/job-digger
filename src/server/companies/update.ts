@@ -7,6 +7,7 @@ import {
 } from "../../lib/companies/career-source.ts";
 import type { UrlRefusalReason } from "../../lib/companies/url.ts";
 import { careerSources, companies } from "../db/schema.ts";
+import { withPagePlatform, type PagePlatforms } from "./page-platform.ts";
 import {
   findCompanyWithSource,
   type CompanyWithSource,
@@ -31,6 +32,8 @@ export type UpdateCompanyInput = {
    * три фільтри однієї сторінки mozilla.org (картка 2.16).
    */
   addSource?: { url: string; label?: string };
+  /** Платформи, упізнані за вмістом сторінки (`platformsByPage`, задача 5.13). */
+  pagePlatforms?: PagePlatforms;
 };
 
 /**
@@ -72,6 +75,7 @@ export async function updateCompany(
     removeSourceIds = [],
     sourceLabels = {},
     addSource,
+    pagePlatforms,
   }: UpdateCompanyInput,
 ): Promise<UpdateCompanyResult> {
   const trimmedName = name.trim();
@@ -99,7 +103,7 @@ export async function updateCompany(
         : { ok: false, problem: "source-duplicate" };
     }
 
-    newSource = prepared;
+    newSource = withPagePlatform(prepared, pagePlatforms);
   }
 
   return db.transaction(async (tx) => {
