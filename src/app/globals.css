@@ -175,3 +175,16 @@
   border-radius: calc(var(--radius) * 1.5);
   border: 1px solid var(--border);
 }
+
+/* Вибрана кнопка в ToggleButtonGroup (Settings: тема, мова, інтервал). HeroUI
+   заливає її --accent-soft - 12-15% accent поверх фону. Accent у нас безтоновий,
+   тож у темній схемі це майже білий на 12% (L≈0.24) - темніше за невибрані
+   кнопки з --default (L≈0.25), і вибору не видно. Суцільний accent, як у
+   основної кнопки, - рішення автора 21.11.2026. Токени й стани -
+   components/toggle-button.css; при оновленні HeroUI перечитати. */
+.toggle-button {
+  --toggle-button-bg-selected: var(--accent);
+  --toggle-button-bg-selected-hover: var(--accent-hover);
+  --toggle-button-bg-selected-pressed: var(--accent-hover);
+  --toggle-button-fg-selected: var(--accent-foreground);
+}
