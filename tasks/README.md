@@ -97,7 +97,7 @@ PR: #57
 | [5.10 Find new pages для списку Not tracked](5.10-find-new-pages-not-tracked.md)                 | done    |
 | [5.11 Статуси вкладки Not tracked](5.11-not-tracked-statuses.md)                                 | done    |
 | [5.12 E2E: Find pages від URL до вакансій](5.12-e2e-find-pages.md)                               | done    |
-| [5.13 ATS на домені компанії](5.13-ats-on-company-domain.md)                                     | backlog |
+| [5.13 ATS на домені компанії](5.13-ats-on-company-domain.md)                                     | done    |
 | [5.14 Find pages для однієї компанії на Not tracked](5.14-find-pages-not-tracked-company.md)     | done    |
 | [5.15 Відомі ATS без парсера](5.15-known-ats-without-parser.md)                                  | done    |
 | [6.01 Таблиця settings і сторінка Settings](6.01-settings-page.md)                               | done    |
