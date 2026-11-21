@@ -22,7 +22,7 @@
 | `workday.ts`         | Workday: `readWorkday(sourceUrl, client)`, `workdaySite`, `parseWorkdayJobs` |
 | `workday.test.ts`    | Юніт-тести парсера Workday                        |
 | `workday.integration.test.ts` | `readWorkday` через фейковий вебсервер і сервер зі сторінками |
-| `peopleforce.ts`     | PeopleForce: `readPeopleForce(sourceUrl, client)`, `peopleforceSite`, `parsePeopleForcePage` |
+| `peopleforce.ts`     | PeopleForce: `readPeopleForce(sourceUrl, client)`, `peopleforceSite`, `isPeopleForcePage`, `parsePeopleForcePage` |
 | `peopleforce.test.ts` | Юніт-тести парсера PeopleForce                   |
 | `peopleforce.integration.test.ts` | `readPeopleForce` через фейковий вебсервер і сервер зі сторінками |
 | `breezy.ts`          | Breezy HR: `readBreezy(sourceUrl, client)`, `breezyCompany`, `parseBreezyPositions` |
@@ -283,6 +283,14 @@ Workday - по 100 вакансій за 5 сторінок (близько 9 с
 
 - **Адреса.** `peopleforceSite` бере субдомен компанії; сам `peopleforce.io` і `www` -
   сайт платформи, не компанії. Посилання на вакансію теж годиться.
+- **PeopleForce на домені компанії** (задача 5.13): `peopleforce.softconstruct.com`
+  за хостом не впізнати. Таку сторінку впізнає `isPeopleForcePage` - за списком
+  `#results` разом із підписом «Powered by PeopleForce» (`.credit` з посиланням на
+  `peopleforce.io`). Джерело тоді зберігається з платформою `peopleforce`, і
+  `readPeopleForce` читає `/careers?page=N` від origin його адреси: хост не на
+  `peopleforce.io` уже нічого не доводить, платформу визначило збережене джерело.
+  `peopleforceSite` лишається строгим - він вирішує, чи посилання зі сторінки веде
+  на дошку, а там хост і є єдиною ознакою.
 - **Картка вакансії** - посилання в `h4` всередині `#results`: шлях
   `/careers/v/{ID}-{slug}`, `externalId` - числовий ID (slug зі зміною назви
   зміниться, ID - ні). Локація - текст поруч з іконкою `fa-map-marker-alt`; є не в

@@ -185,13 +185,39 @@ function readerFor(pageUrl: string): ReadVacancy {
   };
 }
 
+/**
+ * Сайт кар'єри джерела, яке вже збережене як PeopleForce. На `*.peopleforce.io`
+ * - як у `peopleforceSite`; на будь-якому іншому хості - його origin: таке
+ * джерело стало PeopleForce за розміткою сторінки (`isPeopleForcePage`,
+ * задача 5.13), тож хост тут уже нічого не доводить.
+ */
+function careerSiteOf(sourceUrl: string): string | null {
+  const onPlatform = peopleforceSite(sourceUrl);
+
+  if (onPlatform !== null) {
+    return onPlatform;
+  }
+
+  let url: URL;
+
+  try {
+    url = new URL(sourceUrl);
+  } catch {
+    return null;
+  }
+
+  return url.protocol === "https:" || url.protocol === "http:"
+    ? url.origin
+    : null;
+}
+
 /** Скільки вакансій PeopleForce показує на сторінці `/careers` (не налаштовується). */
 export const PEOPLEFORCE_PAGE_SIZE = 10;
 
 /**
  * Вакансії кар'єрного джерела на PeopleForce: сайт компанії з адреси,
- * сторінки `/careers?page=N` через HTTP-клієнт і розбір кожної. Адреса не
- * PeopleForce - `unreadable` без жодного запиту.
+ * сторінки `/careers?page=N` через HTTP-клієнт і розбір кожної. Адреса, що не
+ * веб-сторінка, - `unreadable` без жодного запиту.
  *
  * Наступна сторінка - лише поки лічильник каже, що список не скінчився
  * (`parsePeopleForcePage`): номер за межею списку PeopleForce не відхиляє, а
@@ -206,7 +232,7 @@ export async function readPeopleForce(
     maxPages = pagesToRead({ pageSize: PEOPLEFORCE_PAGE_SIZE, depth }),
   }: { depth?: ReadDepth; maxPages?: number } = {},
 ): Promise<ParseResult> {
-  const site = peopleforceSite(sourceUrl);
+  const site = careerSiteOf(sourceUrl);
 
   if (site === null) {
     return UNREADABLE;

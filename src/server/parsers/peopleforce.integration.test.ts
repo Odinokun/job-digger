@@ -119,9 +119,25 @@ describe("readPeopleForce", () => {
     expect(result).toEqual({ ok: false, error: { reason: "not-found" } });
   });
 
-  it("does not request anything for an address that is not a PeopleForce site", async () => {
+  it("reads a career site on the company's own domain (task 5.13)", async () => {
+    // Фейковий сервер на кожну сторінку віддає ту саму першу - «1 - 10 of
+    // 215», тож список іде до ліміту сторінок.
     const result = await readPeopleForce(
-      "https://bosch.com/careers",
+      "https://peopleforce.softconstruct.com/careers",
+      clientFor(fakeWeb.origin),
+      { maxPages: 1 },
+    );
+
+    expect(result.ok && result.vacancies).toHaveLength(10);
+    expect(result.ok && result.truncated).toBe(true);
+    expect(result.ok && result.vacancies[0]?.url).toMatch(
+      /^https:\/\/peopleforce\.softconstruct\.com\/careers\/v\//,
+    );
+  });
+
+  it("does not request anything for an address that is not a web page", async () => {
+    const result = await readPeopleForce(
+      "mailto:jobs@bosch.com",
       // Порт 1 ніхто не слухає: якби запит пішов, це був би fetch-failed.
       clientFor("http://127.0.0.1:1"),
     );
