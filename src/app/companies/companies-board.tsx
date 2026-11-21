@@ -166,6 +166,22 @@ export function CompaniesBoard({
     [applyRow, tab, showActionFailed],
   );
 
+  /**
+   * Read as list записав рецепт: рядок компанії замінюється свіжим, а якщо
+   * компанія з вкладки пішла (Needs attention, Not tracked → Tracked), картка
+   * зникає. `addRow` тут не годиться: він для нової компанії, якої ще немає в
+   * списку, і на `null` нічого не прибирає - картка лишалася з написом про
+   * непрочитану сторінку до перезавантаження. Перша перевірка - як після Add
+   * company.
+   */
+  const recipeApplied = useCallback(
+    (company: CompanyListItem | null, companyId: string) => {
+      applyRow(companyId, company);
+      addRow(company, companyId);
+    },
+    [applyRow, addRow],
+  );
+
   const loadMore = useCallback(() => {
     if (!cursor) {
       return;
@@ -222,7 +238,7 @@ export function CompaniesBoard({
         onLoadMore={loadMore}
         onSaved={applyRow}
         onDeleted={removeRow}
-        onRecipeApplied={addRow}
+        onRecipeApplied={recipeApplied}
         firstCheckId={firstCheckId}
         emptyLabel={emptyLabel}
         loadMoreLabel={loadMoreLabel}
