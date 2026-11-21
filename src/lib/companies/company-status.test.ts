@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { CompanySource } from "./company-list";
-import { companyCheckStatus } from "./company-status";
+import { cardStatusBadge, companyCheckStatus } from "./company-status";
 
 function source(overrides: Partial<CompanySource> = {}): CompanySource {
   return {
@@ -66,5 +66,44 @@ describe("companyCheckStatus", () => {
         isGeneralCheckRunning: true,
       }),
     ).toBeNull();
+  });
+});
+
+describe("cardStatusBadge", () => {
+  it("shows the check status alone when every page is read", () => {
+    expect(cardStatusBadge("ok", 0)).toEqual({
+      badge: "ok",
+      notReadAsText: false,
+    });
+    expect(cardStatusBadge("has-errors", 0)).toEqual({
+      badge: "has-errors",
+      notReadAsText: false,
+    });
+    expect(cardStatusBadge(null, 0)).toEqual({
+      badge: null,
+      notReadAsText: false,
+    });
+  });
+
+  it("lets pages not read take the badge over a plain OK", () => {
+    expect(cardStatusBadge("ok", 2)).toEqual({
+      badge: "not-read",
+      notReadAsText: false,
+    });
+    expect(cardStatusBadge(null, 1)).toEqual({
+      badge: "not-read",
+      notReadAsText: false,
+    });
+  });
+
+  it("keeps errors and a running check in the badge and pages not read as text", () => {
+    expect(cardStatusBadge("has-errors", 2)).toEqual({
+      badge: "has-errors",
+      notReadAsText: true,
+    });
+    expect(cardStatusBadge("checking", 1)).toEqual({
+      badge: "checking",
+      notReadAsText: true,
+    });
   });
 });
