@@ -232,6 +232,19 @@ npx playwright install chromium
 
 Версія Node береться з [`.nvmrc`](.nvmrc) - локально й на CI вона одна.
 
+**Actions закріплені за повним commit SHA**, а не за тегом `@v7`: тег можна
+переставити на інший код, якщо хтось отримає доступ до репозиторію action, а SHA
+підробити не вийде ([GitHub, secure use](https://docs.github.com/en/actions/reference/security/secure-use)).
+Поруч із SHA - коментар із версією (`# v7.0.1`). Оновлює їх
+[Dependabot](.github/dependabot.yml): раз на тиждень відкриває PR `ci: ...`, де
+міняє SHA разом із коментарем. Такий PR зливається, як і будь-який інший, після
+зеленого CI.
+
+Чому не lockfile GitHub (`.github/workflows/actions.lock`, розширення `gh actions-lock`),
+хоча документація каже, що він «supersedes SHA pinning»: у нас три офіційні actions
+`actions/*`, а lockfile - новий інструмент на машині автора й новий крок у CI, статус
+якого документація не називає (рішення автора 21.11.2026, задача 7.09).
+
 **База на CI.** PostgreSQL піднімається service container'ом поруч із job: той самий образ `postgres:18`, що в [`docker-compose.yml`](docker-compose.yml). Змінна `TEST_DATABASE_URL` задається прямо у workflow - контейнер живе лише цей прогін і доступний лише з машини прогону, тому в GitHub Secrets цим креденшалам не місце. Паролем служить `${{ github.run_id }}`: він унікальний для кожного прогону, і у файлі не лежить рядок, схожий на справжній пароль, - інакше на кожному PR червонів би сканер секретів. Базу `job_digger_test` і міграції на ній робить [`global-setup.ts`](src/server/db/testing/global-setup.ts), так само як локально. `DATABASE_URL` на CI не заданий: поки жодна сторінка не читає базу, він не потрібен.
 
 **Браузери Playwright не кешуються** - так радить [документація Playwright](https://playwright.dev/docs/ci): відновлення кешу триває приблизно стільки ж, скільки завантаження, а OS-залежності під Linux однаково не кешуються.
