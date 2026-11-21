@@ -136,7 +136,7 @@ PR: #57
 | [7.06 Перенесення даних у Neon](7.06-neon-data-migration.md)                                     | backlog |
 | [7.07 Авторизація через Google з allow-list](7.07-google-auth-allowlist.md)                      | backlog |
 | [7.08 Перший деплой на Vercel](7.08-first-vercel-deploy.md)                                      | backlog |
-| [7.09 Пін GitHub Actions і Dependabot](7.09-pin-actions-dependabot.md)                           | backlog |
+| [7.09 Пін GitHub Actions і Dependabot](7.09-pin-actions-dependabot.md)                           | done    |
 | [7.10 Підключати CSS лише тих компонентів HeroUI, які використовуємо](7.10-heroui-css-subset.md) | backlog |
 | [Розібратися з уразливостями у npm audit](npm-audit-vulnerabilities.md)                          | done    |
 | [Розкласти документацію за частинами застосунку](split-docs-by-app-part.md)                      | done    |
