@@ -1,7 +1,7 @@
 /**
  * Автоматична перевірка: для кожного користувача вирішує, чи настав час
  * загальної перевірки, і ставить її в чергу тим самим `startCheckAll`, що й
- * ручний Check all (docs/checks-and-queue.md, розділ 8; задача 6.03). Хто й
+ * ручний Check all (src/server/checks/README.md; задача 6.03). Хто й
  * коли викликає - `auto-check-scheduler.ts`.
  */
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";

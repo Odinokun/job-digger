@@ -30,7 +30,7 @@ export const SYSTEM_USER_EMAIL = "system@job-digger.local";
 /**
  * Власник даних. Компанії, джерела, вакансії й налаштування звʼязані з користувачем,
  * щоб дані були ізольовані навіть у локальній однокористувацькій версії
- * (docs/data.md, розділ 9).
+ * (src/server/db/README.md).
  */
 export const users = pgTable("users", {
   // uuid, а не послідовне число: після переїзду онлайн id не має бути вгадуваним.
@@ -72,7 +72,7 @@ export const companies = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     // Головна адреса так, як її ввів користувач: зі шляхом, бо bosch.com/de і
-    // bosch.com/ua - різні компанії (docs/discovery-and-parsing.md, розділ 5).
+    // bosch.com/ua - різні компанії (src/lib/companies/README.md).
     //
     // Необовʼязкова: адреса ATS головного сайту не дає (`jobs.lever.co/spotify`),
     // і вигадувати його за користувача нема з чого - буває і `.io`, і `.ai`
@@ -105,7 +105,7 @@ export const companies = pgTable(
 
 /**
  * Карʼєрне джерело компанії: одне джерело = одне завдання перевірки.
- * Одна компанія має багато джерел (docs/data.md, розділ 9).
+ * Одна компанія має багато джерел (src/server/db/README.md).
  */
 export const careerSources = pgTable(
   "career_sources",
@@ -160,7 +160,7 @@ export const careerSources = pgTable(
 );
 
 /**
- * Вакансія кар'єрного джерела (docs/discovery-and-parsing.md, розділ 7).
+ * Вакансія кар'єрного джерела (src/server/vacancies/README.md).
  * Компанія й адреса джерела - через звʼязок «вакансія → джерело → компанія»,
  * окремо не зберігаються; опис, зарплата й тип зайнятості - теж.
  */
@@ -217,7 +217,7 @@ export const vacancies = pgTable(
  *
  * Лічильники зберігаються, а не рахуються з `check_tasks`: рядок History фіксує
  * результат на момент завершення, а завдання видаленого джерела зникають разом
- * із ним (docs/checks-and-queue.md, розділ 8).
+ * із ним (src/server/checks/README.md).
  */
 export const checkRuns = pgTable(
   "check_runs",
@@ -258,7 +258,7 @@ export const checkRuns = pgTable(
 /**
  * Пріоритет завдання. Порядок значень і є порядком захоплення: ручні дії, на
  * результат яких дивиться користувач (Check now, Retry), беруться з черги
- * раніше за фонові (docs/checks-and-queue.md, розділ 8).
+ * раніше за фонові (src/server/queue/README.md).
  */
 export const checkTaskPriority = pgEnum("check_task_priority", [
   "manual",
@@ -292,7 +292,7 @@ export const checkTaskStatus = pgEnum("check_task_status", [
 
 /**
  * Завдання черги: перевірка одного карʼєрного джерела. Одне джерело = одне
- * завдання (docs/overview.md, розділ 3).
+ * завдання (CLAUDE.md, «Архітектура»).
  */
 export const checkTasks = pgTable(
   "check_tasks",
@@ -331,7 +331,7 @@ export const checkTasks = pgTable(
     // деталь - History її не показує.
     error: jsonb("error").$type<CheckTaskError>(),
     // Parse warning: скільки записів парсер пропустив через ваду даних
-    // (docs/discovery-and-parsing.md, розділ 6).
+    // (src/server/parsers/README.md).
     skippedVacancies: integer("skipped_vacancies").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -359,7 +359,7 @@ export const checkTasks = pgTable(
 );
 
 /**
- * Особисті налаштування користувача (docs/data.md, розділ 9; задача 6.01).
+ * Особисті налаштування користувача (src/server/db/README.md; задача 6.01).
  *
  * Один рядок на користувача, і зʼявляється він лише з першим вибором: доки
  * його немає, діють значення за замовчуванням (`server/settings`). Тема й мова

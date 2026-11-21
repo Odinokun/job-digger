@@ -19,7 +19,7 @@ interface FoundPagesProps {
 
 /**
  * Список знахідок Find pages у модалці Add company
- * (docs/discovery-and-parsing.md, розділ 5, пункт 5): платформа, адреса і
+ * (src/server/discovery/README.md): платформа, адреса і
  * результат пробного читання.
  *
  * Галочка - справжній `<input name="foundUrl">` (HeroUI передає `name` і
@@ -63,7 +63,7 @@ export function FoundPages({
                 <span className="flex min-w-0 flex-col">
                   <span className="flex flex-wrap items-center gap-2">
                     {/* Власна сторінка - не платформа, тож і підпис свій:
-                        «Own page - not supported yet» (розділ 5, пункт 5).
+                        «Own page - not supported yet».
                         Відома ATS без парсера - її назва (задача 5.15). */}
                     <span className="font-medium">
                       {finding.platform === "unsupported"

@@ -15,7 +15,7 @@ function hoursAfter(from: Date, hours: number): Date {
 describe("nextAutoCheckAt", () => {
   it("counts the interval from the start of the last general check", () => {
     // Від старту, а не від завершення: інакше довга перевірка зсувала б
-    // розклад (docs/checks-and-queue.md, розділ 8).
+    // розклад (src/server/checks/README.md).
     expect(nextAutoCheckAt(lastStart, 6)).toEqual(hoursAfter(lastStart, 6));
   });
 
@@ -84,7 +84,7 @@ describe("isAutoCheckDue", () => {
 });
 
 describe("isStartupCheckDue", () => {
-  // docs/checks-and-queue.md, розділ 8, «Локально»: на старті застосунку
+  // src/server/checks/README.md: на старті застосунку
   // загальна перевірка йде одразу, якщо остання була понад годину тому.
   it("is due when the last general check is more than an hour old", () => {
     expect(

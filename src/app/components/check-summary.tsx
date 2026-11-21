@@ -9,7 +9,7 @@ import { useCheckStatus } from "./check-status-provider";
 import { FailedSourcesDrawer } from "./failed-sources-drawer";
 
 /**
- * Підсумок загальної перевірки (docs/checks-and-queue.md, розділ 8): спливає,
+ * Підсумок загальної перевірки (src/server/checks/README.md): спливає,
  * коли опитування приносить непоказаний підсумок, - одразу після кінця
  * перевірки або при наступному відкритті застосунку.
  *

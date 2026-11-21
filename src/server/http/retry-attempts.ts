@@ -1,6 +1,6 @@
 /**
  * Retry attempts: скільки повторів після збою мережі чи помилки сервера
- * (docs/discovery-and-parsing.md, розділ 6). Повтори робить HTTP-клієнт
+ * (src/server/http/README.md). Повтори робить HTTP-клієнт
  * (`client.ts`, `sendWithRetries`).
  *
  * Задається змінною `RETRY_ATTEMPTS` (`.env.example`). Хибне значення -

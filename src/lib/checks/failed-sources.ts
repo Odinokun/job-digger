@@ -1,5 +1,5 @@
 /**
- * Рядок Failed Sources Drawer (docs/checks-and-queue.md, розділ 8). Тип
+ * Рядок Failed Sources Drawer (src/server/checks/README.md). Тип
  * спільний: його віддає сервер (`server/checks/failed-sources.ts`), а показує
  * клієнт.
  */

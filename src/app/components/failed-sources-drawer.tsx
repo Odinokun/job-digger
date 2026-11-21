@@ -23,7 +23,7 @@ interface FailedSourcesDrawerProps {
 }
 
 /**
- * Failed Sources Drawer (docs/checks-and-queue.md, розділ 8): невдалі джерела
+ * Failed Sources Drawer (src/server/checks/README.md): невдалі джерела
  * останньої загальної перевірки з Retry і Retry all failed. Правила списку -
  * `server/checks/README.md`, «Невдалі джерела».
  *

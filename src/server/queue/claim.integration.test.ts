@@ -51,7 +51,7 @@ describe("claimTask", () => {
 
   it("takes manual tasks first, then the oldest", async () => {
     // Ручна дія чекає щонайбільше одне фонове завдання, а не всю чергу
-    // (docs/checks-and-queue.md, розділ 8).
+    // (src/server/queue/README.md).
     const sourceId = await greenhouseSource(testDb, "discord");
     const old = minutesAfter(now, -10);
     const older = minutesAfter(now, -20);

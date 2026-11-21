@@ -30,8 +30,8 @@ describe("check_runs", () => {
   });
 
   it("refuses a second active run for the same user", async () => {
-    // Одна загальна перевірка одночасно на користувача (docs/checks-and-queue.md,
-    // розділ 8) - тримає база, тож два одночасні Check all не проскочать.
+    // Одна загальна перевірка одночасно на користувача (src/server/checks/README.md) -
+    // тримає база, тож два одночасні Check all не проскочать.
     const user = await seedSystemUser(testDb);
     await testDb.insert(checkRuns).values({ userId: user.id });
 
@@ -131,8 +131,8 @@ describe("check_tasks", () => {
   });
 
   it("sorts manual tasks before background ones", async () => {
-    // Ручні дії беруться з черги раніше за фонові (docs/checks-and-queue.md,
-    // розділ 8): захоплення сортує за `priority`, і порядок задає сам enum.
+    // Ручні дії беруться з черги раніше за фонові (src/server/queue/README.md):
+    // захоплення сортує за `priority`, і порядок задає сам enum.
     const sourceId = await greenhouseSource("discord");
     await testDb.insert(checkTasks).values([
       { sourceId, priority: "background" },
@@ -149,7 +149,7 @@ describe("check_tasks", () => {
 
   it("disappears with its source and leaves the run counters alone", async () => {
     // Видалене джерело не потрапляє у Failed Sources Drawer, а числа запуску
-    // лишаються такими, якими були (docs/checks-and-queue.md, розділ 8).
+    // лишаються такими, якими були (src/server/checks/README.md).
     const sourceId = await greenhouseSource("discord");
     const user = await seedSystemUser(testDb);
     const [run] = await testDb

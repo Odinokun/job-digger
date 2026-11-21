@@ -1,7 +1,6 @@
 /**
  * Стан загальної перевірки для опитування з інтерфейсу: хід активного запуску,
- * непоказаний підсумок і кількість непрочитаних (docs/checks-and-queue.md,
- * розділ 8).
+ * непоказаний підсумок і кількість непрочитаних (src/server/checks/README.md).
  */
 import { and, desc, eq, isNotNull, isNull, lte, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";

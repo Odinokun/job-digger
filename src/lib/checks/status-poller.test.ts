@@ -55,7 +55,7 @@ function setup(responses: (CheckStatus | Error)[]) {
 describe("createStatusPoller", () => {
   it("polls once on start and stays quiet when no check is running", async () => {
     // Перевірку могли запустити розклад чи інша вкладка - одне опитування на
-    // завантаженні сторінки її показує (docs/checks-and-queue.md, розділ 8).
+    // завантаженні сторінки її показує (src/server/checks/README.md).
     const { poller, fetchStatus, onStatus } = setup([idle]);
 
     poller.start();

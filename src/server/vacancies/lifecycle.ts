@@ -41,7 +41,7 @@ export async function syncSourceVacancies(
 
   return db.transaction(async (tx) => {
     // Джерело могли видалити, поки сайт відповідав, - тоді результат
-    // відкидається (docs/checks-and-queue.md, розділ 8). `FOR KEY SHARE` ще й
+    // відкидається (README.md поруч). `FOR KEY SHARE` ще й
     // не дає видалити джерело до кінця транзакції: видалення дочекається, і
     // каскад прибере щойно записані вакансії разом зі старими
     // (https://www.postgresql.org/docs/current/explicit-locking.html#LOCKING-ROWS).
@@ -236,7 +236,7 @@ async function markDuplicates(
 
 /**
  * Вакансії з різними ключами, з кожного ключа - перша. Повторів усередині
- * джерела не створюємо (розділ 7), а `ON CONFLICT DO UPDATE` і не дає двічі
+ * джерела не створюємо, а `ON CONFLICT DO UPDATE` і не дає двічі
  * змінити один рядок однією командою - падає з cardinality violation
  * (https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT).
  */

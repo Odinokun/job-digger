@@ -27,7 +27,7 @@ export type NamedCompany = {
  *
  * `exact` блокує додавання, `same-domain` - лише попередження: на тому самому
  * домені може бути кілька різних компаній, наприклад національних версій
- * (docs/discovery-and-parsing.md, розділ 5).
+ * (src/lib/companies/README.md).
  */
 export type CompanyUrlConflict =
   | { kind: "none" }

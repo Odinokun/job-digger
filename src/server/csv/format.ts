@@ -17,8 +17,8 @@ export type CsvRow = Record<(typeof CSV_COLUMNS)[number], string>;
 /**
  * Перші символи, з яких таблиця може почати формулу. Список OWASP «CSV
  * Injection» (https://owasp.org/www-community/attacks/CSV_Injection): ширший
- * за чотири символи з docs/security.md - ще Tab, CR, LF і повноширинні
- * варіанти, які деякі локалі теж читають як формулу.
+ * за чотири символи з початкового плану (`=`, `+`, `-`, `@`) - ще Tab, CR, LF
+ * і повноширинні варіанти, які деякі локалі теж читають як формулу.
  */
 export const FORMULA_STARTS = new Set([
   "=",

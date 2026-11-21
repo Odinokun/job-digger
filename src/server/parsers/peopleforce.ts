@@ -57,8 +57,8 @@ const RANGE = /^(\d+)\s*-\s*(\d+)$/;
 /**
  * Вакансії однієї сторінки списку `/careers?page=N`.
  *
- * Сторінка - HTML, тож довіра до нуля тут окрема (docs/discovery-and-parsing.md,
- * розділ 6): над картками PeopleForce пише лічильник «Displaying X - Y of N»,
+ * Сторінка - HTML, тож довіра до нуля тут окрема (src/server/parsers/README.md):
+ * над картками PeopleForce пише лічильник «Displaying X - Y of N»,
  * і карток має бути рівно Y - X + 1. Числа в `<strong>` від мови не залежать,
  * текст навколо - залежить («Відображено ... з ...»). Немає ні лічильника, ні
  * карток - вакансій справді немає («There are currently no vacancies.»). Будь-

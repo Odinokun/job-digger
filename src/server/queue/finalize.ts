@@ -10,7 +10,7 @@ import type { CheckTaskError } from "./task-error.ts";
 /**
  * Скільки запуск може стояти без руху, перш ніж закривається. Більше за
  * `STALE_AFTER_MS`: зависле завдання встигає повернутися в чергу раніше
- * (docs/checks-and-queue.md, розділ 8).
+ * (src/server/queue/README.md).
  */
 export const IDLE_RUN_MS = 15 * 60_000;
 

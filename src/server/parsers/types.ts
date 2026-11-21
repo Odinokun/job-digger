@@ -39,7 +39,7 @@ export type ParseResult =
       vacancies: ParsedVacancy[];
       /**
        * Скільки записів пропущено через ваду даних - порожню назву чи адресу
-       * не http(s) (docs/discovery-and-parsing.md, розділ 6). Сигнал «парсер
+       * не http(s) (src/server/parsers/README.md). Сигнал «парсер
        * чи сайт треба глянути» - parse warning у деталях завдання (4.01).
        */
       skipped: number;

@@ -7,7 +7,7 @@ import {
 
 describe("parseRetryAttempts", () => {
   it("defaults to two retries", () => {
-    // docs/discovery-and-parsing.md, розділ 6: «до 2 повторних спроб».
+    // src/server/http/README.md: «до 2 повторних спроб».
     expect(DEFAULT_RETRY_ATTEMPTS).toBe(2);
     expect(parseRetryAttempts(undefined)).toBe(2);
     expect(parseRetryAttempts("")).toBe(2);

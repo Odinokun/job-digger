@@ -19,7 +19,7 @@ import { VacancyActions } from "./vacancy-actions";
  *
  * Назва, компанія й локація прийшли з чужих сайтів, тому рендеряться лише як
  * текст - JSX екранує їх сам. Посилання відкривається в новій вкладці з
- * `rel="noopener noreferrer"` (docs/security.md).
+ * `rel="noopener noreferrer"` (CLAUDE.md, «Безпека»).
  */
 interface VacancyRowProps {
   vacancy: VacancyListItem;

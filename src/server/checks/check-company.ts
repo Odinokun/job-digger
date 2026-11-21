@@ -35,7 +35,7 @@ export async function checkCompany(
   }
 
   // Під час загальної перевірки компанія і так перевіряється - дублікатів
-  // не створюємо (docs/checks-and-queue.md, розділ 8). Кнопка в цей час
+  // не створюємо (src/server/checks/README.md). Кнопка в цей час
   // вимкнена, а це - захист від запиту, що прийшов уже після старту.
   const [activeRun] = await db
     .select({ id: checkRuns.id })

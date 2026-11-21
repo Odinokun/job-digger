@@ -1,6 +1,6 @@
 /**
  * Check all: загальна перевірка всіх компаній з вкладки Tracked
- * (docs/checks-and-queue.md, розділ 8). Тут лише постановка в чергу - самі
+ * (src/server/checks/README.md). Тут лише постановка в чергу - самі
  * джерела перевіряє цикл черги (`queue/worker.ts`).
  */
 import { and, eq } from "drizzle-orm";

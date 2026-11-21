@@ -1,6 +1,6 @@
 /**
  * Чи прийшов запит до API-маршруту з нашої ж сторінки. Server Actions Next
- * перевіряє сам, а звичайні маршрути - ні (docs/security.md, пункт 2).
+ * перевіряє сам, а звичайні маршрути - ні (CLAUDE.md, «Безпека»).
  *
  * Спершу `Sec-Fetch-Site`: GET із тієї самої сторінки браузер шле без `Origin`
  * (https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Origin),
