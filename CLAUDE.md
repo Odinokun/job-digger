@@ -128,7 +128,7 @@ E2E живуть окремо від Vitest: тека `e2e/`, файли `*.spec
 - **Секрети лише в ENV**, файли `.env*` не потрапляють у git. Виняток - `.env.example`: він у git і є **єдиним переліком змінних середовища**. Нова змінна додається в `.env.example` із коментарем у тому самому PR, що вводить її в код; значення в прикладі - placeholder, не справжній секрет. Перелік не пишеться наперед: імена змінних визначає код, що їх читає.
 - Ввічливість до сайтів: до 2 запитів одночасно на сайт, пауза 2 с, тайм-аут 20 с, чесний User-Agent, повага до 429, повтори лише при збоях. Захист сайтів не обходимо.
 
-Повні правила - [docs/security.md](docs/security.md) і [docs/discovery-and-parsing.md](docs/discovery-and-parsing.md).
+Подробиці - [src/server/http/README.md](src/server/http/README.md) (SSRF, ввічливість, ліміти), [src/server/csv/README.md](src/server/csv/README.md) (формули), онлайн-правила етапу 7 - [docs/security.md](docs/security.md).
 
 ## Залежності й інструменти
 
