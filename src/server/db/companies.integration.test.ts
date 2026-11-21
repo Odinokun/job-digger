@@ -7,7 +7,7 @@ import { normalizedSourceUrl } from "./testing/career-source-values.ts";
 import { testDb } from "./testing/test-db.ts";
 
 // Головна адреса зберігається разом зі шляхом, а нормалізована форма - окремо:
-// bosch.com/de і bosch.com/ua - різні компанії (docs/discovery-and-parsing.md, розділ 5).
+// bosch.com/de і bosch.com/ua - різні компанії (src/lib/companies/README.md).
 const BOSCH = {
   name: "Bosch",
   url: "https://www.bosch.com/de/",

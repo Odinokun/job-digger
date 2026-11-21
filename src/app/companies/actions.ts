@@ -87,7 +87,7 @@ export async function addCompanyAction(
     });
 
     // Компанія на Tracked - у неї є джерела, що відстежуються, і її одразу
-    // перевіряють (docs/discovery-and-parsing.md, розділ 5, пункт 7).
+    // перевіряють (src/app/README.md, «Додавання компанії»).
     const isTracked =
       tab === "tracked"
         ? company !== null
@@ -126,7 +126,7 @@ export async function addCompanyAction(
 
 /**
  * Find pages у модалці Add company: пошук кар'єрних джерел за сайтом і назвою
- * (`discoverSources`, docs/discovery-and-parsing.md, розділ 5).
+ * (`discoverSources`, src/server/discovery/README.md).
  *
  * Нічого не змінює - лише читає чужі сайти, - але Server Action, бо пошук
  * ходить у мережу з сервера. Аргументи - недовірений ввід, тому адреса
@@ -312,7 +312,7 @@ export async function checkCompanyNowAction(
 }
 
 /**
- * Check all з вкладки Tracked (docs/checks-and-queue.md, розділ 8): ставить
+ * Check all з вкладки Tracked (src/server/checks/README.md): ставить
  * у чергу всі джерела, що відстежуються, і одразу повертається - джерела
  * перевіряє цикл черги, а інтерфейс не блокується.
  */

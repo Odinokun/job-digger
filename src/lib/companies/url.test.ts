@@ -40,7 +40,7 @@ describe("normalizeCompanyUrl", () => {
   });
 
   it("refuses a scheme we never fetch", () => {
-    // Лише http і https: решту ми не завантажуємо (docs/security.md).
+    // Лише http і https: решту ми не завантажуємо (CLAUDE.md, «Безпека»).
     expect(normalizeCompanyUrl("ftp://bosch.com")).toEqual({
       ok: false,
       reason: "unsupported-scheme",

@@ -7,8 +7,8 @@ import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 
 /**
- * Підсумок перевірки показано - більше він не спливає (docs/checks-and-queue.md,
- * розділ 8). `runId` - недовірений ввід: чужий запуск `markSummaryShown` не
+ * Підсумок перевірки показано - більше він не спливає (src/server/checks/README.md).
+ * `runId` - недовірений ввід: чужий запуск `markSummaryShown` не
  * позначить.
  */
 export async function markCheckSummaryShownAction(

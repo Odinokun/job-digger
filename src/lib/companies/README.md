@@ -8,7 +8,7 @@
 
 Серверна частина компаній (дублікати в базі, списки, додавання) -
 [`server/companies`](../../server/companies/README.md), сценарій додавання компанії -
-[розділ 5 плану](../../../docs/discovery-and-parsing.md).
+[`src/app/README.md`](../../app/README.md#додавання-компанії).
 
 ## Файли
 

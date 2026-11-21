@@ -105,8 +105,8 @@ describe("parseGreenhouseJobs", () => {
   });
 
   it("skips a vacancy with an empty title or a non-web address and counts it", () => {
-    // Вада даних однієї вакансії, а не зміна формату (docs/discovery-and-
-    // parsing.md, розділ 6). Посилання в UI - лише http/https (docs/security.md).
+    // Вада даних однієї вакансії, а не зміна формату (src/server/parsers/README.md).
+    // Посилання в UI - лише http/https (CLAUDE.md, «Безпека»).
     for (const bad of [
       job({ id: 2, title: "  " }),
       job({ id: 2, absolute_url: "not an address" }),

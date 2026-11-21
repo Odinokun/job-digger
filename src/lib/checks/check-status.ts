@@ -1,6 +1,6 @@
 /**
  * Стан загальної перевірки, який інтерфейс отримує опитуванням
- * (docs/checks-and-queue.md, розділ 8). Тип спільний: його повертає сервер
+ * (src/server/checks/README.md). Тип спільний: його повертає сервер
  * (`server/checks/check-status.ts`) і читає клієнт.
  */
 
@@ -17,7 +17,7 @@ export interface RunProgress {
 
 /**
  * Підсумок завершеного запуску, який ще не показували
- * (docs/checks-and-queue.md, розділ 8). Успішних - `checked - failed`.
+ * (src/server/checks/README.md). Успішних - `checked - failed`.
  */
 export interface RunSummary {
   runId: string;

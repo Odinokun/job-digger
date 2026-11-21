@@ -1,6 +1,6 @@
 /**
  * Перший і найнадійніший спосіб пошуку: посилання з сайту компанії на ATS
- * (docs/discovery-and-parsing.md, розділ 5, пункт 3) - наприклад, кнопка Jobs
+ * (src/server/discovery/README.md) - наприклад, кнопка Jobs
  * веде на Greenhouse.
  */
 import * as cheerio from "cheerio";

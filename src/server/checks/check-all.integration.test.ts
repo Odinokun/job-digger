@@ -49,7 +49,7 @@ async function companyWith(
 
 describe("startCheckAll", () => {
   it("creates a run with one background task per tracked source", async () => {
-    // Одне джерело = одне завдання (docs/overview.md, розділ 3).
+    // Одне джерело = одне завдання (CLAUDE.md, «Архітектура»).
     const user = await seedSystemUser(testDb);
     const first = await companyWith(
       user.id,
@@ -243,7 +243,7 @@ describe("startCheckAll", () => {
   it("is not blocked forever by a run that stopped moving", async () => {
     // Перевірку перервали сон компʼютера чи вбитий сервер: без закриття
     // завислого запуску Check all і автоперевірки були б заблоковані назавжди
-    // (docs/checks-and-queue.md, розділ 8).
+    // (src/server/checks/README.md).
     const user = await seedSystemUser(testDb);
     await companyWith(user.id, { board: "discord" });
     await startCheckAll(testDb, {

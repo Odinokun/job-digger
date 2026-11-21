@@ -191,7 +191,7 @@ describe("checkCompany", () => {
 
   it("refuses while the user's general check is running", async () => {
     // Компанія і так перевіряється в загальній перевірці - дублікатів завдань
-    // не створюємо (docs/checks-and-queue.md, розділ 8).
+    // не створюємо (src/server/checks/README.md).
     const { userId, companyId, sourceIds } = await companyWith({
       url: "job-boards.greenhouse.io/discord",
     });

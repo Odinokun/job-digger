@@ -4,7 +4,7 @@ import { resetDatabase } from "./database.ts";
 
 /**
  * Головний сценарій етапу 5 (задача 5.12): від головної адреси компанії до
- * вакансій у Unread через Find pages (docs/discovery-and-parsing.md, розділ 5).
+ * вакансій у Unread через Find pages (src/server/discovery/README.md).
  *
  * Критерій готовності етапу: написаний на його початку й червоний, поки етап
  * не зроблено. Тег `@pending` зняла задача 5.11 - тепер це звичайний сценарій.
@@ -35,7 +35,7 @@ test("Find pages turns a company site into tracked vacancies", async ({
   await dialog.getByRole("button", { name: "Find pages" }).click();
 
   // Знахідки показуються вже пробно прочитаними: платформа, адреса і
-  // кількість вакансій (розділ 5, пункт 5).
+  // кількість вакансій.
   const found = dialog
     .getByRole("list", { name: "Found pages" })
     .getByRole("listitem")

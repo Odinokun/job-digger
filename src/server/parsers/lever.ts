@@ -126,8 +126,7 @@ export const LEVER_PAGE_SIZE = 100;
  * `unreadable` без жодного запиту.
  *
  * Збій будь-якої сторінки - збій усього джерела: половина списку виглядала б як
- * «решта вакансій зникла» і потягнула б їхнє видалення (docs/discovery-and-
- * parsing.md, розділ 6).
+ * «решта вакансій зникла» і потягнула б їхнє видалення (src/server/parsers/README.md).
  */
 export async function readLever(
   sourceUrl: string,

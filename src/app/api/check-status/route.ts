@@ -8,7 +8,7 @@ import { isSameOriginRequest } from "../same-origin";
 
 /**
  * Стан загальної перевірки для опитування з інтерфейсу
- * (docs/checks-and-queue.md, розділ 8). GET-маршрут, а не Server Action:
+ * (src/server/checks/README.md). GET-маршрут, а не Server Action:
  * Server Actions клієнт Next надсилає по одній, і опитування раз на 3 с
  * ставало б у чергу з діями користувача
  * (node_modules/next/dist/docs/01-app/02-guides/server-actions.md, «Sequential

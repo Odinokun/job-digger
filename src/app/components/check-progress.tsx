@@ -7,7 +7,7 @@ import { useCheckStatus } from "./check-status-provider";
 
 /**
  * Індикатор загальної перевірки в шапці: «Checking 37/120»
- * (docs/checks-and-queue.md, розділ 8). Лічильник - перевірені джерела разом
+ * (src/server/checks/README.md). Лічильник - перевірені джерела разом
  * із невдалими. Видно лише поки запуск активний; стан дає опитування
  * (`check-status-provider.tsx`), а після Check all - її відповідь, тож
  * індикатор зʼявляється одразу.

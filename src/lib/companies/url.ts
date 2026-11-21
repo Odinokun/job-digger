@@ -8,7 +8,7 @@ export type UrlRefusalReason = "empty" | "not-a-url" | "unsupported-scheme";
 export type NormalizedCompanyUrl =
   { ok: true; url: string } | { ok: false; reason: UrlRefusalReason };
 
-/** Завантажуємо лише ці схеми (docs/security.md). */
+/** Завантажуємо лише ці схеми (CLAUDE.md, «Безпека»). */
 const SUPPORTED_SCHEMES = ["http:", "https:"];
 
 /** Протокол на початку рядка: `https:`, `ftp:` і будь-який інший. */

@@ -44,7 +44,7 @@ export function CheckNowButton({
   const [isPending, startCheck] = useTransition();
   const { status } = useCheckStatus();
   // Під час загальної перевірки компанія і так перевіряється
-  // (docs/checks-and-queue.md, розділ 8).
+  // (src/server/checks/README.md).
   const isGeneralCheckRunning = (status?.run ?? null) !== null;
 
   function check() {

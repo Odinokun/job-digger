@@ -1,6 +1,6 @@
 /**
  * Parallel source checks: скільки джерел перевіряється одночасно
- * (docs/discovery-and-parsing.md, розділ 6). Ліміт спільний для всіх
+ * (src/server/http/README.md). Ліміт спільний для всіх
  * користувачів і всіх процесів - його тримає захоплення в базі (`claim.ts`).
  *
  * Задається змінною `PARALLEL_SOURCE_CHECKS` (`.env.example`). Хибне значення -

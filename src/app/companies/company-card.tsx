@@ -76,7 +76,7 @@ export function CompanyCard({
               змушуємо його вигадувати (картка 2.17). Тоді рядок просто
               порожній, а що саме показувати замість нього - крок UI. */}
           {company.url === null ? null : (
-            /* Зовнішнє посилання: rel обовʼязковий (docs/security.md). */
+            /* Зовнішнє посилання: rel обовʼязковий (CLAUDE.md, «Безпека»). */
             <a
               href={company.url}
               target="_blank"

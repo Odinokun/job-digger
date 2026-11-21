@@ -1,6 +1,6 @@
 /**
  * Захист від SSRF: сервер ходить лише на публічні адреси http/https
- * (docs/security.md, розділ 13, пункт 3).
+ * (CLAUDE.md, «Безпека»).
  */
 import type { LookupAddress, LookupOptions } from "node:dns";
 import { lookup as dnsLookup } from "node:dns/promises";

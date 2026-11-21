@@ -70,7 +70,7 @@ describe("vacancies", () => {
   });
 
   it("allows the same key in different sources", async () => {
-    // Між джерелами дублікати не обʼєднуємо (docs/discovery-and-parsing.md, розділ 7).
+    // Між джерелами дублікати не обʼєднуємо (src/server/vacancies/README.md).
     const first = await greenhouseSource("discord");
     const second = await greenhouseSource("figma");
 

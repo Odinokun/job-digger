@@ -1,6 +1,6 @@
 /**
  * Failed Sources Drawer: невдалі джерела останньої загальної перевірки і Retry
- * для них (docs/checks-and-queue.md, розділ 8). Правила - README.md поруч,
+ * для них (src/server/checks/README.md). Правила - README.md поруч,
  * «Невдалі джерела».
  */
 import { and, eq, isNull, sql } from "drizzle-orm";

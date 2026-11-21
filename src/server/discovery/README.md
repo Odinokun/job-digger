@@ -1,7 +1,6 @@
 # src/server/discovery - пошук кар'єрних сторінок
 
-Знаходить кар'єрні джерела компанії за адресою її сайту
-([docs/discovery-and-parsing.md](../../../docs/discovery-and-parsing.md), розділ 5).
+Знаходить кар'єрні джерела компанії за адресою її сайту для Find pages і Find new pages.
 Усі запити - через єдиний HTTP-клієнт ([`src/server/http`](../http/README.md)).
 
 ## Файли

@@ -1,6 +1,6 @@
 /**
  * Другий спосіб пошуку: кар'єрні сторінки на сайті самої компанії
- * (docs/discovery-and-parsing.md, розділ 5, пункт 3) - посилання Careers / Jobs /
+ * (src/server/discovery/README.md) - посилання Careers / Jobs /
  * Karriere / Вакансії, типові адреси, sitemap.
  */
 import * as cheerio from "cheerio";

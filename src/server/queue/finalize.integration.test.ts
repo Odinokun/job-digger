@@ -87,7 +87,7 @@ describe("finalizeRuns", () => {
   it("closes a run idle for too long with the numbers it has", async () => {
     // Перевірку перервав сон компʼютера чи вбитий сервер - без цього правила
     // запуск лишався б активним і блокував Check all назавжди
-    // (docs/checks-and-queue.md, розділ 8).
+    // (src/server/queue/README.md).
     const sourceId = await greenhouseSource(testDb, "discord");
     const runId = await activeRun(testDb, {
       startedAt: minutesAfter(longAgo, -5),

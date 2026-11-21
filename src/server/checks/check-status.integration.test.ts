@@ -79,7 +79,7 @@ function minutesAfter(from: Date, minutes: number): Date {
 describe("check summary", () => {
   it("offers the summary of a finished run that was not shown yet", async () => {
     // Перевірка часто завершується при закритій вкладці - підсумок має
-    // дочекатися наступного відкриття (docs/checks-and-queue.md, розділ 8).
+    // дочекатися наступного відкриття (src/server/checks/README.md).
     const user = await seedSystemUser(testDb);
     const [run] = await testDb
       .insert(checkRuns)

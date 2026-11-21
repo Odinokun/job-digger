@@ -12,7 +12,7 @@ import { companyUrlHost } from "./url.ts";
  * адресою її не розпізнати, тож `detectPlatform` її ніколи не повертає.
  *
  * `unsupported` - сторінку знайдено, але читати її нічим
- * (docs/discovery-and-parsing.md, розділ 6).
+ * (src/server/parsers/README.md).
  */
 export const CAREER_PLATFORMS = [
   "greenhouse",
