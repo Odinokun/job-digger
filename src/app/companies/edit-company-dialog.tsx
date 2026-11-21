@@ -1,6 +1,6 @@
 "use client";
 
-import { PencilToSquare } from "@gravity-ui/icons";
+import { ArrowRotateLeft, PencilToSquare, TrashBin } from "@gravity-ui/icons";
 import {
   Button,
   FieldError,
@@ -281,66 +281,73 @@ export function EditCompanyDialog({
                   {company.sources.length === 0 ? (
                     <p className="text-sm text-muted">{t("noSources")}</p>
                   ) : (
-                    <ul className="flex flex-col gap-3">
+                    <ul className="flex flex-col gap-6">
                       {company.sources.map((source) => {
                         const isRemoved = removed.includes(source.id);
 
                         return (
-                          <li key={source.id} className="flex flex-col gap-1">
-                            <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
-                              <span
+                          <li key={source.id} className="flex flex-col gap-2">
+                            {/* Платформа й повна адреса ліворуч, кошик праворуч -
+                                завжди на тому самому місці, хоч би якою довгою
+                                була адреса (аудит інтерфейсу, A5). Тут адреса
+                                повна, з переносом: у картці вона обрізана, а
+                                Edit - єдине місце, де її видно цілком. */}
+                            <div className="flex items-start justify-between gap-3">
+                              <div
                                 className={
-                                  isRemoved ? "text-muted line-through" : ""
+                                  isRemoved
+                                    ? "min-w-0 text-sm text-muted line-through"
+                                    : "min-w-0 text-sm"
                                 }
                               >
-                                <span className="font-medium">
+                                <p className="font-medium">
                                   {knownAtsName(source.url) ??
                                     platformLabels[source.platform]}
-                                </span>{" "}
-                                <span className="text-muted">{source.url}</span>
-                              </span>
+                                </p>
+                                <p className="break-all text-muted">
+                                  {source.url}
+                                </p>
+                              </div>
 
-                              {/* Видалення - небезпечна дія, тому кнопка
-                                  червона: обведена, доки джерело лишається, і
-                                  залита, коли воно вже позначене. HeroUI
-                                  `outline` рамки не малює (лише прозорий фон),
-                                  тому рамка й колір тексту задані утилітами, а
-                                  `--button-fg` перебивається змінною: сам
-                                  `text-danger` програв би правилу
+                              {/* Видалення - небезпечна дія, тому кошик
+                                  червоний. Позначене джерело можна повернути
+                                  тією самою кнопкою - тоді на ній стрілка
+                                  «назад». `--button-fg` перебивається змінною:
+                                  сам `text-danger` програв би правилу
                                   `color: var(--button-fg)` з базового класу. */}
-                              <Button
+                              <IconButton
                                 size="sm"
-                                variant={isRemoved ? "danger" : "outline"}
+                                variant="tertiary"
+                                label={isRemoved ? t("keep") : t("remove")}
                                 className={
                                   isRemoved
                                     ? ""
-                                    : "border border-danger [--button-fg:var(--color-danger)]"
+                                    : "[--button-fg:var(--color-danger)]"
                                 }
                                 type="button"
                                 onPress={() => toggleRemoved(source.id)}
                               >
-                                {isRemoved ? t("keep") : t("remove")}
-                              </Button>
+                                {isRemoved ? <ArrowRotateLeft /> : <TrashBin />}
+                              </IconButton>
                             </div>
 
                             {/* Підпис - те, чим користувач розрізняє джерела
                                 одного сайту: три фільтри mozilla.org інакше
-                                виглядають однаково. Підпис рядка, що йде на
-                                видалення, нікуди не надсилається: вимкнене
+                                виглядають однаково. Видимий підпис поля, а не
+                                плейсхолдер (аудит A4, A5). Підпис рядка, що йде
+                                на видалення, нікуди не надсилається: вимкнене
                                 поле у FormData не потрапляє. */}
                             <TextField
                               fullWidth
                               name={`sourceLabel.${source.id}`}
-                              aria-label={tShared("sourceLabel")}
                               value={labels[source.id] ?? ""}
                               onChange={(value) =>
                                 changeLabel(source.id, value)
                               }
                               isDisabled={isRemoved}
                             >
-                              <Input
-                                placeholder={tShared("sourceLabelPlaceholder")}
-                              />
+                              <Label>{tShared("sourceLabel")}</Label>
+                              <Input />
                             </TextField>
 
                             {/* Позначене джерело їде у формі як поле: Server
@@ -402,7 +409,7 @@ export function EditCompanyDialog({
                     }
                   >
                     <Label>{tShared("sourceLabel")}</Label>
-                    <Input placeholder={tShared("sourceLabelPlaceholder")} />
+                    <Input />
                   </TextField>
                 </div>
               </Modal.Body>

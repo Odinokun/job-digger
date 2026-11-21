@@ -521,7 +521,7 @@ export function AddCompanyDialog({
                   isInvalid={nameError !== null}
                 >
                   <Label>{t("name")}</Label>
-                  <Input placeholder={t("namePlaceholder")} />
+                  <Input />
                   <FieldError>{nameError}</FieldError>
                 </TextField>
 
@@ -591,7 +591,7 @@ export function AddCompanyDialog({
                       onChange={setSourceLabel}
                     >
                       <Label>{tShared("sourceLabel")}</Label>
-                      <Input placeholder={tShared("sourceLabelPlaceholder")} />
+                      <Input />
                     </TextField>
 
                     {/* Кнопка на кожну знайдену компанію: однойменних може бути
