@@ -6,6 +6,7 @@
     "attentionCount": "{count, plural, one {# компанія потребує уваги} few {# компанії потребують уваги} many {# компаній потребують уваги} other {# компанії потребують уваги}}",
     "history": "Історія",
     "settings": "Налаштування",
+    "menu": "Меню",
     "checking": "Перевірка {checked}/{total}"
   },
   "JobsPage": {

@@ -35,7 +35,13 @@ export function CompaniesTabs({
   labels,
 }: CompaniesTabsProps) {
   return (
-    <nav aria-label={label} className="flex gap-6 border-b">
+    // На вузькому екрані вкладки не переносяться, а прокручуються в своїй
+    // смузі (аудит інтерфейсу, A1). Лінія під ними - тінь inset, а не border:
+    // прокручуваний контейнер обрізав би підкреслення, що лягає на border.
+    <nav
+      aria-label={label}
+      className="flex [scrollbar-width:none] gap-6 overflow-x-auto shadow-[inset_0_-1px_0_var(--border)]"
+    >
       {TAB_LINKS.map(({ tab, href, key }) => {
         const isActive = tab === current;
 
@@ -50,8 +56,8 @@ export function CompaniesTabs({
             aria-current={isActive ? "page" : undefined}
             className={
               isActive
-                ? "-mb-px border-b-2 border-foreground py-2 text-sm font-medium"
-                : "-mb-px border-b-2 border-transparent py-2 text-sm text-muted hover:text-foreground"
+                ? "shrink-0 border-b-2 border-foreground py-2 text-sm font-medium whitespace-nowrap"
+                : "shrink-0 border-b-2 border-transparent py-2 text-sm whitespace-nowrap text-muted hover:text-foreground"
             }
           >
             {labels[key]}
