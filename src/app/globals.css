@@ -31,6 +31,11 @@
      кнопка була 4px. Наслідок свідомий: різкішають і модалки з поповерами,
      бо шкала радіусів одна на всіх. */
   --radius-3xl: 0.25rem;
+
+  /* Четвертий рівень шкали тексту - підказка під полем і метадані: 13 px,
+     між text-xs і text-sm (правила інтерфейсу, src/app/README.md). */
+  --text-hint: 0.8125rem;
+  --text-hint--line-height: 1.25rem;
 }
 
 /* Тема «Ink».
@@ -165,6 +170,10 @@
 
   --accent-hover: oklch(0.808 0.006 250);
   --default-hover: oklch(0.332 0.006 250);
+
+  /* Під діалогом сторінка майже не темніла: 60% чорного поверх і так темного
+     фону (аудит, C2). */
+  --backdrop: rgba(0, 0, 0, 0.8);
 }
 
 /* Картка. Це перевизначення класу бібліотеки, не токена: у HeroUI `.card` має
@@ -187,4 +196,52 @@
   --toggle-button-bg-selected-hover: var(--accent-hover);
   --toggle-button-bg-selected-pressed: var(--accent-hover);
   --toggle-button-fg-selected: var(--accent-foreground);
+}
+
+/* Вторинна кнопка (secondary, tertiary, а з ними й іконкові) має видиму межу.
+   Її заливка --default відрізняється від фону лише на ≈1.2:1, і без рамки
+   кнопка здавалась меншою за основну та зникала в темній схемі (аудит
+   інтерфейсу, A2, рішення автора 21.11.2026). Прозора рамка є в кожної кнопки,
+   тож розміри в ряду однакові. Стани - components/button.css; при оновленні
+   HeroUI перечитати. */
+@layer components {
+  /* У шарі бібліотеки, а не поза шарами: інакше правило перебило б утиліти
+     (`border-danger` на кнопці Remove) і рамку варіанта outline. */
+  /* `:where` обнуляє специфічність, щоб колір рамки вторинних кнопок нижче
+     переміг прозорий. */
+  :where(.button:not(.button--outline)) {
+    border: 1px solid transparent;
+  }
+
+  .button--secondary,
+  .button--tertiary {
+    border-color: var(--field-border);
+  }
+}
+
+/* Діалоги: заголовок - перший рівень шкали тексту (20/600), з відступом від
+   першого поля. Тіло діалогу HeroUI фарбує приглушеним кольором, і його
+   успадковували підзаголовки розділів - вони ставали блідішими за підписи
+   полів під ними (аудит, A3). Приглушеними лишаються лише підказки, яким
+   колір задано явно. Джерело - components/modal.css, alert-dialog.css,
+   drawer.css; при оновленні HeroUI перечитати. */
+.modal__heading,
+.alert-dialog__heading,
+.drawer__heading {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+}
+
+/* Форма в Edit company стоїть між шапкою й тілом, тож сусідство буває й
+   через неї. */
+.modal__header + .modal__body,
+.modal__header + form > .modal__body {
+  margin-top: 1rem;
+}
+
+.modal__body,
+.alert-dialog__body,
+.drawer__body {
+  color: var(--foreground);
 }
