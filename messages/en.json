@@ -262,6 +262,8 @@
     "import": {
       "title": "Import CSV",
       "file": "CSV file",
+      "choose": "Choose CSV file",
+      "noFile": "No file chosen",
       "button": "Import CSV",
       "hint": "Columns: company_name, company_url, career_url and optional career_label - the same file Export CSV makes. Up to 1 MB.",
       "summary": "Added {companies, plural, one {# company} other {# companies}} and {sources, plural, one {# career page} other {# career pages}}, skipped {duplicates, plural, one {# duplicate} other {# duplicates}}, {errors, plural, one {# row} other {# rows}} with errors.",

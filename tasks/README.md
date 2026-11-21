@@ -149,4 +149,4 @@ PR: #57
 | [Картка компанії](ui-company-card.md)                                                            | done      |
 | [Діалоги компанії](ui-company-dialogs.md)                                                        | done      |
 | [Сайт компанії обов'язковий](company-site-required.md)                                           | backlog   |
-| [Jobs, Settings, History](ui-small-screens.md)                                                   | backlog   |
+| [Jobs, Settings, History](ui-small-screens.md)                                                   | done      |

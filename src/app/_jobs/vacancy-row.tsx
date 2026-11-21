@@ -13,9 +13,8 @@ import { VacancyActions } from "./vacancy-actions";
 /**
  * Один рядок списку Jobs: назва-посилання на оригінал, компанія, локація й дата
  * виявлення й дії Read і Favorite (docs/ui.md, розділ 4.1). Непрочитана
- * вакансія виділена жирнішою назвою і крапкою кольору уваги в полі ліворуч -
- * на вкладках All і Favorites це те, що відрізняє її від прочитаної. Крапка
- * стоїть поза потоком, тож назви прочитаних і непрочитаних вирівняні.
+ * вакансія виділена жирнішою назвою і крапкою кольору уваги перед назвою -
+ * на вкладках All і Favorites це те, що відрізняє її від прочитаної.
  *
  * Назва, компанія й локація прийшли з чужих сайтів, тому рендеряться лише як
  * текст - JSX екранує їх сам. Посилання відкривається в новій вкладці з
@@ -40,40 +39,49 @@ export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
   // сторінки, фон виходить у поле сторінки: `-mx-4 px-4`. Поле не менше 16px,
   // а `hover:` у Tailwind v4 спрацьовує лише там, де є миша.
   return (
-    <div className="relative -mx-4 flex flex-wrap items-start justify-between gap-x-6 gap-y-1 rounded-lg px-4 py-3 transition-colors hover:bg-surface sm:flex-nowrap">
-      {vacancy.isRead ? null : (
-        // Центр крапки - на середині першого рядка назви: py-3 + половина
-        // висоти рядка 24px. По горизонталі - у відступі `px-4`, за 10px
-        // ліворуч від назви, тож усередині підсвіченого фону.
-        <span
-          aria-hidden
-          className="absolute top-5 left-0.5 size-2 rounded-full bg-highlight"
-        />
-      )}
-      <div className="flex min-w-0 flex-col gap-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <a
-            href={vacancy.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={
-              vacancy.isRead
-                ? "underline-offset-2 hover:underline"
-                : "font-semibold underline-offset-2 hover:underline"
-            }
-          >
-            {vacancy.title}
-          </a>
-          {vacancy.closedAt === null ? null : (
-            <Chip size="sm" color="warning" variant="primary">
-              {t("closed")}
-            </Chip>
+    <div className="-mx-4 flex flex-wrap items-start justify-between gap-x-6 gap-y-1 rounded-lg px-4 py-3 transition-colors hover:bg-surface sm:flex-nowrap">
+      {/* Крапка «нова» - у власній вузькій колонці перед назвою, всередині
+          колонки тексту, а не в полі сторінки (аудит інтерфейсу, B3): там вона
+          на телефоні майже торкалась краю екрана. У прочитаної колонка
+          порожня, тож назви всіх рядків вирівняні. Центр - на середині першого
+          рядка назви (висота рядка 24px). */}
+      <div className="flex min-w-0 gap-2">
+        <span aria-hidden className="flex h-6 w-2 shrink-0 items-center">
+          {vacancy.isRead ? null : (
+            <span className="size-2 rounded-full bg-highlight" />
           )}
-        </div>
-        <div className="flex flex-wrap gap-x-4 text-hint text-muted">
-          <span>{vacancy.companyName}</span>
-          {/* Тире не перекладається: це не слово, а знак «немає даних». */}
-          <span>{vacancy.location ?? "—"}</span>
+        </span>
+        <div className="flex min-w-0 flex-col gap-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <a
+              href={vacancy.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={
+                vacancy.isRead
+                  ? "underline-offset-2 hover:underline"
+                  : "font-semibold underline-offset-2 hover:underline"
+              }
+            >
+              {vacancy.title}
+            </a>
+            {vacancy.closedAt === null ? null : (
+              <Chip size="sm" color="warning" variant="primary">
+                {t("closed")}
+              </Chip>
+            )}
+          </div>
+          {/* «Компанія · місто»: компанія основним кольором, місто
+            приглушеним, між ними розділювач (аудит, B3) - раніше обидва були
+            одного кольору й читались як одна фраза. */}
+          <div className="flex flex-wrap gap-x-2 text-hint text-muted">
+            <span className="font-medium text-foreground">
+              {vacancy.companyName}
+            </span>
+            <span aria-hidden>·</span>
+            {/* Тире не перекладається: це не слово, а знак «немає даних». */}
+            <span>{vacancy.location ?? "—"}</span>
+          </div>
         </div>
       </div>
       {/* Абсолютна дата за локаллю: відносний формат лишається для «Last

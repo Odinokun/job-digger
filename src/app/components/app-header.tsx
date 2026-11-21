@@ -48,7 +48,7 @@ export async function AppHeader() {
     <header className="border-b">
       {/* Ширина збігається з `main` у layout.tsx: меню має стояти над вмістом,
           а не над іншою колонкою. */}
-      <div className="mx-auto flex max-w-7xl items-center gap-8 px-6">
+      <div className="mx-auto flex max-w-5xl items-center gap-8 px-6">
         {/* "Job Digger" - назва продукту, вона не перекладається. */}
         <Link
           href="/"
