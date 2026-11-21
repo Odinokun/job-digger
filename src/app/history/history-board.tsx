@@ -71,7 +71,9 @@ export function HistoryBoard({
         </thead>
         <tbody className="divide-y">
           {items.map((run) => (
-            <tr key={run.id}>
+            // Рядок під мишею підсвічується, як рядок вакансії: колонки
+            // рознесені, і без підсвітки рядок важко простежити (аудит, B6).
+            <tr key={run.id} className="transition-colors hover:bg-surface">
               {/* Абсолютна дата за локаллю й поясом із конфігурації
                   next-intl (src/i18n/request.ts). */}
               <td className="py-2 pr-4">

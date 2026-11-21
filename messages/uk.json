@@ -262,6 +262,8 @@
     "import": {
       "title": "Імпорт CSV",
       "file": "Файл CSV",
+      "choose": "Вибрати CSV-файл",
+      "noFile": "Файл не вибрано",
       "button": "Імпортувати CSV",
       "hint": "Колонки: company_name, company_url, career_url і необовʼязкова career_label - той самий файл, що дає експорт. До 1 МБ.",
       "summary": "Додано {companies, plural, one {# компанію} few {# компанії} many {# компаній} other {# компанії}} і {sources, plural, one {# карʼєрну сторінку} few {# карʼєрні сторінки} many {# карʼєрних сторінок} other {# карʼєрної сторінки}}, пропущено {duplicates, plural, one {# дублікат} few {# дублікати} many {# дублікатів} other {# дубліката}}, {errors, plural, one {# рядок} few {# рядки} many {# рядків} other {# рядка}} з помилкою.",
