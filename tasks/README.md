@@ -142,3 +142,4 @@ PR: #57
 | [Розкласти документацію за частинами застосунку](split-docs-by-app-part.md)                      | done    |
 | [Звірити документацію з кодом](docs-sync-with-code.md)                                           | done    |
 | [Помітна вибрана кнопка в перемикачах Settings](toggle-button-selected-contrast.md)              | done    |
+| [Картка компанії оновлюється після Read as list](own-page-card-refresh.md)                       | done    |

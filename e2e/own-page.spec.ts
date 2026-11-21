@@ -51,6 +51,11 @@ test("an own career page is read as a list after the user confirms its links", a
   await dialog.getByRole("button", { name: "Read these" }).click();
   await expect(dialog).toBeHidden();
 
+  // Компанія пішла з Not tracked - картка зникає одразу, без перезавантаження.
+  // Раніше вона лишалася з написом про непрочитану сторінку, хоча лічильники
+  // вкладок уже оновились.
+  await expect(card).toBeHidden();
+
   // Компанія тепер відстежується, і перша перевірка приносить вакансії.
   const jobsLink = page
     .getByRole("navigation", { name: "Main" })

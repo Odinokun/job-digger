@@ -4,7 +4,7 @@
 # відкрила б шлях для інжекції AppleScript.
 # Текст - Віслюк зі «Шрека 2»: так автор просить нагадувати, що Claude чекає
 # (21.11.2026).
-osascript -e 'display notification "Шрек, ми вже приїхали?" with title "Claude Code чекає" sound name "Ping"'
+osascript -e 'display notification "Шрек, ми вже приїхали?" with title "⁉️ Claude Code" sound name "Ping"'
 
 # Альтернативи для інших систем, якщо проєкт колись перенесуть:
 # Linux: notify-send 'Claude Code чекає' 'Шрек, ми вже приїхали?'
