@@ -75,7 +75,7 @@ export function withPagePlatform<
       ? pagePlatforms?.get(source.normalizedUrl)
       : undefined;
 
-  return platform === undefined
+  return platform === undefined || platform === "unsupported"
     ? source
     : { ...source, platform, isTracked: true };
 }

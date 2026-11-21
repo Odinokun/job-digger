@@ -112,6 +112,21 @@ describe("runDiscoverTask", () => {
     });
   });
 
+  it("adds PeopleForce on the company's own domain as a board it reads (task 5.13)", async () => {
+    const companyId = await companyToDiscover(testDb, "Vandelay");
+    const { claimed } = await claimedDiscovery(companyId);
+
+    await run(claimed);
+
+    expect(await sourcesOf(companyId)).toEqual([
+      {
+        url: "https://peopleforce.vandelay.example/careers",
+        platform: "peopleforce",
+        isTracked: true,
+      },
+    ]);
+  });
+
   it("saves an own career page and calls the company unsupported", async () => {
     const companyId = await companyToDiscover(testDb, "Initech");
     const { claimed } = await claimedDiscovery(companyId);
