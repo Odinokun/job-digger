@@ -6,10 +6,13 @@
 import { and, eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
+import type { CareerPlatform } from "../../lib/companies/platform.ts";
+import { normalizeCompanyUrl } from "../../lib/companies/url.ts";
+import type { PagePlatforms } from "../companies/page-platform.ts";
 import { findCompaniesWithSources } from "../companies/source-duplicates.ts";
 import { addCareerSources } from "../companies/sources.ts";
 import { careerSources, checkTasks, companies } from "../db/schema.ts";
-import { discoverCompany } from "../discovery/discover.ts";
+import { discoverCompany, type Finding } from "../discovery/discover.ts";
 import { decideNewPages } from "../discovery/new-pages.ts";
 import type { HttpClient } from "../http/client.ts";
 import type { ClaimedTask } from "./claim.ts";
@@ -77,6 +80,10 @@ export async function runDiscoverTask(
           userId: company.userId,
           companyId: company.id,
           sources: decision.add.map((url) => ({ url })),
+          // Платформу знахідки пошук уже знає, зокрема впізнану за вмістом
+          // сторінки (PeopleForce на домені компанії, задача 5.13): адреса
+          // її не назве, а завантажувати сторінку вдруге нема чого.
+          pagePlatforms: platformsOf(findings),
         });
         // Між пошуком і вставкою сторінку могла забрати інша компанія:
         // помилка в транзакції відкочує все, а завдання стає невдалим.
@@ -126,4 +133,19 @@ export async function runDiscoverTask(
   }
 
   return finishTask(db, claimed, { now: clock(), outcome });
+}
+
+/** Платформи знахідок за очищеною адресою - як їх чекає `addCareerSources`. */
+function platformsOf(findings: Finding[]): PagePlatforms {
+  const platforms = new Map<string, CareerPlatform>();
+
+  for (const finding of findings) {
+    const normalized = normalizeCompanyUrl(finding.url);
+
+    if (normalized.ok) {
+      platforms.set(normalized.url, finding.platform);
+    }
+  }
+
+  return platforms;
 }

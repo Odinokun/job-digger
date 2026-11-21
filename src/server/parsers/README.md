@@ -22,7 +22,7 @@
 | `workday.ts`         | Workday: `readWorkday(sourceUrl, client)`, `workdaySite`, `parseWorkdayJobs` |
 | `workday.test.ts`    | Юніт-тести парсера Workday                        |
 | `workday.integration.test.ts` | `readWorkday` через фейковий вебсервер і сервер зі сторінками |
-| `peopleforce.ts`     | PeopleForce: `readPeopleForce(sourceUrl, client)`, `peopleforceSite`, `parsePeopleForcePage` |
+| `peopleforce.ts`     | PeopleForce: `readPeopleForce(sourceUrl, client)`, `peopleforceSite`, `isPeopleForcePage`, `parsePeopleForcePage` |
 | `peopleforce.test.ts` | Юніт-тести парсера PeopleForce                   |
 | `peopleforce.integration.test.ts` | `readPeopleForce` через фейковий вебсервер і сервер зі сторінками |
 | `breezy.ts`          | Breezy HR: `readBreezy(sourceUrl, client)`, `breezyCompany`, `parseBreezyPositions` |
@@ -283,6 +283,14 @@ Workday - по 100 вакансій за 5 сторінок (близько 9 с
 
 - **Адреса.** `peopleforceSite` бере субдомен компанії; сам `peopleforce.io` і `www` -
   сайт платформи, не компанії. Посилання на вакансію теж годиться.
+- **PeopleForce на домені компанії** (задача 5.13): `peopleforce.softconstruct.com`
+  за хостом не впізнати. Таку сторінку впізнає `isPeopleForcePage` - за списком
+  `#results` разом із підписом «Powered by PeopleForce» (`.credit` з посиланням на
+  `peopleforce.io`). Джерело тоді зберігається з платформою `peopleforce`, і
+  `readPeopleForce` читає `/careers?page=N` від origin його адреси: хост не на
+  `peopleforce.io` уже нічого не доводить, платформу визначило збережене джерело.
+  `peopleforceSite` лишається строгим - він вирішує, чи посилання зі сторінки веде
+  на дошку, а там хост і є єдиною ознакою.
 - **Картка вакансії** - посилання в `h4` всередині `#results`: шлях
   `/careers/v/{ID}-{slug}`, `externalId` - числовий ID (slug зі зміною назви
   зміниться, ID - ні). Локація - текст поруч з іконкою `fa-map-marker-alt`; є не в
@@ -294,9 +302,11 @@ Workday - по 100 вакансій за 5 сторінок (близько 9 с
   вакансій справді немає («There are currently no vacancies.»). Будь-яке інше
   поєднання, як і сторінка без `#results`, - `unreadable`.
 - **Сторінки по 10** (`PEOPLEFORCE_PAGE_SIZE`), `?page=N`, до ліміту вакансій (за
-  замовчуванням 500, тобто 50 сторінок). Наступна - лише за посиланням `rel="next"`
-  у `nav[aria-label="pager"]`: номер за межею списку PeopleForce не відхиляє, а
-  віддає останню сторінку ще раз.
+  замовчуванням 500, тобто 50 сторінок). Наступна - лише поки Y у лічильнику менше
+  за N: номер за межею списку PeopleForce не відхиляє, а віддає останню сторінку
+  ще раз. Посилання «далі» для цього не годиться - у старішій розмітці
+  (SoftConstruct, задача 5.13) у нього немає `rel="next"`, і парсер прочитав би 10
+  вакансій з 215 як увесь список.
 - **Помилки:** невідома компанія - 404; компанія без сторінки кар'єри - 302 на
   `/404`, а та - 404. Обидва випадки - `not-found`.
 

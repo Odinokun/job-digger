@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { careerSources, companies } from "../db/schema.ts";
+import { withPagePlatform, type PagePlatforms } from "./page-platform.ts";
 import {
   findCompanyWithSource,
   type CompanyWithSource,
@@ -48,6 +49,8 @@ export type AddCompanyInput = {
    * (`already-added`) ним не пробивається.
    */
   confirmed?: boolean;
+  /** Платформи, упізнані за вмістом сторінки (`platformsByPage`, задача 5.13). */
+  pagePlatforms?: PagePlatforms;
 };
 
 /**
@@ -104,6 +107,7 @@ export async function addCompany(
     careerUrl,
     foundUrls = [],
     confirmed = false,
+    pagePlatforms,
   }: AddCompanyInput,
 ): Promise<AddCompanyResult> {
   const trimmedName = name.trim();
@@ -265,15 +269,18 @@ export async function addCompany(
         [...sources].map(([normalizedUrl, typed]) => {
           const platform = detectPlatform(normalizedUrl);
 
-          return {
-            companyId: company.id,
-            url: absoluteCompanyUrl(typed),
-            normalizedUrl,
-            platform,
-            // Сторінку, яку нічим прочитати, зберігаємо без відстеження
-            // (docs/ui.md, розділ 4.3).
-            isTracked: platform !== "unsupported",
-          };
+          return withPagePlatform(
+            {
+              companyId: company.id,
+              url: absoluteCompanyUrl(typed),
+              normalizedUrl,
+              platform,
+              // Сторінку, яку нічим прочитати, зберігаємо без відстеження
+              // (docs/ui.md, розділ 4.3).
+              isTracked: platform !== "unsupported",
+            },
+            pagePlatforms,
+          );
         }),
       );
     }

@@ -7,6 +7,7 @@ import {
 } from "../../lib/companies/career-source.ts";
 import type { UrlRefusalReason } from "../../lib/companies/url.ts";
 import { careerSources, companies } from "../db/schema.ts";
+import { withPagePlatform, type PagePlatforms } from "./page-platform.ts";
 import {
   findCompanyWithSource,
   type CompanyWithSource,
@@ -18,6 +19,8 @@ export type AddCareerSourceInput = {
   companyId: string;
   url: string;
   label?: string;
+  /** Платформи, упізнані за вмістом сторінки (`platformsByPage`, задача 5.13). */
+  pagePlatforms?: PagePlatforms;
 };
 
 /**
@@ -52,12 +55,13 @@ export type AddCareerSourceResult =
  */
 export async function addCareerSource(
   db: NodePgDatabase,
-  { userId, companyId, url, label }: AddCareerSourceInput,
+  { userId, companyId, url, label, pagePlatforms }: AddCareerSourceInput,
 ): Promise<AddCareerSourceResult> {
   return addCareerSources(db, {
     userId,
     companyId,
     sources: [{ url, label }],
+    pagePlatforms,
   });
 }
 
@@ -66,6 +70,8 @@ export type AddCareerSourcesInput = {
   userId: string;
   companyId: string;
   sources: Array<{ url: string; label?: string }>;
+  /** Платформи, упізнані за вмістом сторінки (`platformsByPage`, задача 5.13). */
+  pagePlatforms?: PagePlatforms;
 };
 
 /**
@@ -82,7 +88,7 @@ export type AddCareerSourcesInput = {
  */
 export async function addCareerSources(
   db: NodePgDatabase,
-  { userId, companyId, sources }: AddCareerSourcesInput,
+  { userId, companyId, sources, pagePlatforms }: AddCareerSourcesInput,
 ): Promise<AddCareerSourceResult> {
   return db.transaction(async (tx) => {
     const [company] = await tx
@@ -102,13 +108,15 @@ export async function addCareerSources(
     const ready = new Map<string, PreparedCareerSource>();
 
     for (const source of sources) {
-      const prepared = prepareCareerSource({ ...source, existingUrls });
+      const checked = prepareCareerSource({ ...source, existingUrls });
 
-      if (!prepared.ok) {
-        return prepared.problem === "url"
-          ? { ok: false, problem: "source-url", reason: prepared.reason }
+      if (!checked.ok) {
+        return checked.problem === "url"
+          ? { ok: false, problem: "source-url", reason: checked.reason }
           : { ok: false, problem: "source-duplicate" };
       }
+
+      const prepared = withPagePlatform(checked, pagePlatforms);
 
       if (ready.has(prepared.normalizedUrl)) {
         continue;

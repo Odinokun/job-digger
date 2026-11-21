@@ -51,6 +51,7 @@ https://boards-api.greenhouse.io/v1/boards/acme/jobs
 | `responses/jobs.ashbyhq.com/linear` | Сторінка дошки Ashby Linear для людей, HTML 26 КБ: дошку малює JavaScript, а сайт організації (`publicWebsite: linear.app`) лежить у JSON сторінки | 19.11.2026 |
 | `responses/team.peopleforce.io/careers` | Сторінка кар'єри самої PeopleForce, HTML (6 вакансій, одна сторінка) | 18.11.2026 |
 | `responses/webellian.peopleforce.io/careers` | Сторінка кар'єри Webellian на PeopleForce, `?page=1` - 10 вакансій з 23, є посилання на наступну сторінку | 18.11.2026 |
+| `responses/peopleforce.softconstruct.com/careers` | PeopleForce на домені компанії, SoftConstruct, `?page=1` - 10 вакансій з 215 (515 КБ - фільтр на сотні відділів). Старіша розмітка: у посилання «далі» немає `rel="next"` (задача 5.13) | 21.11.2026 |
 | `responses/breezy.breezy.hr/json` | Публічний JSON дошки самої Breezy HR (3 вакансії) | 19.11.2026 |
 | `responses/jobs.breezy.hr/json` | Публічний JSON другої дошки Breezy HR: одна віддалена вакансія (`is_remote: true`) | 19.11.2026 |
 | `responses/cleverstaff.net/hr/public/getAllOpenVacancy` | CleverStaff, дошка 8allocate (8 віддалених вакансій, з описами - 196 КБ). Рядок запиту сервер ігнорує, тож це відповідь на будь-який аліас | 19.11.2026 |
@@ -82,7 +83,15 @@ https://boards-api.greenhouse.io/v1/boards/acme/jobs
 | `responses/umbrella.example/` | Ні посилань, ні `/careers`; `sitemap.xml` веде на `/en/jobs`, звідти посилання на Ashby `linear` | Sitemap (5.03) |
 | `responses/wayne.example/index` | Головна з посиланням Careers на дошку Greenhouse `ghost`, якої на сервері немає | Пробне читання, що не вдалося (5.06) |
 | `responses/hooli.example/` | Головна з вакансією на Teamtailor і посиланням Careers; `/careers` веде ще на дві вакансії Teamtailor і на сайт самого Teamtailor («Powered by»). До 6.26 тут був BambooHR, але він отримав парсер | Відома ATS без парсера: одна знахідка на платформу (5.15) |
+| `responses/kramerica.example/index` | Головна з посиланням Careers на `jobs.kramerica.example/careers` - це PeopleForce на піддомені сайту | PeopleForce на домені компанії: кар'єрна сторінка сама є дошкою (5.13) |
+| `responses/vandelay.example/` | Головна з Careers; `/careers` - власна сторінка без ATS, що веде на `peopleforce.vandelay.example/careers` | PeopleForce на домені компанії: крок далі від кар'єрної сторінки, як у SoftConstruct (5.13) |
 | `responses/acme.example/index` | Головна Acme: Careers і одна вакансія ведуть на дошку Lever `leverdemo`, плюс внутрішні посилання, LinkedIn і `mailto:` | Пошук посилань на ATS (5.02), сценарій `e2e/find-pages.spec.ts` |
+
+Сторінки PeopleForce на піддоменах синтетичних сайтів (`jobs.kramerica.example/careers`,
+`peopleforce.vandelay.example/careers`) - символьні посилання на справжню
+`peopleforce.softconstruct.com/careers`: сайт синтетичний, а розмітка платформи
+справжня, і без копії на 515 КБ. Сервер перевіряє, що шлях лишається в `root`,
+лексично, тож посилання всередині `responses/` він віддає.
 
 Оновити або додати відповідь - один запит до справжньої платформи, наприклад:
 

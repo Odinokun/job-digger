@@ -6,6 +6,7 @@
 import * as cheerio from "cheerio";
 
 import type { HttpClient } from "../http/client.ts";
+import { isPeopleForcePage } from "../parsers/peopleforce.ts";
 import { fetchText } from "../parsers/shared.ts";
 import { atsLinksOnPage } from "./ats-links.ts";
 import { boardKey, boardUrlOf, type BoardUrl } from "./board-url.ts";
@@ -260,7 +261,10 @@ export async function findSiteCareerPages(
       continue;
     }
 
-    const linked = atsLinksOnPage(page.body, page.url);
+    const linked = [
+      ...atsLinksOnPage(page.body, page.url),
+      ...(await peopleForceOnSite(page, client)),
+    ];
     for (const board of linked) {
       if (!boards.has(boardKey(board))) {
         boards.set(boardKey(board), board);
@@ -272,6 +276,50 @@ export async function findSiteCareerPages(
   }
 
   return { boards: [...boards.values()], pages: [...pages] };
+}
+
+/**
+ * PeopleForce на домені компанії (задача 5.13): за хостом його не впізнати,
+ * тож `atsLinksOnPage` його не бачить. Дошкою стає сама кар'єрна сторінка, якщо
+ * вона в розмітці PeopleForce, або - на крок далі - кар'єрна сторінка на іншому
+ * хості того самого сайту, на яку вона веде (SoftConstruct: `/careers` →
+ * `peopleforce.softconstruct.com/careers`).
+ *
+ * Крок далі - лише на інший хост і не більше `MAX_CAREER_PAGES` сторінок:
+ * сторінки свого хоста вже перебрав пошук кандидатів, а кожна сторінка - ще
+ * один запит до чужого сайту.
+ */
+async function peopleForceOnSite(
+  page: Page,
+  client: HttpClient,
+): Promise<BoardUrl[]> {
+  if (isPeopleForcePage(page.body)) {
+    return [peopleForceBoard(page.url)];
+  }
+
+  const host = new URL(page.url).host;
+  const further = careerPagesOnPage(page.body, page.url)
+    .filter((url) => new URL(url).host !== host)
+    .slice(0, MAX_CAREER_PAGES);
+  const boards: BoardUrl[] = [];
+
+  for (const url of further) {
+    const next = await readPage(client, url);
+
+    if (next !== null && isPeopleForcePage(next.body)) {
+      boards.push(peopleForceBoard(next.url));
+    }
+  }
+
+  return boards;
+}
+
+/** Адреса дошки PeopleForce - `/careers` від origin, як на `*.peopleforce.io`. */
+function peopleForceBoard(pageUrl: string): BoardUrl {
+  return {
+    url: `${new URL(pageUrl).origin}/careers`,
+    platform: "peopleforce",
+  };
 }
 
 /**

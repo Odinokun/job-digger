@@ -15,6 +15,7 @@ import { startFindNewPages } from "@/server/checks/find-new-pages";
 import { addCompany } from "@/server/companies/add";
 import { deleteCompany } from "@/server/companies/delete";
 import { findCompanyInTab, listCompanies } from "@/server/companies/list";
+import { platformsByPage } from "@/server/companies/page-platform";
 import { addCareerSource, addCareerSources } from "@/server/companies/sources";
 import {
   applyOwnPageRecipe,
@@ -59,15 +60,22 @@ export async function addCompanyAction(
     const db = getDb();
     const user = await getSystemUser(db);
 
+    const careerUrl = readField(formData, "careerUrl");
+    // Вибрані знахідки Find pages: галочки списку з `name="foundUrl"`.
+    const foundUrls = formData
+      .getAll("foundUrl")
+      .filter((value): value is string => typeof value === "string");
+
     const result = await addCompany(db, {
       userId: user.id,
       name: readField(formData, "name"),
       url: readField(formData, "url"),
-      careerUrl: readField(formData, "careerUrl"),
-      // Вибрані знахідки Find pages: галочки списку з `name="foundUrl"`.
-      foundUrls: formData
-        .getAll("foundUrl")
-        .filter((value): value is string => typeof value === "string"),
+      careerUrl,
+      foundUrls,
+      pagePlatforms: await platformsByPage(
+        [careerUrl, ...foundUrls],
+        httpClient,
+      ),
       // Прапорець зʼявляється у формі лише після попередження - про домен або
       // про однакову назву. Один на обидва: користувач підтверджує рішення
       // «усе одно додати», а не кожну перевірку окремо.
@@ -392,6 +400,7 @@ export async function updateCompanyAction(
     const db = getDb();
     const user = await getSystemUser(db);
 
+    const addSource = addedSource(formData);
     const result = await updateCompany(db, {
       userId: user.id,
       companyId,
@@ -402,7 +411,11 @@ export async function updateCompanyAction(
       sourceLabels: typedLabels(formData),
       // Порожнє поле адреси - це «джерело не додаємо», а не крива адреса: той
       // самий підхід, що з карʼєрною сторінкою в модалці Add company.
-      addSource: addedSource(formData),
+      addSource,
+      pagePlatforms: await platformsByPage(
+        addSource === undefined ? [] : [addSource.url],
+        httpClient,
+      ),
     });
 
     if (!result.ok) {
@@ -500,6 +513,7 @@ export async function addCareerSourceAction(
       companyId: company,
       url: asString(url),
       label: asString(label),
+      pagePlatforms: await platformsByPage([asString(url)], httpClient),
     });
 
     if (!result.ok) {
@@ -560,6 +574,7 @@ export async function addFoundPagesAction(
       userId: user.id,
       companyId: company,
       sources: picked.map((url) => ({ url })),
+      pagePlatforms: await platformsByPage(picked, httpClient),
     });
 
     if (!result.ok) {

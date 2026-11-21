@@ -59,6 +59,26 @@ describe("addCareerSource", () => {
     );
   });
 
+  it("tracks a page its content showed to be PeopleForce (task 5.13)", async () => {
+    const user = await seedSystemUser(testDb);
+    const company = await insertCompany(user.id, "Acme");
+
+    await addCareerSource(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      url: "https://jobs.acme.com/careers",
+      pagePlatforms: new Map([["jobs.acme.com/careers", "peopleforce"]]),
+    });
+
+    expect(await readSources(company.id)).toContainEqual(
+      expect.objectContaining({
+        url: "https://jobs.acme.com/careers",
+        platform: "peopleforce",
+        isTracked: true,
+      }),
+    );
+  });
+
   it("takes no label as no label", async () => {
     const user = await seedSystemUser(testDb);
     const company = await insertCompany(user.id, "Acme");
@@ -181,6 +201,26 @@ describe("addCareerSources", () => {
     expect(result).toEqual({ ok: true });
     expect((await readSources(company.id)).map((s) => s.platform)).toEqual(
       expect.arrayContaining(["greenhouse", "lever", "ashby"]),
+    );
+  });
+
+  it("tracks a picked page its content showed to be PeopleForce (task 5.13)", async () => {
+    const user = await seedSystemUser(testDb);
+    const company = await insertCompany(user.id, "Acme");
+
+    await addCareerSources(testDb, {
+      userId: user.id,
+      companyId: company.id,
+      sources: [{ url: "https://jobs.acme.com/careers" }],
+      pagePlatforms: new Map([["jobs.acme.com/careers", "peopleforce"]]),
+    });
+
+    expect(await readSources(company.id)).toContainEqual(
+      expect.objectContaining({
+        url: "https://jobs.acme.com/careers",
+        platform: "peopleforce",
+        isTracked: true,
+      }),
     );
   });
 

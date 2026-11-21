@@ -17,10 +17,24 @@
 | `sources.ts`    | `addCareerSource` - джерело до вже доданої компанії; `addCareerSources` - кілька одним Save, усе або нічого (Find pages на Not tracked); `companySources` |
 | `reference-only.ts` | `setSourceReferenceOnly` - позначка «лише посилання» на сторінці Unsupported (задача 6.17) |
 | `own-page.ts` | `previewOwnPage` - групи посилань власної сторінки для діалогу Read as list; `applyOwnPageRecipe` - записує вибраний префікс рецептом (задача 6.21) |
+| `page-platform.ts` | `platformsByPage` - платформа сторінки за вмістом, для адрес, що за хостом `unsupported` (задача 5.13); `withPagePlatform` - застосовує її до джерела перед вставкою |
+| `page-platform.integration.test.ts` | `platformsByPage` через фейковий вебсервер |
 | `delete.ts`     | `deleteCompany` - компанія разом із усіма її джерелами            |
 | `source-duplicates.ts` | `findCompanyWithSource` - у кого вже є це карʼєрне джерело; `findCompaniesWithSources` - те саме для списку адрес одним запитом |
 
 ## Рішення
+
+**Платформа - за адресою, а коли адреса мовчить - за сторінкою** (задача 5.13).
+PeopleForce на домені компанії (`peopleforce.softconstruct.com`) за хостом не
+впізнати, і без цього джерело ставало б Unsupported. Тому Server Action перед
+додаванням (`addCompany`, `addCareerSource`, `addCareerSources`, `updateCompany`)
+завантажує кожну адресу, що за хостом `unsupported`, і передає впізнане параметром
+`pagePlatforms`. Запит - до транзакції, бо чужий сайт може відповідати до
+тайм-ауту. Find new pages сторінки не завантажує вдруге: платформу знахідки вже
+знає пошук. Адреси відомих ATS не завантажуються зовсім, а `pagePlatforms` їхньої
+платформи не переписує. CSV-імпорт сторінок не завантажує: файл - це десятки
+адрес, і імпорт тягнувся б хвилинами; така сторінка лишається Unsupported, доки її
+не знайде Find new pages.
 
 **Три види конфлікту, різної сили.** `exact` (той самий сайт) блокує додавання.
 `same-domain` лише попереджає: на одному домені може жити кілька різних компаній.

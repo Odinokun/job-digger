@@ -51,6 +51,23 @@ describe("discoverSources", () => {
     ]);
   });
 
+  it("finds PeopleForce on the company's own domain and reads it (task 5.13)", async () => {
+    expect(
+      await discoverSources(
+        { siteUrl: "https://vandelay.example", name: "Vandelay" },
+        client(),
+      ),
+    ).toEqual([
+      {
+        url: "https://peopleforce.vandelay.example/careers",
+        platform: "peopleforce",
+        via: "site",
+        trial: { kind: "read", vacancies: 10, more: true },
+        ownership: null,
+      },
+    ]);
+  });
+
   it("reports an own career page as unreadable", async () => {
     expect(
       await discoverSources(
