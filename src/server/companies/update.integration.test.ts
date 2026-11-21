@@ -619,4 +619,3 @@ describe("updateCompany changing the site (task company-site-required)", () => {
     });
   });
 });
-
