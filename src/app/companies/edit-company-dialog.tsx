@@ -276,7 +276,7 @@ export function EditCompanyDialog({
                 </TextField>
 
                 <div className="flex flex-col gap-2">
-                  <span className="text-sm font-medium">{t("sources")}</span>
+                  <span className="text-sm font-semibold">{t("sources")}</span>
 
                   {company.sources.length === 0 ? (
                     <p className="text-sm text-muted">{t("noSources")}</p>
@@ -368,7 +368,9 @@ export function EditCompanyDialog({
                 </div>
 
                 <div className="flex flex-col gap-2 border-t pt-4">
-                  <span className="text-sm font-medium">{t("addSource")}</span>
+                  <span className="text-sm font-semibold">
+                    {t("addSource")}
+                  </span>
 
                   <TextField
                     fullWidth
@@ -386,7 +388,7 @@ export function EditCompanyDialog({
                     <Label>{t("addSourceUrl")}</Label>
                     <Input placeholder={t("addSourceUrlPlaceholder")} />
                     <FieldError>{newSourceError}</FieldError>
-                    <span className="text-sm text-muted">
+                    <span className="text-hint text-muted">
                       {t("addSourceHint")}
                     </span>
                   </TextField>

@@ -144,7 +144,7 @@ PR: #57
 | [Помітна вибрана кнопка в перемикачах Settings](toggle-button-selected-contrast.md)              | done    |
 | [Картка компанії оновлюється після Read as list](own-page-card-refresh.md)                       | done    |
 | [Аудит інтерфейсу](ui-audit.md) | done |
-| [Тема: кнопки, текст, плейсхолдери](ui-theme-basics.md) | backlog |
+| [Тема: кнопки, текст, плейсхолдери](ui-theme-basics.md) | done |
 | [Телефон і сітка карток](ui-mobile-layout.md) | backlog |
 | [Картка компанії](ui-company-card.md) | backlog |
 | [Діалоги компанії](ui-company-dialogs.md) | backlog |

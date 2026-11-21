@@ -71,7 +71,7 @@ export function AutoCheckIntervalPicker({
         ))}
       </ToggleButtonGroup>
 
-      <p className="text-sm text-muted">{t("hint")}</p>
+      <p className="text-hint text-muted">{t("hint")}</p>
     </div>
   );
 }
