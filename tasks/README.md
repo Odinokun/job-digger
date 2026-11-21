@@ -141,3 +141,4 @@ PR: #57
 | [Розібратися з уразливостями у npm audit](npm-audit-vulnerabilities.md)                          | done    |
 | [Розкласти документацію за частинами застосунку](split-docs-by-app-part.md)                      | done    |
 | [Звірити документацію з кодом](docs-sync-with-code.md)                                           | done    |
+| [Помітна вибрана кнопка в перемикачах Settings](toggle-button-selected-contrast.md)              | done    |
