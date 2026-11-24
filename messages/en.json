@@ -60,6 +60,7 @@
     "all": "All",
     "search": "Search companies",
     "searchLabel": "Company name",
+    "searchPlaceholder": "e.g. Bosch",
     "closeSearch": "Close search",
     "emptyAll": "No companies yet.",
     "emptySearch": "No company name contains “{query}”.",

@@ -46,7 +46,12 @@ interface CompaniesBoardProps {
   hasNotTracked: boolean;
   /** Пошук за назвою на вкладці All; на інших вкладках - порожній рядок. */
   query: string;
-  searchLabels: { open: string; field: string; close: string };
+  searchLabels: {
+    open: string;
+    field: string;
+    placeholder: string;
+    close: string;
+  };
 }
 
 /**

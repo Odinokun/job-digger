@@ -60,6 +60,7 @@
     "all": "Усі",
     "search": "Шукати компанії",
     "searchLabel": "Назва компанії",
+    "searchPlaceholder": "напр. Bosch",
     "closeSearch": "Закрити пошук",
     "emptyAll": "Компаній поки немає.",
     "emptySearch": "Жодна назва компанії не містить «{query}».",
