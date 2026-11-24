@@ -154,3 +154,5 @@ PR: #57
 | [Лічильники у вкладках Jobs](jobs-tab-counts.md)                                                 | backlog   |
 | [Свіже обране зверху у Favorites](favorites-added-today.md)                                      | backlog   |
 | [Undo після дії над вакансією](vacancy-undo-toast.md)                                            | backlog   |
+| [Перевірка доступності](accessibility-audit.md)                                                  | analyze   |
+| [Підготувати репозиторій до показу](public-repo-polish.md)                                       | analyze   |
