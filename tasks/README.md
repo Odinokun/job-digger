@@ -157,3 +157,4 @@ PR: #57
 | [Перевірка доступності](accessibility-audit.md)                                                  | analyze   |
 | [Підготувати репозиторій до показу](public-repo-polish.md)                                       | analyze   |
 | [Фавіконка з літерами JD](favicon-jd.md)                                                         | todo      |
+| [Пошук компанії на сторінці Companies](companies-search.md)                                      | backlog   |
