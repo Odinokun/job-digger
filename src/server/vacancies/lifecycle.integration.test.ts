@@ -429,6 +429,27 @@ describe("syncSourceVacancies counts", () => {
     });
   });
 
+  it("does not count a closed vacancy taken out of Favorites as removed again", async () => {
+    // Вона вже порахована, коли закрилась; видалення на наступній перевірці -
+    // лише прибирання (задача vacancy-undo-toast).
+    const sourceId = await greenhouseSource();
+    await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
+    await testDb
+      .update(vacancies)
+      .set({ isFavorite: true })
+      .where(eq(vacancies.sourceId, sourceId));
+    await sync(sourceId, ok(), SECOND_CHECK);
+    await testDb
+      .update(vacancies)
+      .set({ isFavorite: false })
+      .where(eq(vacancies.sourceId, sourceId));
+
+    expect(await sync(sourceId, ok(), THIRD_CHECK)).toEqual({
+      newVacancies: 0,
+      removedVacancies: 0,
+    });
+  });
+
   it("counts nothing when the check failed", async () => {
     const sourceId = await greenhouseSource();
     await sync(sourceId, ok(parsed("101")), FIRST_CHECK);

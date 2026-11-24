@@ -160,6 +160,16 @@ Companies) і Check now. Кнопки модалок (Save, Delete) поки б�
   (або «—»), абсолютна дата виявлення, позначка Closed, жирніша назва й крапка
   кольору уваги в непрочитаної, фон картки під мишею з плавним переходом
   (задача 6.19); клієнтський через `useFormatter`.
+- `_jobs/undo-notice.ts` - хук `useUndoNotice`: сповіщення з кнопкою Undo після
+  Mark as read і Remove from Favorites (задача vacancy-undo-toast, рішення автора
+  24.11.2026): назва дії, назва вакансії, 8 секунд. Поки курсор чи фокус над
+  сповіщеннями, таймер стоїть - це робить сам регіон тостів React Aria
+  (`pauseAll` у `react-aria/dist/private/toast/useToastRegion.mjs`). Видно не
+  більше трьох: четверте закриває найстаріше (`keepRecentUndos`, `src/lib`),
+  бо HeroUI `maxVisibleToasts` старі лише ховає в стосі. Ключі відкритих - на
+  рівні модуля, як і сама черга `toast`. Undo в `jobs-board.tsx` повертає
+  позначки, що були до дії, разом із датою додавання в обране (і порожньою в
+  старого обраного), а рядок стає на своє місце (`placeVacancy`).
 - `_jobs/vacancy-actions.tsx` - кнопки-іконки Mark as read / unread і Favorite /
   Remove from Favorites у рядку; клієнтський. Дії **оптимістичні**: `jobs-board.tsx`
   накладає зміну через `useOptimistic` (`patchVacancy`) одразу, а справжній список

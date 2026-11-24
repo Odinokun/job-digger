@@ -11,7 +11,9 @@
 | `uuid.ts`              | `isUuid` - форма UUID для id із клієнта                                      |
 | `pagination/cursor.ts` | курсор keyset-пагінації та його розбір із недовіреного значення             |
 | `vacancies/vacancy-list.ts` | вкладки Jobs (`JOBS_TABS`, `parseJobsTab`, `belongsToJobsTab`), тип рядка `VacancyListItem`, `patchVacancy` для оптимістичних дій, `adjustTabCounts` - числа вкладок із діями, що ще тривають, `countNewVacancies` для сповіщення про нові (за порядком вкладки) і `isRecentFavorite` - групи Favorites |
-| `vacancies/vacancy-list.test.ts` | юніт-тести вкладок, `patchVacancy`, `adjustTabCounts`, `countNewVacancies` і `isRecentFavorite` |
+| `vacancies/vacancy-list.test.ts` | юніт-тести вкладок, `patchVacancy`, `adjustTabCounts`, `countNewVacancies`, `isRecentFavorite` і `placeVacancy` (рядок після Undo - на своє місце за порядком вкладки) |
+| `vacancies/undo.ts` | `keepRecentUndos` - не більше трьох сповіщень Undo, найстаріші закриваються (задача vacancy-undo-toast) |
+| `vacancies/undo.test.ts` | юніт-тести `keepRecentUndos` |
 | `checks/check-status.ts` | `CheckStatus` - стан загальної перевірки й непрочитані, що інтерфейс отримує опитуванням |
 | `checks/failed-sources.ts` | `FailedSource`, `FailedSourcesList`, `FailureReason` - рядки Failed Sources Drawer |
 | `checks/status-poller.ts` | `createStatusPoller` - коли опитувати сервер про стан перевірки і коли здатися; `isBusy` - чи йде загальна перевірка або Find new pages |
