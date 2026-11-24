@@ -33,6 +33,7 @@ interface VacancySeed {
   detected?: Date;
   isRead?: boolean;
   isFavorite?: boolean;
+  favoritedAt?: Date | null;
   closedAt?: Date | null;
   location?: string | null;
 }
@@ -51,6 +52,7 @@ async function addVacancy(sourceId: string, seed: VacancySeed) {
       lastSeenAt: detected,
       isRead: seed.isRead ?? false,
       isFavorite: seed.isFavorite ?? false,
+      favoritedAt: seed.favoritedAt ?? null,
       closedAt: seed.closedAt ?? null,
     })
     .returning();
@@ -187,6 +189,75 @@ describe("listVacancies rows", () => {
     });
 
     expect(await titlesIn(user.id, "unread")).toEqual(["New", "Middle", "Old"]);
+  });
+});
+
+describe("listVacancies Favorites order", () => {
+  /**
+   * Три обрані: додана найпізніше, хоч знайдена найраніше; додана раніше; і
+   * стара - у Favorites ще до появи дати додавання, тож стоїть за датою
+   * виявлення.
+   */
+  async function seedFavorites() {
+    const user = await seedSystemUser(testDb);
+    const sourceId = await sourceOf(user.id, "Discord");
+    await addVacancy(sourceId, {
+      title: "Added earlier",
+      detected: new Date("2026-11-23T10:00:00Z"),
+      isFavorite: true,
+      favoritedAt: new Date("2026-11-23T12:00:00Z"),
+    });
+    await addVacancy(sourceId, {
+      title: "Added last",
+      detected: new Date("2026-11-10T10:00:00Z"),
+      isFavorite: true,
+      favoritedAt: new Date("2026-11-24T09:00:00Z"),
+    });
+    await addVacancy(sourceId, {
+      title: "Added before the date was kept",
+      detected: new Date("2026-11-20T10:00:00Z"),
+      isFavorite: true,
+    });
+
+    return user.id;
+  }
+
+  it("puts the latest added favorites first", async () => {
+    const userId = await seedFavorites();
+
+    expect(await titlesIn(userId, "favorites")).toEqual([
+      "Added last",
+      "Added earlier",
+      "Added before the date was kept",
+    ]);
+  });
+
+  it("walks Favorites by the same order, portion after portion", async () => {
+    const userId = await seedFavorites();
+    const titles: string[] = [];
+    let after = null;
+    do {
+      const page = await listVacancies(testDb, {
+        userId,
+        tab: "favorites",
+        limit: 1,
+        after,
+      });
+      titles.push(...page.items.map((item) => item.title));
+      after = page.nextCursor;
+    } while (after !== null);
+
+    expect(titles).toEqual(await titlesIn(userId, "favorites"));
+  });
+
+  it("keeps the other tabs by detection date", async () => {
+    const userId = await seedFavorites();
+
+    expect(await titlesIn(userId, "all")).toEqual([
+      "Added earlier",
+      "Added before the date was kept",
+      "Added last",
+    ]);
   });
 });
 

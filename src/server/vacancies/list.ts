@@ -45,10 +45,15 @@ export type VacancyListPage = {
 };
 
 /**
- * Ключ курсора - дата виявлення з мікросекундами: курсор, зібраний з JS
- * `Date`, приводив би рядок на межі порції вдруге.
+ * За чим упорядкована вкладка. Favorites - за датою додавання в обране, свіжі
+ * зверху; обране, додане до появи цієї дати, стоїть за датою виявлення. Решта
+ * вкладок - за датою виявлення.
  */
-const CURSOR_KEY = dbTimeText(vacancies.firstDetectedAt);
+function sortKey(tab: JobsTab): SQL {
+  return tab === "favorites"
+    ? sql`coalesce(${vacancies.favoritedAt}, ${vacancies.firstDetectedAt})`
+    : sql`${vacancies.firstDetectedAt}`;
+}
 
 /**
  * Умова вкладки. Активна вакансія - без позначки Closed; Closed буває лише у
@@ -69,7 +74,7 @@ export function tabCondition(tab: JobsTab): SQL | undefined {
 
 /**
  * Порція вакансій однієї вкладки для одного користувача, від найновішої дати
- * виявлення.
+ * (`sortKey`).
  */
 export async function listVacancies(
   db: NodePgDatabase,
@@ -92,9 +97,12 @@ export async function listVacancies(
   const parsed = parseCursor(after);
   const cursor =
     parsed !== null && DB_TIME_PATTERN.test(parsed.key) ? parsed : null;
+  const key = sortKey(tab);
 
   const rows = await db
-    .select({ ...VACANCY_ROW, cursorKey: CURSOR_KEY })
+    // Ключ курсора - ключ порядку з мікросекундами: курсор, зібраний з JS
+    // `Date`, приводив би рядок на межі порції вдруге.
+    .select({ ...VACANCY_ROW, cursorKey: dbTimeText(key) })
     .from(vacancies)
     // Користувач - лише через компанію: у вакансії власного `user_id` немає.
     .innerJoin(careerSources, eq(vacancies.sourceId, careerSources.id))
@@ -106,13 +114,13 @@ export async function listVacancies(
         // Порівняння пари - рівно «наступний рядок за тим самим порядком»,
         // як у списку компаній, лише в бік старіших.
         cursor
-          ? sql`(${vacancies.firstDetectedAt}, ${vacancies.id}) < (${cursor.key}::timestamptz, ${cursor.id}::uuid)`
+          ? sql`(${key}, ${vacancies.id}) < (${cursor.key}::timestamptz, ${cursor.id}::uuid)`
           : undefined,
       ),
     )
     // `id` робить порядок однозначним при однаковій даті: одна перевірка дає
     // всім вакансіям джерела той самий момент виявлення.
-    .orderBy(desc(vacancies.firstDetectedAt), desc(vacancies.id))
+    .orderBy(desc(key), desc(vacancies.id))
     // Один рядок понад порцію показує, чи є що читати далі.
     .limit(limit + 1);
 
