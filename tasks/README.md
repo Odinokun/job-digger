@@ -156,5 +156,5 @@ PR: #57
 | [Undo після дії над вакансією](vacancy-undo-toast.md)                                            | todo      |
 | [Перевірка доступності](accessibility-audit.md)                                                  | analyze   |
 | [Підготувати репозиторій до показу](public-repo-polish.md)                                       | analyze   |
-| [Фавіконка з літерами JD](favicon-jd.md)                                                         | todo      |
+| [Фавіконка з літерами JD](favicon-jd.md)                                                         | done      |
 | [Пошук компанії на сторінці Companies](companies-search.md)                                      | backlog   |
