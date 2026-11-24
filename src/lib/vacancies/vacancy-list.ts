@@ -187,26 +187,20 @@ export function countNewVacancies(
   ).length;
 }
 
+/** Скільки часу вакансія лишається у групі свіжого обраного. */
+export const RECENT_FAVORITE_MS = 24 * 60 * 60 * 1000;
+
 /**
- * Чи додали вакансію у Favorites сьогодні - для групи «Added today» у вкладці
- * Favorites. «Сьогодні» - календарний день у тому самому часовому поясі, у
- * якому застосунок показує дати (next-intl передає його з сервера), тож
- * група й дати в рядках не розходяться. Без поясу - пояс середовища.
+ * Чи додали вакансію у Favorites за останні 24 години - для групи «Last 24
+ * hours» у вкладці Favorites. Рухоме вікно, а не календарний день: не залежить
+ * від часового поясу й не спорожніє опівночі (рішення автора 24.11.2026).
  */
-export function addedToday(
+export function isRecentFavorite(
   vacancy: Pick<VacancyListItem, "favoritedAt">,
   now: Date,
-  timeZone: string | undefined,
 ): boolean {
-  if (vacancy.favoritedAt === null) return false;
-
-  // `en-CA` дає дату у формі 2026-11-24 - зручно порівнювати рядки.
-  const day = new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-
-  return day.format(vacancy.favoritedAt) === day.format(now);
+  return (
+    vacancy.favoritedAt !== null &&
+    now.getTime() - vacancy.favoritedAt.getTime() < RECENT_FAVORITE_MS
+  );
 }
