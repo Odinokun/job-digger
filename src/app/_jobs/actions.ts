@@ -80,12 +80,24 @@ export async function setVacancyReadAction(
   });
 }
 
-/** Favorite / Remove from Favorites - те саме, що з Read. */
+/**
+ * Favorite / Remove from Favorites - те саме, що з Read. `favoritedAt` - дата
+ * додавання, яку повертає Undo після Remove from Favorites (задача
+ * vacancy-undo-toast); якщо є, це має бути справжня дата або `null` (старе
+ * обране без дати).
+ */
 export async function setVacancyFavoriteAction(
   vacancyId: unknown,
   isFavorite: unknown,
+  favoritedAt?: unknown,
 ): Promise<VacancyMarkResult> {
-  if (typeof vacancyId !== "string" || typeof isFavorite !== "boolean") {
+  if (
+    typeof vacancyId !== "string" ||
+    typeof isFavorite !== "boolean" ||
+    (favoritedAt !== undefined &&
+      favoritedAt !== null &&
+      !(favoritedAt instanceof Date && !Number.isNaN(favoritedAt.getTime())))
+  ) {
     return { ok: false };
   }
 
@@ -93,7 +105,12 @@ export async function setVacancyFavoriteAction(
     const db = getDb();
     const user = await getSystemUser(db);
 
-    return setVacancyFavorite(db, { userId: user.id, vacancyId, isFavorite });
+    return setVacancyFavorite(db, {
+      userId: user.id,
+      vacancyId,
+      isFavorite,
+      favoritedAt: favoritedAt as Date | null | undefined,
+    });
   });
 }
 

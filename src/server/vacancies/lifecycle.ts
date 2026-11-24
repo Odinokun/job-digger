@@ -278,7 +278,9 @@ async function removeGone(
     with deleted as (
       delete from ${vacancies}
       where ${gone} and not ${vacancies.isFavorite}
-      returning 1
+      -- Закриту, прибрану з Favorites, видаляємо, але вдруге не рахуємо:
+      -- зниклою вона вже порахована, коли закрилась.
+      returning ${vacancies.closedAt} is null as counted
     ),
     closed as (
       update ${vacancies}
@@ -286,7 +288,7 @@ async function removeGone(
       where ${gone} and ${vacancies.isFavorite} and ${vacancies.closedAt} is null
       returning 1
     )
-    select ((select count(*) from deleted) + (select count(*) from closed))::int as removed
+    select ((select count(*) from deleted where counted) + (select count(*) from closed))::int as removed
   `);
 
   return result.rows[0].removed;

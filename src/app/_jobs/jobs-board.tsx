@@ -13,6 +13,7 @@ import {
   countNewVacancies,
   isRecentFavorite,
   patchVacancy,
+  placeVacancy,
   type JobsTab,
   type JobsTabCounts,
   type VacancyListItem,
@@ -27,6 +28,7 @@ import {
 import { JobsTabs } from "./jobs-tabs";
 import { MarkAll } from "./mark-all";
 import { useNewVacanciesNotice } from "./new-vacancies-notice";
+import { useUndoNotice } from "./undo-notice";
 import { VacancyRow } from "./vacancy-row";
 
 interface JobsBoardProps {
@@ -108,9 +110,45 @@ export function JobsBoard({
     [tab],
   );
 
+  /**
+   * Undo: повертає вакансії позначки, які вона мала до дії, - разом із датою
+   * додавання в обране, щоб вона не стрибнула в свіже обране. Рядок стає на
+   * своє місце за порядком вкладки (`placeVacancy`): у Unread чи Favorites
+   * його вже прибрано зі списку.
+   */
+  const undo = useCallback(
+    (before: VacancyListItem, patch: VacancyPatch) => {
+      startMark(async () => {
+        const result =
+          patch.changes.isRead !== undefined
+            ? await setVacancyReadAction(before.id, before.isRead)
+            : await setVacancyFavoriteAction(
+                before.id,
+                before.isFavorite,
+                before.favoritedAt,
+              );
+
+        if (!result.ok) {
+          showActionFailed();
+          return;
+        }
+
+        const row = result.vacancy;
+        if (row !== null) {
+          startMark(() => setItems((list) => placeVacancy(list, row, tab)));
+        }
+      });
+    },
+    [tab, showActionFailed],
+  );
+
+  const showUndo = useUndoNotice();
+
   /** Read або Favorite для рядка: одразу в інтерфейсі, потім на сервері. */
   const mark = useCallback(
     (patch: VacancyPatch) => {
+      const before = items.find((item) => item.id === patch.id);
+
       startMark(async () => {
         addPatch(patch);
 
@@ -131,9 +169,19 @@ export function JobsBoard({
         // вкладок із перечитаної сторінки, інакше число на мить
         // поверталося б до старого.
         startMark(() => applyRow(patch.id, result.vacancy));
+
+        // Undo - лише для Mark as read і Remove from Favorites (рішення
+        // автора 24.11.2026): саме вони прибирають рядок із вкладки.
+        if (before !== undefined && (isRead === true || isFavorite === false)) {
+          showUndo({
+            action: isRead === true ? "markedRead" : "removedFromFavorites",
+            title: before.title,
+            onUndo: () => undo(before, patch),
+          });
+        }
       });
     },
-    [addPatch, applyRow, showActionFailed],
+    [items, addPatch, applyRow, showActionFailed, showUndo, undo],
   );
 
   // Рядок, який дія вивела з вкладки, зникає одразу, ще до відповіді сервера.

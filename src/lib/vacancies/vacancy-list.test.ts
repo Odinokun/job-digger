@@ -7,6 +7,7 @@ import {
   isRecentFavorite,
   parseJobsTab,
   patchVacancy,
+  placeVacancy,
   type VacancyListItem,
 } from "./vacancy-list";
 
@@ -254,5 +255,51 @@ describe("isRecentFavorite", () => {
 
   it("is false without the date it was added", () => {
     expect(isRecentFavorite(favorite(null), NOW)).toBe(false);
+  });
+});
+
+describe("placeVacancy", () => {
+  const at = (id: number, detected: string, added: string | null = null) => ({
+    ...vacancy({ isRead: false, isFavorite: added !== null, closedAt: null }),
+    id: `00000000-0000-4000-8000-${String(id).padStart(12, "0")}`,
+    firstDetectedAt: new Date(detected),
+    favoritedAt: added === null ? null : new Date(added),
+  });
+  const ids = (items: { id: string }[]) => items.map((item) => item.id.at(-1));
+
+  it("puts a row back where the list order puts it", () => {
+    // Undo після Mark as read: рядок повертається на своє місце в Unread.
+    const list = [at(3, "2026-11-20T10:00:00Z"), at(1, "2026-11-18T10:00:00Z")];
+
+    expect(
+      ids(placeVacancy(list, at(2, "2026-11-19T10:00:00Z"), "unread")),
+    ).toEqual(["3", "2", "1"]);
+  });
+
+  it("orders Favorites by when vacancies were added", () => {
+    const list = [
+      at(3, "2026-11-01T10:00:00Z", "2026-11-22T10:00:00Z"),
+      at(1, "2026-11-19T10:00:00Z", "2026-11-20T10:00:00Z"),
+    ];
+    const back = at(2, "2026-11-23T10:00:00Z", "2026-11-21T10:00:00Z");
+
+    expect(ids(placeVacancy(list, back, "favorites"))).toEqual(["3", "2", "1"]);
+  });
+
+  it("replaces the row that is already shown", () => {
+    const list = [at(2, "2026-11-19T10:00:00Z"), at(1, "2026-11-18T10:00:00Z")];
+    const changed = { ...at(2, "2026-11-19T10:00:00Z"), title: "Renamed" };
+
+    const placed = placeVacancy(list, changed, "all");
+
+    expect(ids(placed)).toEqual(["2", "1"]);
+    expect(placed[0].title).toBe("Renamed");
+  });
+
+  it("leaves out a row that does not belong to the tab", () => {
+    const list = [at(1, "2026-11-18T10:00:00Z")];
+    const read = { ...at(2, "2026-11-19T10:00:00Z"), isRead: true };
+
+    expect(ids(placeVacancy(list, read, "unread"))).toEqual(["1"]);
   });
 });
