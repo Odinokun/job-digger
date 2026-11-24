@@ -33,6 +33,11 @@ export type VacancyListItem = {
   firstDetectedAt: Date;
   isRead: boolean;
   isFavorite: boolean;
+  /**
+   * Коли вакансію додали у Favorites, або `null` - не в обраному чи додана
+   * туди до того, як застосунок почав це запам'ятовувати.
+   */
+  favoritedAt: Date | null;
   /** Коли вакансія з Favorites зникла з сайту, або `null`, якщо вона активна. */
   closedAt: Date | null;
 };
@@ -124,17 +129,35 @@ export function adjustTabCounts(
   return adjusted;
 }
 
+type ListedVacancy = Pick<
+  VacancyListItem,
+  "id" | "firstDetectedAt" | "favoritedAt"
+>;
+
 /**
- * Чи стоїть вакансія `a` у списку вище за `b` - порядок запиту вкладок
- * (`src/server/vacancies/list.ts`): дата виявлення, потім id, обидва за
- * спаданням. Postgres порівнює UUID побайтово, а для рядків у нижньому
- * регістрі це те саме, що порівняння рядків.
+ * Дата, за якою вакансія стоїть у списку вкладки, - та сама, що `sortKey` у
+ * запиті (`src/server/vacancies/list.ts`): у Favorites - дата додавання в
+ * обране (у старого обраного без неї - дата виявлення), в інших - дата
+ * виявлення.
+ */
+function listedAt(vacancy: ListedVacancy, tab: JobsTab): Date {
+  return tab === "favorites"
+    ? (vacancy.favoritedAt ?? vacancy.firstDetectedAt)
+    : vacancy.firstDetectedAt;
+}
+
+/**
+ * Чи стоїть вакансія `a` у списку вкладки вище за `b` - порядок запиту
+ * вкладок: дата (`listedAt`), потім id, обидва за спаданням. Postgres
+ * порівнює UUID побайтово, а для рядків у нижньому регістрі це те саме, що
+ * порівняння рядків.
  */
 function isListedBefore(
-  a: Pick<VacancyListItem, "id" | "firstDetectedAt">,
-  b: Pick<VacancyListItem, "id" | "firstDetectedAt">,
+  a: ListedVacancy,
+  b: ListedVacancy,
+  tab: JobsTab,
 ): boolean {
-  const byDate = a.firstDetectedAt.getTime() - b.firstDetectedAt.getTime();
+  const byDate = listedAt(a, tab).getTime() - listedAt(b, tab).getTime();
 
   return byDate !== 0 ? byDate > 0 : a.id > b.id;
 }
@@ -150,8 +173,9 @@ function isListedBefore(
  * мають одну дату виявлення, і між собою їх упорядковує id.
  */
 export function countNewVacancies(
-  shown: Pick<VacancyListItem, "id" | "firstDetectedAt">[],
-  fresh: Pick<VacancyListItem, "id" | "firstDetectedAt">[],
+  shown: ListedVacancy[],
+  fresh: ListedVacancy[],
+  tab: JobsTab,
 ): number {
   const shownIds = new Set(shown.map((item) => item.id));
   const last = shown.at(-1);
@@ -159,6 +183,24 @@ export function countNewVacancies(
   return fresh.filter(
     (item) =>
       !shownIds.has(item.id) &&
-      (last === undefined || isListedBefore(item, last)),
+      (last === undefined || isListedBefore(item, last, tab)),
   ).length;
+}
+
+/** Скільки часу вакансія лишається у групі свіжого обраного. */
+export const RECENT_FAVORITE_MS = 12 * 60 * 60 * 1000;
+
+/**
+ * Чи додали вакансію у Favorites за останні 12 годин - для групи «Last 12
+ * hours» у вкладці Favorites. Рухоме вікно, а не календарний день: не залежить
+ * від часового поясу й не спорожніє опівночі (рішення автора 24.11.2026).
+ */
+export function isRecentFavorite(
+  vacancy: Pick<VacancyListItem, "favoritedAt">,
+  now: Date,
+): boolean {
+  return (
+    vacancy.favoritedAt !== null &&
+    now.getTime() - vacancy.favoritedAt.getTime() < RECENT_FAVORITE_MS
+  );
 }

@@ -4,6 +4,7 @@ import {
   adjustTabCounts,
   belongsToJobsTab,
   countNewVacancies,
+  isRecentFavorite,
   parseJobsTab,
   patchVacancy,
   type VacancyListItem,
@@ -19,6 +20,7 @@ function vacancy(
     location: null,
     companyName: "Acme",
     firstDetectedAt: new Date("2026-11-18T10:00:00Z"),
+    favoritedAt: null,
     ...marks,
   };
 }
@@ -127,14 +129,14 @@ describe("countNewVacancies", () => {
   it("finds nothing new when the fresh page is what is shown", () => {
     const shown = [found(3, EARLIER), found(2, EARLIER)];
 
-    expect(countNewVacancies(shown, [...shown])).toBe(0);
+    expect(countNewVacancies(shown, [...shown], "unread")).toBe(0);
   });
 
   it("counts vacancies found after the list was shown", () => {
     const shown = [found(3, EARLIER), found(2, EARLIER)];
     const fresh = [found(1, LATER), found(9, LATER), ...shown];
 
-    expect(countNewVacancies(shown, fresh)).toBe(2);
+    expect(countNewVacancies(shown, fresh, "unread")).toBe(2);
   });
 
   it("counts a vacancy that lands between the shown ones", () => {
@@ -143,7 +145,7 @@ describe("countNewVacancies", () => {
     const shown = [found(5, LATER), found(3, LATER)];
     const fresh = [found(5, LATER), found(4, LATER), found(3, LATER)];
 
-    expect(countNewVacancies(shown, fresh)).toBe(1);
+    expect(countNewVacancies(shown, fresh, "unread")).toBe(1);
   });
 
   it("ignores vacancies that moved up from the next portion", () => {
@@ -152,7 +154,7 @@ describe("countNewVacancies", () => {
     const shown = [found(5, EARLIER), found(3, EARLIER)];
     const fresh = [found(5, EARLIER), found(3, EARLIER), found(2, EARLIER)];
 
-    expect(countNewVacancies(shown, fresh)).toBe(0);
+    expect(countNewVacancies(shown, fresh, "unread")).toBe(0);
   });
 
   it("does not count shown vacancies that left the fresh page", () => {
@@ -160,11 +162,28 @@ describe("countNewVacancies", () => {
     // списку ще є. Це не нова вакансія.
     const shown = [found(5, EARLIER), found(3, EARLIER)];
 
-    expect(countNewVacancies(shown, [found(3, EARLIER)])).toBe(0);
+    expect(countNewVacancies(shown, [found(3, EARLIER)], "unread")).toBe(0);
+  });
+
+  it("orders Favorites by when vacancies were added", () => {
+    // У Favorites свіже обране стоїть нагорі, хоч саму вакансію знайшли
+    // давно: додана в іншій вкладці браузера - нова для показаного списку.
+    const OLD = "2026-11-01T10:00:00Z";
+    const favorite = (id: number, detected: string, added: string) => ({
+      ...found(id, detected),
+      isFavorite: true,
+      favoritedAt: new Date(added),
+    });
+    const shown = [favorite(5, EARLIER, LATER), favorite(3, EARLIER, EARLIER)];
+    const fresh = [favorite(9, OLD, "2026-11-20T10:00:00Z"), ...shown];
+
+    expect(countNewVacancies(shown, fresh, "favorites")).toBe(1);
   });
 
   it("counts the whole fresh page when nothing is shown", () => {
-    expect(countNewVacancies([], [found(2, LATER), found(1, LATER)])).toBe(2);
+    expect(
+      countNewVacancies([], [found(2, LATER), found(1, LATER)], "unread"),
+    ).toBe(2);
   });
 });
 
@@ -215,5 +234,25 @@ describe("adjustTabCounts", () => {
     const empty = { unread: 0, read: 0, favorites: 0, all: 0 };
 
     expect(adjustTabCounts(empty, [unread], [read]).unread).toBe(0);
+  });
+});
+
+describe("isRecentFavorite", () => {
+  const NOW = new Date("2026-11-25T08:00:00Z");
+  const favorite = (added: string | null) => ({
+    favoritedAt: added === null ? null : new Date(added),
+  });
+
+  it("is true for a vacancy added to Favorites within the last 12 hours", () => {
+    // Учорашній вечір - теж свіже: вікно рухоме, а не календарний день.
+    expect(isRecentFavorite(favorite("2026-11-24T22:00:00Z"), NOW)).toBe(true);
+  });
+
+  it("is false once 12 hours have passed", () => {
+    expect(isRecentFavorite(favorite("2026-11-24T20:00:00Z"), NOW)).toBe(false);
+  });
+
+  it("is false without the date it was added", () => {
+    expect(isRecentFavorite(favorite(null), NOW)).toBe(false);
   });
 });

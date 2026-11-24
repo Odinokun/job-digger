@@ -20,7 +20,12 @@ const DETECTED = new Date("2026-11-18T10:00:00Z");
 
 /** Вакансія компанії системного користувача. */
 async function seedVacancy(
-  marks: { isRead?: boolean; isFavorite?: boolean; closedAt?: Date } = {},
+  marks: {
+    isRead?: boolean;
+    isFavorite?: boolean;
+    favoritedAt?: Date;
+    closedAt?: Date;
+  } = {},
 ) {
   const user = await seedSystemUser(testDb);
   const [company] = await testDb
@@ -87,6 +92,7 @@ describe("findVacancy", () => {
       firstDetectedAt: DETECTED,
       isRead: false,
       isFavorite: false,
+      favoritedAt: null,
       closedAt: null,
     });
   });
@@ -190,13 +196,66 @@ describe("setVacancyFavorite", () => {
     });
   });
 
-  it("changes only the favorite mark", async () => {
+  it("changes only the favorite mark and when it was set", async () => {
     const { userId, vacancyId } = await seedVacancy();
     const before = await stored(vacancyId);
 
     await setVacancyFavorite(testDb, { userId, vacancyId, isFavorite: true });
 
-    expect(await stored(vacancyId)).toEqual({ ...before, isFavorite: true });
+    expect(await stored(vacancyId)).toEqual({
+      ...before,
+      isFavorite: true,
+      favoritedAt: expect.any(Date),
+    });
+  });
+
+  it("remembers when the vacancy was added to Favorites", async () => {
+    const { userId, vacancyId } = await seedVacancy();
+    const from = Date.now();
+
+    const row = await setVacancyFavorite(testDb, {
+      userId,
+      vacancyId,
+      isFavorite: true,
+    });
+
+    // Час пише база (`now()`), тож допуск - на розбіжність годинників.
+    const at = row?.favoritedAt?.getTime() ?? 0;
+    expect(at).toBeGreaterThanOrEqual(from - 5_000);
+    expect(at).toBeLessThanOrEqual(Date.now() + 5_000);
+  });
+
+  it("keeps the time of a vacancy that is already a favorite", async () => {
+    // Подвійне натискання чи дві вкладки браузера не мають піднімати вакансію
+    // нагору Favorites і робити її «доданою сьогодні».
+    const earlier = new Date("2026-11-20T09:00:00Z");
+    const { userId, vacancyId } = await seedVacancy({
+      isFavorite: true,
+      favoritedAt: earlier,
+    });
+
+    const row = await setVacancyFavorite(testDb, {
+      userId,
+      vacancyId,
+      isFavorite: true,
+    });
+
+    expect(row?.favoritedAt).toEqual(earlier);
+  });
+
+  it("forgets the time once the vacancy leaves Favorites", async () => {
+    const { userId, vacancyId } = await seedVacancy({
+      isFavorite: true,
+      favoritedAt: new Date("2026-11-20T09:00:00Z"),
+    });
+
+    const row = await setVacancyFavorite(testDb, {
+      userId,
+      vacancyId,
+      isFavorite: false,
+    });
+
+    expect(row?.favoritedAt).toBeNull();
   });
 
   it("removes an active vacancy from Favorites and keeps it", async () => {

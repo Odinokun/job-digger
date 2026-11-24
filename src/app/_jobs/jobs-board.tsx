@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, Spinner } from "@heroui/react";
+import { useNow } from "next-intl";
 import Link from "next/link";
 import { useCallback, useOptimistic, useState, useTransition } from "react";
 
@@ -10,6 +11,7 @@ import {
   adjustTabCounts,
   belongsToJobsTab,
   countNewVacancies,
+  isRecentFavorite,
   patchVacancy,
   type JobsTab,
   type JobsTabCounts,
@@ -48,6 +50,8 @@ interface JobsBoardProps {
   /** Кнопка в Companies - лише коли вакансій немає зовсім, а не у вкладці. */
   addCompanyLabel: string | null;
   loadMoreLabel: string;
+  /** Заголовки груп у Favorites: додані за останні 12 годин і раніше. */
+  favoriteGroupLabels: { recent: string; earlier: string };
 }
 
 /**
@@ -68,6 +72,7 @@ export function JobsBoard({
   emptyLabel,
   addCompanyLabel,
   loadMoreLabel,
+  favoriteGroupLabels,
 }: JobsBoardProps) {
   const [items, setItems] = useState(initialItems);
   const [cursor, setCursor] = useState(initialCursor);
@@ -133,6 +138,28 @@ export function JobsBoard({
 
   // Рядок, який дія вивела з вкладки, зникає одразу, ще до відповіді сервера.
   const visible = shown.filter((vacancy) => belongsToJobsTab(vacancy, tab));
+  /**
+   * Favorites ділиться на додані за останні 12 годин і раніше (задача
+   * favorites-added-today): список уже впорядкований за датою додавання, тож
+   * межу видно заголовками, без позначки в кожному рядку. Немає свіжих - немає
+   * й заголовків. «Зараз» - спільне для сервера й клієнта з next-intl, тож
+   * межа при гідратації не зсувається.
+   */
+  const now = useNow();
+  const recent =
+    tab === "favorites"
+      ? visible.filter((vacancy) => isRecentFavorite(vacancy, now))
+      : [];
+  const groups =
+    recent.length === 0
+      ? [{ label: null, items: visible }]
+      : [
+          { label: favoriteGroupLabels.recent, items: recent },
+          {
+            label: favoriteGroupLabels.earlier,
+            items: visible.filter((vacancy) => !recent.includes(vacancy)),
+          },
+        ].filter((group) => group.items.length > 0);
   // Числа вкладок рухаються разом із рядком, а не після відповіді сервера.
   const shownCounts = adjustTabCounts(counts, items, shown);
 
@@ -169,7 +196,7 @@ export function JobsBoard({
    * приносить свіжу першу порцію в пропси, а стан зі списком лишається. Show
    * перечитує вкладку з першої порції - бере саме цю свіжу порцію.
    */
-  const newCount = countNewVacancies(items, initialItems);
+  const newCount = countNewVacancies(items, initialItems, tab);
   const showNew = useCallback(() => {
     setItems(initialItems);
     setCursor(initialCursor);
@@ -221,13 +248,20 @@ export function JobsBoard({
         </div>
       ) : (
         <>
-          <ul className="mt-2 divide-y">
-            {visible.map((vacancy) => (
-              <li key={vacancy.id}>
-                <VacancyRow vacancy={vacancy} onMark={mark} />
-              </li>
-            ))}
-          </ul>
+          {groups.map((group) => (
+            <section key={group.label ?? "all"}>
+              {group.label === null ? null : (
+                <h2 className="mt-6 text-sm font-semibold">{group.label}</h2>
+              )}
+              <ul className="mt-2 divide-y">
+                {group.items.map((vacancy) => (
+                  <li key={vacancy.id}>
+                    <VacancyRow vacancy={vacancy} onMark={mark} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
 
           {cursor === null ? null : (
             <div className="mt-6 flex justify-center">

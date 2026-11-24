@@ -176,6 +176,13 @@
       "when": 1795298717895,
       "tag": "0024_companies_site_required",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1795519863129,
+      "tag": "0025_vacancies_favorited_at",
+      "breakpoints": true
     }
   ]
 }

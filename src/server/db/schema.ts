@@ -199,6 +199,11 @@ export const vacancies = pgTable(
       .defaultNow(),
     isRead: boolean("is_read").notNull().default(false),
     isFavorite: boolean("is_favorite").notNull().default(false),
+    // Коли вакансію додали у Favorites: за ним вкладка сортується, свіжі
+    // зверху, і показує групу «додані сьогодні». Зняття зірочки очищає.
+    // У обраного, доданого до появи колонки, - `null`: такі вакансії стоять
+    // за датою виявлення (src/server/vacancies/README.md, «Списки Jobs»).
+    favoritedAt: timestamp("favorited_at", { withTimezone: true }),
     // Позначка Closed: вакансія з Favorites зникла з сайту. Момент, а не
     // так/ні, - щоб було видно, коли вона закрилась.
     closedAt: timestamp("closed_at", { withTimezone: true }),
@@ -209,6 +214,11 @@ export const vacancies = pgTable(
     uniqueIndex("vacancies_source_key_idx").on(table.sourceId, table.key),
     // Список Jobs: сортування й курсор за датою виявлення та id.
     index("vacancies_detected_idx").on(table.firstDetectedAt, table.id),
+    // Дата додавання буває лише в обраної вакансії.
+    check(
+      "vacancies_favorited_at_only_for_favorites",
+      sql`${table.favoritedAt} is null or ${table.isFavorite}`,
+    ),
   ],
 );
 

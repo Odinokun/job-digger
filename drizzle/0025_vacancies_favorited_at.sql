@@ -1,0 +1,2 @@
+ALTER TABLE "vacancies" ADD COLUMN "favorited_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "vacancies" ADD CONSTRAINT "vacancies_favorited_at_only_for_favorites" CHECK ("vacancies"."favorited_at" is null or "vacancies"."is_favorite");

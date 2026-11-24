@@ -143,6 +143,10 @@ Companies) і Check now. Кнопки модалок (Save, Delete) поки б�
   стану після `await` інакше не входить у перехід, і число на мить
   поверталося б до старого
   ([React](https://react.dev/reference/react/useTransition#react-doesnt-treat-my-state-update-after-await-as-a-transition)).
+  У Favorites ділить список на «Last 12 hours» і «Earlier» заголовками
+  (`isRecentFavorite`); немає свіжих - немає й заголовків. «Зараз» береться з
+  `useNow` next-intl - тим самим моментом, що й на сервері, тож межа при
+  гідратації не зсувається.
 - `_jobs/new-vacancies-notice.tsx` - хук `useNewVacanciesNotice`: toast «N new
   vacancies» із Show у стандартному місці HeroUI (задача 4.13). Опитування стану
   перевірки при зміні непрочитаних кличе `router.refresh`, і `jobs-board.tsx`
