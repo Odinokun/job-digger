@@ -1,49 +1,36 @@
 # .claude - налаштування Claude Code для проєкту
 
-Дозволи, хуки й скіли. Короткі правила - у [`CLAUDE.md`](../CLAUDE.md#claude-code), тут - подробиці й чому саме так. Усе в git: зміна дозволу, хука чи скіла проходить рев'ю так само, як зміна залежності.
+Дозволи, хуки й скіли. Короткі правила - у [`CLAUDE.md`](../CLAUDE.md#claude-code), тут - подробиці й чому саме так. Хуки й скіли в git: їхня зміна проходить рев'ю так само, як зміна залежності. Дозволи - в особистих налаштуваннях автора, опис - нижче.
 
 ## Дозволи
 
-Permissions живуть у `.claude/settings.json` поруч із хуками - у git, бо це правило проєкту, а не особиста звичка. Переглянути й змінити інтерактивно - команда `/permissions`.
+**Дозволи живуть глобально, в `~/.claude/settings.json` автора, а не в проєкті** (рішення автора 24.11.2026). Особливих вимог саме цього проєкту немає, а одні правила на всі репозиторії дають Claude працювати без автора - зокрема з телефона через Remote Control. Файл поза git, тож перелік нижче - опис, а не копія: правда - у файлі. Переглянути й змінити інтерактивно - `/permissions`. Сесія працює в auto mode (`defaultMode: "auto"`): дію, що не збіглася з жодним правилом, оцінює фоновий класифікатор.
 
-- **`allow`** - те, що Claude виконує без питання: прогін тестів (і через `npm`, і точковий `npx vitest`), лінт, `format:check`, `build`, `db:check`, `tsc`, `prettier`, `eslint`, `playwright`, `docker compose ps/logs` і `git commit`.
-- **`ask`** - дії назовні, на яких Claude зупиняється й питає автора: `git push`, `gh pr create`, `gh pr merge`.
-- **`deny`** - заборонено повністю: `rm -rf`, `git push --force`, `git reset --hard`, `git clean`, `git commit --amend`, `docker compose down -v` (стирає том із локальною базою) і читання `.env` та `.env.*`, крім `.env.example`.
+Мета - мінімум «ок» від автора при закритих секретах, базах і особистих файлах:
 
-**Чому дії назовні саме в `ask`, а не просто поза списками.** Сесія працює в
-auto mode (`permissions.defaultMode: "auto"` в особистих налаштуваннях), і в
-цьому режимі дію, яка не збіглася з жодним правилом, оцінює не автор, а фоновий
-класифікатор - окрема модель, яка не бачить «ок» у діалозі. На `git push`,
-`gh pr create` і `git commit` він раз за разом відповідав «Destructive or
-Unwanted Actions» без жодної зміни в репозиторії, а та сама команда то
-проходила, то ні. Правила `deny` і `ask` перевіряються **до** класифікатора, і
-дію з правилом `ask` він перехопити не може: «The classifier cannot auto-approve
-a matching action» ([документація](https://code.claude.com/docs/en/auto-mode-config)).
-Тож `ask` - єдиний спосіб справді отримати питання, а не лотерею.
+- **`allow`** - без питання: гілки (`git switch`, `checkout -b`, `fetch`, `pull`, `add`, `commit`, `branch -D`, `stash`), push **лише** на гілки з префіксом (`git push -u origin feat/*`, так само `fix/`, `docs/`, `chore/`, `test/`, `refactor/`, `ci/`), свої PR (`gh pr create/edit/view/list/checks/diff`, `gh run view/list`), перевірки (`npm test`, `npm run test*`, `lint`, `format*`, `build`, `db:check`, `db:generate`, `npm ci`, `npx vitest/tsc/prettier/eslint/playwright`), `docker compose ps/logs`, `curl -s` на localhost.
+- **`ask`** - з питанням: нові залежності (`npm install`, `npm i`, `npm uninstall`, `npm install-scripts`), дані бази розробки (`npm run db:seed*`, `npm run db:psql`, `docker compose exec`), `docker compose down`, `launchctl`.
+- **`deny`** - заборонено:
+  - секрети: читання `.env` і `.env.*` (крім `.env.example`), `~/.ssh`, `~/.aws`, `~/.gnupg`, `~/.config/gh`, `cp .env*`, `grep ... .env*`;
+  - історія й `main`: голий `git push` і `git push -q` (лише з явною гілкою), push у `main`/`master`, `--force`/`-f`, `reset --hard`, `git clean`, `commit --amend`, `gh pr merge` (merge робить автор), `gh repo delete`, `gh release delete`;
+  - бази: `npm run db:migrate` (міграції застосовує автор), `drizzle-kit migrate/push`, `npm run app*` (робочий екземпляр), `dropdb`, `DROP DATABASE`/`DROP TABLE`, `docker compose down -v`/`--volumes`, `docker volume rm/prune`, `docker system prune`;
+  - файлова система: `rm -rf`, `rm -fr`, `sudo`.
+- **`blockReadsOutsideWorkingDirectories: true`** - Read, Grep і Glob поза теками сесії відмовляють, а shell-команду зі шляхом поза ними Claude Code завжди питає. Це й закриває особисті файли, і пояснює, чому Claude тримає тимчасові файли в репозиторії, а не в системному `/tmp`.
 
-**`git commit` у `allow` з 16.11.2026.** З 18.11.2026 кроки задачі комітяться без
-окремого «ок» ([`CLAUDE.md`](../CLAUDE.md#як-працюємо-маленькі-кроки)), а перевірка
-автора - на рівні PR. Поруч у `deny` стоїть `git commit --amend`: він переписує
-коміт, який міг бути зроблений до сесії.
+Чому push і PR тепер в `allow`, а не в `ask`. До 24.11.2026 вони стояли в `ask` проєкту: класифікатор то пропускав, то відбивав ті самі команди, і `ask` давав передбачуване питання. Але питання на кожен push тримали автора біля клавіатури. Тепер push передбачуваний інакше: гілка з префіксом проходить завжди, голий push і push у `main` заборонені завжди, а помилку в PR ловить рев'ю автора - merge лишається за ним.
 
-**`.env.example` і негація.** `Read(./.env.*)` блокує й `.env.example`, хоча той
-у git і є єдиним переліком змінних середовища. Виняток робиться gitignore-негацією
-`Read(!.env.example)`, і вона має стояти **після** ширшого правила та в тому
-самому файлі налаштувань - `allow` винятку з `deny` не робить. Сам `.env`
-лишається закритим свідомо: значення секретів не мають потрапляти в транскрипт
-сесії.
+Деталі синтаксису - [документація Claude Code](https://code.claude.com/docs/en/permissions). Що варто знати при правках:
 
-Деталі синтаксису - [документація Claude Code](https://code.claude.com/docs/en/permissions). Коротко, що варто знати при правках:
-
-- **Правила перечитуються під час сесії.** Claude Code стежить за файлами налаштувань: «Claude Code watches your settings files and reloads them when they change, so it applies most edits to the running session without a restart» ([документація](https://code.claude.com/docs/en/settings)). Дозволи беруться з файлу на диску, тому в гілці, куди ця правка ще не дійшла, `ask` на `git push` не діє: 16.11.2026 push із `feat/national-site-path` відбив класифікатор, а з цієї гілки той самий push пройшов у тій самій сесії. Старий протилежний висновок («правило, змерджене в 11:46, не діяло на сесію з 10:53») мав іншу причину: merge у `main` не чіпає `settings.json` у робочому дереві feature-гілки.
-- Порядок перевірки - `deny`, потім `ask`, потім `allow`; перший збіг виграє, і `allow` не робить винятку з `deny`.
-- `ls`, `cat`, `grep`, `head`, `find` і read-only `git` дозволені за замовчуванням, вносити їх не потрібно.
-- Правило `Read(...)` у `deny` діє не лише на інструмент Read, а й на команди Bash, які Claude Code розпізнає як читання файлу: `cat`, `head`, `tail`, `sed`, `tee`.
-- Налаштування класифікатора (`autoMode`) із проєктного `.claude/settings.json` **не читаються** - тільки з `~/.claude/settings.json`. Подивитися його правила: `claude auto-mode defaults`, ефективний конфіг - `claude auto-mode config`.
-- У складеній команді кожна частина має бути дозволена окремо, тож `allow` на тести не відкриває `npm test && rm -rf /`.
-- Правила, що намагаються обмежити **аргументи**, крихкі: `docker compose down -v` ловиться, а інший запис того самого прапорця - ні. Тому поруч стоїть і `--volumes`.
-- Списки з різних файлів налаштувань не заміщаються, а складаються.
-- Вибір «не питати більше» в промпті дописує правило не сюди, а в особистий `.claude/settings.local.json`. Він поза git - і тому ж поза Prettier (`.prettierignore`), інакше `format:check` падав би на файлі, якого в репозиторії немає. Щоб скасувати таке правило, його видаляють із цього файлу.
+- Порядок перевірки - `deny`, потім `ask`, потім `allow`; перший збіг виграє. Тому «питай про всі push, крім гілок feat/*» не записати: ширший `ask` переміг би вужчий `allow`. Звідси вузький `allow` плюс точкові `deny`.
+- Списки з різних файлів (особистого, проєктного, локального) не заміщаються, а складаються. `ask` у проєкті переміг би глобальний `allow` - тому в проєктному `settings.json` блоку `permissions` немає.
+- Правило `Read(...)` у `deny` діє не лише на інструмент Read, а й на команди Bash, які Claude Code розпізнає як читання файлу: `cat`, `head`, `tail`, `sed`, `tee`. `grep` до них не входить - тому окреме `Bash(grep * .env*)`.
+- **`.env.example` і негація.** `Read(**/.env.*)` блокує й `.env.example`, хоча той у git і є єдиним переліком змінних середовища. Виняток - негація `Read(!.env.example)` (і `Read(!**/.env.example)`), і вона має стояти **після** ширшого правила та **в тому самому файлі** - `allow` винятку з `deny` не робить.
+- У складеній команді кожна частина має бути дозволена окремо, тож `allow` на тести не відкриває `npm test && rm -rf /`. `cd` у теку сесії - read-only, але й зайвий: shell і так стартує в корені репозиторію.
+- Правила на аргументи крихкі й не є межею безпеки: `git -C . push` обходить `Bash(git push ...)` ([документація](https://code.claude.com/docs/en/permissions)). Вони захищають від помилки, а не від зловмисника.
+- **Що в командах Claude викликає питання навіть при цих правилах** (перевірено 24.11.2026): шлях поза репозиторієм (тимчасові файли - лише в `_temp/`, він у `.gitignore`), правки файлів через `python3`/`sed -i` у heredoc замість Edit/Write (класифікатор не може перевірити довільний код, і хук Prettier такі правки не бачить), підстановка `$(...)` - тому текст PR пишеться у `_temp/pr-body.md` і передається через `gh pr create --body-file`.
+- Правила перечитуються під час сесії, без перезапуску ([документація](https://code.claude.com/docs/en/settings)).
+- Налаштування класифікатора (`autoMode`) читаються лише з `~/.claude/settings.json`. Подивитися його правила: `claude auto-mode defaults`, ефективний конфіг - `claude auto-mode config`.
+- Вибір «не питати більше» в промпті дописує правило в особистий `.claude/settings.local.json`. Він поза git - і тому ж поза Prettier (`.prettierignore`). Щоб скасувати таке правило, його видаляють із цього файлу.
 
 ## Хуки
 
