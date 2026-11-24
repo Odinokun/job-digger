@@ -153,7 +153,7 @@ PR: #57
 | [Change list не на картці, поки рецепт працює](change-list-placement.md)                         | analyze   |
 | [Лічильники у вкладках Jobs](jobs-tab-counts.md)                                                 | done      |
 | [Свіже обране зверху у Favorites](favorites-added-today.md)                                      | done      |
-| [Undo після дії над вакансією](vacancy-undo-toast.md)                                            | todo      |
+| [Undo після дії над вакансією](vacancy-undo-toast.md)                                            | done      |
 | [Перевірка доступності](accessibility-audit.md)                                                  | analyze   |
 | [Підготувати репозиторій до показу](public-repo-polish.md)                                       | analyze   |
 | [Фавіконка з літерами JD](favicon-jd.md)                                                         | done      |
