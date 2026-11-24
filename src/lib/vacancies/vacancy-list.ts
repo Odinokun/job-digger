@@ -186,3 +186,27 @@ export function countNewVacancies(
       (last === undefined || isListedBefore(item, last, tab)),
   ).length;
 }
+
+/**
+ * Чи додали вакансію у Favorites сьогодні - для групи «Added today» у вкладці
+ * Favorites. «Сьогодні» - календарний день у тому самому часовому поясі, у
+ * якому застосунок показує дати (next-intl передає його з сервера), тож
+ * група й дати в рядках не розходяться. Без поясу - пояс середовища.
+ */
+export function addedToday(
+  vacancy: Pick<VacancyListItem, "favoritedAt">,
+  now: Date,
+  timeZone: string | undefined,
+): boolean {
+  if (vacancy.favoritedAt === null) return false;
+
+  // `en-CA` дає дату у формі 2026-11-24 - зручно порівнювати рядки.
+  const day = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  return day.format(vacancy.favoritedAt) === day.format(now);
+}

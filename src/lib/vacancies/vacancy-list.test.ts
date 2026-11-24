@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  addedToday,
   adjustTabCounts,
   belongsToJobsTab,
   countNewVacancies,
@@ -233,5 +234,38 @@ describe("adjustTabCounts", () => {
     const empty = { unread: 0, read: 0, favorites: 0, all: 0 };
 
     expect(adjustTabCounts(empty, [unread], [read]).unread).toBe(0);
+  });
+});
+
+describe("addedToday", () => {
+  const NOW = new Date("2026-11-24T15:00:00Z");
+  const favorite = (added: string | null) => ({
+    favoritedAt: added === null ? null : new Date(added),
+  });
+
+  it("is true for a vacancy added to Favorites earlier the same day", () => {
+    expect(addedToday(favorite("2026-11-24T06:00:00Z"), NOW, "UTC")).toBe(true);
+  });
+
+  it("is false for one added the day before", () => {
+    expect(addedToday(favorite("2026-11-23T23:00:00Z"), NOW, "UTC")).toBe(
+      false,
+    );
+  });
+
+  it("is false without the date it was added", () => {
+    expect(addedToday(favorite(null), NOW, "UTC")).toBe(false);
+  });
+
+  it("counts the day in the given time zone, not in UTC", () => {
+    // 23:30 UTC 24 листопада - це вже 25-те в Києві (UTC+2).
+    const kyivMorning = new Date("2026-11-25T06:00:00Z");
+
+    expect(
+      addedToday(favorite("2026-11-24T23:30:00Z"), kyivMorning, "Europe/Kyiv"),
+    ).toBe(true);
+    expect(
+      addedToday(favorite("2026-11-24T23:30:00Z"), kyivMorning, "UTC"),
+    ).toBe(false);
   });
 });
