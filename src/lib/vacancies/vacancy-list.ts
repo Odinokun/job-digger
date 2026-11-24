@@ -18,6 +18,9 @@ export const JOBS_TABS = ["unread", "read", "favorites", "all"] as const;
  */
 export type JobsTab = (typeof JOBS_TABS)[number];
 
+/** Скільки рядків у кожній вкладці - числа в назвах вкладок Jobs. */
+export type JobsTabCounts = Record<JobsTab, number>;
+
 export type VacancyListItem = {
   id: string;
   title: string;

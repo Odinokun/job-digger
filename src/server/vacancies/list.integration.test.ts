@@ -5,7 +5,7 @@ import type { JobsTab } from "../../lib/vacancies/vacancy-list.ts";
 import { careerSources, companies, users, vacancies } from "../db/schema.ts";
 import { seedSystemUser } from "../db/system-user.ts";
 import { testDb } from "../db/testing/test-db.ts";
-import { hasAnyVacancy, listVacancies } from "./list.ts";
+import { countVacanciesByTab, hasAnyVacancy, listVacancies } from "./list.ts";
 import { companySiteValues } from "../db/testing/company-values.ts";
 
 /** Джерело компанії користувача - повертає його id. */
@@ -186,6 +186,45 @@ describe("listVacancies rows", () => {
     });
 
     expect(await titlesIn(user.id, "unread")).toEqual(["New", "Middle", "Old"]);
+  });
+});
+
+describe("countVacanciesByTab", () => {
+  it("counts the rows of every tab", async () => {
+    const user = await seedSystemUser(testDb);
+    const sourceId = await sourceOf(user.id, "Discord");
+    await addVacancy(sourceId, { title: "Unread" });
+    await addVacancy(sourceId, { title: "Another unread" });
+    await addVacancy(sourceId, { title: "Read", isRead: true });
+    await addVacancy(sourceId, { title: "Unread favorite", isFavorite: true });
+    await addVacancy(sourceId, {
+      title: "Closed favorite",
+      isFavorite: true,
+      closedAt: CLOSED,
+    });
+
+    expect(await countVacanciesByTab(testDb, user.id)).toEqual({
+      unread: 3,
+      read: 1,
+      favorites: 2,
+      all: 4,
+    });
+  });
+
+  it("counts nothing for a user without vacancies", async () => {
+    const user = await seedSystemUser(testDb);
+    await addVacancy(await sourceOf(user.id, "Discord"), { title: "Designer" });
+    const [stranger] = await testDb
+      .insert(users)
+      .values({ email: "stranger@job-digger.local" })
+      .returning();
+
+    expect(await countVacanciesByTab(testDb, stranger.id)).toEqual({
+      unread: 0,
+      read: 0,
+      favorites: 0,
+      all: 0,
+    });
   });
 });
 
