@@ -79,7 +79,8 @@ export async function setVacancyRead(
  * повернути Undo (задача vacancy-undo-toast).
  *
  * `favoritedAt` - дата додавання, яку повертає Undo після Remove from
- * Favorites; без неї - момент першої зірочки.
+ * Favorites, зокрема `null` старого обраного без дати; без неї - момент першої
+ * зірочки.
  */
 export async function setVacancyFavorite(
   db: NodePgDatabase,
@@ -88,7 +89,7 @@ export async function setVacancyFavorite(
     vacancyId,
     isFavorite,
     favoritedAt,
-  }: VacancyRef & { isFavorite: boolean; favoritedAt?: Date },
+  }: VacancyRef & { isFavorite: boolean; favoritedAt?: Date | null },
 ): Promise<VacancyListItem | null> {
   if (!isUuid(vacancyId)) return null;
 
@@ -105,7 +106,9 @@ export async function setVacancyFavorite(
       isFavorite,
       favoritedAt: !isFavorite
         ? null
-        : (favoritedAt ?? sql`coalesce(${vacancies.favoritedAt}, now())`),
+        : favoritedAt === undefined
+          ? sql`coalesce(${vacancies.favoritedAt}, now())`
+          : favoritedAt,
     })
     .where(own);
 

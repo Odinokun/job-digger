@@ -83,7 +83,8 @@ export async function setVacancyReadAction(
 /**
  * Favorite / Remove from Favorites - те саме, що з Read. `favoritedAt` - дата
  * додавання, яку повертає Undo після Remove from Favorites (задача
- * vacancy-undo-toast); якщо є, це має бути справжня дата.
+ * vacancy-undo-toast); якщо є, це має бути справжня дата або `null` (старе
+ * обране без дати).
  */
 export async function setVacancyFavoriteAction(
   vacancyId: unknown,
@@ -94,6 +95,7 @@ export async function setVacancyFavoriteAction(
     typeof vacancyId !== "string" ||
     typeof isFavorite !== "boolean" ||
     (favoritedAt !== undefined &&
+      favoritedAt !== null &&
       !(favoritedAt instanceof Date && !Number.isNaN(favoritedAt.getTime())))
   ) {
     return { ok: false };
@@ -107,7 +109,7 @@ export async function setVacancyFavoriteAction(
       userId: user.id,
       vacancyId,
       isFavorite,
-      favoritedAt: favoritedAt as Date | undefined,
+      favoritedAt: favoritedAt as Date | null | undefined,
     });
   });
 }

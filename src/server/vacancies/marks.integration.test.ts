@@ -295,6 +295,22 @@ describe("setVacancyFavorite", () => {
     expect(await stored(vacancyId)).toBeDefined();
   });
 
+  it("restores a missing date of an old favorite on Undo", async () => {
+    // Обране, додане до появи дати, не має її й після Undo - інакше стрибнуло б
+    // у свіже обране.
+    const { userId, vacancyId } = await seedVacancy({ isFavorite: true });
+    await setVacancyFavorite(testDb, { userId, vacancyId, isFavorite: false });
+
+    const row = await setVacancyFavorite(testDb, {
+      userId,
+      vacancyId,
+      isFavorite: true,
+      favoritedAt: null,
+    });
+
+    expect(row).toMatchObject({ isFavorite: true, favoritedAt: null });
+  });
+
   it("restores the time it was added when Remove from Favorites is undone", async () => {
     // Інакше вакансія після Undo стрибнула б нагору Favorites, у групу
     // свіжого обраного.
