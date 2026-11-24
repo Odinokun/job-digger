@@ -151,3 +151,4 @@ PR: #57
 | [Сайт компанії обов'язковий](company-site-required.md)                                           | done      |
 | [Jobs, Settings, History](ui-small-screens.md)                                                   | done      |
 | [Change list не на картці, поки рецепт працює](change-list-placement.md)                         | analyze   |
+| [Лічильники у вкладках Jobs](jobs-tab-counts.md)                                                 | backlog   |
