@@ -202,17 +202,26 @@ function readField(formData: FormData, name: string): string {
 }
 
 /**
+ * Пошук за назвою з недовіреного аргумента: не рядок - без пошуку. Решту
+ * (обрізання, екранування `%` і `_`) робить `listCompanies`.
+ */
+function searchQuery(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
+
+/**
  * Наступні 50 компаній після курсора.
  *
  * Аргументи приходять із клієнта й нічим не захищені: Server Action доступний
  * прямим POST-запитом, а не лише через кнопку (документація Next, «Server
- * Functions are reachable via direct POST requests»). Тому вкладка й курсор
- * розбираються тут, а користувач береться на сервері - з клієнта він не
+ * Functions are reachable via direct POST requests»). Тому вкладка, курсор і
+ * пошук розбираються тут, а користувач береться на сервері - з клієнта він не
  * передається взагалі.
  */
 export async function loadMoreCompaniesAction(
   tab: unknown,
   after: unknown,
+  query: unknown,
 ): Promise<LoadMoreCompaniesResult> {
   const outcome = await runAction(async () => {
     const db = getDb();
@@ -221,6 +230,7 @@ export async function loadMoreCompaniesAction(
     return listCompanies(db, {
       userId: user.id,
       tab: parseCompaniesTab(tab),
+      query: searchQuery(query),
       // `after` чистить сам `listCompanies` через `parseCursor`.
       after: after as Cursor | null,
     });
@@ -244,6 +254,7 @@ const MAX_RELOAD = 500;
 export async function reloadCompaniesAction(
   tab: unknown,
   shown: unknown,
+  query: unknown,
 ): Promise<LoadMoreCompaniesResult> {
   const limit =
     typeof shown === "number" && Number.isInteger(shown) && shown > 0
@@ -257,6 +268,7 @@ export async function reloadCompaniesAction(
     return listCompanies(db, {
       userId: user.id,
       tab: parseCompaniesTab(tab),
+      query: searchQuery(query),
       limit,
     });
   });

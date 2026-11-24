@@ -9,16 +9,17 @@ interface CompaniesTabsProps {
   labels: Record<CountKey, string>;
 }
 
-type CountKey = "tracked" | "notTracked" | "attention";
+type CountKey = "tracked" | "notTracked" | "attention" | "all";
 
 const TAB_LINKS = [
   { tab: "tracked", href: "/companies", key: "tracked" },
   { tab: "not-tracked", href: "/companies?tab=not-tracked", key: "notTracked" },
   { tab: "attention", href: "/companies?tab=attention", key: "attention" },
+  { tab: "all", href: "/companies?tab=all", key: "all" },
 ] as const;
 
 /**
- * Вкладки Tracked / Not tracked.
+ * Вкладки Tracked / Not tracked / Needs attention / All.
  *
  * Це навігація між адресами, а не перемикач усередині сторінки: стан живе в
  * URL, тому вкладку можна перезавантажити й надіслати посиланням, а список
@@ -26,7 +27,8 @@ const TAB_LINKS = [
  * з HeroUI Tabs - той ще й зробив би сторінку клієнтською.
  *
  * Needs attention (задача 6.11) показується, лише коли такі компанії є або
- * вкладка відкрита: у звичайному стані її немає зовсім.
+ * вкладка відкрита: у звичайному стані її немає зовсім. All - усі компанії з
+ * пошуком за назвою (задача companies-search), останньою, як і на Jobs.
  */
 export function CompaniesTabs({
   current,

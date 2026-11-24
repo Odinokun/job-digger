@@ -20,7 +20,7 @@
 | `suggest.ts`  | `suggestCompanyFields` - підказки для полів модалки з однієї адреси             |
 | `career-source.ts` | `prepareCareerSource` - адреса джерела, його підпис, платформа й дублікат усередині компанії |
 | `name.ts`     | `normalizeCompanyName` і `sameCompanyName` - коли дві назви це одна компанія    |
-| `company-list.ts` | Типи рядка списку, переліки вкладок і `discovery_status`, `parseCompaniesTab` |
+| `company-list.ts` | Типи рядка списку, переліки вкладок і `discovery_status`, `parseCompaniesTab`, `matchesCompanySearch` - правило пошуку вкладки All на клієнті, те саме, що в запиті |
 | `company-status.ts` | `companyCheckStatus` - статус на Tracked: OK, Has errors, Checking або нічого до першої перевірки; `cardStatusBadge` - який стан отримує єдиний кольоровий бейдж картки, а непрочитані сторінки - текстом (аудит інтерфейсу, A6) |
 
 ## Чому це не в `src/server`

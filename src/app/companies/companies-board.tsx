@@ -8,6 +8,7 @@ import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import { isBusy } from "@/lib/checks/status-poller";
 import {
   compareCompanyRows,
+  matchesCompanySearch,
   type CompaniesTab,
   type CompanyListItem,
   type CompanySource,
@@ -24,6 +25,7 @@ import { AddCompanyDialog } from "./add-company-dialog";
 import { CheckAllButton } from "./check-all-button";
 import { FindNewPagesButton } from "./find-new-pages-button";
 import { CompaniesList } from "./companies-list";
+import { CompanySearch } from "./company-search";
 
 interface CompaniesBoardProps {
   tab: CompaniesTab;
@@ -42,6 +44,9 @@ interface CompaniesBoardProps {
   hasTracked: boolean;
   /** Чи є на Not tracked хоч одна компанія - інакше Find new pages вимкнена. */
   hasNotTracked: boolean;
+  /** Пошук за назвою на вкладці All; на інших вкладках - порожній рядок. */
+  query: string;
+  searchLabels: { open: string; field: string; close: string };
 }
 
 /**
@@ -71,9 +76,22 @@ export function CompaniesBoard({
   statusLabels,
   hasTracked,
   hasNotTracked,
+  query,
+  searchLabels,
 }: CompaniesBoardProps) {
   const [items, setItems] = useState(initialItems);
   const [cursor, setCursor] = useState(initialCursor);
+
+  // Новий пошук - новий список із першої порції. Не через `key`, як вкладка:
+  // перемонтування забрало б фокус із поля пошуку посеред друкування.
+  // Стан скидається під час рендера, коли змінився пропс
+  // (https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes).
+  const [shownQuery, setShownQuery] = useState(query);
+  if (query !== shownQuery) {
+    setShownQuery(query);
+    setItems(initialItems);
+    setCursor(initialCursor);
+  }
   const [isPending, startTransition] = useTransition();
   // Нова компанія, чия картка має сама почати першу перевірку (задача 5.09).
   const [firstCheckId, setFirstCheckId] = useState<string | null>(null);
@@ -89,14 +107,14 @@ export function CompaniesBoard({
   // дозавантажені порції.
   useEffect(() => {
     if (wasCheckRunning.current && !isCheckRunning) {
-      void reloadCompaniesAction(tab, shownCount).then((result) => {
+      void reloadCompaniesAction(tab, shownCount, query).then((result) => {
         if (!result.ok) return;
         setItems(result.items);
         setCursor(result.nextCursor);
       });
     }
     wasCheckRunning.current = isCheckRunning;
-  }, [isCheckRunning, tab, shownCount]);
+  }, [isCheckRunning, tab, shownCount, query]);
 
   /**
    * Рядок, якого торкнулася дія, заміщає свій попередній.
@@ -109,17 +127,21 @@ export function CompaniesBoard({
    * Назва задає місце в алфавіті, тому показане пересортовується тим самим
    * порядком, що й запит. Компанія, чия назва стоїть далі за всі завантажені,
    * лишається в кінці списку - до наступного читання з сервера, яке поставить
-   * її на місце.
+   * її на місце. Під час пошуку рядок, назва якого під пошук не підходить
+   * (додана компанія чи перейменована в Edit), теж прибирається - як його не
+   * показав би й сервер.
    */
   const applyRow = useCallback(
     (companyId: string, row: CompanyListItem | null) => {
       setItems((shown) => {
         const without = shown.filter((company) => company.id !== companyId);
 
-        return row ? [...without, row].sort(compareCompanyRows) : without;
+        return row && matchesCompanySearch(row.name, query)
+          ? [...without, row].sort(compareCompanyRows)
+          : without;
       });
     },
-    [],
+    [query],
   );
 
   /**
@@ -152,7 +174,15 @@ export function CompaniesBoard({
         return;
       }
 
-      if (added !== null && tab === "tracked") {
+      // Картка, що лишилась у списку, сама стартує першу перевірку (на All
+      // відстежувана компанія теж у списку, якщо підходить під пошук), інакше
+      // перевірку запускаємо звідси.
+      const isShown =
+        added !== null &&
+        (tab === "tracked" || tab === "all") &&
+        matchesCompanySearch(added.name, query);
+
+      if (isShown) {
         setFirstCheckId(firstCheck);
         return;
       }
@@ -163,7 +193,7 @@ export function CompaniesBoard({
         }
       });
     },
-    [applyRow, tab, showActionFailed],
+    [applyRow, tab, query, showActionFailed],
   );
 
   /**
@@ -188,7 +218,7 @@ export function CompaniesBoard({
     }
 
     startTransition(async () => {
-      const result = await loadMoreCompaniesAction(tab, cursor);
+      const result = await loadMoreCompaniesAction(tab, cursor, query);
 
       if (!result.ok) {
         showActionFailed();
@@ -198,7 +228,7 @@ export function CompaniesBoard({
       setItems((shown) => [...shown, ...result.items]);
       setCursor(result.nextCursor);
     });
-  }, [cursor, tab, showActionFailed]);
+  }, [cursor, tab, query, showActionFailed]);
 
   return (
     <>
@@ -229,6 +259,13 @@ export function CompaniesBoard({
       </div>
 
       <div className="mt-4">{tabs}</div>
+
+      {/* Пошук - лише на вкладці All (рішення автора 24.11.2026). */}
+      {tab === "all" ? (
+        <div className="mt-4 flex justify-end">
+          <CompanySearch query={query} labels={searchLabels} />
+        </div>
+      ) : null}
 
       <CompaniesList
         tab={tab}

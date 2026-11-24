@@ -62,7 +62,7 @@ Next.js 16 має зміни проти тренувальних даних мо
 
 Таблиці: `users`, `companies`, `career_sources`, `vacancies`, `check_runs`, `check_tasks`, `settings` ([src/server/db/README.md](src/server/db/README.md)). Для локальної версії - один системний користувач, але дані завжди ізольовані за користувачем.
 
-Екрани: **Jobs** (Unread / Read / Favorites / All), **Companies** (Tracked / Not tracked), **History**, **Settings** ([docs/ui.md](docs/ui.md)).
+Екрани: **Jobs** (Unread / Read / Favorites / All), **Companies** (Tracked / Not tracked / Needs attention / All з пошуком), **History**, **Settings** ([docs/ui.md](docs/ui.md)).
 
 ## Як працюємо: маленькі кроки
 

@@ -5,6 +5,7 @@ import {
   eq,
   exists,
   gte,
+  ilike,
   inArray,
   notExists,
   or,
@@ -102,6 +103,10 @@ function needsAttentionSubquery(
 
 /** Умова належності компанії до вкладки. */
 function tabCondition(db: NodePgDatabase, tab: CompaniesTab): SQL {
+  if (tab === "all") {
+    return sql`true`;
+  }
+
   if (tab === "attention") {
     return exists(needsAttentionSubquery(db, companies.id));
   }
@@ -111,23 +116,45 @@ function tabCondition(db: NodePgDatabase, tab: CompaniesTab): SQL {
   return tab === "tracked" ? exists(tracked) : notExists(tracked);
 }
 
+/** Довший рядок пошуку обрізається: назва компанії такої довжини не буває. */
+const QUERY_MAX_LENGTH = 100;
+
+/**
+ * Умова пошуку за назвою: назва містить рядок пошуку, без огляду на регістр.
+ * `%`, `_` і `\` у рядку - звичайні символи, а не шаблон `LIKE`: екрануються
+ * зворотною скісною рискою, типовим символом екранування PostgreSQL. Порожній
+ * рядок - без умови.
+ */
+function nameCondition(query: string | undefined): SQL | undefined {
+  const text = query?.trim().slice(0, QUERY_MAX_LENGTH) ?? "";
+
+  if (text === "") {
+    return undefined;
+  }
+
+  return ilike(companies.name, `%${text.replace(/[\\%_]/g, "\\$&")}%`);
+}
+
 /**
  * Порція компаній однієї вкладки для одного користувача.
  *
  * `after` - курсор останнього показаного рядка; без нього читається початок
  * списку. Значення приходить із клієнта, тому проходить `parseCursor`:
- * непридатний курсор означає «почни з початку», а не помилку.
+ * непридатний курсор означає «почни з початку», а не помилку. `query` - пошук
+ * за назвою (вкладка All); наступна порція просить його так само.
  */
 export async function listCompanies(
   db: NodePgDatabase,
   {
     userId,
     tab,
+    query,
     limit = DEFAULT_LIMIT,
     after,
   }: {
     userId: string;
     tab: CompaniesTab;
+    query?: string;
     limit?: number;
     after?: Cursor | null;
   },
@@ -146,6 +173,7 @@ export async function listCompanies(
       and(
         eq(companies.userId, userId),
         tabCondition(db, tab),
+        nameCondition(query),
         // Порівняння пари, а не двох умов через OR: у PostgreSQL
         // `(a, b) > (x, y)` - це рівно «наступний рядок за тим самим
         // порядком», і воно збігається з `ORDER BY name, id`.
@@ -298,7 +326,12 @@ async function countVacancies(
 export async function countCompaniesByTab(
   db: NodePgDatabase,
   userId: string,
-): Promise<{ tracked: number; notTracked: number; attention: number }> {
+): Promise<{
+  tracked: number;
+  notTracked: number;
+  attention: number;
+  all: number;
+}> {
   const [row] = await db
     .select({
       tracked: count(sql`case when ${tabCondition(db, "tracked")} then 1 end`),
@@ -308,11 +341,12 @@ export async function countCompaniesByTab(
       attention: count(
         sql`case when ${tabCondition(db, "attention")} then 1 end`,
       ),
+      all: count(),
     })
     .from(companies)
     .where(eq(companies.userId, userId));
 
-  return row ?? { tracked: 0, notTracked: 0, attention: 0 };
+  return row ?? { tracked: 0, notTracked: 0, attention: 0, all: 0 };
 }
 
 /**

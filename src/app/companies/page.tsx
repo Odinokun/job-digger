@@ -16,18 +16,22 @@ const EMPTY_LABELS = {
   tracked: "emptyTracked",
   "not-tracked": "emptyNotTracked",
   attention: "emptyAttention",
+  all: "emptyAll",
 } as const;
 
 export default async function CompaniesPage({
   searchParams,
 }: PageProps<"/companies">) {
   const t = await getTranslations("CompaniesPage");
-  const tab = parseCompaniesTab((await searchParams).tab);
+  const params = await searchParams;
+  const tab = parseCompaniesTab(params.tab);
+  // Пошук - лише на вкладці All; `q` в адресі іншої вкладки ігнорується.
+  const query = tab === "all" && typeof params.q === "string" ? params.q : "";
 
   const db = getDb();
   const user = await getSystemUser(db);
   const [{ items: companies, nextCursor }, counts] = await Promise.all([
-    listCompanies(db, { userId: user.id, tab }),
+    listCompanies(db, { userId: user.id, tab, query }),
     countCompaniesByTab(db, user.id),
   ]);
 
@@ -76,18 +80,31 @@ export default async function CompaniesPage({
             tracked: t("tracked"),
             notTracked: t("notTracked"),
             attention: t("attention"),
+            all: t("all"),
           }}
         />
       }
       initialItems={companies}
       initialCursor={nextCursor}
-      emptyLabel={t(EMPTY_LABELS[tab])}
+      // Порожній результат пошуку пояснює, що саме не знайшлося, а не каже
+      // «компаній поки немає».
+      emptyLabel={
+        query.trim() === ""
+          ? t(EMPTY_LABELS[tab])
+          : t("emptySearch", { query: query.trim() })
+      }
       loadMoreLabel={t("loadMore")}
       noSourcesLabel={t("noSources")}
       platformLabels={platformLabels}
       statusLabels={statusLabels}
       hasTracked={counts.tracked > 0}
       hasNotTracked={counts.notTracked > 0}
+      query={query}
+      searchLabels={{
+        open: t("search"),
+        field: t("searchLabel"),
+        close: t("closeSearch"),
+      }}
     />
   );
 }
