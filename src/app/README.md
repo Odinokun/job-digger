@@ -132,9 +132,17 @@ Companies) і Check now. Кнопки модалок (Save, Delete) поки б�
 `jobs/` виглядала б як майбутній шлях `/jobs`.
 
 - `_jobs/jobs-tabs.tsx` - вкладки Unread / Read / Favorites / All посиланнями
-  (`/`, `/?tab=read` ...); серверний.
+  (`/`, `/?tab=read` ...) з числом рядків біля кожної, як на Companies (задача
+  jobs-tab-counts); без стану, рендерить його `jobs-board.tsx`. Пробіл перед
+  числом - текстом, а не відступом, інакше назва для читача екрана злипається.
 - `_jobs/jobs-board.tsx` - заголовок, вкладки, список і Load more; клієнтський,
-  тримає показані рядки й курсор.
+  тримає показані рядки й курсор. Числа вкладок приходять із сервера
+  (`countVacanciesByTab`) і поправляються на дії, що ще тривають
+  (`adjustTabCounts`): рядок і число змінюються одним кадром. Рядок після
+  відповіді сервера застосовується в окремому `startTransition` - оновлення
+  стану після `await` інакше не входить у перехід, і число на мить
+  поверталося б до старого
+  ([React](https://react.dev/reference/react/useTransition#react-doesnt-treat-my-state-update-after-await-as-a-transition)).
 - `_jobs/new-vacancies-notice.tsx` - хук `useNewVacanciesNotice`: toast «N new
   vacancies» із Show у стандартному місці HeroUI (задача 4.13). Опитування стану
   перевірки при зміні непрочитаних кличе `router.refresh`, і `jobs-board.tsx`

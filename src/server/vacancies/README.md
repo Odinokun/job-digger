@@ -14,7 +14,7 @@
 | `duplicates.ts` | `resolveDuplicates` - хто з дублікатів між джерелами компанії стає прочитаним; `sourceKind` - платформа чи сайт |
 | `duplicates.test.ts` | Юніт-тести вибору дубліката |
 | `duplicates.integration.test.ts` | Дублікати на справжній базі: регістр і пробіли, перевага платформи, інша компанія, закриті, паралельні джерела |
-| `list.ts` | `listVacancies` - порція вкладки Jobs; `hasAnyVacancy` - чи є в користувача вакансії взагалі |
+| `list.ts` | `listVacancies` - порція вкладки Jobs; `countVacanciesByTab` - числа вкладок; `hasAnyVacancy` - чи є в користувача вакансії взагалі |
 | `list.integration.test.ts` | Інтеграційні тести списків Jobs |
 | `marks.ts` | `findVacancy`, `setVacancyRead`, `setVacancyFavorite`, `countUnread`, `markAllRead`, `setCompanyVacanciesRead` - позначки користувача |
 | `marks.integration.test.ts` | Інтеграційні тести позначок |
@@ -197,6 +197,10 @@ PostgreSQL зберігає час до мікросекунд, а JS `Date` - �
 
 `hasAnyVacancy(db, userId)` вирішує, який текст показати на порожній вкладці:
 «вакансій ще немає» чи текст самої вкладки.
+
+`countVacanciesByTab(db, userId)` - числа в назвах вкладок, усі чотири одним
+запитом (`count(*) filter (where ...)`) з тими самими умовами, що в таблиці
+вище: число завжди дорівнює довжині списку вкладки, а Unread + Read = All.
 
 ## Позначки користувача
 
