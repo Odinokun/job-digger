@@ -158,3 +158,4 @@ PR: #57
 | [Підготувати репозиторій до показу](public-repo-polish.md)                                       | analyze   |
 | [Фавіконка з літерами JD](favicon-jd.md)                                                         | done      |
 | [Пошук компанії на сторінці Companies](companies-search.md)                                      | done      |
+| [Один помаранчевий у кожній темі](one-orange.md)                                                 | todo      |
