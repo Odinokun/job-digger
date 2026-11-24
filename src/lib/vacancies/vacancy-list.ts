@@ -187,6 +187,30 @@ export function countNewVacancies(
   ).length;
 }
 
+/**
+ * Показаний список із рядком на його місці - за порядком вкладки, як у
+ * запиті. Потрібен Undo: вакансія, що вийшла з вкладки (прочитана в Unread,
+ * прибрана з Favorites), повертається туди, де стояла. Уже показаний рядок
+ * заміщається, а той, що вкладці не належить, - прибирається.
+ */
+export function placeVacancy(
+  items: VacancyListItem[],
+  row: VacancyListItem,
+  tab: JobsTab,
+): VacancyListItem[] {
+  const without = items.filter((item) => item.id !== row.id);
+
+  if (!belongsToJobsTab(row, tab)) {
+    return without;
+  }
+
+  const index = without.findIndex((item) => isListedBefore(row, item, tab));
+
+  return index === -1
+    ? [...without, row]
+    : [...without.slice(0, index), row, ...without.slice(index)];
+}
+
 /** Скільки часу вакансія лишається у групі свіжого обраного. */
 export const RECENT_FAVORITE_MS = 12 * 60 * 60 * 1000;
 
