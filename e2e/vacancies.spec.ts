@@ -101,6 +101,25 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   );
   await expect(jobsLink).toHaveText(`Jobs ${BOARD_SIZE - 1}`);
 
+  // Undo повертає вакансію в Unread на її місце (задача vacancy-undo-toast).
+  const undoNotice = page
+    .getByRole("alertdialog")
+    .filter({ hasText: "Marked as read" });
+  await expect(undoNotice).toContainText(TITLE);
+  await undoNotice.getByRole("button", { name: "Undo" }).click();
+  await expect(vacancyRow(page, TITLE)).toBeVisible();
+  await expect(tabs).toHaveText(
+    `Unread (${BOARD_SIZE})Read (0)Favorites (0)All (${BOARD_SIZE})`,
+  );
+  await expect(undoNotice).toHaveCount(0);
+
+  // Знову Mark as read - далі сценарій іде з прочитаною вакансією.
+  await vacancyRow(page, TITLE)
+    .getByRole("button", { name: "Mark as read" })
+    .click();
+  await expect(vacancyRow(page, TITLE)).toHaveCount(0);
+  await expect(jobsLink).toHaveText(`Jobs ${BOARD_SIZE - 1}`);
+
   await page.getByRole("link", { name: /^Read/ }).click();
   await expect(vacancyRow(page, TITLE)).toBeVisible();
 
