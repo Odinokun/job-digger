@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  adjustTabCounts,
   belongsToJobsTab,
   countNewVacancies,
   parseJobsTab,
@@ -164,5 +165,55 @@ describe("countNewVacancies", () => {
 
   it("counts the whole fresh page when nothing is shown", () => {
     expect(countNewVacancies([], [found(2, LATER), found(1, LATER)])).toBe(2);
+  });
+});
+
+describe("adjustTabCounts", () => {
+  const counts = { unread: 3, read: 5, favorites: 2, all: 8 };
+  const unread = vacancy({ isRead: false, isFavorite: false, closedAt: null });
+
+  it("keeps the counts while nothing is pending", () => {
+    expect(adjustTabCounts(counts, [unread], [unread])).toEqual(counts);
+  });
+
+  it("moves a vacancy marked as read from Unread to Read", () => {
+    const read = { ...unread, isRead: true };
+
+    expect(adjustTabCounts(counts, [unread], [read])).toEqual({
+      unread: 2,
+      read: 6,
+      favorites: 2,
+      all: 8,
+    });
+  });
+
+  it("adds a starred vacancy to Favorites only", () => {
+    const starred = { ...unread, isFavorite: true };
+
+    expect(adjustTabCounts(counts, [unread], [starred])).toEqual({
+      unread: 3,
+      read: 5,
+      favorites: 3,
+      all: 8,
+    });
+  });
+
+  it("matches rows by id, not by position", () => {
+    const other = { ...unread, id: "00000000-0000-4000-8000-000000000002" };
+    const read = { ...unread, isRead: true };
+
+    expect(adjustTabCounts(counts, [unread, other], [other, read])).toEqual({
+      unread: 2,
+      read: 6,
+      favorites: 2,
+      all: 8,
+    });
+  });
+
+  it("never goes below zero", () => {
+    const read = { ...unread, isRead: true };
+    const empty = { unread: 0, read: 0, favorites: 0, all: 0 };
+
+    expect(adjustTabCounts(empty, [unread], [read]).unread).toBe(0);
   });
 });

@@ -91,6 +91,40 @@ export function patchVacancy(
 }
 
 /**
+ * Числа вкладок з урахуванням дій, що ще тривають. `before` - рядки, як їх
+ * знає сервер, `after` - ті самі рядки з оптимістичними змінами
+ * (`patchVacancy`). Рядок, що змінив вкладку, переносить одиницю з однієї в
+ * іншу одразу, разом із самим рядком, - не чекаючи свіжих чисел із сервера.
+ * Рядки зіставляються за id; рядок, якого немає в обох списках, не враховується.
+ */
+export function adjustTabCounts(
+  counts: JobsTabCounts,
+  before: VacancyListItem[],
+  after: VacancyListItem[],
+): JobsTabCounts {
+  const previous = new Map(before.map((item) => [item.id, item]));
+  const adjusted = { ...counts };
+
+  for (const item of after) {
+    const was = previous.get(item.id);
+
+    if (was === undefined || was === item) continue;
+
+    for (const tab of JOBS_TABS) {
+      adjusted[tab] +=
+        Number(belongsToJobsTab(item, tab)) -
+        Number(belongsToJobsTab(was, tab));
+    }
+  }
+
+  for (const tab of JOBS_TABS) {
+    adjusted[tab] = Math.max(0, adjusted[tab]);
+  }
+
+  return adjusted;
+}
+
+/**
  * Чи стоїть вакансія `a` у списку вище за `b` - порядок запиту вкладок
  * (`src/server/vacancies/list.ts`): дата виявлення, потім id, обидва за
  * спаданням. Postgres порівнює UUID побайтово, а для рядків у нижньому
