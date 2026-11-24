@@ -103,6 +103,7 @@ export default async function CompaniesPage({
       searchLabels={{
         open: t("search"),
         field: t("searchLabel"),
+        placeholder: t("searchPlaceholder"),
         close: t("closeSearch"),
       }}
     />

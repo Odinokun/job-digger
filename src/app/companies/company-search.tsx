@@ -13,7 +13,7 @@ const TYPING_PAUSE_MS = 300;
 interface CompanySearchProps {
   /** Пошук з адреси сторінки - те, що зараз показує список. */
   query: string;
-  labels: { open: string; field: string; close: string };
+  labels: { open: string; field: string; placeholder: string; close: string };
 }
 
 /** Адреса вкладки All з пошуком; порожній пошук - без параметра. */
@@ -74,9 +74,13 @@ export function CompanySearch({ query, labels }: CompanySearchProps) {
   }
 
   return (
-    <div className="flex w-full items-center gap-2 sm:w-80">
+    // Поле - на всю ширину рядка поруч із хрестиком (правка автора
+    // 24.11.2026).
+    <div className="flex w-full items-center gap-2">
       {/* Підпис - лише для читача екрана: лупа в полі й так каже, що це
-          пошук, а плейсхолдер у нас лише для формату (правило 4). */}
+          пошук. Плейсхолдер - приклад назви з «e.g.», як велить правило 4.
+          Група заввишки 32 px, як кнопка-лупа: інакше поле на 4 px вище за
+          кнопку, і список під ним стрибав би, щойно пошук відкрився. */}
       <SearchField
         aria-label={labels.field}
         value={value}
@@ -84,9 +88,12 @@ export function CompanySearch({ query, labels }: CompanySearchProps) {
         autoFocus
         className="min-w-0 flex-1"
       >
-        <SearchField.Group>
+        <SearchField.Group className="h-8">
           <SearchField.SearchIcon />
-          <SearchField.Input />
+          <SearchField.Input
+            placeholder={labels.placeholder}
+            className="h-full"
+          />
         </SearchField.Group>
       </SearchField>
       <IconButton
