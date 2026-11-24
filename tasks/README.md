@@ -150,3 +150,9 @@ PR: #57
 | [Діалоги компанії](ui-company-dialogs.md)                                                        | done      |
 | [Сайт компанії обов'язковий](company-site-required.md)                                           | done      |
 | [Jobs, Settings, History](ui-small-screens.md)                                                   | done      |
+| [Change list не на картці, поки рецепт працює](change-list-placement.md)                         | analyze   |
+| [Лічильники у вкладках Jobs](jobs-tab-counts.md)                                                 | backlog   |
+| [Свіже обране зверху у Favorites](favorites-added-today.md)                                      | backlog   |
+| [Undo після дії над вакансією](vacancy-undo-toast.md)                                            | backlog   |
+| [Перевірка доступності](accessibility-audit.md)                                                  | analyze   |
+| [Підготувати репозиторій до показу](public-repo-polish.md)                                       | analyze   |
