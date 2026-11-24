@@ -28,6 +28,7 @@ export const VACANCY_ROW = {
   firstDetectedAt: vacancies.firstDetectedAt,
   isRead: vacancies.isRead,
   isFavorite: vacancies.isFavorite,
+  favoritedAt: vacancies.favoritedAt,
   closedAt: vacancies.closedAt,
 };
 

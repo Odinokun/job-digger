@@ -164,6 +164,7 @@ describe("listVacancies rows", () => {
         firstDetectedAt: detected,
         isRead: false,
         isFavorite: false,
+        favoritedAt: null,
         closedAt: null,
       },
     ]);

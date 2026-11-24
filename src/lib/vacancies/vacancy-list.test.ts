@@ -19,6 +19,7 @@ function vacancy(
     location: null,
     companyName: "Acme",
     firstDetectedAt: new Date("2026-11-18T10:00:00Z"),
+    favoritedAt: null,
     ...marks,
   };
 }

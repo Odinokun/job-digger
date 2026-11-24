@@ -33,6 +33,11 @@ export type VacancyListItem = {
   firstDetectedAt: Date;
   isRead: boolean;
   isFavorite: boolean;
+  /**
+   * Коли вакансію додали у Favorites, або `null` - не в обраному чи додана
+   * туди до того, як застосунок почав це запам'ятовувати.
+   */
+  favoritedAt: Date | null;
   /** Коли вакансія з Favorites зникла з сайту, або `null`, якщо вона активна. */
   closedAt: Date | null;
 };

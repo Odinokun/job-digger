@@ -96,7 +96,17 @@ export async function setVacancyFavorite(
       await tx.delete(vacancies).where(and(own, isNotNull(vacancies.closedAt)));
     }
 
-    await tx.update(vacancies).set({ isFavorite }).where(own);
+    // Дата додавання - момент першої зірочки: повторне «додати» (подвійне
+    // натискання, друга вкладка браузера) її не оновлює.
+    await tx
+      .update(vacancies)
+      .set({
+        isFavorite,
+        favoritedAt: isFavorite
+          ? sql`coalesce(${vacancies.favoritedAt}, now())`
+          : null,
+      })
+      .where(own);
 
     return findVacancy(tx, { userId, vacancyId });
   });
