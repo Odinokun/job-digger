@@ -52,6 +52,10 @@ export default async function JobsPage({ searchParams }: PageProps<"/">) {
       emptyLabel={hasAny ? emptyByTab[tab] : t("emptyNoVacancies")}
       addCompanyLabel={hasAny ? null : t("addCompany")}
       loadMoreLabel={t("loadMore")}
+      favoriteGroupLabels={{
+        recent: t("recentFavorites"),
+        earlier: t("earlierFavorites"),
+      }}
     />
   );
 }

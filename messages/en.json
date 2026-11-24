@@ -18,6 +18,8 @@
     "all": "All",
     "closed": "Closed",
     "loadMore": "Load more",
+    "recentFavorites": "Last 24 hours",
+    "earlierFavorites": "Earlier",
     "emptyNoVacancies": "No vacancies yet. Add a company with a career page, and its vacancies show up here after a check.",
     "addCompany": "Go to Companies",
     "emptyUnread": "Everything is read.",
