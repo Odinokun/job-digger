@@ -243,13 +243,13 @@ describe("isRecentFavorite", () => {
     favoritedAt: added === null ? null : new Date(added),
   });
 
-  it("is true for a vacancy added to Favorites within the last 24 hours", () => {
+  it("is true for a vacancy added to Favorites within the last 12 hours", () => {
     // Учорашній вечір - теж свіже: вікно рухоме, а не календарний день.
-    expect(isRecentFavorite(favorite("2026-11-24T20:00:00Z"), NOW)).toBe(true);
+    expect(isRecentFavorite(favorite("2026-11-24T22:00:00Z"), NOW)).toBe(true);
   });
 
-  it("is false once 24 hours have passed", () => {
-    expect(isRecentFavorite(favorite("2026-11-24T08:00:00Z"), NOW)).toBe(false);
+  it("is false once 12 hours have passed", () => {
+    expect(isRecentFavorite(favorite("2026-11-24T20:00:00Z"), NOW)).toBe(false);
   });
 
   it("is false without the date it was added", () => {

@@ -50,7 +50,7 @@ interface JobsBoardProps {
   /** Кнопка в Companies - лише коли вакансій немає зовсім, а не у вкладці. */
   addCompanyLabel: string | null;
   loadMoreLabel: string;
-  /** Заголовки груп у Favorites: додані за останні 24 години і раніше. */
+  /** Заголовки груп у Favorites: додані за останні 12 годин і раніше. */
   favoriteGroupLabels: { recent: string; earlier: string };
 }
 
@@ -139,7 +139,7 @@ export function JobsBoard({
   // Рядок, який дія вивела з вкладки, зникає одразу, ще до відповіді сервера.
   const visible = shown.filter((vacancy) => belongsToJobsTab(vacancy, tab));
   /**
-   * Favorites ділиться на додані за останні 24 години і раніше (задача
+   * Favorites ділиться на додані за останні 12 годин і раніше (задача
    * favorites-added-today): список уже впорядкований за датою додавання, тож
    * межу видно заголовками, без позначки в кожному рядку. Немає свіжих - немає
    * й заголовків. «Зараз» - спільне для сервера й клієнта з next-intl, тож

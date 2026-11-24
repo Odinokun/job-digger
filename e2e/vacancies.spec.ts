@@ -111,6 +111,10 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
 
   await page.getByRole("link", { name: /^Favorites/ }).click();
   await expect(vacancyRow(page, TITLE)).toBeVisible();
+  // Щойно додана - у групі свіжого обраного (задача favorites-added-today).
+  await expect(
+    page.getByRole("heading", { name: "Last 12 hours" }),
+  ).toBeVisible();
   await expect(tabs.getByRole("link", { name: /^Favorites/ })).toHaveText(
     "Favorites (1)",
   );
