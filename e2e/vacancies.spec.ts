@@ -71,6 +71,12 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   ).toHaveCount(BOARD_SIZE);
   await expect(vacancyRow(page, TITLE)).toContainText("Discord");
 
+  // Числа у вкладках - скільки рядків у кожній (задача jobs-tab-counts).
+  const tabs = page.getByRole("navigation", { name: "Job lists" });
+  await expect(tabs).toHaveText(
+    `Unread (${BOARD_SIZE})Read (0)Favorites (0)All (${BOARD_SIZE})`,
+  );
+
   // Дії над рядком доходять до сервера із запізненням: вкладку перемикаємо,
   // поки дія ще не записала позначку в базу. Рядок зникає з Unread одразу
   // (оптимістично), тож людина цілком може так зробити, - і на CI тест без
@@ -87,6 +93,12 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
     .getByRole("button", { name: "Mark as read" })
     .click();
   await expect(vacancyRow(page, TITLE)).toHaveCount(0);
+  // Числа вкладок рухаються разом із рядком, ще до відповіді сервера, яку
+  // маршрут вище затримує на секунду.
+  await expect(tabs).toHaveText(
+    `Unread (${BOARD_SIZE - 1})Read (1)Favorites (0)All (${BOARD_SIZE})`,
+    { timeout: 500 },
+  );
   await expect(jobsLink).toHaveText(`Jobs ${BOARD_SIZE - 1}`);
 
   await page.getByRole("link", { name: /^Read/ }).click();
@@ -99,6 +111,9 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
 
   await page.getByRole("link", { name: /^Favorites/ }).click();
   await expect(vacancyRow(page, TITLE)).toBeVisible();
+  await expect(tabs.getByRole("link", { name: /^Favorites/ })).toHaveText(
+    "Favorites (1)",
+  );
 
   // Mark all as read: діалог називає, скільки вакансій позначить, - усі
   // непрочитані, крім уже прочитаної вище.
@@ -114,6 +129,9 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   await confirmDialog.getByRole("button", { name: "Mark as read" }).click();
   await expect(confirmDialog).toBeHidden();
   await expect(page.getByText("Everything is read.")).toBeVisible();
+  await expect(tabs).toHaveText(
+    `Unread (0)Read (${BOARD_SIZE})Favorites (1)All (${BOARD_SIZE})`,
+  );
   // Непрочитаних немає - числа немає ні в меню, ні в назві вкладки.
   await expect(jobsLink).toHaveText("Jobs");
   await expect(page).toHaveTitle("Job Digger");

@@ -120,7 +120,12 @@ export function JobsBoard({
           return;
         }
 
-        applyRow(patch.id, result.vacancy);
+        // Після `await` оновлення стану вже не входить у перехід саме
+        // (https://react.dev/reference/react/useTransition#react-doesnt-treat-my-state-update-after-await-as-a-transition).
+        // У переході рядок застосовується одним кадром зі свіжими числами
+        // вкладок із перечитаної сторінки, інакше число на мить
+        // поверталося б до старого.
+        startMark(() => applyRow(patch.id, result.vacancy));
       });
     },
     [addPatch, applyRow, showActionFailed],
