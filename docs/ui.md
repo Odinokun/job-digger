@@ -60,6 +60,8 @@ Tracked · Not tracked
 
 Лічильник завжди дорівнює кількості рядків у вкладці Unread: непрочитана вакансія з позначкою Closed у нього не входить, бо вона вже не активна й лишається тільки у Favorites.
 
+Біля назви кожної вкладки - число її рядків: `Unread (12)`, `Read (340)`, `Favorites (5)`, `All (352)`. All - лише активні, тож Unread + Read = All; закриті рахуються тільки у Favorites. Уже в коді - [`src/app/README.md`](../src/app/README.md) (`_jobs/jobs-tabs.tsx`).
+
 ### 4.2. Companies - Tracked
 
 Сторінка Companies має дві вкладки - Tracked і Not tracked - з кількістю компаній у назві (наприклад, «Tracked (120)»). Кнопка Add і модальне вікно додавання розміщені на цій сторінці.

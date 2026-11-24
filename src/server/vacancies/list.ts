@@ -4,9 +4,11 @@
 import { and, desc, eq, isNull, sql, type SQL } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import type {
-  JobsTab,
-  VacancyListItem,
+import {
+  JOBS_TABS,
+  type JobsTab,
+  type JobsTabCounts,
+  type VacancyListItem,
 } from "../../lib/vacancies/vacancy-list.ts";
 import { parseCursor, type Cursor } from "../../lib/pagination/cursor.ts";
 import { careerSources, companies, vacancies } from "../db/schema.ts";
@@ -145,4 +147,30 @@ export async function hasAnyVacancy(
     .limit(1);
 
   return row !== undefined;
+}
+
+/**
+ * Скільки рядків у кожній вкладці Jobs - числа в назвах вкладок. Умови ті самі,
+ * що в `listVacancies` (`tabCondition`), тож число завжди дорівнює довжині
+ * списку вкладки. Усі чотири - одним проходом по вакансіях користувача.
+ */
+export async function countVacanciesByTab(
+  db: NodePgDatabase,
+  userId: string,
+): Promise<JobsTabCounts> {
+  const counts = Object.fromEntries(
+    JOBS_TABS.map((tab) => [
+      tab,
+      sql<number>`(count(*) filter (where ${tabCondition(tab)}))::int`,
+    ]),
+  ) as Record<JobsTab, SQL<number>>;
+
+  const [row] = await db
+    .select(counts)
+    .from(vacancies)
+    .innerJoin(careerSources, eq(vacancies.sourceId, careerSources.id))
+    .innerJoin(companies, eq(careerSources.companyId, companies.id))
+    .where(eq(companies.userId, userId));
+
+  return row;
 }

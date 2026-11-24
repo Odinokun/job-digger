@@ -18,6 +18,9 @@ export const JOBS_TABS = ["unread", "read", "favorites", "all"] as const;
  */
 export type JobsTab = (typeof JOBS_TABS)[number];
 
+/** Скільки рядків у кожній вкладці - числа в назвах вкладок Jobs. */
+export type JobsTabCounts = Record<JobsTab, number>;
+
 export type VacancyListItem = {
   id: string;
   title: string;
@@ -85,6 +88,40 @@ export function patchVacancy(
   { id, changes }: VacancyPatch,
 ): VacancyListItem[] {
   return items.map((item) => (item.id === id ? { ...item, ...changes } : item));
+}
+
+/**
+ * Числа вкладок з урахуванням дій, що ще тривають. `before` - рядки, як їх
+ * знає сервер, `after` - ті самі рядки з оптимістичними змінами
+ * (`patchVacancy`). Рядок, що змінив вкладку, переносить одиницю з однієї в
+ * іншу одразу, разом із самим рядком, - не чекаючи свіжих чисел із сервера.
+ * Рядки зіставляються за id; рядок, якого немає в обох списках, не враховується.
+ */
+export function adjustTabCounts(
+  counts: JobsTabCounts,
+  before: VacancyListItem[],
+  after: VacancyListItem[],
+): JobsTabCounts {
+  const previous = new Map(before.map((item) => [item.id, item]));
+  const adjusted = { ...counts };
+
+  for (const item of after) {
+    const was = previous.get(item.id);
+
+    if (was === undefined || was === item) continue;
+
+    for (const tab of JOBS_TABS) {
+      adjusted[tab] +=
+        Number(belongsToJobsTab(item, tab)) -
+        Number(belongsToJobsTab(was, tab));
+    }
+  }
+
+  for (const tab of JOBS_TABS) {
+    adjusted[tab] = Math.max(0, adjusted[tab]);
+  }
+
+  return adjusted;
 }
 
 /**

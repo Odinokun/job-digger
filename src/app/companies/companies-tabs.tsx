@@ -40,7 +40,7 @@ export function CompaniesTabs({
     // прокручуваний контейнер обрізав би підкреслення, що лягає на border.
     <nav
       aria-label={label}
-      className="flex [scrollbar-width:none] gap-6 overflow-x-auto shadow-[inset_0_-1px_0_var(--border)]"
+      className="flex [scrollbar-width:none] gap-4 overflow-x-auto shadow-[inset_0_-1px_0_var(--border)] sm:gap-6"
     >
       {TAB_LINKS.map(({ tab, href, key }) => {
         const isActive = tab === current;
@@ -61,7 +61,9 @@ export function CompaniesTabs({
             }
           >
             {labels[key]}
-            <span className="ml-1 text-muted">({counts[key]})</span>
+            {/* Пробіл - текстом, а не відступом: інакше назва для читача
+                екрана злипається з числом («Unread(12)»). */}{" "}
+            <span className="text-muted">({counts[key]})</span>
           </Link>
         );
       })}

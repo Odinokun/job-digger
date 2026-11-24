@@ -2,21 +2,17 @@
 
 import { Button, Spinner } from "@heroui/react";
 import Link from "next/link";
-import {
-  useCallback,
-  useOptimistic,
-  useState,
-  useTransition,
-  type ReactNode,
-} from "react";
+import { useCallback, useOptimistic, useState, useTransition } from "react";
 
 import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import type { Cursor } from "@/lib/pagination/cursor";
 import {
+  adjustTabCounts,
   belongsToJobsTab,
   countNewVacancies,
   patchVacancy,
   type JobsTab,
+  type JobsTabCounts,
   type VacancyListItem,
   type VacancyPatch,
 } from "@/lib/vacancies/vacancy-list";
@@ -26,6 +22,7 @@ import {
   setVacancyFavoriteAction,
   setVacancyReadAction,
 } from "./actions";
+import { JobsTabs } from "./jobs-tabs";
 import { MarkAll } from "./mark-all";
 import { useNewVacanciesNotice } from "./new-vacancies-notice";
 import { VacancyRow } from "./vacancy-row";
@@ -33,8 +30,13 @@ import { VacancyRow } from "./vacancy-row";
 interface JobsBoardProps {
   tab: JobsTab;
   title: string;
-  /** Вкладки - серверний компонент, тому приходять готовими. */
-  tabs: ReactNode;
+  tabsLabel: string;
+  tabLabels: Record<JobsTab, string>;
+  /**
+   * Скільки рядків у кожній вкладці - як знає сервер. Свіжі приходять із
+   * перечитаною сторінкою після кожної дії (`revalidateHeaderCounts`).
+   */
+  counts: JobsTabCounts;
   /**
    * Перша порція: її рендерить сервер, тож список видно без JavaScript. Коли
    * сторінку перечитано (`router.refresh` опитування чи дія), тут свіжа
@@ -58,7 +60,9 @@ interface JobsBoardProps {
 export function JobsBoard({
   tab,
   title,
-  tabs,
+  tabsLabel,
+  tabLabels,
+  counts,
   initialItems,
   initialCursor,
   emptyLabel,
@@ -116,7 +120,12 @@ export function JobsBoard({
           return;
         }
 
-        applyRow(patch.id, result.vacancy);
+        // Після `await` оновлення стану вже не входить у перехід саме
+        // (https://react.dev/reference/react/useTransition#react-doesnt-treat-my-state-update-after-await-as-a-transition).
+        // У переході рядок застосовується одним кадром зі свіжими числами
+        // вкладок із перечитаної сторінки, інакше число на мить
+        // поверталося б до старого.
+        startMark(() => applyRow(patch.id, result.vacancy));
       });
     },
     [addPatch, applyRow, showActionFailed],
@@ -124,6 +133,8 @@ export function JobsBoard({
 
   // Рядок, який дія вивела з вкладки, зникає одразу, ще до відповіді сервера.
   const visible = shown.filter((vacancy) => belongsToJobsTab(vacancy, tab));
+  // Числа вкладок рухаються разом із рядком, а не після відповіді сервера.
+  const shownCounts = adjustTabCounts(counts, items, shown);
 
   const loadMore = useCallback(() => {
     if (!cursor) {
@@ -176,7 +187,14 @@ export function JobsBoard({
         {title}
       </h1>
 
-      <div className="mt-4">{tabs}</div>
+      <div className="mt-4">
+        <JobsTabs
+          current={tab}
+          label={tabsLabel}
+          labels={tabLabels}
+          counts={shownCounts}
+        />
+      </div>
 
       {(tab === "unread" || tab === "read") && visible.length > 0 ? (
         <div className="mt-4 flex justify-end">
