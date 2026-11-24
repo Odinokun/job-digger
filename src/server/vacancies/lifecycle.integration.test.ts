@@ -229,6 +229,26 @@ describe("syncSourceVacancies", () => {
     ]);
   });
 
+  it("deletes a closed vacancy taken out of Favorites on the next check", async () => {
+    // Remove from Favorites закриту вакансію не видаляє - лишає її для Undo
+    // (задача vacancy-undo-toast). Прибирає її наступна перевірка.
+    const sourceId = await greenhouseSource();
+    await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
+    await testDb
+      .update(vacancies)
+      .set({ isFavorite: true })
+      .where(eq(vacancies.sourceId, sourceId));
+    await sync(sourceId, ok(), SECOND_CHECK);
+    await testDb
+      .update(vacancies)
+      .set({ isFavorite: false })
+      .where(eq(vacancies.sourceId, sourceId));
+
+    await sync(sourceId, ok(), THIRD_CHECK);
+
+    expect(await rowsOf(sourceId)).toEqual([]);
+  });
+
   it("brings a deleted vacancy back as a new unread one", async () => {
     const sourceId = await greenhouseSource();
     await sync(sourceId, ok(parsed("101")), FIRST_CHECK);

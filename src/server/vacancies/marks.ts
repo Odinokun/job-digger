@@ -5,7 +5,7 @@
  * (README, «Одночасні зміни»). Вакансія шукається за користувачем через
  * компанію: id приходить із клієнта, і чужу змінити не вийде.
  */
-import { and, eq, inArray, isNotNull, isNull, lte, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, lte, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import type { VacancyListItem } from "../../lib/vacancies/vacancy-list.ts";
@@ -71,45 +71,45 @@ export async function setVacancyRead(
 
 /**
  * Favorite / Remove from Favorites. Повертає оновлений рядок або `null`, якщо
- * вакансії немає - зокрема коли вона щойно видалена.
+ * вакансії немає.
  *
- * Закрита вакансія жила лише заради Favorites, тож прибрана звідти -
- * видаляється (README.md поруч). Рішення ухвалює база за поточним станом
- * рядка, а не клієнт за тим, що бачив у списку: `closed_at is not null` в умові
- * `delete`. Якщо перевірка саме зняла Closed, бо вакансія повернулася на сайт,
- * PostgreSQL перевірить умову на оновленому рядку, і вакансія лишиться - лише
- * без Favorite (README, «Одночасні зміни»).
+ * Закрита вакансія, прибрана з Favorites, не видаляється одразу: вона зникає з
+ * усіх вкладок, а видаляє її наступна перевірка джерела - та й так прибирає
+ * зниклу з сайту вакансію поза Favorites (`lifecycle.ts`). До того її може
+ * повернути Undo (задача vacancy-undo-toast).
+ *
+ * `favoritedAt` - дата додавання, яку повертає Undo після Remove from
+ * Favorites; без неї - момент першої зірочки.
  */
 export async function setVacancyFavorite(
   db: NodePgDatabase,
-  { userId, vacancyId, isFavorite }: VacancyRef & { isFavorite: boolean },
+  {
+    userId,
+    vacancyId,
+    isFavorite,
+    favoritedAt,
+  }: VacancyRef & { isFavorite: boolean; favoritedAt?: Date },
 ): Promise<VacancyListItem | null> {
   if (!isUuid(vacancyId)) return null;
 
-  return db.transaction(async (tx) => {
-    const own = and(
-      eq(vacancies.id, vacancyId),
-      inArray(vacancies.sourceId, ownSources(tx, userId)),
-    );
+  const own = and(
+    eq(vacancies.id, vacancyId),
+    inArray(vacancies.sourceId, ownSources(db, userId)),
+  );
 
-    if (!isFavorite) {
-      await tx.delete(vacancies).where(and(own, isNotNull(vacancies.closedAt)));
-    }
+  // Дата додавання - момент першої зірочки: повторне «додати» (подвійне
+  // натискання, друга вкладка браузера) її не оновлює.
+  await db
+    .update(vacancies)
+    .set({
+      isFavorite,
+      favoritedAt: !isFavorite
+        ? null
+        : (favoritedAt ?? sql`coalesce(${vacancies.favoritedAt}, now())`),
+    })
+    .where(own);
 
-    // Дата додавання - момент першої зірочки: повторне «додати» (подвійне
-    // натискання, друга вкладка браузера) її не оновлює.
-    await tx
-      .update(vacancies)
-      .set({
-        isFavorite,
-        favoritedAt: isFavorite
-          ? sql`coalesce(${vacancies.favoritedAt}, now())`
-          : null,
-      })
-      .where(own);
-
-    return findVacancy(tx, { userId, vacancyId });
-  });
+  return findVacancy(db, { userId, vacancyId });
 }
 
 /**

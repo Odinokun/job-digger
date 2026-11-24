@@ -271,34 +271,15 @@ describe("setVacancyFavorite", () => {
     expect(await stored(vacancyId)).toBeDefined();
   });
 
-  it("deletes a closed vacancy once it leaves Favorites", async () => {
-    // Закрита вакансія жила лише заради Favorites: зник сайт - зникає й вона.
+  it("keeps a closed vacancy that leaves Favorites for an Undo", async () => {
+    // Рядок більше не в жодній вкладці, але живе до наступної перевірки
+    // джерела, яка видаляє зниклу з сайту вакансію поза Favorites (задача
+    // vacancy-undo-toast). До того Undo може його повернути.
     const { userId, vacancyId } = await seedVacancy({
       isFavorite: true,
+      favoritedAt: new Date("2026-11-20T09:00:00Z"),
       closedAt: CLOSED,
     });
-
-    const row = await setVacancyFavorite(testDb, {
-      userId,
-      vacancyId,
-      isFavorite: false,
-    });
-
-    expect(row).toBeNull();
-    expect(await stored(vacancyId)).toBeUndefined();
-  });
-
-  it("keeps a vacancy the check has just reopened", async () => {
-    // Перевірка зняла Closed, бо вакансія повернулася на сайт, поки рядок ще
-    // висів у списку як закритий. Рішення - за станом у базі, а не в списку.
-    const { userId, vacancyId } = await seedVacancy({
-      isFavorite: true,
-      closedAt: CLOSED,
-    });
-    await testDb
-      .update(vacancies)
-      .set({ closedAt: null })
-      .where(eq(vacancies.id, vacancyId));
 
     const row = await setVacancyFavorite(testDb, {
       userId,
@@ -309,7 +290,33 @@ describe("setVacancyFavorite", () => {
     expect(row).toMatchObject({
       id: vacancyId,
       isFavorite: false,
-      closedAt: null,
+      closedAt: CLOSED,
+    });
+    expect(await stored(vacancyId)).toBeDefined();
+  });
+
+  it("restores the time it was added when Remove from Favorites is undone", async () => {
+    // Інакше вакансія після Undo стрибнула б нагору Favorites, у групу
+    // свіжого обраного.
+    const earlier = new Date("2026-11-20T09:00:00Z");
+    const { userId, vacancyId } = await seedVacancy({
+      isFavorite: true,
+      favoritedAt: earlier,
+      closedAt: CLOSED,
+    });
+    await setVacancyFavorite(testDb, { userId, vacancyId, isFavorite: false });
+
+    const row = await setVacancyFavorite(testDb, {
+      userId,
+      vacancyId,
+      isFavorite: true,
+      favoritedAt: earlier,
+    });
+
+    expect(row).toMatchObject({
+      isFavorite: true,
+      favoritedAt: earlier,
+      closedAt: CLOSED,
     });
   });
 
