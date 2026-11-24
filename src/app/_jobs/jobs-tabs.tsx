@@ -1,11 +1,16 @@
 import Link from "next/link";
 
-import { JOBS_TABS, type JobsTab } from "@/lib/vacancies/vacancy-list";
+import {
+  JOBS_TABS,
+  type JobsTab,
+  type JobsTabCounts,
+} from "@/lib/vacancies/vacancy-list";
 
 interface JobsTabsProps {
   current: JobsTab;
   label: string;
   labels: Record<JobsTab, string>;
+  counts: JobsTabCounts;
 }
 
 /** Unread - адреса без параметра: саме вона відкривається за замовчуванням. */
@@ -20,9 +25,13 @@ function hrefOf(tab: JobsTab): string {
  * Навігація між адресами, як вкладки Companies
  * ([`companies-tabs.tsx`](../companies/companies-tabs.tsx)): вкладку можна
  * перезавантажити й надіслати посиланням, а сторінка лишається серверною.
- * Лічильника в назвах немає - число непрочитаних стоїть у меню (задача 3.19).
+ *
+ * Біля назви - кількість рядків вкладки, як на Companies: Unread і All разом
+ * кажуть, скільки непрочитано з усіх знайдених (задача jobs-tab-counts).
+ * Компонент без стану, тож його рендерить і клієнтський `JobsBoard`: числа
+ * там поправлені на дії, що ще тривають.
  */
-export function JobsTabs({ current, label, labels }: JobsTabsProps) {
+export function JobsTabs({ current, label, labels, counts }: JobsTabsProps) {
   return (
     // На вузькому екрані вкладки не переносяться, а прокручуються в своїй
     // смузі (аудит інтерфейсу, A1). Лінія під ними - тінь inset, а не border:
@@ -43,6 +52,7 @@ export function JobsTabs({ current, label, labels }: JobsTabsProps) {
           }
         >
           {labels[tab]}
+          <span className="ml-1 text-muted">({counts[tab]})</span>
         </Link>
       ))}
     </nav>

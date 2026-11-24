@@ -3,10 +3,13 @@ import { getTranslations } from "next-intl/server";
 import { parseJobsTab, type JobsTab } from "@/lib/vacancies/vacancy-list";
 import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
-import { hasAnyVacancy, listVacancies } from "@/server/vacancies/list";
+import {
+  countVacanciesByTab,
+  hasAnyVacancy,
+  listVacancies,
+} from "@/server/vacancies/list";
 
 import { JobsBoard } from "./_jobs/jobs-board";
-import { JobsTabs } from "./_jobs/jobs-tabs";
 
 export default async function JobsPage({ searchParams }: PageProps<"/">) {
   const t = await getTranslations("JobsPage");
@@ -14,9 +17,10 @@ export default async function JobsPage({ searchParams }: PageProps<"/">) {
 
   const db = getDb();
   const user = await getSystemUser(db);
-  const [{ items, nextCursor }, hasAny] = await Promise.all([
+  const [{ items, nextCursor }, hasAny, counts] = await Promise.all([
     listVacancies(db, { userId: user.id, tab }),
     hasAnyVacancy(db, user.id),
+    countVacanciesByTab(db, user.id),
   ]);
 
   // Порожня вкладка пояснює причину (docs/ui.md, розділ 4.1): якщо вакансій
@@ -35,18 +39,14 @@ export default async function JobsPage({ searchParams }: PageProps<"/">) {
       key={tab}
       tab={tab}
       title={t("title")}
-      tabs={
-        <JobsTabs
-          current={tab}
-          label={t("tabsLabel")}
-          labels={{
-            unread: t("unread"),
-            read: t("read"),
-            favorites: t("favorites"),
-            all: t("all"),
-          }}
-        />
-      }
+      tabsLabel={t("tabsLabel")}
+      tabLabels={{
+        unread: t("unread"),
+        read: t("read"),
+        favorites: t("favorites"),
+        all: t("all"),
+      }}
+      counts={counts}
       initialItems={items}
       initialCursor={nextCursor}
       emptyLabel={hasAny ? emptyByTab[tab] : t("emptyNoVacancies")}
