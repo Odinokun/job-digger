@@ -169,7 +169,7 @@ export function JobsBoard({
    * приносить свіжу першу порцію в пропси, а стан зі списком лишається. Show
    * перечитує вкладку з першої порції - бере саме цю свіжу порцію.
    */
-  const newCount = countNewVacancies(items, initialItems);
+  const newCount = countNewVacancies(items, initialItems, tab);
   const showNew = useCallback(() => {
     setItems(initialItems);
     setCursor(initialCursor);

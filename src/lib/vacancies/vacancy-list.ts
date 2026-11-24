@@ -129,17 +129,35 @@ export function adjustTabCounts(
   return adjusted;
 }
 
+type ListedVacancy = Pick<
+  VacancyListItem,
+  "id" | "firstDetectedAt" | "favoritedAt"
+>;
+
 /**
- * Чи стоїть вакансія `a` у списку вище за `b` - порядок запиту вкладок
- * (`src/server/vacancies/list.ts`): дата виявлення, потім id, обидва за
- * спаданням. Postgres порівнює UUID побайтово, а для рядків у нижньому
- * регістрі це те саме, що порівняння рядків.
+ * Дата, за якою вакансія стоїть у списку вкладки, - та сама, що `sortKey` у
+ * запиті (`src/server/vacancies/list.ts`): у Favorites - дата додавання в
+ * обране (у старого обраного без неї - дата виявлення), в інших - дата
+ * виявлення.
+ */
+function listedAt(vacancy: ListedVacancy, tab: JobsTab): Date {
+  return tab === "favorites"
+    ? (vacancy.favoritedAt ?? vacancy.firstDetectedAt)
+    : vacancy.firstDetectedAt;
+}
+
+/**
+ * Чи стоїть вакансія `a` у списку вкладки вище за `b` - порядок запиту
+ * вкладок: дата (`listedAt`), потім id, обидва за спаданням. Postgres
+ * порівнює UUID побайтово, а для рядків у нижньому регістрі це те саме, що
+ * порівняння рядків.
  */
 function isListedBefore(
-  a: Pick<VacancyListItem, "id" | "firstDetectedAt">,
-  b: Pick<VacancyListItem, "id" | "firstDetectedAt">,
+  a: ListedVacancy,
+  b: ListedVacancy,
+  tab: JobsTab,
 ): boolean {
-  const byDate = a.firstDetectedAt.getTime() - b.firstDetectedAt.getTime();
+  const byDate = listedAt(a, tab).getTime() - listedAt(b, tab).getTime();
 
   return byDate !== 0 ? byDate > 0 : a.id > b.id;
 }
@@ -155,8 +173,9 @@ function isListedBefore(
  * мають одну дату виявлення, і між собою їх упорядковує id.
  */
 export function countNewVacancies(
-  shown: Pick<VacancyListItem, "id" | "firstDetectedAt">[],
-  fresh: Pick<VacancyListItem, "id" | "firstDetectedAt">[],
+  shown: ListedVacancy[],
+  fresh: ListedVacancy[],
+  tab: JobsTab,
 ): number {
   const shownIds = new Set(shown.map((item) => item.id));
   const last = shown.at(-1);
@@ -164,6 +183,6 @@ export function countNewVacancies(
   return fresh.filter(
     (item) =>
       !shownIds.has(item.id) &&
-      (last === undefined || isListedBefore(item, last)),
+      (last === undefined || isListedBefore(item, last, tab)),
   ).length;
 }
