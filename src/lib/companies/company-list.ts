@@ -30,8 +30,15 @@ export type DiscoveryStatus = (typeof DISCOVERY_STATUSES)[number];
 /**
  * Вкладки сторінки Companies. `attention` - Needs attention (задача 6.11): зріз
  * поверх двох інших, компанія з неї лишається й у своїй Tracked чи Not tracked.
+ * `all` - усі компанії користувача, з пошуком за назвою (задача
+ * companies-search).
  */
-export const COMPANIES_TABS = ["tracked", "not-tracked", "attention"] as const;
+export const COMPANIES_TABS = [
+  "tracked",
+  "not-tracked",
+  "attention",
+  "all",
+] as const;
 
 /**
  * Належність до вкладки в базі не зберігається: Tracked - це «є хоч одне
@@ -91,6 +98,19 @@ export type CompanyListItem = {
 };
 
 /**
+ * Чи знайшов би пошук на вкладці All компанію з такою назвою - те саме
+ * правило, що в запиті списку (`src/server/companies/list.ts`): назва містить
+ * рядок пошуку без огляду на регістр, порожній рядок знаходить усе. Потрібна
+ * клієнтові: рядок, доданий чи змінений під час пошуку, лишається в показаному
+ * списку, лише якщо підходить під пошук.
+ */
+export function matchesCompanySearch(name: string, query: string): boolean {
+  const text = query.trim().toLowerCase();
+
+  return text === "" || name.toLowerCase().includes(text);
+}
+
+/**
  * Вкладка з недовіреного значення: параметра адреси або аргумента Server
  * Action.
  *
@@ -98,7 +118,10 @@ export type CompanyListItem = {
  * помилка в адресі має показати звичайний список, а не порожнечу чи помилку.
  */
 export function parseCompaniesTab(value: unknown): CompaniesTab {
-  return value === "not-tracked" || value === "attention" ? value : "tracked";
+  return typeof value === "string" &&
+    (COMPANIES_TABS as readonly string[]).includes(value)
+    ? (value as CompaniesTab)
+    : "tracked";
 }
 
 /**

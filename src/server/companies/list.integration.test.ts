@@ -340,8 +340,88 @@ describe("listCompanies pagination", () => {
   });
 });
 
+describe("All tab", () => {
+  it("lists every company of the user, tracked or not, by name", async () => {
+    const user = await seedSystemUser(testDb);
+    await insertTracked(user.id, "Bosch");
+    await insertUntracked(user.id, "Acme");
+
+    const { items } = await listCompanies(testDb, {
+      userId: user.id,
+      tab: "all",
+    });
+
+    expect(items.map((company) => company.name)).toEqual(["Acme", "Bosch"]);
+  });
+});
+
+describe("company search", () => {
+  async function namesFound(userId: string, query: string) {
+    const { items } = await listCompanies(testDb, {
+      userId,
+      tab: "all",
+      query,
+    });
+
+    return items.map((company) => company.name);
+  }
+
+  it("finds companies whose name contains the query, in any case", async () => {
+    const user = await seedSystemUser(testDb);
+    await insertTracked(user.id, "Acme");
+    await insertTracked(user.id, "Black Acorn", "black-acorn");
+    await insertTracked(user.id, "Bosch");
+
+    expect(await namesFound(user.id, "aC")).toEqual(["Acme", "Black Acorn"]);
+  });
+
+  it("shows everything for an empty or blank query", async () => {
+    const user = await seedSystemUser(testDb);
+    await insertTracked(user.id, "Acme");
+    await insertTracked(user.id, "Bosch");
+
+    expect(await namesFound(user.id, "  ")).toEqual(["Acme", "Bosch"]);
+  });
+
+  it("takes % and _ in the query literally", async () => {
+    // Інакше «%» знаходив би все, а «_» - будь-який символ.
+    const user = await seedSystemUser(testDb);
+    await insertTracked(user.id, "50% Off", "fifty");
+    await insertTracked(user.id, "500 Startups", "five-hundred");
+    await insertTracked(user.id, "Big_Data", "big-data");
+    await insertTracked(user.id, "BigXData", "bigx");
+
+    expect(await namesFound(user.id, "50%")).toEqual(["50% Off"]);
+    expect(await namesFound(user.id, "g_d")).toEqual(["Big_Data"]);
+  });
+
+  it("keeps the query on the next portion", async () => {
+    const user = await seedSystemUser(testDb);
+    await insertTracked(user.id, "Acme");
+    await insertTracked(user.id, "Acme Labs", "acme-labs");
+    await insertTracked(user.id, "Bosch");
+
+    const first = await listCompanies(testDb, {
+      userId: user.id,
+      tab: "all",
+      query: "acme",
+      limit: 1,
+    });
+    const next = await listCompanies(testDb, {
+      userId: user.id,
+      tab: "all",
+      query: "acme",
+      limit: 1,
+      after: first.nextCursor,
+    });
+
+    expect(next.items.map((company) => company.name)).toEqual(["Acme Labs"]);
+    expect(next.nextCursor).toBeNull();
+  });
+});
+
 describe("countCompaniesByTab", () => {
-  it("counts both tabs in one go, because both numbers are shown at once", async () => {
+  it("counts every tab in one go, because all numbers are shown at once", async () => {
     const user = await seedSystemUser(testDb);
     await insertTracked(user.id, "Bosch");
     await insertTracked(user.id, "Cisco");
@@ -351,6 +431,7 @@ describe("countCompaniesByTab", () => {
       tracked: 2,
       notTracked: 1,
       attention: 0,
+      all: 3,
     });
   });
 
@@ -366,6 +447,7 @@ describe("countCompaniesByTab", () => {
       tracked: 0,
       notTracked: 0,
       attention: 0,
+      all: 0,
     });
   });
 });
@@ -496,6 +578,7 @@ describe("Needs attention", () => {
       tracked: 2,
       notTracked: 0,
       attention: 1,
+      all: 2,
     });
   });
 

@@ -16,6 +16,7 @@ const EMPTY_LABELS = {
   tracked: "emptyTracked",
   "not-tracked": "emptyNotTracked",
   attention: "emptyAttention",
+  all: "emptyAll",
 } as const;
 
 export default async function CompaniesPage({

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   compareCompanyRows,
   isTrackedCompany,
+  matchesCompanySearch,
   notReadSourceCount,
   parseCompaniesTab,
   type CompanyListItem,
@@ -18,6 +19,10 @@ describe("parseCompaniesTab", () => {
     expect(parseCompaniesTab("attention")).toBe("attention");
   });
 
+  it("reads the All tab", () => {
+    expect(parseCompaniesTab("all")).toBe("all");
+  });
+
   it("falls back to Tracked for anything else", () => {
     // Значення приходить із адреси або з аргумента Server Action, тож тут буває
     // будь-що: вкладка за замовчуванням краща за помилку.
@@ -26,6 +31,28 @@ describe("parseCompaniesTab", () => {
     expect(parseCompaniesTab("Tracked")).toBe("tracked");
     expect(parseCompaniesTab(["not-tracked"])).toBe("tracked");
     expect(parseCompaniesTab(42)).toBe("tracked");
+  });
+});
+
+describe("matchesCompanySearch", () => {
+  // Те саме правило, що в запиті списку (src/server/companies/list.ts):
+  // рядок, доданий чи змінений під час пошуку, лишається в показаному списку,
+  // лише якщо сервер теж його знайшов би.
+  it("matches a name that contains the query, in any case", () => {
+    expect(matchesCompanySearch("Black Acorn", "aC")).toBe(true);
+  });
+
+  it("does not match a name without the query", () => {
+    expect(matchesCompanySearch("Bosch", "acme")).toBe(false);
+  });
+
+  it("matches every name for an empty or blank query", () => {
+    expect(matchesCompanySearch("Bosch", "")).toBe(true);
+    expect(matchesCompanySearch("Bosch", "  ")).toBe(true);
+  });
+
+  it("ignores spaces around the query", () => {
+    expect(matchesCompanySearch("Acme", " acme ")).toBe(true);
   });
 });
 
