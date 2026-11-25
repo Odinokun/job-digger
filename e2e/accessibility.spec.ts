@@ -80,6 +80,23 @@ test.beforeAll(async ({ browser }) => {
     companyCard(page, "Discord").getByText(/Last checked/),
   ).toBeVisible({ timeout: 15_000 });
 
+  // Обрана вакансія: на Favorites axe бачить її стан.
+  await page.goto("/");
+  await page.getByRole("button", { name: "Favorite" }).first().click();
+  await expect(
+    page.getByRole("button", { name: "Remove from Favorites" }),
+  ).toBeVisible();
+
+  // Сторінка, яку нічим прочитати: картка на Not tracked показує підпис
+  // Unsupported page помаранчевим текстом.
+  await page.goto("/companies");
+  await page.getByRole("button", { name: "Add company" }).click();
+  await dialog.getByLabel("Company website").fill("acme.example");
+  await dialog.getByLabel("Company name").fill("Acme");
+  await dialog.getByLabel("Career page").fill("acme.example/careers");
+  await dialog.getByRole("button", { name: "Save" }).click();
+  await expect(dialog).toBeHidden();
+
   await page.close();
 });
 
