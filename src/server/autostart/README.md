@@ -1,19 +1,19 @@
-# src/server/autostart - автозапуск робочого екземпляра
+# src/server/autostart - starting the working instance
 
-Робочий екземпляр (клон у `~/code/job-digger-app`, README, розділ «Робочий екземпляр») стартує сам при вході в macOS - через LaunchAgent вбудованого `launchd`, без нових залежностей (задача [6.10](../../../tasks/6.10-autostart-on-login.md)). Як користуватися - [README](../../../README.md#автозапуск).
+The working instance (the clone in `~/code/job-digger-app`, README, "Робочий екземпляр") starts by itself on macOS login - through a LaunchAgent of the built-in `launchd`, with no new dependencies (task [6.10](../../../tasks/6.10-autostart-on-login.md)). How to use it: [README](../../../README.md#автозапуск).
 
-| Файл                   | Що в ньому                                                                   |
-| ---------------------- | ---------------------------------------------------------------------------- |
-| `launch-agent.ts`      | `launchAgentPlist` - опис задачі для `launchd` (plist), `AUTOSTART_LABEL`     |
-| `launch-agent.test.ts` | Що саме потрапляє в plist                                                    |
-| `autostart.ts`         | Раннер: `npm run autostart:on`, `autostart:off`, `app:restart`               |
+| File                   | Contents                                                                      |
+| ---------------------- | ----------------------------------------------------------------------------- |
+| `launch-agent.ts`      | `launchAgentPlist` - the job description for `launchd` (plist), `AUTOSTART_LABEL` |
+| `launch-agent.test.ts` | What exactly goes into the plist                                              |
+| `autostart.ts`         | The runner: `npm run autostart:on`, `autostart:off`, `app:restart`            |
 
-## Як влаштовано
+## How it works
 
-- Задача `local.job-digger.app` у `~/Library/LaunchAgents`. Префікс `local.` - бо домену, як у звичних `com.example.*`, у проєкту немає.
-- Команда задачі: чекати, поки `pg_isready` у контейнері `job-digger-db` відповість, потім `exec npm run app` (копія бази раз на добу і `next start` на 3100). Docker Desktop після входу в систему стартує не одразу.
-- `KeepAlive` → `SuccessfulExit: false`: `launchd` перезапускає сервер лише після виходу з помилкою (падіння, невдала копія), не частіше ніж раз на 60 с (`ThrottleInterval`). Ключ заразом запускає задачу при завантаженні.
-- `launchd` не читає `~/.zshrc`, тож `PATH` задачі записується при `autostart:on`: тека `node`, яким запущено скрипт (nvm), і тека `docker`. Після зміни версії Node - `npm run autostart:on` ще раз.
-- Лог сервера - `~/Library/Logs/job-digger/app.log` (stdout і stderr разом).
+- The job is `local.job-digger.app` in `~/Library/LaunchAgents`. The `local.` prefix is there because the project has no domain like the usual `com.example.*`.
+- The job's command waits until `pg_isready` in the `job-digger-db` container answers, then runs `exec npm run app` (a database copy once a day and `next start` on 3100). Docker Desktop does not start right away after login.
+- `KeepAlive` → `SuccessfulExit: false`: `launchd` restarts the server only after an exit with an error (a crash, a failed copy), at most once every 60 s (`ThrottleInterval`). The key also starts the job at load.
+- `launchd` does not read `~/.zshrc`, so the job's `PATH` is written at `autostart:on`: the folder of the `node` that ran the script (nvm) and the folder of `docker`. After changing the Node version, run `npm run autostart:on` again.
+- The server log is `~/Library/Logs/job-digger/app.log` (stdout and stderr together).
 
-Перевірено наживо 20.11.2026 тимчасовою задачею з іншою назвою й портом: старт через `bootstrap`, відповідь сервера, `kickstart -k` (новий процес, старий зник), `bootout` (порт вільний, ні `npm`, ні `next-server` не лишилось), копія в iCloud із процесу `launchd` - вона працює лише після дозволу у вікні macOS, яке зʼявляється при першій спробі, а до відповіді процес чекає. Очікування бази при вимкненому Docker наживо не перевірялось.
+Checked live on 20.11.2026 with a temporary job under another name and port: start through `bootstrap`, the server answering, `kickstart -k` (a new process, the old one gone), `bootout` (the port free, neither `npm` nor `next-server` left), and a copy to iCloud from the `launchd` process - it works only after permission in the macOS window that appears on the first attempt, and the process waits until it is answered. Waiting for the database with Docker off was not checked live.

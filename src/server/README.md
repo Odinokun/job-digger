@@ -1,27 +1,27 @@
-# src/server - серверна частина
+# src/server - the server side
 
-Тут живе весь серверний код застосунку, окремо від сторінок і компонентів у
+All of the app's server code lives here, apart from the pages and components in
 [`src/app`](../app) ([`CLAUDE.md`](../../CLAUDE.md#repository-layout)).
 
-Правило: модулі з `src/server` не імпортуються в клієнтські компоненти напряму.
-Клієнт звертається до сервера лише через Server Actions або серверні компоненти.
+Rule: client components never import modules from `src/server` directly. The
+client reaches the server only through Server Actions or server components.
 
-Підпапки:
+Subfolders:
 
-- [`db`](db/README.md) - схема, підключення до PostgreSQL, міграції й seed.
-- [`companies`](companies/README.md) - пошук дублікатів, списки компаній і додавання.
-  Робота з самим рядком адреси - поза `src/server`, у
-  [`lib/companies`](../lib/companies/README.md): вона потрібна й клієнтові.
-- [`parsers`](parsers/README.md) - парсери вакансій платформ і власної сторінки за рецептом.
-- [`vacancies`](vacancies/README.md) - ключ вакансії і її життєвий цикл.
-- [`checks`](checks/README.md) - перевірки: Check now, Check all, Find new pages, автоперевірка, History, Failed Sources Drawer.
-- [`queue`](queue/README.md) - черга перевірок у PostgreSQL: захоплення завдань,
-  їхній результат, повернення завислих і завершення запусків.
-- [`discovery`](discovery/README.md) - пошук кар'єрних сторінок компанії за адресою її сайту.
-- [`csv`](csv/README.md) - CSV компаній для Export і Import у Settings.
-- [`settings`](settings/README.md) - налаштування користувача в базі: інтервал автоперевірки.
-- [`autostart`](autostart/README.md) - автозапуск робочого екземпляра при вході в macOS.
-- [`http`](http/README.md) - зовнішні запити: єдиний HTTP-клієнт із ввічливістю до
-  сайтів, захист від SSRF і фейковий вебсервер для тестів.
+- [`db`](db/README.md) - the schema, the PostgreSQL connection, migrations and seed.
+- [`companies`](companies/README.md) - duplicate detection, company lists and adding.
+  Working with the address string itself is outside `src/server`, in
+  [`lib/companies`](../lib/companies/README.md): the client needs it too.
+- [`parsers`](parsers/README.md) - vacancy parsers for the platforms and for an own page with a recipe.
+- [`vacancies`](vacancies/README.md) - the vacancy key and its lifecycle.
+- [`checks`](checks/README.md) - checks: Check now, Check all, Find new pages, auto-check, History, the Failed Sources Drawer.
+- [`queue`](queue/README.md) - the check queue in PostgreSQL: claiming tasks, their
+  results, returning stuck ones and finishing runs.
+- [`discovery`](discovery/README.md) - finding a company's career pages from its site address.
+- [`csv`](csv/README.md) - the company CSV for Export and Import in Settings.
+- [`settings`](settings/README.md) - user settings in the database: the auto-check interval.
+- [`autostart`](autostart/README.md) - starting the working instance on macOS login.
+- [`http`](http/README.md) - outgoing requests: the single HTTP client with politeness
+  towards sites, SSRF protection and the fake web server for tests.
 
-Нові підпапки створюються у своїх задачах, а не наперед.
+New subfolders are created in their own tasks, not ahead of time.
