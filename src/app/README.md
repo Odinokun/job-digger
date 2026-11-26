@@ -130,14 +130,14 @@ In `components/`:
   because it holds the button to Retry (task 6.19). It pops up once: as soon as it is
   shown, a Server Action from `check-actions.ts` (`markCheckSummaryShownAction`) marks
   it, so the next page load does not repeat it. Which summary is offered is decided in
-  [`server/checks/README.md`](../server/checks/README.md#підсумок-перевірки).
+  [`server/checks/README.md`](../server/checks/README.md#check-summary).
 - `failed-sources-drawer.tsx` - the right-hand "Failed sources" drawer with Retry per
   row and Retry all failed; a client component. Show failed sources in the summary
   opens it. The list comes from `/api/failed-sources`, Retry is a Server Action from
   `check-actions.ts`. While some Retry is queued the list is re-read every 2 s; when a
   Retry ends, `router.refresh()`, because found vacancies change the counter. When no
   failed sources are left, the drawer stays open and says so. Which sources are
-  listed: [`server/checks/README.md`](../server/checks/README.md#невдалі-джерела).
+  listed: [`server/checks/README.md`](../server/checks/README.md#failed-sources).
 - `check-status-provider.tsx` - `CheckStatusProvider` in the root layout and the
   `useCheckStatus` hook: the state of the general check for the header and the pages.
   It polls `/api/check-status` following the rules in `lib/checks/status-poller.ts`.

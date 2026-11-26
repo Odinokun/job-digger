@@ -1,7 +1,7 @@
 # src/server/checks - source checks
 
 Checking a source means reading it with a parser and applying the
-[vacancy lifecycle](../vacancies/README.md#життєвий-цикл). `checkSource` does it, and
+[vacancy lifecycle](../vacancies/README.md#lifecycle). `checkSource` does it, and
 two callers use it: Check now for one company (synchronously, without the queue) and
 the [queue](../queue/README.md), which runs the Check all tasks.
 
@@ -48,7 +48,7 @@ to platforms that read in pages; the rest always return the whole list.
 | Retry of failed ones | like the task that failed (`check_tasks.read_depth`) |
 | The trial read of Find pages and Find new pages | the first page, "10+ vacancies" (`src/server/discovery`) |
 
-An incomplete read closes nothing (`src/server/parsers`, "Ліміт вакансій і глибина"),
+An incomplete read closes nothing (`src/server/parsers`, "Vacancy limit and depth"),
 so vacancies that disappeared are noticed only on a full read - a day later at most. A
 successful read with `full` counts as a full read, and so does a list that ended by
 itself even on the first page.
@@ -79,7 +79,7 @@ itself even on the first page.
 
 ## Check all
 
-`startCheckAll` only queues the check; the [queue loop](../queue/README.md#цикл-обробника)
+`startCheckAll` only queues the check; the [queue loop](../queue/README.md#worker-loop)
 checks the sources.
 
 - **One source = one task** with the `background` priority. The sources taken are those
@@ -159,7 +159,7 @@ check. They do not change the History row: Retry is a task outside the run.
 `listCheckRuns` returns the user's **finished** general checks, newest first, 20 at a
 time. A row has exactly five figures: the start time, the sources checked (including
 failed ones), new and removed vacancies, the duration. A check closed by the finishing
-rule ([`queue/README.md`](../queue/README.md#завершення-запуску)) gives an ordinary row.
+rule ([`queue/README.md`](../queue/README.md#finishing-a-run)) gives an ordinary row.
 The cursor is as in Jobs: the start time with microseconds ([`db/time.ts`](../db/time.ts))
 and the `id` for equal times.
 
@@ -169,7 +169,7 @@ A repeated page search for all companies of the Not tracked tab (task 5.10).
 `startFindNewPages` queues one `discover` task per company - in the background, like
 Check all, but without a row in `check_runs`: the search is not recorded in History, and
 "in progress" means the user has unfinished `discover` tasks (`isFindingNewPages`). What
-each task does: [`queue/README.md`](../queue/README.md#пошук-сторінок).
+each task does: [`queue/README.md`](../queue/README.md#page-search).
 
 **One search per user is held by an advisory lock**, not a unique index: there is no row
 to hang it on. The "is it running" check and the insert go in one transaction under

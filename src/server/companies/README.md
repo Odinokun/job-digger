@@ -207,7 +207,7 @@ through `findCompaniesWithSources`: one query for all findings, keyed by the add
 passed. Such a finding cannot be chosen - Save would refuse it with `source-taken` anyway.
 
 Why the check is friendly rather than a unique index:
-[`db/README.md`](../db/README.md#рішення-щодо-схеми).
+[`db/README.md`](../db/README.md#schema-decisions).
 
 ## Deleting a company
 

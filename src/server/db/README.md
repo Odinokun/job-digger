@@ -112,7 +112,7 @@ name)` - the same pair it is sorted by.
   vacancy (Jobs is sorted by it), `created_at` is the moment the row was written by the
   database clock (migration 0007). The second is the boundary of Mark all as read: a check
   in progress writes vacancies with an earlier first date but a later second one
-  ([`src/server/vacancies/README.md`](../vacancies/README.md#одночасні-зміни)). There is no
+  ([`src/server/vacancies/README.md`](../vacancies/README.md#concurrent-changes)). There is no
   index on `created_at`: the query is limited to the user's vacancies anyway.
 
 **Check runs (`check_runs`, task 4.01).** The test is `checks.integration.test.ts`.
@@ -163,7 +163,7 @@ name)` - the same pair it is sorted by.
   ([`queue/task-error.ts`](../queue/task-error.ts)). The Failed Sources Drawer shows the
   reason, and a new reason needs no migration. History does not show these details.
 - **`skipped_vacancies`** is the parse warning: how many records the parser skipped
-  because of bad data ([`parsers/README.md`](../parsers/README.md), "Спільний формат").
+  because of bad data ([`parsers/README.md`](../parsers/README.md), "Shared format").
 - **The queue index is partial** - `(priority, created_at) where status = 'queued'`: the
   queue always holds a handful of rows, while finished tasks pile up in the thousands.
 

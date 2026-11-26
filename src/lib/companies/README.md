@@ -80,7 +80,7 @@ host.endsWith("." + suffix)`. Із простим `endsWith` будь-хто м�
 **У переліку лише хости самої платформи.** Кастомний домен клієнта ATS
 (`jobs.company.com`) дає `unsupported` - адреса про нього нічого не каже. PeopleForce
 на такому домені впізнає вже сервер, за вмістом сторінки (задача 5.13,
-[`server/companies`](../../server/companies/README.md#рішення)): тут, без мережі,
+[`server/companies`](../../server/companies/README.md#decisions)): тут, без мережі,
 цього не зробити, тож модалка Edit до Save показує таку адресу як Unsupported. Так само
 `schema_org` не повертається ніколи: розмітку JobPosting видно лише з вмісту
 сторінки, тому справжнє підтвердження дасть пробне читання в етапі 3. І `own_page`
