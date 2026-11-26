@@ -16,8 +16,8 @@ import { ThemeSwitcher } from "./theme-switcher";
 export default async function SettingsPage() {
   const t = await getTranslations("SettingsPage");
 
-  // Ту саму cookie читає `layout.tsx`, щоб поставити тему в SSR. Тут вона
-  // потрібна лише для того, щоб перемикач відкрився на поточному значенні.
+  // `layout.tsx` reads the same cookie to set the theme in SSR. Here it is needed
+  // only so the switch opens on the current value.
   const theme = parseThemePreference(
     (await cookies()).get(THEME_COOKIE_NAME)?.value,
   );
@@ -44,8 +44,8 @@ export default async function SettingsPage() {
           {t("language.title")}
         </h2>
         <LanguageSwitcher
-          // `getLocale` віддає те, що вирішив `i18n/request.ts`, - рядок, а
-          // перемикачу потрібна одна з відомих мов.
+          // `getLocale` returns what `i18n/request.ts` decided - a string, while
+          // the switch needs one of the known languages.
           current={isSupportedLocale(locale) ? locale : defaultLocale}
         />
       </section>

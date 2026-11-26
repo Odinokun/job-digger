@@ -21,14 +21,15 @@ interface ReferenceOnlyCheckboxProps {
 }
 
 /**
- * Галочка «Link only» у рядку сторінки, яку нічим прочитати (задача 6.17).
+ * The "Link only" checkbox on the row of a page nothing can read (task 6.17).
  *
- * Поставлена - сторінка лишається в картці посиланням, але не рахується
- * непрочитаною: зникає з Needs attention і бейджа «N pages not read». Галочка,
- * а не кнопка, бо це стан, який видно й можна зняти, а не разова дія.
+ * When ticked, the page stays on the card as a link but does not count as
+ * unread: it leaves Needs attention and the "N pages not read" badge. A checkbox,
+ * not a button, because this is a state that is visible and can be undone, not a
+ * one-off action.
  *
- * Відповідь дії - рядок компанії для поточної вкладки; на Needs attention він
- * буває `null`, і список прибирає компанію, як після Edit.
+ * The action returns the company row for the current tab; on Needs attention it
+ * can be `null`, and the list removes the company, as after Edit.
  */
 export function ReferenceOnlyCheckbox({
   companyId,

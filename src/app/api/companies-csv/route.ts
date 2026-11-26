@@ -9,9 +9,9 @@ import { getSystemUser } from "@/server/db/system-user";
 import { isSameOriginRequest } from "../same-origin";
 
 /**
- * Export CSV (задача 6.05). GET-маршрут, а не Server Action: браузер
- * завантажує файл сам за `Content-Disposition: attachment`, без того щоб
- * тягнути весь CSV у стан сторінки.
+ * Export CSV (task 6.05). A GET route, not a Server Action: the browser
+ * downloads the file itself thanks to `Content-Disposition: attachment`, without
+ * pulling the whole CSV into page state.
  */
 export async function GET(request: NextRequest): Promise<Response> {
   if (!isSameOriginRequest(request.headers)) {
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest): Promise<Response> {
     userId: user.id,
     ...parseExportOptions(request.nextUrl.searchParams),
   });
-  // Дата в назві - щоб кілька експортів не перезаписували один одного.
+  // The date in the name keeps several exports from overwriting each other.
   const date = new Date().toISOString().slice(0, 10);
 
   return new Response(toCsv(rows), {

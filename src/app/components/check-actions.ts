@@ -7,9 +7,9 @@ import { getDb } from "@/server/db/client";
 import { getSystemUser } from "@/server/db/system-user";
 
 /**
- * Підсумок перевірки показано - більше він не спливає (src/server/checks/README.md).
- * `runId` - недовірений ввід: чужий запуск `markSummaryShown` не
- * позначить.
+ * The check summary has been shown - it no longer pops up
+ * (src/server/checks/README.md). `runId` is untrusted input: `markSummaryShown`
+ * will not mark someone else's run.
  */
 export async function markCheckSummaryShownAction(
   runId: unknown,
@@ -33,9 +33,9 @@ export type RetryFailedSourcesActionResult =
   | { ok: false; reason: "check-running" | "unexpected" };
 
 /**
- * Retry одного джерела або Retry all failed (`"all"`) у Failed Sources Drawer.
- * Аргумент - недовірений ввід: повторюються лише джерела зі списку drawer
- * (`retryFailedSources`).
+ * Retry one source or Retry all failed (`"all"`) in the Failed Sources Drawer.
+ * The argument is untrusted input: only sources from the drawer's list are
+ * retried (`retryFailedSources`).
  */
 export async function retryFailedSourcesAction(
   sourceIds: unknown,

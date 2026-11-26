@@ -19,12 +19,12 @@ export default async function HistoryPage() {
         {t("title")}
       </h1>
       {items.length === 0 ? (
-        // Без кнопки: перевірку запускають лише зі сторінки Companies.
+        // No button: checks are started only from the Companies page.
         <p className="mt-2 text-sm text-muted">{t("empty")}</p>
       ) : (
         <HistoryBoard
-          // Нова завершена перевірка - новий перший рядок: таблиця
-          // збирається наново з першої порції замість старого стану.
+          // A new finished check means a new first row: the table is rebuilt
+          // from the first batch instead of the old state.
           key={items[0].id}
           initialItems={items}
           initialCursor={nextCursor}

@@ -10,20 +10,21 @@ import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import { startCheckAllAction } from "./actions";
 
 interface CheckAllButtonProps {
-  /** Вкладка Tracked порожня - перевіряти нічого. */
+  /** The Tracked tab is empty - nothing to check. */
   isDisabled: boolean;
 }
 
 /**
- * Check all на вкладці Tracked. Дія лише ставить джерела в чергу й одразу
- * повертається, тож спінер видно мить; саму перевірку веде цикл черги, а хід
- * показує індикатор у шапці (`components/check-progress.tsx`).
+ * Check all on the Tracked tab. The action only queues the sources and returns
+ * at once, so the spinner shows for a moment; the queue loop runs the check
+ * itself, and the header indicator shows its progress
+ * (`components/check-progress.tsx`).
  */
 export function CheckAllButton({ isDisabled }: CheckAllButtonProps) {
   const t = useTranslations("CompaniesPage");
   const showActionFailed = useActionFailedToast();
   const { status, track } = useCheckStatus();
-  // Одна загальна перевірка на користувача: поки вона йде, нову не почати.
+  // One general check per user: while it runs, a new one cannot start.
   const isRunning = (status?.run ?? null) !== null;
   const [isPending, startCheck] = useTransition();
 
@@ -37,8 +38,8 @@ export function CheckAllButton({ isDisabled }: CheckAllButtonProps) {
           const result = await startCheckAllAction();
 
           if (result.ok) {
-            // Стан із відповіді показує індикатор у шапці одразу й
-            // запускає опитування.
+            // The state from the response shows the header indicator at once and
+            // starts polling.
             track(result.status);
           } else if (result.reason === "already-running") {
             toast.warning(t("checkAllRunning"));

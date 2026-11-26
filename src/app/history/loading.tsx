@@ -1,12 +1,13 @@
 import { Skeleton } from "@heroui/react";
 import { getTranslations } from "next-intl/server";
 
-/** Рядків-заготовок: приблизно перший екран. */
+/** Placeholder rows: roughly the first screen. */
 const ROWS = 8;
 
 /**
- * Заготовка сторінки History, поки сервер читає перевірки. Заголовок справжній, рядки повторюють таблицю
- * [`history-board.tsx`](./history-board.tsx): дата й чотири числа.
+ * The History page placeholder while the server reads the checks. The heading is
+ * real, the rows repeat the table of [`history-board.tsx`](./history-board.tsx):
+ * a date and four numbers.
  */
 export default async function HistoryLoading() {
   const t = await getTranslations("HistoryPage");

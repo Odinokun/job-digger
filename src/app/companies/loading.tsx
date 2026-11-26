@@ -1,12 +1,13 @@
 import { Skeleton } from "@heroui/react";
 import { getTranslations } from "next-intl/server";
 
-/** Чотири картки - два ряди сітки, перший екран. */
+/** Four cards - two grid rows, the first screen. */
 const CARDS = 4;
 
 /**
- * Заготовка сторінки Companies, поки сервер читає компанії. Заголовок справжній, картки повторюють обриси
- * [`company-card.tsx`](./company-card.tsx): назва, джерело, підвал із кнопками.
+ * The Companies page placeholder while the server reads the companies. The
+ * heading is real, the cards repeat the outline of
+ * [`company-card.tsx`](./company-card.tsx): the name, a source, the footer with buttons.
  */
 export default async function CompaniesLoading() {
   const t = await getTranslations("CompaniesPage");

@@ -8,17 +8,17 @@ import { IconButton } from "./icon-button";
 import { NavLink, type NavLinkProps } from "./nav-link";
 
 interface MobileNavProps {
-  /** Підпис кнопки й заголовок панелі. */
+  /** The button label and the panel title. */
   label: string;
-  /** Ті самі пункти, що в меню шапки. */
+  /** The same items as in the header menu. */
   items: Array<Omit<NavLinkProps, "layout" | "onNavigate">>;
 }
 
 /**
- * Меню на вузькому екрані (аудит інтерфейсу, A1, рішення автора 21.11.2026):
- * чотири розділи з лічильниками не вміщуються в шапку на 390 px і розпирали
- * сторінку вбік. Кнопка-бургер відкриває панель зі списком розділів; перехід
- * закриває панель. Від ширини `md` - звичайне меню в шапці (`app-header.tsx`).
+ * The menu on a narrow screen (UI audit, A1): four sections with counters do not
+ * fit in the header at 390 px and pushed the page sideways. A burger button
+ * opens a panel with the list of sections; following a link closes it. From the
+ * `md` width there is the regular menu in the header (`app-header.tsx`).
  */
 export function MobileNav({ label, items }: MobileNavProps) {
   const [isOpen, setOpen] = useState(false);
