@@ -26,6 +26,6 @@
 - [x] `updateCompany`: зміна сайту з перевіркою на конфлікт
 - [x] Add company: поле сайту обовʼязкове, Save неактивна без назви й сайту; Edit company: поле сайту, Save неактивна без назви й сайту
 - [x] E2E: сценарії вводять сайт; `vacancies.spec` перевіряє неактивну Save; `global-setup` чистить таблиці перед міграціями
-- [x] Документація: `docs/ui.md`, README `app`, `server/companies`, `server/db`, `server/csv`, `lib/companies`
+- [x] Документація: [`docs/ui.md`](https://github.com/Odinokun/job-digger/blob/plan-v1.4.0/docs/ui.md), README `app`, `server/companies`, `server/db`, `server/csv`, `lib/companies`
 
 Разом із задачею (прохання автора): кнопка лише з іконкою більше не сплющується у flex-рядку поруч із довгим текстом (кошик у Edit company).
