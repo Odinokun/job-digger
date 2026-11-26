@@ -23,7 +23,7 @@ PR: #159
 
 - **Автори комітів:** `odinokun@gmail.com` і `noreply@github.com` (коміти squash merge). Email автора лишається за рішенням автора.
 - **Файли:** `.env*` в історії лише `.env.example`, у ньому весь час плейсхолдери (`CHANGE_ME`). Паролі в рядках підключення - `CHANGE_ME`, `<пароль>`, `user:pass`. Ключів і токенів за шаблонами (AWS, GitHub, OpenAI, Anthropic, Slack, Google, npm, приватні ключі) немає.
-- **GitGuardian, PR #16:** «Generic Password» у `.github/workflows/ci.yml` (коміт `b155a13`) - пароль `postgres` одноразового контейнера CI, вже замінений на `${{ github.run_id }}`. Хибна тривога; інцидент 40117420 у дашборді GitGuardian досі «Triggered», закрити його може лише автор.
+- **GitGuardian, PR #16:** «Generic Password» у `.github/workflows/ci.yml` (коміт `b155a13`) - пароль `postgres` одноразового контейнера CI, вже замінений на `${{ github.run_id }}`. Хибна тривога; автор закрив інцидент як «Ignored - Not a secret (false positive)» (перевірено 27.11.2026).
 - **Шляхи й email у змінах:** `/Users/me/...` - приклади в документації; email - публічні адреси компаній зі збережених сторінок і тестові `@job-digger.local`.
 - **Trello:** посилання на дошку «JD - Job Digger» і її картки є в старих комітах і описах PR. Дошка приватна (публічних дощок в акаунті немає), стороннім посилання відкриють лише сторінку входу.
 - **Згадки Djinni, LinkedIn, iPhone** - про платформи вакансій і іконку застосунку, не про автора.
