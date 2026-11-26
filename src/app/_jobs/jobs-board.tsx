@@ -78,6 +78,22 @@ export function JobsBoard({
 }: JobsBoardProps) {
   const [items, setItems] = useState(initialItems);
   const [cursor, setCursor] = useState(initialCursor);
+
+  /**
+   * Порожній показаний список бере свіжу порцію сам (задача 6.29): зсуватися
+   * нічому, тож toast із Show тут зайвий. Порція з сервера - та сама правда,
+   * що й після переходу на вкладку. Стан підганяється під пропс під час
+   * рендеру, без ефекту
+   * (https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes).
+   */
+  const [seenInitialItems, setSeenInitialItems] = useState(initialItems);
+  if (initialItems !== seenInitialItems) {
+    setSeenInitialItems(initialItems);
+    if (items.length === 0 && initialItems.length > 0) {
+      setItems(initialItems);
+      setCursor(initialCursor);
+    }
+  }
   const [isPending, startTransition] = useTransition();
   // Окремий перехід для Read і Favorite: інакше кнопка Load more крутилася б,
   // поки йде дія над рядком.

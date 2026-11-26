@@ -8,6 +8,13 @@ import type { CheckStatus } from "./check-status";
 /** Як часто опитувати, поки перевірка йде. */
 export const POLL_INTERVAL_MS = 3000;
 
+/**
+ * Як часто опитувати, поки перевірки немає: щоб помітити автоперевірку, яка
+ * почалась уже після завантаження сторінки. Розклад сам дивиться раз на
+ * хвилину (`server/checks/auto-check-scheduler.ts`), частіше питати марно.
+ */
+export const IDLE_POLL_INTERVAL_MS = 60_000;
+
 /** Скільки невдалих опитувань поспіль - і зʼєднання вважається втраченим. */
 export const MAX_FAILED_POLLS = 3;
 
@@ -17,6 +24,12 @@ export interface StatusPollerOptions {
   /** Зʼєднання втрачене - викликається один раз, і опитування зупиняється. */
   onLost: () => void;
   intervalMs?: number;
+  idleIntervalMs?: number;
+  /**
+   * Чи прихована вкладка. Поза перевіркою прихована вкладка не опитується;
+   * коли її знову показали, власник кличе `resume`.
+   */
+  isHidden?: () => boolean;
 }
 
 export interface StatusPoller {
@@ -27,6 +40,8 @@ export interface StatusPoller {
    * а якщо перевірка йде - опитування починається.
    */
   track(status: CheckStatus): void;
+  /** Вкладку знову показали: опитати зараз, не чекаючи таймера. */
+  resume(): void;
   stop(): void;
 }
 
@@ -35,33 +50,43 @@ export function createStatusPoller({
   onStatus,
   onLost,
   intervalMs = POLL_INTERVAL_MS,
+  idleIntervalMs = IDLE_POLL_INTERVAL_MS,
+  isHidden = () => false,
 }: StatusPollerOptions): StatusPoller {
   let timer: ReturnType<typeof setTimeout> | undefined;
   let inFlight = false;
   let failures = 0;
   let stopped = false;
+  // Чи йде перевірка за останньою відомою відповіддю - від цього частота.
+  let busy = false;
 
-  function schedule(): void {
+  function cancel(): void {
+    clearTimeout(timer);
+    timer = undefined;
+  }
+
+  function schedule(delay: number): void {
     // Одне заплановане чи поточне опитування за раз: `track` посеред
     // опитування не має подвоювати частоту.
     if (stopped || inFlight || timer !== undefined) return;
     timer = setTimeout(() => {
       timer = undefined;
+      // Поза перевіркою прихована вкладка не опитується - до `resume`.
+      if (!busy && isHidden()) return;
       void poll();
-    }, intervalMs);
+    }, delay);
   }
 
   async function poll(): Promise<void> {
     if (stopped) return;
     inFlight = true;
-    let keepPolling: boolean;
 
     try {
       const status = await fetchStatus();
       failures = 0;
       if (stopped) return;
+      busy = isBusy(status);
       onStatus(status);
-      keepPolling = isBusy(status);
     } catch {
       failures += 1;
       if (failures >= MAX_FAILED_POLLS) {
@@ -70,12 +95,13 @@ export function createStatusPoller({
         onLost();
         return;
       }
-      keepPolling = true;
     } finally {
       inFlight = false;
     }
 
-    if (keepPolling) schedule();
+    // Після невдачі - швидкий повтор: інакше збій поза перевіркою
+    // помічався б лише за три хвилини.
+    schedule(busy || failures > 0 ? intervalMs : idleIntervalMs);
   }
 
   return {
@@ -85,12 +111,21 @@ export function createStatusPoller({
     track(status) {
       if (stopped) return;
       onStatus(status);
-      if (isBusy(status)) schedule();
+      busy = isBusy(status);
+      if (busy) {
+        // Повільний таймер замінюється швидким.
+        if (!inFlight) cancel();
+        schedule(intervalMs);
+      }
+    },
+    resume() {
+      if (stopped || inFlight) return;
+      cancel();
+      void poll();
     },
     stop() {
       stopped = true;
-      clearTimeout(timer);
-      timer = undefined;
+      cancel();
     },
   };
 }

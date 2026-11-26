@@ -25,6 +25,7 @@ const running: CheckStatus = {
 const finding: CheckStatus = { ...idle, findingNewPages: true };
 
 const INTERVAL = 3000;
+const IDLE_INTERVAL = 60_000;
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -42,27 +43,89 @@ function setup(responses: (CheckStatus | Error)[]) {
   });
   const onStatus = vi.fn();
   const onLost = vi.fn();
+  const visibility = { hidden: false };
   const poller = createStatusPoller({
     fetchStatus,
     onStatus,
     onLost,
     intervalMs: INTERVAL,
+    idleIntervalMs: IDLE_INTERVAL,
+    isHidden: () => visibility.hidden,
   });
 
-  return { poller, fetchStatus, onStatus, onLost };
+  return { poller, fetchStatus, onStatus, onLost, visibility };
 }
 
 describe("createStatusPoller", () => {
-  it("polls once on start and stays quiet when no check is running", async () => {
-    // Перевірку могли запустити розклад чи інша вкладка - одне опитування на
-    // завантаженні сторінки її показує (src/server/checks/README.md).
-    const { poller, fetchStatus, onStatus } = setup([idle]);
+  it("polls on start and then slowly while no check is running", async () => {
+    // Перевірку могли запустити розклад чи інша вкладка - опитування на
+    // завантаженні сторінки її показує, а повільне опитування помічає
+    // перевірку, що почалась пізніше (src/server/checks/README.md).
+    const { poller, fetchStatus, onStatus } = setup([idle, idle]);
 
     poller.start();
     await vi.advanceTimersByTimeAsync(INTERVAL * 5);
-
     expect(fetchStatus).toHaveBeenCalledTimes(1);
     expect(onStatus).toHaveBeenCalledWith(idle);
+
+    await vi.advanceTimersByTimeAsync(IDLE_INTERVAL);
+    expect(fetchStatus).toHaveBeenCalledTimes(2);
+  });
+
+  it("switches to the fast interval when a scheduled check starts", async () => {
+    const { poller, fetchStatus, onStatus } = setup([idle, running, idle]);
+
+    poller.start();
+    await vi.advanceTimersByTimeAsync(IDLE_INTERVAL);
+    expect(onStatus).toHaveBeenLastCalledWith(running);
+
+    await vi.advanceTimersByTimeAsync(INTERVAL);
+    expect(fetchStatus).toHaveBeenCalledTimes(3);
+    expect(onStatus).toHaveBeenLastCalledWith(idle);
+  });
+
+  it("does not poll a hidden tab while no check is running", async () => {
+    const { poller, fetchStatus, visibility } = setup([idle, idle]);
+
+    poller.start();
+    await vi.advanceTimersByTimeAsync(0);
+    visibility.hidden = true;
+
+    await vi.advanceTimersByTimeAsync(IDLE_INTERVAL * 3);
+    expect(fetchStatus).toHaveBeenCalledTimes(1);
+  });
+
+  it("polls at once when the tab is shown again", async () => {
+    const { poller, fetchStatus, onStatus, visibility } = setup([
+      idle,
+      running,
+    ]);
+
+    poller.start();
+    await vi.advanceTimersByTimeAsync(0);
+    visibility.hidden = true;
+    await vi.advanceTimersByTimeAsync(IDLE_INTERVAL * 2);
+
+    visibility.hidden = false;
+    poller.resume();
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(fetchStatus).toHaveBeenCalledTimes(2);
+    expect(onStatus).toHaveBeenLastCalledWith(running);
+  });
+
+  it("does not double the polling when resumed while waiting", async () => {
+    const { poller, fetchStatus } = setup([idle, idle, idle]);
+
+    poller.start();
+    await vi.advanceTimersByTimeAsync(0);
+    poller.resume();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetchStatus).toHaveBeenCalledTimes(2);
+
+    // Таймер, що чекав до resume, не спрацьовує окремо.
+    await vi.advanceTimersByTimeAsync(IDLE_INTERVAL);
+    expect(fetchStatus).toHaveBeenCalledTimes(3);
   });
 
   it("keeps polling every interval while a check is running", async () => {
@@ -79,7 +142,7 @@ describe("createStatusPoller", () => {
     expect(fetchStatus).toHaveBeenCalledTimes(3);
     expect(onStatus).toHaveBeenLastCalledWith(idle);
 
-    // Перевірка закінчилась - опитування зупинилось.
+    // Перевірка закінчилась - опитування знову повільне.
     await vi.advanceTimersByTimeAsync(INTERVAL * 5);
     expect(fetchStatus).toHaveBeenCalledTimes(3);
   });
