@@ -7,7 +7,7 @@ import { getSettings, setAutoCheckInterval } from "./settings.ts";
 
 describe("settings", () => {
   it("gives the defaults before the user chose anything", async () => {
-    // Рядка ще немає: налаштування зʼявляються в базі лише з першим вибором.
+    // There is no row yet: settings appear in the database only with the first choice.
     const user = await seedSystemUser(testDb);
 
     expect(await getSettings(testDb, user.id)).toEqual({
@@ -51,7 +51,7 @@ describe("settings", () => {
   });
 
   it("lets the database refuse an interval off the list", async () => {
-    // Запис поза нашим кодом теж не має покласти в базу 5 годин.
+    // A write outside our code must not put 5 hours into the database either.
     const user = await seedSystemUser(testDb);
 
     await expect(

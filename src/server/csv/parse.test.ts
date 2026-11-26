@@ -26,8 +26,8 @@ describe("parseCompaniesCsv", () => {
   });
 
   it("reads back exactly what the export wrote", () => {
-    // Експорт → імпорт без втрат: лапки, коми, переноси, кирилиця, BOM, CRLF
-    // і знешкоджені формули.
+    // Export → import without loss: quotes, commas, line breaks, Cyrillic, BOM,
+    // CRLF and defused formulas.
     const rows = [
       {
         company_name: 'Бета, "ТОВ"',
@@ -51,7 +51,7 @@ describe("parseCompaniesCsv", () => {
   });
 
   it("keeps a leading quote that does not hide a formula", () => {
-    // Знімаємо лише ту лапку, яку ставить експорт: перед символом формули.
+    // Only the quote export puts before a formula character is removed.
     expect(escapeCsvCell("'Acme")).toBe("'Acme");
     const result = parseCompaniesCsv(`${HEADER}\n'Acme,acme.com,,\n`);
 
@@ -59,7 +59,7 @@ describe("parseCompaniesCsv", () => {
   });
 
   it("takes semicolons when the header uses them", () => {
-    // Excel з українською локаллю зберігає CSV із `;`.
+    // Excel with a Ukrainian locale saves CSV with `;`.
     const result = parseCompaniesCsv(
       "company_name;company_url;career_url;career_label\r\nAcme, Inc.;acme.com;;\r\n",
     );
@@ -109,7 +109,7 @@ describe("parseCompaniesCsv", () => {
   });
 
   it("refuses the whole file when the header is not ours", () => {
-    // Жодного часткового імпорту: незнайомий файл - одна зрозуміла відмова.
+    // No partial import: an unfamiliar file gets one clear refusal.
     expect(parseCompaniesCsv("name,url\nAcme,acme.com\n")).toEqual({
       ok: false,
       problem: "header",

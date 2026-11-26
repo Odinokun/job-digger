@@ -1,13 +1,13 @@
 /**
- * Автозапуск робочого екземпляра при вході в macOS (задача 6.10):
+ * Starting the working instance on macOS login (task 6.10):
  *
- * - `npm run autostart:on` - записати LaunchAgent і запустити його зараз;
- * - `npm run autostart:off` - зупинити сервер і прибрати автозапуск;
- * - `npm run app:restart` - перезапустити сервер після `npm run app:update`.
+ * - `npm run autostart:on` - write the LaunchAgent and start it now;
+ * - `npm run autostart:off` - stop the server and remove the autostart;
+ * - `npm run app:restart` - restart the server after `npm run app:update`.
  *
- * Запускається лише з клону на `main`, як і `app:update`: LaunchAgent
- * запамʼятовує теку, з якої його ввімкнули. Службовий скрипт, у застосунок не
- * імпортується.
+ * It runs only from the clone on `main`, like `app:update`: the LaunchAgent
+ * remembers the folder it was turned on from. A helper script, never imported
+ * into the app.
  */
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -54,8 +54,8 @@ async function turnOn(): Promise<void> {
     throw new Error("No production build here: run npm run app:update first");
   }
 
-  // `node` - той, що виконує цей скрипт (з nvm), `docker` - як його бачить
-  // термінал. Після зміни версії Node автозапуск треба ввімкнути знову.
+  // `node` is the one running this script (from nvm), `docker` as the terminal
+  // sees it. After changing the Node version the autostart has to be turned on again.
   const docker = run("/bin/sh", ["-c", "command -v docker"]);
   const searchPath = [
     ...new Set([
@@ -77,7 +77,7 @@ async function turnOn(): Promise<void> {
     }),
   );
 
-  // Повторне ввімкнення замінює стару задачу: спершу зняти, якщо вона є.
+  // Turning it on again replaces the old job: first remove it if it exists.
   launchctl(["bootout", service], { mayFail: true });
   launchctl(["bootstrap", domain, plistFile]);
   console.log("Autostart is on. Server: http://127.0.0.1:3100, log:", logFile);

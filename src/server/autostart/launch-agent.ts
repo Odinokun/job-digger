@@ -1,35 +1,35 @@
 /**
- * Опис автозапуску робочого екземпляра для macOS `launchd` - LaunchAgent, який
- * стартує при вході в систему (задача 6.10). Ключі звірено з `man
- * launchd.plist` на macOS.
+ * The autostart description of the working instance for macOS `launchd` - a
+ * LaunchAgent that starts on login (task 6.10). The keys were checked against
+ * `man launchd.plist` on macOS.
  */
 
-/** Імʼя задачі в `launchd` і файлу в `~/Library/LaunchAgents`. */
+/** The job name in `launchd` and the file name in `~/Library/LaunchAgents`. */
 export const AUTOSTART_LABEL = "local.job-digger.app";
 
 /**
- * Пауза між перезапусками після збою, с. Типово `launchd` чекає 10 с: якщо
- * сервер падає одразу на старті (скажімо, не вдалася резервна копія), кожна
- * спроба - це ще й `pg_dump`, тож частіше ніж раз на хвилину не треба.
+ * The pause between restarts after a failure, in seconds. By default `launchd`
+ * waits 10 s: if the server fails right at startup (say, the backup failed),
+ * every attempt is also a `pg_dump`, so more often than once a minute is not needed.
  */
 export const RESTART_THROTTLE_SECONDS = 60;
 
 export interface LaunchAgentInput {
-  /** Тека клону - звідти `npm run app` бере `.env` і збірку. */
+  /** The clone folder - `npm run app` takes `.env` and the build from there. */
   workingDirectory: string;
   /**
-   * `PATH` для задачі: `launchd` не читає `~/.zshrc`, тож без нього не знайде
-   * ні `node` з nvm, ні `docker`.
+   * The job's `PATH`: `launchd` does not read `~/.zshrc`, so without it it finds
+   * neither `node` from nvm nor `docker`.
    */
   path: string;
-  /** Куди писати stdout і stderr сервера. */
+  /** Where to write the server's stdout and stderr. */
   logFile: string;
 }
 
 /**
- * Скрипт задачі: дочекатися бази й запустити `npm run app`. Docker Desktop
- * після входу в систему стартує не одразу, тож без очікування перший запуск
- * упирався б у відсутню базу.
+ * The job's script: wait for the database and run `npm run app`. Docker Desktop
+ * does not start right away after login, so without waiting the first start
+ * would run into a missing database.
  */
 const LAUNCH_SCRIPT =
   "until docker exec job-digger-db pg_isready -q; do sleep 5; done; exec npm run app";

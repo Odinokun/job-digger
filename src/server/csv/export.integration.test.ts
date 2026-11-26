@@ -29,7 +29,7 @@ async function company(
   }
 }
 
-/** Mozilla - Tracked із двома джерелами, Acme - Not tracked без джерел. */
+/** Mozilla - Tracked with two sources, Acme - Not tracked without sources. */
 async function seed() {
   const user = await seedSystemUser(testDb);
   await company(user.id, "Mozilla", "https://mozilla.org", [
@@ -73,8 +73,8 @@ describe("exportCompanyRows", () => {
   });
 
   it("writes a row per source with career URLs, keeping labels", async () => {
-    // Джерело, яке ми не читаємо, теж експортується: адреса знадобиться,
-    // коли зʼявиться парсер.
+    // A source we do not read is exported too: the address will be useful once
+    // a parser appears.
     const user = await seed();
 
     expect(

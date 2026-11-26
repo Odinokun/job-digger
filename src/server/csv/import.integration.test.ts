@@ -171,7 +171,7 @@ describe("importCompanies", () => {
       errors: 0,
     });
     const [acme] = await companiesOf(user.id);
-    // Назва наявної компанії лишається: імпорт не перейменовує.
+    // The name of an existing company stays: import does not rename.
     expect(acme.name).toBe("Acme");
     expect(acme.sources.map((source) => source.url)).toEqual([
       "https://job-boards.greenhouse.io/acme",
@@ -237,7 +237,7 @@ describe("importCompanies", () => {
       ],
     });
 
-    // Компанія нова, а її дошка вже в Acme - джерело не дублюємо.
+    // The company is new, but its board is already at Acme - the source is not duplicated.
     expect(summary).toEqual({
       companiesAdded: 1,
       sourcesAdded: 0,
