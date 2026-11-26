@@ -7,16 +7,16 @@ import { useEffect, useState, useTransition } from "react";
 
 import { IconButton } from "@/app/components/icon-button";
 
-/** Скільки чекати після останньої літери, перш ніж перечитати список. */
+/** How long to wait after the last letter before re-reading the list. */
 const TYPING_PAUSE_MS = 300;
 
 interface CompanySearchProps {
-  /** Пошук з адреси сторінки - те, що зараз показує список. */
+  /** The search from the page URL - what the list shows now. */
   query: string;
   labels: { open: string; field: string; placeholder: string; close: string };
 }
 
-/** Адреса вкладки All з пошуком; порожній пошук - без параметра. */
+/** The All tab URL with the search; an empty search means no parameter. */
 function hrefOf(query: string): string {
   const text = query.trim();
 
@@ -26,14 +26,14 @@ function hrefOf(query: string): string {
 }
 
 /**
- * Пошук компанії за назвою на вкладці All (задача companies-search): лупа
- * відкриває поле, і список фільтрується, поки людина друкує.
+ * Company search by name on the All tab (task companies-search): the magnifier
+ * opens the field, and the list filters while the user types.
  *
- * Шукає сервер, а не показаний список: компаній сотні, а завантажено перші 50.
- * Пошук живе в адресі (`?tab=all&q=...`), як і вкладка, тож переживає
- * перезавантаження; `router.replace`, а не `push`, щоб кожна літера не лягала
- * в історію браузера. Список перечитується після паузи в друкуванні, а не на
- * кожну літеру.
+ * The server searches, not the shown list: there are hundreds of companies, and
+ * only the first 50 are loaded. The search lives in the URL (`?tab=all&q=...`),
+ * like the tab, so it survives a reload; `router.replace`, not `push`, so that
+ * every letter does not end up in the browser history. The list is re-read after
+ * a pause in typing, not on every letter.
  */
 export function CompanySearch({ query, labels }: CompanySearchProps) {
   const router = useRouter();
@@ -74,13 +74,13 @@ export function CompanySearch({ query, labels }: CompanySearchProps) {
   }
 
   return (
-    // Поле - на всю ширину рядка поруч із хрестиком (правка автора
-    // 24.11.2026).
+    // The field spans the row next to the cross.
     <div className="flex w-full items-center gap-2">
-      {/* Підпис - лише для читача екрана: лупа в полі й так каже, що це
-          пошук. Плейсхолдер - приклад назви з «e.g.», як велить правило 4.
-          Група заввишки 32 px, як кнопка-лупа: інакше поле на 4 px вище за
-          кнопку, і список під ним стрибав би, щойно пошук відкрився. */}
+      {/* The label is for screen readers only: the magnifier in the field
+          already says it is a search. The placeholder is an example name with
+          "e.g.", as rule 4 asks. The group is 32 px tall, like the magnifier
+          button: otherwise the field is 4 px taller than the button, and the
+          list under it would jump as soon as search opened. */}
       <SearchField
         aria-label={labels.field}
         value={value}

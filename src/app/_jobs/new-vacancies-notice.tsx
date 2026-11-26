@@ -6,22 +6,22 @@ import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
 interface NewVacanciesNotice {
-  /** Скільки нових вакансій у свіжій першій порції; 0 - сповіщення немає. */
+  /** How many new vacancies the fresh first batch has; 0 - no notification. */
   count: number;
-  /** Уся свіжа порція нова, а за нею є ще: число - нижня межа. */
+  /** The whole fresh batch is new and more follow: the number is a lower bound. */
   hasMore: boolean;
-  /** Show: показати свіжу першу порцію замість поточного списку. */
+  /** Show: put the fresh first batch in place of the current list. */
   onShow: () => void;
 }
 
 /**
- * Toast «N new vacancies» із кнопкою Show на сторінці Jobs (задача 4.13).
+ * The "N new vacancies" toast with a Show button on the Jobs page (task 4.13).
  *
- * Список не скидається сам: користувач може саме читати рядки, і нові не
- * мають їх зсувати. Тож поки нові вакансії не показані, toast висить без
- * таймера, а з новими знахідками число в ньому оновлюється на місці, а не
- * множить сповіщення. Коли нових більше немає (Show, перехід на іншу вкладку),
- * toast закривається.
+ * The list does not reset itself: the user may be reading the rows, and new
+ * ones must not move them. So while the new vacancies are not shown, the toast
+ * stays without a timer, and with new findings its number updates in place
+ * instead of adding notifications. When there is nothing new any more (Show,
+ * switching to another tab), the toast closes.
  */
 export function useNewVacanciesNotice({
   count,
@@ -31,8 +31,8 @@ export function useNewVacanciesNotice({
   const t = useTranslations("JobsPage.newVacancies");
   const toastId = useRef<string | null>(null);
 
-  // Show кличе найсвіжіший обробник: toast створено раніше, і його кнопка
-  // інакше тримала б список, який був на момент показу.
+  // Show calls the latest handler: the toast was created earlier, and its button
+  // would otherwise hold the list as it was when the toast appeared.
   const latestOnShow = useRef(onShow);
   useEffect(() => {
     latestOnShow.current = onShow;
@@ -49,10 +49,10 @@ export function useNewVacanciesNotice({
 
     const title = t(hasMore ? "titleAtLeast" : "title", { count });
     const options = {
-      // Дзвоник кольору уваги замість типового «i» (src/app/README.md#ink-theme).
+      // A bell in the attention colour instead of the default "i" (src/app/README.md#ink-theme).
       indicator: <Bell className="text-highlight" />,
       timeout: 0,
-      // Закрив сам користувач - наступна зміна числа покаже toast знову.
+      // The user closed it - the next change of the number shows the toast again.
       onClose: () => {
         toastId.current = null;
       },
@@ -62,21 +62,21 @@ export function useNewVacanciesNotice({
       },
     };
 
-    // `update` повертає id: той самий або нового toast, якщо старого вже
-    // немає в черзі (node_modules/@heroui/react/dist/components/toast/toast-queue.js).
+    // `update` returns an id: the same one, or that of a new toast if the old one
+    // is no longer in the queue (node_modules/@heroui/react/dist/components/toast/toast-queue.js).
     toastId.current =
       toastId.current === null
         ? toast(title, options)
         : toast.update(toastId.current, title, options);
   }, [count, hasMore, t]);
 
-  // Сторінку покинули - сповіщення про її список більше ні до чого.
+  // The page was left - a notification about its list is no longer of use.
   useEffect(
     () => () => {
       if (toastId.current !== null) {
         toast.close(toastId.current);
-        // Strict Mode у розробці знімає й ставить ефекти ще раз: без цього
-        // повторний ефект оновлював би вже закритий toast замість нового.
+        // Strict Mode in development removes and re-adds effects: without this the
+        // repeated effect would update the already closed toast instead of a new one.
         toastId.current = null;
       }
     },

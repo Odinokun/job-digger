@@ -14,7 +14,7 @@ import type {
 import { retryFailedSourcesAction } from "./check-actions";
 import { useActionFailedToast } from "./use-action-failed-toast";
 
-/** Як часто перечитувати список, поки якийсь Retry ще в черзі. */
+/** How often to re-read the list while some Retry is still queued. */
 const REFRESH_WHILE_RETRYING_MS = 2000;
 
 interface FailedSourcesDrawerProps {
@@ -23,14 +23,14 @@ interface FailedSourcesDrawerProps {
 }
 
 /**
- * Failed Sources Drawer (src/server/checks/README.md): невдалі джерела
- * останньої загальної перевірки з Retry і Retry all failed. Правила списку -
- * `server/checks/README.md`, «Невдалі джерела».
+ * The Failed Sources Drawer (src/server/checks/README.md): the failed sources of
+ * the last general check with Retry and Retry all failed. The list rules are in
+ * `server/checks/README.md`, "Невдалі джерела".
  *
- * Поки якийсь Retry у черзі, список перечитується раз на 2 с. Коли Retry
- * закінчився, сторінка перечитується з сервера (`router.refresh`): знайдені
- * вакансії міняють лічильник непрочитаних. Коли невдалих не лишилось, drawer
- * сам не закривається - результат Retry має бути видно.
+ * While some Retry is queued, the list is re-read every 2 s. When a Retry ends,
+ * the page is re-read from the server (`router.refresh`): found vacancies change
+ * the unread counter. When no failed sources are left, the drawer does not close
+ * itself - the result of Retry has to stay visible.
  */
 export function FailedSourcesDrawer({
   isOpen,
@@ -42,13 +42,13 @@ export function FailedSourcesDrawer({
   const [list, setList] = useState<FailedSourcesList | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
   const [isRetryPending, startRetry] = useTransition();
-  // Що саме зараз ставиться в чергу: кнопка показує спінер через `isPending`, а
-  // не вимикається - `isDisabled` скинув би фокус із drawer, і Escape більше
-  // його не закривав би.
+  // What exactly is being queued now: the button shows a spinner through
+  // `isPending` instead of being disabled - `isDisabled` would drop focus from
+  // the drawer, and Escape would no longer close it.
   const [requested, setRequested] = useState<string[] | "all" | null>(null);
   const retryingBefore = useRef(0);
 
-  /** Свіжий список у стан - викликається, коли відповідь уже прийшла. */
+  /** The fresh list into state - called once the response has arrived. */
   const apply = useCallback(
     (next: FailedSourcesList | null) => {
       if (next === null) {
@@ -58,7 +58,7 @@ export function FailedSourcesDrawer({
       setList(next);
       setLoadFailed(false);
 
-      // Retry закінчився - знайдені вакансії міняють лічильник непрочитаних.
+      // A Retry has ended - found vacancies change the unread counter.
       const retrying = next.items.filter((item) => item.isRetrying).length;
       if (retrying < retryingBefore.current) router.refresh();
       retryingBefore.current = retrying;
@@ -172,7 +172,7 @@ export function FailedSourcesDrawer({
   );
 }
 
-/** Список з сервера або `null`, якщо його не вдалося отримати. */
+/** The list from the server, or `null` if it could not be fetched. */
 async function fetchFailedSources(): Promise<FailedSourcesList | null> {
   try {
     const response = await fetch("/api/failed-sources", { cache: "no-store" });
@@ -193,7 +193,7 @@ function FailedSourceRow({ item }: { item: FailedSource }) {
           <span className="ml-2 text-sm text-muted">{item.label}</span>
         ) : null}
       </p>
-      {/* Адреса - як текст: вміст із сайтів не рендериться як HTML. */}
+      {/* The address as text: content from websites is never rendered as HTML. */}
       <p className="truncate text-sm text-muted">{item.url}</p>
       <p className="text-sm text-danger">{reasonText(t, item)}</p>
     </div>

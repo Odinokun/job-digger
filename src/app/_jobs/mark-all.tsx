@@ -16,18 +16,18 @@ import {
 
 interface MarkAllProps {
   /**
-   * `read` - Mark all as read у вкладці Unread, `unread` - Mark all as unread у
-   * вкладці Read (задача 6.18).
+   * `read` - Mark all as read in the Unread tab, `unread` - Mark all as unread
+   * in the Read tab (task 6.18).
    */
   target: "read" | "unread";
-  /** Вакансій, які були в списку, у вкладці більше немає: список порожніє. */
+  /** The vacancies that were in the list are no longer in the tab: the list empties. */
   onMarked: () => void;
 }
 
-/** Що бере діалог із сервера: число, а для Mark all as read - ще й межу. */
+/** What the dialog takes from the server: a number, and for Mark all as read also the boundary. */
 type Found = { count: number; asOf: string | null };
 
-/** Число для діалогу (і межа для Mark all as read) або `null` при збої. */
+/** The number for the dialog (and the boundary for Mark all as read), or `null` on failure. */
 async function countForDialog(
   target: MarkAllProps["target"],
 ): Promise<Found | null> {
@@ -43,18 +43,19 @@ async function countForDialog(
 }
 
 /**
- * Mark all as read у вкладці Unread і Mark all as unread у вкладці Read з
- * діалогом підтвердження - дві дзеркальні загальні дії,
- * єдині дії над вакансіями з підтвердженням.
+ * Mark all as read in the Unread tab and Mark all as unread in the Read tab,
+ * with a confirmation dialog - two mirrored bulk actions, the only actions on
+ * vacancies that ask for confirmation.
  *
- * Натискання бере з сервера кількість вакансій вкладки (усіх, не лише
- * завантажених у списку). Mark all as read бере ще й межу - час бази - і
- * позначає лише записані не пізніше неї: знайдені, поки діалог відкритий,
- * лишаються Unread (src/server/vacancies/README.md, «Одночасні зміни»). Mark
- * all as unread межі не має: у вкладку Read перевірка нічого не додає.
+ * The click takes the number of vacancies in the tab from the server (all of
+ * them, not only those loaded in the list). Mark all as read also takes the
+ * boundary - the database time - and marks only those recorded up to it:
+ * vacancies found while the dialog is open stay Unread
+ * (src/server/vacancies/README.md, "Одночасні зміни"). Mark all as unread has no
+ * boundary: a check never adds anything to the Read tab.
  *
- * `AlertDialog`, як у видаленні компанії: вікно вимагає рішення. Кнопка
- * підтвердження закриває його лише після успіху, а не натисканням.
+ * An `AlertDialog`, as for deleting a company: the window demands a decision.
+ * The confirm button closes it only after success, not on the click.
  */
 export function MarkAll({ target, onMarked }: MarkAllProps) {
   const t = useTranslations(
@@ -76,8 +77,8 @@ export function MarkAll({ target, onMarked }: MarkAllProps) {
         return;
       }
 
-      // Позначати вже нічого - зробили в іншій вкладці браузера. Питати нема
-      // про що, а список має це показати.
+      // Nothing left to mark - it was done in another browser tab. There is
+      // nothing to ask, and the list has to show that.
       if (result.count === 0) {
         onMarked();
         return;
