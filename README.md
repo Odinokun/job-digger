@@ -289,7 +289,7 @@ document.cookie = "locale=uk; path=/";
 
 ## Ліцензія
 
-Код проєкту - [MIT](LICENSE). Не під MIT: скіли агента в `.agents/skills/` (чужий код зі своїми ліцензіями, деталі - [.claude/README.md](.claude/README.md#скіли)) і збережені відповіді сайтів у `src/server/http/testing/responses/` (копії публічних сторінок лише для тестів, [src/server/http/testing/README.md](src/server/http/testing/README.md#збережені-відповіді)).
+Код проєкту - [MIT](LICENSE). Не під MIT: скіли агента в `.agents/skills/` (чужий код зі своїми ліцензіями, деталі - [.claude/README.md](.claude/README.md#skills)) і збережені відповіді сайтів у `src/server/http/testing/responses/` (копії публічних сторінок лише для тестів, [src/server/http/testing/README.md](src/server/http/testing/README.md#збережені-відповіді)).
 
 ## Документація
 

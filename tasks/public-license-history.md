@@ -31,5 +31,5 @@ PR: #159
 
 Чужий вміст, що лишається в репозиторії (рішення автора 26.11.2026):
 
-- Скіли в `.agents/skills/` - Apache 2.0 і MIT; для скілів Matt Pocock додано їхній `LICENSE`. Деталі - [.claude/README.md](../.claude/README.md#скіли).
+- Скіли в `.agents/skills/` - Apache 2.0 і MIT; для скілів Matt Pocock додано їхній `LICENSE`. Деталі - [.claude/README.md](../.claude/README.md#skills).
 - Збережені відповіді сайтів у `src/server/http/testing/responses/` лишаються з приміткою, що вони належать власникам і не під MIT.

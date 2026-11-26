@@ -1,150 +1,148 @@
-# Job Digger - правила роботи над проєктом
+# Job Digger - working rules
 
-Персональний застосунок для пошуку кар'єрних сторінок компаній, моніторингу вакансій і показу нових вакансій. Масштаб - від десятків до 300+ компаній.
+A personal app that finds company career pages, checks them for vacancies and shows the new ones. It is built for anything from a few dozen to 300+ companies.
 
-**Джерело правди щодо вимог - код, тести й README поруч із кодом.** Цей файл їх не дублює, а збирає правила роботи й дає орієнтир в архітектурі. Продуктові правила екранів - [src/app/README.md](src/app/README.md#screens-what-they-show-and-what-is-left-out).
+**Requirements live in the code, the tests and the README next to the code.** This file does not repeat them: it collects the working rules and gives a map of the architecture. Product rules for each screen are in [src/app/README.md](src/app/README.md#screens-what-they-show-and-what-is-left-out).
 
-**Джерело правди щодо задач - [tasks/README.md](tasks/README.md)**: таблиця з усіма задачами та їхнім статусом, а поруч файл кожної задачі з описом і кроками. Дошка Trello «JD - Job Digger» - лише архів задач, завершених до 17.11.2026. Етапи з описом кожного - [tasks/README.md](tasks/README.md#етапи).
+**Tasks live in [tasks/README.md](tasks/README.md)**: one table with every task and its status, plus a file per task with its description and steps. The stages are described in the same file, under [«Етапи»](tasks/README.md#етапи).
 
-## Стек
+## Stack
 
-| Частина      | Технологія                                                    |
-| ------------ | ------------------------------------------------------------- |
-| Фреймворк    | Next.js 16, App Router, Turbopack                             |
-| Мова         | TypeScript                                                    |
-| UI           | HeroUI v3 (3.2.x) + Tailwind CSS v4                           |
-| Іконки       | @gravity-ui/icons - набір із прикладів документації HeroUI    |
-| БД           | PostgreSQL: локально в Docker, онлайн на Neon                 |
-| ORM          | Drizzle ORM 0.45.x (одна схема, один набір міграцій, `DATABASE_URL`) |
-| HTML-парсинг | Cheerio                                                       |
-| Локалізація  | next-intl (en/uk, за замовчуванням en)                        |
-| Тести        | Vitest (юніт та інтеграційні), Playwright Test (E2E)          |
-| Хостинг      | Vercel (пізніше, етап 7)                                      |
+| Part         | Technology                                                          |
+| ------------ | ------------------------------------------------------------------- |
+| Framework    | Next.js 16, App Router, Turbopack                                   |
+| Language     | TypeScript                                                          |
+| UI           | HeroUI v3 (3.2.x) + Tailwind CSS v4                                 |
+| Icons        | @gravity-ui/icons, the set used in the HeroUI docs examples         |
+| Database     | PostgreSQL: Docker locally, Neon online                             |
+| ORM          | Drizzle ORM 0.45.x (one schema, one set of migrations, `DATABASE_URL`) |
+| HTML parsing | Cheerio                                                             |
+| Localization | next-intl (en/uk, en by default)                                    |
+| Tests        | Vitest (unit and integration), Playwright Test (E2E)                |
+| Hosting      | Vercel (later, stage 7)                                             |
 
-Cache Components і React Compiler вимкнені свідомо. Playwright - лише інструмент тестів, у продакшн-код не потрапляє.
+Cache Components and the React Compiler are off on purpose. Playwright is a test tool only and never reaches production code.
 
-Тема застосунку - «Ink»: токени в `src/app/globals.css`, шрифти в `src/app/layout.tsx`. Правила, обмеження на тон accent і рішення щодо бейджів - [src/app/README.md](src/app/README.md#ink-theme).
+The app theme is "Ink": tokens in `src/app/globals.css`, fonts in `src/app/layout.tsx`. Its rules, the limits on the accent tone and the decisions about badges are in [src/app/README.md](src/app/README.md#ink-theme).
 
-**Правила інтерфейсу** (шкала тексту, кнопки, плейсхолдери, кольори станів, телефон) - [src/app/README.md](src/app/README.md#ui-rules). Перед правкою інтерфейсу прочитати, після - знімки в обох темах на 1280 і 390 px.
+**UI rules** (type scale, buttons, placeholders, state colours, phone layout) are in [src/app/README.md](src/app/README.md#ui-rules). Read them before changing the UI, and take screenshots in both themes at 1280 and 390 px afterwards.
 
-**Кожна кнопка лише з іконкою має підказку при наведенні** - через `IconButton` із `src/app/components/icon-button.tsx`, а не `Button isIconOnly`. Деталі - [src/app/README.md](src/app/README.md#icon-only-buttons).
+**Every icon-only button shows a tooltip on hover**: use `IconButton` from `src/app/components/icon-button.tsx`, not `Button isIconOnly`. Details in [src/app/README.md](src/app/README.md#icon-only-buttons).
 
-Світла, темна чи системна - вибір у cookie `theme`, як і мова. Атрибутом `data-theme` володіє inline-скрипт, а не React: чому саме так і чим це загрожує при правках layout - [src/app/README.md](src/app/README.md#theme-switching).
+Light, dark or system theme is stored in the `theme` cookie, like the language. The `data-theme` attribute belongs to an inline script, not to React. Why, and what that means for changes to the layout, is in [src/app/README.md](src/app/README.md#theme-switching).
 
-Next.js 16 має зміни проти тренувальних даних моделей: документація встановленої версії лежить у `node_modules/next/dist/docs/`, читай її перед написанням коду (про це ж нагадує `AGENTS.md`, який генерує `next dev`).
+Next.js 16 differs from what models learned in training. The docs for the installed version are in `node_modules/next/dist/docs/`: read them before writing code (`AGENTS.md`, generated by `next dev`, says the same).
 
-Те саме з Drizzle, але навпаки: встановлена стабільна 0.45.x, а сайт orm.drizzle.team документує лише v1 (RC), архіву для 0.x немає. API звіряй із типами в `node_modules/drizzle-orm/`. Деталі роботи з базою - [src/server/db/README.md](src/server/db/README.md).
+Drizzle is the other way round: the installed version is the stable 0.45.x, while orm.drizzle.team only documents v1 (RC) and keeps no archive for 0.x. Check the API against the types in `node_modules/drizzle-orm/`. Working with the database: [src/server/db/README.md](src/server/db/README.md).
 
-Проєкт на ESM, службові скрипти виконує сам Node 26 без збирача - деталі й наслідки для імпортів у [README](README.md#стек) і [src/server/db/README.md](src/server/db/README.md).
+The project is ESM, and Node 26 runs the helper scripts directly, without a bundler. Details and what this means for imports: [README](README.md#стек) and [src/server/db/README.md](src/server/db/README.md).
 
-## Структура репозиторію
+## Repository layout
 
-Один репозиторій, один застосунок Next.js: фронтенд (сторінки, компоненти, HeroUI) і бекенд (Server Actions, API-маршрути обробника розкладу, черга, парсери, модуль запитів, робота з БД) разом, розведені по папках. Мультипакетний монорепозиторій (Turborepo, pnpm workspaces) не потрібен.
+One repository, one Next.js app. The frontend (pages, components, HeroUI) and the backend (Server Actions, API routes, the queue, parsers, the HTTP module, database access) live together, split by folder. A multi-package monorepo (Turborepo, pnpm workspaces) is not needed.
 
-- `src/app` - сторінки, layout, компоненти, маршрути App Router. Деталі - [src/app/README.md](src/app/README.md).
-- `src/server` - Server Actions, робота з БД, черга, парсери, модуль HTTP-запитів. Деталі - [src/server/README.md](src/server/README.md).
-- `src/lib` - чиста логіка й типи, спільні для сервера й клієнта: адреси компаній, порівняння назв, платформи, типи списку компаній, курсор пагінації (`src/lib/pagination`).
-  Нічого з `drizzle-orm`, `src/server` чи Node API - саме тому її можна імпортувати
-  в клієнтські компоненти. Деталі - [src/lib/README.md](src/lib/README.md).
-- `src/i18n` - налаштування next-intl: список мов і читання локалі з cookie. Самі переклади - у `messages/` у корені.
+- `src/app` - pages, layout, components, App Router routes. Details in [src/app/README.md](src/app/README.md).
+- `src/server` - Server Actions, database access, the queue, parsers, the HTTP module. Details in [src/server/README.md](src/server/README.md).
+- `src/lib` - pure logic and types shared by server and client: company addresses, name matching, platforms, company list types, the pagination cursor (`src/lib/pagination`). Nothing from `drizzle-orm`, `src/server` or Node APIs, which is why client components may import it. Details in [src/lib/README.md](src/lib/README.md).
+- `src/i18n` - next-intl setup: the list of locales and reading the locale from a cookie. The translations themselves are in `messages/` at the root.
 
-Модулі з `src/server` не імпортуються в клієнтські компоненти напряму: спільна чиста
-логіка для цього переїжджає в `src/lib`. Імпорт-alias: `@/*` → `./src/*`.
+Client components never import modules from `src/server`: shared pure logic moves to `src/lib` for that. Import alias: `@/*` → `./src/*`.
 
-## Архітектура
+## Architecture
 
-- **Одне кар'єрне джерело = одне завдання.** Компанія з трьома джерелами дає три завдання. Прогрес, помилки і Retry рахуються по джерелах.
-- **Черга живе в PostgreSQL**, не в пам'яті Next.js: завдання захоплюються так, щоб два процеси не взяли одне й те саме, а завислі повертаються в чергу. Локально - фоновий цикл у сервері Next.js, на Vercel - функція до 4,5 хв, яка перезапускає себе.
-- Одночасно виконується не більше 5 джерел - спільний ліміт для всіх користувачів, задається через ENV.
-- Одна загальна перевірка одночасно на користувача. Деталі - [src/server/checks/README.md](src/server/checks/README.md) і [src/server/queue/README.md](src/server/queue/README.md).
-- **Нова платформа (парсер)** - лише під справжнє джерело (рішення автора 18.11.2026) і за чеклістом [«Як додати платформу»](src/server/parsers/README.md#як-додати-платформу): парсер зачіпає й міграцію enum платформ, розпізнавання адреси, пошук за назвою, фейковий сервер і переклади.
+- **One career source = one task.** A company with three sources gives three tasks. Progress, errors and Retry are counted per source.
+- **The queue lives in PostgreSQL**, not in the memory of Next.js. Tasks are claimed so that two processes never take the same one, and stuck tasks go back to the queue. Locally a background loop runs inside the Next.js server; on Vercel it will be a function that runs for up to 4.5 minutes and restarts itself.
+- At most 5 sources are checked at once. The limit is shared by all users and set through ENV.
+- One general check at a time per user. Details in [src/server/checks/README.md](src/server/checks/README.md) and [src/server/queue/README.md](src/server/queue/README.md).
+- **A new platform (parser)** is added only for a real source, following the checklist [«Як додати платформу»](src/server/parsers/README.md#як-додати-платформу). A parser also touches the platform enum migration, address recognition, search by name, the fake server and the translations.
 
-Таблиці: `users`, `companies`, `career_sources`, `vacancies`, `check_runs`, `check_tasks`, `settings` ([src/server/db/README.md](src/server/db/README.md)). Для локальної версії - один системний користувач, але дані завжди ізольовані за користувачем.
+Tables: `users`, `companies`, `career_sources`, `vacancies`, `check_runs`, `check_tasks`, `settings` ([src/server/db/README.md](src/server/db/README.md)). The local version has a single system user, but data is always scoped to a user.
 
-Екрани: **Jobs** (Unread / Read / Favorites / All), **Companies** (Tracked / Not tracked / Needs attention / All з пошуком), **History**, **Settings** ([src/app/README.md](src/app/README.md#routes)).
+Screens: **Jobs** (Unread / Read / Favorites / All), **Companies** (Tracked / Not tracked / Needs attention / All with search), **History**, **Settings** ([src/app/README.md](src/app/README.md#routes)).
 
-## Як працюємо: маленькі кроки
+## How we work: small steps
 
-- Кожна задача ділиться на маленькі кроки. Один крок - одна невелика зміна (зазвичай «один тест + код, що робить його зеленим») і один коміт.
-- **Задачі йдуть без підтвердження кроків** (рішення автора 18.11.2026). Задача зі статусом `todo` береться в роботу, кроки виконуються й комітяться один за одним, у кінці - push, PR і короткий підсумок: що зроблено й на що варто подивитися автору.
-- **Наступна задача - поки PR на рев'ю** (рішення автора 24.11.2026). У підсумку PR Claude називає наступну задачу, яка не заважатиме відкритому PR (не залежить від його коду, не має своєї міграції, поки в PR є міграція), і після «ок» автора починає її з `main`. Автор тим часом дивиться PR і за потреби вносить у нього зміни. Після merge - прибрати гілку. Порядок задач - за «брати перед X.YY», інакше за таблицею.
-- **Зупинка - лише на рішенні автора:** вимога читається двояко, з'явилась розвилка, що змінює результат, потрібна нова задача, нова залежність чи дія, яку дозволи не пропускають без питання. Тоді - питання через `AskUserQuestion` (нижче), а не здогад.
-- **Нове поняття** (інструмент, API, патерн), якого автор ще не бачив, пояснюється в підсумку кроку чи PR із посиланням на офіційну документацію. Інфраструктурні кроки (Docker, база, бекенд) - детальніше.
-- Питання про погодження нової задачі - фразою **«Follow the white rabbit?»** - окремим рядком у кінці повідомлення, а не в кінці речення. Решта фраз і тон переписки - в особистих правилах автора, бо це стиль чату, а не правило проєкту.
-- **Початок сесії:** `gh pr list --state all --limit 5` - якщо PR уже злитий, а локальна гілка лишилась, прибрати її (див. «Git і задачі»). Після кожного merge - нагадати автору оновити робочий екземпляр ([README](README.md#робочий-екземпляр)).
-- **Вибір - вкладками, а не списком у тексті.** Коли рішення за автором і варіантів кілька, Claude питає інструментом `AskUserQuestion`: вкладки з варіантами, де перший позначений як рекомендований, а в кожного описано, що він означає і в чому компроміс. Це стосується і розвилок у коді, і дрібниць процесу - чи потрібна картка, куди покласти зміну, що робити з гілкою. Якщо варіант один або рішення очевидне - робимо й повідомляємо, без питання.
-- Темп можна змінити будь-коли («пояснюй коротше», «ці кроки можна об'єднати»).
+- Every task is split into small steps. One step is one small change (usually "one test and the code that makes it pass") and one commit.
+- **Tasks run without approving each step.** A task with status `todo` is picked up, its steps are done and committed one after another, and at the end come the push, the PR and a short summary: what was done and what the author should look at.
+- **The next task starts while a PR is in review.** In the PR summary Claude names the next task that will not get in the way of the open PR (it does not depend on that PR's code, and has no migration of its own while the PR has one), and starts it from `main` after the author says "ok". Meanwhile the author reviews the PR and changes it if needed. After the merge, the branch is removed. Tasks go in the order given by "take before X.YY", otherwise in table order.
+- **Stop only for the author's decision:** a requirement reads two ways, a fork changes the result, a new task or dependency is needed, or an action needs a permission prompt. Then ask with `AskUserQuestion` (below) instead of guessing.
+- **A new concept** (tool, API, pattern) the author has not met yet is explained in the step or PR summary, with a link to the official documentation. Infrastructure steps (Docker, the database, the backend) get more detail.
+- The question that asks to approve a new task goes on its own line at the end of the message, not at the end of a sentence.
+- **Start of a session:** `gh pr list --state all --limit 5`. If a PR is merged and its local branch is still there, remove it (see "Git and tasks"). After every merge, remind the author to update the working instance ([README](README.md#робочий-екземпляр)).
+- **Choices as tabs, not as a list in the text.** When the decision is the author's and there are several options, Claude asks with `AskUserQuestion`: one tab per option, the first marked as recommended, each with what it means and what it costs. This covers forks in the code and small process questions alike: whether a task is needed, where a change goes, what to do with a branch. With a single option or an obvious answer, just do it and report.
+- The pace can change at any time ("explain less", "these steps can be merged").
 
-## Документація
+## Documentation
 
-- **Документація оновлюється разом зі зміною, а не потім.** Будь-яка зміна в проєкті чи нова фіча - це ще й правка документації: `CLAUDE.md`, коренева `README.md`, README поруч із кодом. Перед кожним комітом перевіряй, чи щось із цього не стало неправдою.
-- **Без дублювання.** Кожен факт живе в одному місці. Якщо його треба згадати ще десь - посилання, а не копія.
-- **Кожен файл коду згаданий у README поруч.** Це перевіряє `src/readme-coverage.test.ts`: для кожного `.ts`/`.tsx` у `src/` шукається найближчий README вгору по дереву, і файл має бути згаданий шляхом відносно теки README або іменем, якщо воно там унікальне. Новий файл без згадки - червоний `npm test`. Перевіряється лише наявність згадки, не правдивість опису.
-- **Окремого плану немає.** Технічний план у `docs/` жив, поки йшла розробка, і переїхав у код, тести, `CLAUDE.md` і README поруч (задача [remove-docs-plan](tasks/remove-docs-plan.md), 26.11.2026); остання версія - тег `plan-v1.4.0`. Правила, яких іще немає в коді (етап 7), живуть у файлах своїх задач і переїжджають у README разом із кодом.
-- **Куди зростає документація далі:** `CLAUDE.md` - правила й орієнтири; README у відповідній теці - деталі конкретної частини коду. Нові файли документації кладуться поруч із тим, що вони описують, а не в спільну теку.
+- **Documentation changes together with the code, not later.** Any change or new feature also means editing the docs: `CLAUDE.md`, the root `README.md`, the README next to the code. Before every commit, check that none of them has become untrue.
+- **No duplication.** Every fact lives in one place. Elsewhere, link to it instead of copying it.
+- **Every code file is mentioned in the README next to it.** `src/readme-coverage.test.ts` checks this: for every `.ts`/`.tsx` in `src/` it finds the nearest README up the tree, and the file must be mentioned there by its path relative to that README's folder, or by name if the name is unique there. A new file without a mention makes `npm test` red. Only the mention is checked, not whether the description is true.
+- **There is no separate plan.** The technical plan in `docs/` existed during development and moved into the code, the tests, `CLAUDE.md` and the READMEs (task [remove-docs-plan](tasks/remove-docs-plan.md)); its last version is the `plan-v1.4.0` tag. Rules that are not in the code yet (stage 7) live in their task files and move into a README together with the code.
+- **Where documentation grows:** `CLAUDE.md` for rules and orientation, the README in each folder for the details of that part of the code. New documentation files go next to what they describe, not into a shared folder.
 
-## Мова
+## Language
 
-- **Українською:** документація (README, описи задач і PR) і коментарі в коді. Згодом їх можуть перекласти англійською.
-- **Англійською:** коміти, назви в коді (змінні, функції, файли, таблиці й колонки БД), назви тестів, логи й технічні повідомлення про помилки.
-- **Тексти інтерфейсу** - англійською й українською через ключі next-intl у двох файлах перекладів. Тест перевіряє, що ключі однакові. Дані із сайтів (назви вакансій і компаній, локації) не перекладаються.
-- Мова не в URL: next-intl без i18n-роутингу, локаль із cookie, бо за планом мова - особисте налаштування користувача. Деталі - [README](README.md#локалізація), код - `src/i18n/`.
+- **English:** documentation (READMEs, `CLAUDE.md`, `.claude/`), code comments, commits, PR titles and descriptions, names in code (variables, functions, files, tables and columns), test names, logs and technical error messages.
+- **Ukrainian:** the files in `tasks/`. They are the author's working notes.
+- Some READMEs and code comments are still in Ukrainian: the tasks `translate-app`, `translate-server`, `translate-lib-e2e` and `public-readme` translate them. New text is written in English straight away.
+- **UI texts** are in English and Ukrainian, as next-intl keys in two translation files. A test checks that both files have the same keys. Data from websites (vacancy and company names, locations) is never translated.
+- The language is not in the URL: next-intl runs without i18n routing and reads the locale from a cookie, because the language is a personal setting. Details in the [README](README.md#локалізація), code in `src/i18n/`.
 
-## Тести і TDD
+## Tests and TDD
 
-- **Логіка - строго за TDD:** спершу тест, який падає, потім код. Це парсери, правила життєвого циклу вакансій, очищення URL і дублікати, захист від SSRF, розрахунок наступної автоперевірки, CSV, черга.
-- **Верстка й дрібниці UI** - без строгого TDD.
-- **E2E - TDD на рівні етапу:** сценарій пишеться на початку етапу як критерій готовності (червоний) і має бути зеленим наприкінці. Винятки - етап 2 (`e2e/companies.spec.ts`) і етап 6 (`e2e/csv.spec.ts`): їхні сценарії написані наприкінці, як завершальна перевірка вже готових функцій. Поки етап не готовий, сценарій має тег `@pending`: CI і `npm run test:e2e` його пропускають, а `npm run test:e2e:pending` показує, на якому кроці він падає, - це запускається в кожній задачі етапу. Тег знімає остання задача етапу.
-- Три рівні: Vitest (чиста логіка), Vitest + PostgreSQL в Docker на окремій тестовій базі (черга, умовне видалення, одночасні зміни), Playwright Test (5-7 ключових сценаріїв).
-- **Тести ніколи не ходять на справжні сайти.** Замість них - локальний фейковий сервер зі збереженими відповідями платформ; для кожного парсера зберігається реальна відповідь платформи у файлі. У тестовому режимі захист від SSRF дозволяє лише адресу фейкового сервера.
+- **Logic is strictly TDD:** a failing test first, then the code. This covers parsers, vacancy lifecycle rules, URL cleanup and duplicates, SSRF protection, the next auto-check time, CSV and the queue.
+- **Layout and small UI details** do not need strict TDD.
+- **E2E is TDD at stage level:** the scenario is written at the start of a stage as its definition of done (red) and has to be green at the end. The exceptions are stage 2 (`e2e/companies.spec.ts`) and stage 6 (`e2e/csv.spec.ts`), whose scenarios were written at the end as a final check of finished features. Until the stage is done, the scenario carries the `@pending` tag: CI and `npm run test:e2e` skip it, and `npm run test:e2e:pending` shows the step where it fails. Run it in every task of the stage. The last task of the stage removes the tag.
+- Three levels: Vitest (pure logic), Vitest + PostgreSQL in Docker on a separate test database (the queue, conditional deletes, concurrent changes), Playwright Test (a handful of key scenarios).
+- **Tests never reach real websites.** A local fake server serves saved platform responses instead; every parser has a real response from its platform saved to a file. In test mode, SSRF protection allows only the fake server's address.
 
-Назви файлів розділяють рівні: `*.test.ts` - юніт-тести (проєкт Vitest `unit`), `*.integration.test.ts` - тести зі справжньою базою (проєкт `integration`). Запуск: `npm test` (усе), `npm run test:unit`, `npm run test:integration`, `npm run test:watch`.
+File names separate the levels: `*.test.ts` are unit tests (Vitest project `unit`), `*.integration.test.ts` use a real database (project `integration`). Run them with `npm test` (everything), `npm run test:unit`, `npm run test:integration`, `npm run test:watch`.
 
-E2E живуть окремо від Vitest: тека `e2e/`, файли `*.spec.ts`, конфіг `playwright.config.ts`, запуск `npm run test:e2e` (і `npm run test:e2e:ui`, `npm run test:e2e:pending`). `npm test` їх не зачіпає, бо вони піднімають застосунок. Браузер лише Chromium, сервер для тестів запускає сам Playwright - деталі в [README](README.md#e2e-тести).
+E2E tests live apart from Vitest: folder `e2e/`, files `*.spec.ts`, config `playwright.config.ts`, run with `npm run test:e2e` (also `npm run test:e2e:ui` and `npm run test:e2e:pending`). `npm test` leaves them out because they start the app. Chromium only, and Playwright starts the server itself. Details in the [README](README.md#e2e-тести).
 
-Інтеграційним тестам потрібні піднята база (`docker compose up -d`) і змінна `TEST_DATABASE_URL` - окрема база, не база розробки. Деталі обвʼязки й рішення щодо ізоляції - [src/server/db/testing/README.md](src/server/db/testing/README.md).
+Integration tests need the database running (`docker compose up -d`) and `TEST_DATABASE_URL`, a separate database rather than the development one. The test setup and the isolation decisions are in [src/server/db/testing/README.md](src/server/db/testing/README.md).
 
-`globals` у Vitest вимкнені: `describe`, `it`, `expect` імпортуються явно з `vitest`.
+Vitest `globals` are off: `describe`, `it` and `expect` are imported from `vitest` explicitly.
 
-Зміни у сторінках і layout перевіряються ще й `npm run build`: збірка Next виконує модулі сторінок, щоб зібрати їхню конфігурацію, і ловить те, чого не бачать ні тести, ні `tsc` - наприклад, помилку, яку модуль кидає на імпорті.
+Changes to pages and layouts are also checked with `npm run build`. The Next build executes page modules to collect their config, so it catches what neither the tests nor `tsc` see, such as an error a module throws on import.
 
-## Git і задачі
+## Git and tasks
 
-- `main` завжди робочий, напряму в `main` нічого не комітимо.
-- Одна задача = одна гілка. Назва гілки - тип і коротка суть англійською: `feat/greenhouse-parser`, `fix/duplicate-detection`.
-- Задачі нумеруються `N.MM`: N - етап, MM - задача в етапі. Нова задача отримує наступний номер **за таблицею в `tasks/README.md`** - у кінці свого етапу, щоб номери наявних задач не зсувалися. Порядок роботи задає статус `todo`, а не номер; де це важливо, в описі задачі стоїть «брати перед X.YY».
-- Коміти **і назви PR** - у форматі [Conventional Commits](https://www.conventionalcommits.org/) англійською: `feat:`, `fix:`, `test:`, `docs:`, `chore:`. Назва PR важлива саме так само, як назва коміту: при squash merge GitHub робить із неї коміт у `main`. Номер і назва задачі живуть в описі PR, а не в заголовку: `feat: scaffold Next.js app with TypeScript`, не `1.01 Каркас Next.js + TypeScript`.
-- **Без згадок авторства Claude** у комітах і описах PR: ніяких `Co-Authored-By` і «Generated with Claude Code».
-- Задача готова і її тести зелені → останній коміт гілки ставить їй `done` у таблиці, і відкривається Pull Request з описом українською. Опис PR обов'язково містить що зроблено, посилання на файл задачі і розділ «Як перевірити» з конкретними командами й очікуваним результатом.
-- Рев'ю, ручну перевірку і squash merge в `main` робить автор. Після злиття гілка видаляється. Локальну гілку прибирає Claude одразу після merge: squash merge не позначає її як злиту, тому `git branch -d` відмовляється - перед `-D` Claude перевіряє, що `git diff main..<гілка>` порожній, тобто вміст гілки справді в `main`.
-- Статуси задач і формат файлу задачі - [tasks/README.md](tasks/README.md). В роботі одна задача за раз. Поки PR відкритий, автор перевіряє вручну; тести зелені, якщо задача їх передбачає - інфраструктурні задачі (каркас, службові файли, конфігурація) тестів не мають, і для них критерій це ручна перевірка за описом у PR. Маленькі кроки задачі - чекліст у її файлі, пункти відмічаються під час роботи. Нові задачі створюються лише після «ок» автора.
-- GitHub Actions запускає лінт і тести на кожен PR і на push у `main`. PR із червоними тестами не зливається - але це дисциплінарне правило: для приватного репозиторію на тарифі Free GitHub не дає вимушувати перевірки, тому merge блокує лише погляд на вкладку Checks. Що саме виконується, як відтворити прогін локально і що робити при зміні тарифу - [README](README.md#ci).
+- `main` always works. Nothing is committed to `main` directly.
+- One task = one branch. Branch names are a type and a short summary in English: `feat/greenhouse-parser`, `fix/duplicate-detection`.
+- Tasks are numbered `N.MM`: N is the stage, MM the task within it. A new task gets the next number **from the table in `tasks/README.md`**, at the end of its stage, so existing numbers never shift. The `todo` status sets the order of work, not the number; where order matters, the task says "take before X.YY".
+- Commits **and PR titles** follow [Conventional Commits](https://www.conventionalcommits.org/) in English: `feat:`, `fix:`, `test:`, `docs:`, `chore:`. The PR title matters as much as a commit subject, because with squash merge GitHub turns it into the commit on `main`. The task number and name go into the PR description, not the title: `feat: scaffold Next.js app with TypeScript`, not `1.01 Next.js + TypeScript scaffold`.
+- **No Claude attribution** in commits or PR descriptions: no `Co-Authored-By`, no "Generated with Claude Code".
+- When a task is finished and its tests are green, the last commit of the branch marks it `done` in the table, and a pull request is opened. The description always says what was done, links the task file and has a "How to check" section with concrete commands and the expected result.
+- Review, manual testing and the squash merge into `main` are the author's. The branch is deleted after the merge. Claude removes the local branch right after the merge: squash merge does not mark it as merged, so `git branch -d` refuses. Before `-D`, Claude checks that the branch's changes really are in `main`.
+- Task statuses and the task file format are in [tasks/README.md](tasks/README.md). One task is in progress at a time. While the PR is open, the author checks it by hand. Tests are green where the task has them; infrastructure tasks (scaffolding, helper files, configuration) have none, and for them the manual check described in the PR is the criterion. The small steps of a task are a checklist in its file, ticked off during the work. New tasks are created only after the author says "ok".
+- GitHub Actions runs lint and tests on every PR and on push to `main`. A PR with red tests is not merged, but this is discipline, not enforcement: GitHub Free does not enforce required checks on private repositories, so only a look at the Checks tab blocks the merge. What runs, how to reproduce it locally and what to change on another plan: [README](README.md#ci).
 
-## Безпека
+## Security
 
-- **Сервер лише з цього комп'ютера:** `next dev` і `next start` запускаються з `-H 127.0.0.1`.
-- **Усі зміни даних - через Server Actions** (вбудована перевірка походження запиту). Для звичайних API-маршрутів перевірка Origin додається вручну.
-- **Захист від SSRF:** лише http/https, внутрішні адреси (localhost, 192.168.x.x, 10.x.x.x тощо) заборонені, зокрема після редиректів. Для кожного запиту - тайм-аут і ліміт розміру відповіді.
-- **Вміст із сайтів - лише як текст**, не HTML. Посилання - з `rel="noopener noreferrer"`.
-- **CSV-експорт без формул:** значення, з яких таблиця може почати формулу, екрануються (перелік за OWASP - [src/server/csv/README.md](src/server/csv/README.md)).
-- **Секрети лише в ENV**, файли `.env*` не потрапляють у git. Виняток - `.env.example`: він у git і є **єдиним переліком змінних середовища**. Нова змінна додається в `.env.example` із коментарем у тому самому PR, що вводить її в код; значення в прикладі - placeholder, не справжній секрет. Перелік не пишеться наперед: імена змінних визначає код, що їх читає.
-- Ввічливість до сайтів: до 2 запитів одночасно на сайт, пауза 2 с, тайм-аут 20 с, чесний User-Agent, повага до 429, повтори лише при збоях. Захист сайтів не обходимо.
+- **The server is reachable only from this machine:** `next dev` and `next start` run with `-H 127.0.0.1`.
+- **Every data change goes through a Server Action** (with its built-in origin check). Plain API routes add the origin check by hand.
+- **SSRF protection:** only http/https, internal addresses (localhost, 192.168.x.x, 10.x.x.x and the like) are refused, including after redirects. Every request has a timeout and a response size limit.
+- **Content from websites is shown as text only**, never as HTML. Links carry `rel="noopener noreferrer"`.
+- **CSV export without formulas:** values a spreadsheet could read as a formula are escaped (the OWASP list is in [src/server/csv/README.md](src/server/csv/README.md)).
+- **Secrets only in ENV**, and `.env*` files never reach git. The exception is `.env.example`: it is in git and is **the only list of environment variables**. A new variable goes into `.env.example`, with a comment, in the same PR that introduces it in the code; the example value is a placeholder, never a real secret. The list is not written ahead: variable names come from the code that reads them.
+- Politeness towards websites: at most 2 parallel requests per site, a 2 s pause, a 20 s timeout, an honest User-Agent, respect for 429, retries only on failures. We never work around a site's protection.
 
-Подробиці - [src/server/http/README.md](src/server/http/README.md) (SSRF, ввічливість, ліміти), [src/server/csv/README.md](src/server/csv/README.md) (формули), онлайн-правила етапу 7 - задачі [7.02](tasks/7.02-schedule-handler-route.md) і [7.07](tasks/7.07-google-auth-allowlist.md).
+Details: [src/server/http/README.md](src/server/http/README.md) (SSRF, politeness, limits), [src/server/csv/README.md](src/server/csv/README.md) (formulas); the online rules of stage 7 are in tasks [7.02](tasks/7.02-schedule-handler-route.md) and [7.07](tasks/7.07-google-auth-allowlist.md).
 
-## Залежності й інструменти
+## Dependencies and tools
 
-- Нова залежність, плагін, фреймворк або шар абстракції - лише з обґрунтуванням: що вже покриває цю потребу і в чому компроміс. Нічого не додавати мовчки.
-- Поведінку бібліотек, API і CLI не відтворювати з пам'яті - перевіряти в офіційній документації і давати посилання. «Не перевірив» - нормальна відповідь, вигадана - ні.
-- **Install-скрипти залежностей схвалюються явно.** Пакет, який виконує свій скрипт під час установки, спершу переглядається, а тоді схвалюється через `npm install-scripts approve` - схвалення з версією живе в полі `allowScripts` у `package.json`. Команди й наслідки - [README](README.md#install-скрипти-залежностей).
-- **Форматування автоматичне.** Хук `PostToolUse` (`.claude/hooks/format-file.sh`) після кожного Write/Edit у файл проєкту проганяє на ньому Prettier і `eslint --fix`; невиправні помилки ESLint блокують крок і показуються одразу. Файли поза коренем проєкту хук пропускає. Руками `npm run format` викликати не потрібно. Prettier також сортує класи Tailwind (`prettier-plugin-tailwindcss`): порядок класів у `className` не обговорюється на рев'ю, його задає плагін. Опція `tailwindStylesheet` у `.prettierrc` вказує на `src/app/globals.css` - без неї плагін не бачить токенів із `@theme` і виносить такі класи на початок.
-- **Класи Tailwind перевіряє ESLint** (`eslint-plugin-tailwindcss`, конфіг `recommended`): друкарська помилка в класі - `no-custom-classname`, суперечливі класи типу `p-2 p-3` - `no-contradicting-classname` (це error, він блокує крок), а `enforces-shorthand` і `enforces-canonical-classname` пропонують коротший запис. Правило `classnames-order` вимкнене: порядок класів - робота Prettier. Налаштування `cssConfigPath` у `eslint.config.mjs` вказує на `src/app/globals.css` і для Tailwind v4 обовʼязкове.
-- Власні класи HeroUI (`button--primary` і подібні) ESLint вважає невідомими і дає warning. Це нормально: у `className` ми пишемо утиліти Tailwind, а не внутрішні класи бібліотеки. Якщо колись знадобиться писати їх руками - у правило додається `whitelist`.
+- A new dependency, plugin, framework or layer of abstraction needs a reason: what already covers the need and what the trade-off is. Nothing is added silently.
+- Do not reproduce the behaviour of libraries, APIs and CLIs from memory: check the official documentation and link it. "I didn't check" is an acceptable answer, a made-up one is not.
+- **Dependency install scripts are approved explicitly.** A package that runs a script on install is reviewed first and then approved with `npm install-scripts approve`; the approval, with its version, lives in the `allowScripts` field of `package.json`. Commands and consequences: [README](README.md#install-скрипти-залежностей).
+- **Formatting is automatic.** The `PostToolUse` hook (`.claude/hooks/format-file.sh`) runs Prettier and `eslint --fix` on every file Claude writes or edits in the project; ESLint errors it cannot fix block the step and show up at once. Files outside the project root are skipped. There is no need to run `npm run format` by hand. Prettier also sorts Tailwind classes (`prettier-plugin-tailwindcss`), so class order in `className` is not a review topic. The `tailwindStylesheet` option in `.prettierrc` points to `src/app/globals.css`; without it the plugin does not see the `@theme` tokens and moves those classes to the front.
+- **ESLint checks Tailwind classes** (`eslint-plugin-tailwindcss`, `recommended` config): a typo in a class is `no-custom-classname`, conflicting classes such as `p-2 p-3` are `no-contradicting-classname` (an error that blocks the step), and `enforces-shorthand` and `enforces-canonical-classname` suggest shorter forms. `classnames-order` is off, since ordering is Prettier's job. `cssConfigPath` in `eslint.config.mjs` points to `src/app/globals.css` and is required for Tailwind v4.
+- ESLint does not know HeroUI's own classes (`button--primary` and the like) and warns about them. That is fine: `className` holds Tailwind utilities, not the library's internal classes. If those ever have to be written by hand, add a `whitelist` to the rule.
 
 ## Claude Code
 
-Хуки й скіли - у `.claude/`, подробиці й обґрунтування - [`.claude/README.md`](.claude/README.md). Читати перед будь-якою правкою `.claude/settings.json`, хуків чи скілів.
+Hooks and skills live in `.claude/`; details and reasons are in [`.claude/README.md`](.claude/README.md). Read it before changing `.claude/settings.json`, the hooks or the skills.
 
-- **Дозволи - глобальні**, в `~/.claude/settings.json` автора (рішення автора 24.11.2026); опис і причини - [`.claude/README.md`](.claude/README.md#дозволи). Без питання: гілки, коміти, push на гілки з префіксом (`feat/`, `fix/`, `docs/` ...), свої PR, тести й перевірки. **Заборонено:** `gh pr merge`, push у `main` і голий `git push`, переписування історії, `npm run db:migrate` і будь-яке видалення баз, робочий екземпляр (`npm run app*`), `.env*` (крім `.env.example`), `rm -rf`. З питанням: нові залежності, дані бази розробки (`db:seed`, `db:psql`, `docker compose exec`).
-- **Хуки:** `protect-files.sh` блокує Write/Edit у `.env*`, `package-lock.json` і `drizzle/`; `format-file.sh` проганяє Prettier і `eslint --fix` після кожного Write/Edit; `notify.sh` - сповіщення, коли Claude чекає на ввід. Новий скрипт хука - обов'язково з `chmod +x`.
-- **Скіли:** `tdd`, `heroui-react`, `vercel-react-best-practices`, `frontend-design`, `grill-me` + `grilling`; на етапі 7 - `neon-postgres`. Ставить автор через `npx skills add`, лише в проєкт; перед встановленням Claude читає `SKILL.md` і скрипти скіла.
+- **Permissions are global**, in the author's `~/.claude/settings.json`; what they are and why: [`.claude/README.md`](.claude/README.md#permissions). Allowed without a prompt: branches, commits, pushes to prefixed branches (`feat/`, `fix/`, `docs/` ...), own PRs, tests and checks. **Denied:** `gh pr merge`, pushes to `main` and a bare `git push`, rewriting history, `npm run db:migrate` and any database deletion, the working instance (`npm run app*`), `.env*` (except `.env.example`), `rm -rf`. With a prompt: new dependencies, development database data (`db:seed`, `db:psql`, `docker compose exec`).
+- **Hooks:** `protect-files.sh` blocks Write/Edit in `.env*`, `package-lock.json` and `drizzle/`; `format-file.sh` runs Prettier and `eslint --fix` after every Write/Edit. A new hook script must be made executable (`chmod +x`).
+- **Skills:** `tdd`, `heroui-react`, `vercel-react-best-practices`, `frontend-design`, `grill-me` + `grilling`; `neon-postgres` at stage 7. The author installs them with `npx skills add`, into the project only; before installing, Claude reads the skill's `SKILL.md` and scripts.
