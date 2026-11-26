@@ -1,184 +1,182 @@
-# src/server/checks - перевірки джерел
+# src/server/checks - source checks
 
-Перевірка джерела - прочитати його парсером і застосувати
-[життєвий цикл вакансій](../vacancies/README.md#життєвий-цикл). Її робить
-`checkSource`, і ним користуються двоє: Check now для однієї компанії (синхронно,
-без черги) і [черга](../queue/README.md), що виконує завдання Check all.
+Checking a source means reading it with a parser and applying the
+[vacancy lifecycle](../vacancies/README.md#життєвий-цикл). `checkSource` does it, and
+two callers use it: Check now for one company (synchronously, without the queue) and
+the [queue](../queue/README.md), which runs the Check all tasks.
 
-## Файли
+## Files
 
-| Файл                                | Роль                                                              |
+| File                                | Role                                                              |
 | ----------------------------------- | ----------------------------------------------------------------- |
-| `check-source.ts`                   | `checkSource(db, client, source, checkedAt, depth)` - перевірка одного джерела і її підсумок; записує `last_full_read_at` |
-| `check-all.ts`                      | `startCheckAll(db, { userId, depthMode, now })` - поставити Check all у чергу з глибиною кожного завдання |
-| `read-depth.ts` | `taskReadDepth` - глибина завдання загальної перевірки («Глибина читання» нижче) |
-| `read-depth.test.ts` | Ручний Check all, автоперевірка до й після доби від повного читання |
-| `check-all.integration.test.ts`     | Які джерела потрапляють у запуск; одна активна перевірка          |
-| `find-new-pages.ts` | `startFindNewPages(db, { userId, now })` - поставити Find new pages у чергу; `isFindingNewPages` - чи він триває |
-| `find-new-pages.integration.test.ts` | Які компанії шукаються; один пошук на користувача, зокрема при одночасних кліках |
-| `check-status.ts`                   | `getCheckStatus(db, { userId })` - хід активного запуску, непоказаний підсумок і непрочитані; `markSummaryShown` |
-| `check-status.integration.test.ts`  | Активний запуск, підсумок: який пропонується і що позначає `markSummaryShown` |
-| `failed-sources.ts`                 | `listFailedSources`, `retryFailedSources` - Failed Sources Drawer |
-| `failed-sources.integration.test.ts` | Які джерела в drawer, що з ними робить Retry                     |
-| `auto-check-schedule.ts` | `nextAutoCheckAt`, `isAutoCheckDue` - розклад автоперевірки (6.02); `isStartupCheckDue` - перевірка на старті (6.03); `lastGeneralCheckStartedAt` - від чого відлік |
-| `auto-check.ts` | `runAutoChecks(db, { now, isStartup })` - один прохід розкладу по всіх користувачах (6.03) |
-| `auto-check.integration.test.ts` | Інтервал, вибір користувача, правило старту, перевірка, що йде, кілька користувачів |
-| `auto-check-scheduler.ts` | `createAutoCheckScheduler` - коли питати розклад: одразу на старті й далі щохвилини |
-| `auto-check-scheduler.test.ts` | Порядок проходів, без накладання, після збою й після `stop` - на фейковому годиннику |
-| `start-auto-checks.ts` | `startAutoChecks` - старт розкладу з `src/instrumentation.ts`, якщо не `AUTO_CHECK=off` |
-| `auto-check-env.ts` | `parseAutoCheckEnabled` - змінна `AUTO_CHECK` (`off` вимикає автоперевірки) |
-| `auto-check-env.test.ts` | `on`/порожньо, `off`, хибне значення - помилка |
-| `auto-check-schedule.test.ts` | Відлік від старту, пропущений час не накопичується, змінений інтервал діє одразу |
-| `auto-check-schedule.integration.test.ts` | Остання загальна перевірка - зокрема та, що йде |
-| `history.ts`                        | `listCheckRuns` - завершені перевірки для History, по 20 з курсором |
-| `history.integration.test.ts`       | Пʼять показників, порядок, курсор, чужі й незавершені не видно    |
+| `check-source.ts`                   | `checkSource(db, client, source, checkedAt, depth)` - checking one source and its outcome; writes `last_full_read_at` |
+| `check-all.ts`                      | `startCheckAll(db, { userId, depthMode, now })` - queue Check all with the depth of each task |
+| `read-depth.ts` | `taskReadDepth` - the depth of a general check task ("Read depth" below) |
+| `read-depth.test.ts` | A manual Check all, an auto-check before and after a day since the full read |
+| `check-all.integration.test.ts`     | Which sources go into a run; one active check                     |
+| `find-new-pages.ts` | `startFindNewPages(db, { userId, now })` - queue Find new pages; `isFindingNewPages` - whether it is running |
+| `find-new-pages.integration.test.ts` | Which companies are searched; one search per user, including simultaneous clicks |
+| `check-status.ts`                   | `getCheckStatus(db, { userId })` - the progress of the active run, the summary not yet shown and the unread count; `markSummaryShown` |
+| `check-status.integration.test.ts`  | The active run, the summary: which one is offered and what `markSummaryShown` marks |
+| `failed-sources.ts`                 | `listFailedSources`, `retryFailedSources` - the Failed Sources Drawer |
+| `failed-sources.integration.test.ts` | Which sources are in the drawer, what Retry does with them       |
+| `auto-check-schedule.ts` | `nextAutoCheckAt`, `isAutoCheckDue` - the auto-check schedule (6.02); `isStartupCheckDue` - the check at startup (6.03); `lastGeneralCheckStartedAt` - what the count starts from |
+| `auto-check.ts` | `runAutoChecks(db, { now, isStartup })` - one pass of the schedule over all users (6.03) |
+| `auto-check.integration.test.ts` | The interval, choosing users, the startup rule, a check in progress, several users |
+| `auto-check-scheduler.ts` | `createAutoCheckScheduler` - when to ask the schedule: right at startup and then every minute |
+| `auto-check-scheduler.test.ts` | The order of passes, no overlap, after a failure and after `stop` - on a fake clock |
+| `start-auto-checks.ts` | `startAutoChecks` - starts the schedule from `src/instrumentation.ts` unless `AUTO_CHECK=off` |
+| `auto-check-env.ts` | `parseAutoCheckEnabled` - the `AUTO_CHECK` variable (`off` turns auto-checks off) |
+| `auto-check-env.test.ts` | `on`/empty, `off`, an invalid value is an error |
+| `auto-check-schedule.test.ts` | Counting from the start, missed time does not pile up, a changed interval applies at once |
+| `auto-check-schedule.integration.test.ts` | The last general check - including the one in progress |
+| `history.ts`                        | `listCheckRuns` - finished checks for History, 20 at a time with a cursor |
+| `history.integration.test.ts`       | Five figures, order, the cursor, other users' and unfinished runs stay hidden |
 | `check-company.ts`                  | `checkCompany(db, client, { userId, companyId, checkedAt })` - Check now |
-| `check-company.integration.test.ts` | Інтеграційні тести на справжній базі й фейковому вебсервері        |
+| `check-company.integration.test.ts` | Integration tests on a real database and the fake web server      |
 
-## Глибина читання
+## Read depth
 
-Рішення автора 20.11.2026 (задача 6.16): скільки сторінок читає перевірка, залежить
-від того, хто її запустив. Стосується лише платформ, що читають сторінками; решта
-завжди віддає весь список.
+How many pages a check reads depends on who started it (task 6.16). This applies only
+to platforms that read in pages; the rest always return the whole list.
 
-| Перевірка | Читає |
+| Check | Reads |
 | --- | --- |
-| Check all вручну | лише першу сторінку |
-| Автоперевірка | повністю, якщо джерело не читалось повністю добу й довше (`career_sources.last_full_read_at`); інакше першу сторінку |
-| Check now компанії, перша перевірка після Save | повністю |
-| Retry невдалих | як завдання, що впало (`check_tasks.read_depth`) |
-| Пробне читання Find pages і Find new pages | першу сторінку, «10+ vacancies» (`src/server/discovery`) |
+| Check all by hand | only the first page |
+| Auto-check | in full if the source has not been read in full for a day or longer (`career_sources.last_full_read_at`); otherwise the first page |
+| Check now of a company, the first check after Save | in full |
+| Retry of failed ones | like the task that failed (`check_tasks.read_depth`) |
+| The trial read of Find pages and Find new pages | the first page, "10+ vacancies" (`src/server/discovery`) |
 
-Неповне читання нічого не закриває (`src/server/parsers`, «Ліміт вакансій і
-глибина»), тож зниклі вакансії помічаються лише на повному - щонайпізніше через
-добу. Повним читанням рахується успішне читання з `full` або список, що скінчився
-сам навіть з першої сторінки.
+An incomplete read closes nothing (`src/server/parsers`, "Ліміт вакансій і глибина"),
+so vacancies that disappeared are noticed only on a full read - a day later at most. A
+successful read with `full` counts as a full read, and so does a list that ended by
+itself even on the first page.
 
 ## Check now
 
-- Перевіряються лише джерела, що **відстежуються** (`is_tracked`), і лише ті, для
-  платформи яких уже є парсер ([`parsers/read-source.ts`](../parsers/read-source.ts)).
-  Решта пропускається мовчки: джерело, яке ще нічим прочитати, - не невдала
-  перевірка. Джерела нового парсера почнуть перевірятися без змін тут.
-- Джерела читаються **одночасно**. Ввічливість до сайтів тримає спільний
-  HTTP-клієнт (два запити на хост, пауза між стартами), а не порядок тут.
-- Після перевірки джерело отримує `last_checked_at`. Успіх - ще й
-  `last_success_at` і `consecutive_failures = 0`; збій - `consecutive_failures + 1`,
-  а вакансії лишаються (життєвий цикл їх не чіпає).
-- Чужа компанія - `{ ok: false, reason: "not-found" }`, нічого не перевіряється.
-- Поки йде загальна перевірка користувача - `{ ok: false, reason: "check-running" }`:
-  компанія і так перевіряється, дублікатів не створюємо. Кнопка в цей час вимкнена, тож це захист від запиту, що прийшов уже
-  після старту перевірки.
-- Компанію чи джерело видалили, поки сайт відповідав, - результат відкидається
-  без помилки (блокування джерела в `syncSourceVacancies`).
-- Перевірка синхронна: Server Action чекає, поки прочитаються всі джерела. Для
-  кількох джерел однієї компанії цього досить. Перевести Check now у чергу
-  обговорювали в задачі 6.13 і вирішили лишити як є
-  ([рішення](../../../tasks/6.13-check-now-via-queue.md)). В History Check now не
-  записується.
+- Only **tracked** sources (`is_tracked`) are checked, and only those whose platform
+  already has a parser ([`parsers/read-source.ts`](../parsers/read-source.ts)). The rest
+  are skipped silently: a source nothing can read yet is not a failed check. Sources of a
+  new parser start being checked without changes here.
+- Sources are read **at the same time**. The shared HTTP client keeps politeness towards
+  sites (two requests per host, a pause between starts), not the order here.
+- After a check the source gets `last_checked_at`. A success also sets `last_success_at`
+  and `consecutive_failures = 0`; a failure gives `consecutive_failures + 1`, and the
+  vacancies stay (the lifecycle does not touch them).
+- Another user's company - `{ ok: false, reason: "not-found" }`, nothing is checked.
+- While the user's general check runs - `{ ok: false, reason: "check-running" }`: the
+  company is being checked anyway, and we do not create duplicates. The button is
+  disabled at that time, so this protects against a request that arrived after the check
+  started.
+- If the company or the source was deleted while the site was answering, the result is
+  discarded without an error (the source lock in `syncSourceVacancies`).
+- The check is synchronous: the Server Action waits until every source is read. For a
+  few sources of one company this is enough. Moving Check now to the queue was discussed
+  in task 6.13, and it was kept as it is
+  ([decision](../../../tasks/6.13-check-now-via-queue.md)). Check now is not recorded in
+  History.
 
 ## Check all
 
-`startCheckAll` лише ставить перевірку в чергу; джерела перевіряє
-[цикл черги](../queue/README.md#цикл-обробника).
+`startCheckAll` only queues the check; the [queue loop](../queue/README.md#цикл-обробника)
+checks the sources.
 
-- **Одне джерело = одне завдання** з пріоритетом `background`. Беруться джерела з
-  `is_tracked` у компаніях користувача - це і є вкладка Tracked. Компанії Not
-  tracked не мають таких джерел, тож у Check all не потрапляють ніколи.
-- Запуск (`check_runs`) і всі його завдання створюються однією транзакцією:
-  цикл не побачить запуску без завдань, а `sources_total` - знаменник прогресу.
-- **Друга перевірка, поки йде перша, не стартує** - `already-running`. Тримає це
-  частковий унікальний індекс, а `insert ... on conflict do nothing` замість винятку:
-  «For ON CONFLICT DO NOTHING, it is optional to specify a conflict_target; when
-  omitted, conflicts with all usable constraints (and unique indexes) are handled»
-  ([docs/18/sql-insert](https://www.postgresql.org/docs/18/sql-insert.html)). Два
-  одночасні кліки дають один запуск - тест на це є.
-- **Перевіряти нічого** - `nothing-to-check`, і запуск не створюється: інакше в
-  History зʼявився б рядок без жодного джерела.
+- **One source = one task** with the `background` priority. The sources taken are those
+  with `is_tracked` in the user's companies - which is exactly the Tracked tab. Not
+  tracked companies have no such sources, so they never get into Check all.
+- The run (`check_runs`) and all its tasks are created in one transaction: the loop never
+  sees a run without tasks, and `sources_total` is the denominator of the progress.
+- **A second check does not start while the first runs** - `already-running`. A partial
+  unique index holds this, with `insert ... on conflict do nothing` instead of an
+  exception: "For ON CONFLICT DO NOTHING, it is optional to specify a conflict_target;
+  when omitted, conflicts with all usable constraints (and unique indexes) are handled"
+  ([docs/18/sql-insert](https://www.postgresql.org/docs/18/sql-insert.html)). Two
+  simultaneous clicks give one run - there is a test for that.
+- **Nothing to check** - `nothing-to-check`, and no run is created: otherwise History
+  would get a row without a single source.
 
-## Автоперевірка
+## Auto-check
 
-Загальна перевірка за розкладом - той самий `startCheckAll`, що й Check all
-(задачі 6.02-6.03). Шматки:
+A general check on a schedule is the same `startCheckAll` as Check all (tasks 6.02-6.03).
+The pieces:
 
-- **Коли час** - `auto-check-schedule.ts`, чисті функції. Відлік - від старту
-  останньої загальної перевірки, ручної чи автоматичної, зокрема тієї, що йде.
-  Інтервал - поточний із Settings, тож зміна діє одразу. Пропущений час
-  (компʼютер спав) не накопичується: перевірка одна.
-- **На старті застосунку** правило інше: перевірка йде, якщо остання стартувала
-  понад годину тому (`isStartupCheckDue`), навіть коли інтервал ще не минув.
-- **Прохід** - `runAutoChecks`: кожен користувач окремо, збій одного не
-  зупиняє інших. Перевірку, що йде, і користувача без відстежуваних джерел
-  відсіює `startCheckAll`.
-- **Тік** - `createAutoCheckScheduler`: перший прохід одразу, далі раз на хвилину,
-  проходи не накладаються. Короткий тік, а не таймер на весь інтервал: після сну
-  компʼютера прострочена перевірка стартує на найближчому тіку.
-- **`AUTO_CHECK=off`** вимикає все це, зокрема перевірку на старті (`.env.example`).
-  E2E ставить його завжди: у свіжій базі перевірки ще не було, і розклад запустив
-  би її посеред сценарію.
+- **When it is time** - `auto-check-schedule.ts`, pure functions. The count starts from
+  the start of the last general check, manual or automatic, including the one in
+  progress. The interval is the current one from Settings, so a change applies at once.
+  Missed time (the computer was asleep) does not pile up: there is one check.
+- **At app startup** the rule is different: the check runs if the last one started more
+  than an hour ago (`isStartupCheckDue`), even when the interval has not passed yet.
+- **A pass** - `runAutoChecks`: each user separately, and one user's failure does not
+  stop the others. `startCheckAll` filters out a check in progress and a user without
+  tracked sources.
+- **The tick** - `createAutoCheckScheduler`: the first pass right away, then once a
+  minute, and passes never overlap. A short tick rather than a timer for the whole
+  interval: after the computer sleeps, an overdue check starts on the nearest tick.
+- **`AUTO_CHECK=off`** turns all of this off, including the startup check
+  (`.env.example`). E2E always sets it: a fresh database has had no check yet, and the
+  schedule would start one in the middle of a scenario.
 
-Відкрита сторінка про автоперевірку, що почалася, дізнається лише на наступному
-завантаженні: опитування йде, поки запуск активний, а поза ним - раз на завантаженні
-([`lib/README.md`](../../lib/README.md#опитування-стану-перевірки)).
+An open page notices an auto-check that has started within a minute: outside a check the
+UI polls once every 60 s while the tab is visible, and at once when the tab is shown
+again (task 6.29, [`lib/README.md`](../../lib/README.md#опитування-стану-перевірки)).
 
-## Підсумок перевірки
+## Check summary
 
-Підсумок завершеного запуску спливає **один раз**, навіть якщо запуск закінчився при
-закритій вкладці Тримає це
-`check_runs.summary_shown_at`.
+The summary of a finished run pops up **once**, even if the run ended while the tab was
+closed. `check_runs.summary_shown_at` holds this.
 
-- `getCheckStatus` віддає в `summary` **останній** завершений запуск без позначки:
-  після кількох автоперевірок за відсутності користувачеві потрібен свіжий підсумок,
-  а не черга старих.
-- `markSummaryShown` позначає цей запуск і **всі старші** непоказані того самого
-  користувача, але не новіші - їхнього підсумку ще ніхто не бачив. Межа - `finished_at`
-  показаного запуску; чужий `runId` дає порожню межу й нічого не змінює.
+- `getCheckStatus` returns in `summary` the **latest** finished run without the mark:
+  after several auto-checks in the user's absence a fresh summary is what is needed, not
+  a queue of old ones.
+- `markSummaryShown` marks this run and **all older** unshown runs of the same user, but
+  not newer ones - nobody has seen their summary yet. The boundary is the `finished_at`
+  of the shown run; another user's `runId` gives an empty boundary and changes nothing.
 
-## Невдалі джерела
+## Failed sources
 
-Failed Sources Drawer показує невдалі джерела **останньої завершеної** загальної
-перевірки. Рядок History вони не змінюють: Retry -
-завдання поза запуском.
+The Failed Sources Drawer shows the failed sources of the **last finished** general
+check. They do not change the History row: Retry is a task outside the run.
 
-- **Retry** - завдання з `run_id = null`, створене після завдання перевірки. Для
-  кожного невдалого джерела береться найсвіжіший такий Retry: вдався - джерело
-  зникає з drawer; ще в черзі - джерело лишається з позначкою `isRetrying`; не вдався -
-  показується його помилка, а не помилка перевірки.
-- **Видалене джерело** зникає само: його завдання видаляються каскадом.
-- **Retry лише після завершення загальної перевірки** - `canRetry: false`, поки йде
-  нова. Список при цьому лишається видно.
-- **`retryFailedSources`** ставить ручне завдання (`manual`, поза запуском) для обраних
-  джерел або для всіх (Retry all failed). Повторюються лише джерела зі списку drawer,
-  що ще не чекають на свій Retry: id приходять із клієнта, тож чуже чи успішне джерело
-  так не перевірити. Два одночасні кліки можуть дати два Retry одного джерела -
-  це зайва перевірка, а не помилка, тож блокування заради цього немає.
-- Причина в рядку - `reason` без технічних подробиць, а для `bad-status` ще й код
-  відповіді. Тип рядка - [`lib/checks/failed-sources.ts`](../../lib/checks/failed-sources.ts).
+- **Retry** is a task with `run_id = null`, created after the check task. For each failed
+  source the freshest such Retry is taken: if it succeeded, the source leaves the drawer;
+  if it is still queued, the source stays marked `isRetrying`; if it failed, its error is
+  shown instead of the check's error.
+- **A deleted source** disappears by itself: its tasks are deleted by cascade.
+- **Retry only after the general check has finished** - `canRetry: false` while a new one
+  runs. The list stays visible meanwhile.
+- **`retryFailedSources`** queues a manual task (`manual`, outside the run) for the chosen
+  sources or for all of them (Retry all failed). Only sources from the drawer's list that
+  are not already waiting for their Retry are retried: the ids come from the client, so
+  another user's or a successful source cannot be checked this way. Two simultaneous
+  clicks can give two Retries of one source - that is an extra check, not an error, so
+  there is no lock for it.
+- The reason in the row is `reason` without technical details, plus the response code for
+  `bad-status`. The row type is [`lib/checks/failed-sources.ts`](../../lib/checks/failed-sources.ts).
 
 ## History
 
-`listCheckRuns` віддає **завершені** загальні перевірки користувача від найновішої,
-по 20. Рядок - рівно пʼять показників: час запуску,
-перевірено джерел (зокрема невдалих), нові й видалені вакансії, тривалість. Перевірка,
-закрита за правилом фіналізації ([`queue/README.md`](../queue/README.md#завершення-запуску)),
-дає звичайний рядок. Курсор - як у Jobs: час запуску з мікросекундами
-([`db/time.ts`](../db/time.ts)) і `id` для однакового часу.
+`listCheckRuns` returns the user's **finished** general checks, newest first, 20 at a
+time. A row has exactly five figures: the start time, the sources checked (including
+failed ones), new and removed vacancies, the duration. A check closed by the finishing
+rule ([`queue/README.md`](../queue/README.md#завершення-запуску)) gives an ordinary row.
+The cursor is as in Jobs: the start time with microseconds ([`db/time.ts`](../db/time.ts))
+and the `id` for equal times.
 
 ## Find new pages
 
-Повторний пошук сторінок для всіх компаній вкладки Not tracked (задача 5.10). `startFindNewPages` ставить у чергу по завданню `discover` на
-компанію - фонове, як Check all, але без рядка в `check_runs` (рішення автора
-19.11.2026): у History пошук не пишеться, а «триває» означає, що в користувача є
-незавершені завдання `discover` (`isFindingNewPages`). Що робить кожне завдання -
-[`queue/README.md`](../queue/README.md#пошук-сторінок).
+A repeated page search for all companies of the Not tracked tab (task 5.10).
+`startFindNewPages` queues one `discover` task per company - in the background, like
+Check all, but without a row in `check_runs`: the search is not recorded in History, and
+"in progress" means the user has unfinished `discover` tasks (`isFindingNewPages`). What
+each task does: [`queue/README.md`](../queue/README.md#пошук-сторінок).
 
-**Один пошук на користувача тримає advisory lock**, а не унікальний індекс: рядка,
-на який його повісити, немає. Перевірка «чи триває» і вставка йдуть в одній
-транзакції під `pg_advisory_xact_lock(ключ, hashtext(user_id))`, тож другий
-одночасний клік чекає першого й бачить його завдання. Тест на це прогріває пул
-зʼєднань: без цього перший клік завершувався, поки інші ще підключалися, і тест
-проходив навіть без блокування.
+**One search per user is held by an advisory lock**, not a unique index: there is no row
+to hang it on. The "is it running" check and the insert go in one transaction under
+`pg_advisory_xact_lock(key, hashtext(user_id))`, so a second simultaneous click waits for
+the first and sees its tasks. The test for this warms up the connection pool: without
+that the first click finished while the others were still connecting, and the test
+passed even without the lock.
 
-Check all і Find new pages одне одному не заважають: різні вкладки, спільний лише
-ліміт одночасних завдань черги.
-
+Check all and Find new pages do not get in each other's way: different tabs, sharing only
+the limit of simultaneous queue tasks.
