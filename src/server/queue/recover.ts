@@ -1,5 +1,5 @@
 /**
- * Повернення завислих завдань. Правила - README.md поруч, «Завислі завдання».
+ * Returning stuck tasks. The rules are in the README.md next to this file, "Stuck tasks".
  */
 import { and, eq, gte, isNull, lt, lte, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -8,24 +8,24 @@ import { checkRuns, checkTasks } from "../db/schema.ts";
 import type { CheckTaskError } from "./task-error.ts";
 
 /**
- * Скільки завдання може бути `running`, перш ніж вважається завислим. Менше за
- * 15 хвилин без руху, після яких закривається запуск (`finalize.ts`), - інакше
- * запуск закривався б раніше, ніж його завдання встигло б повернутися в чергу.
+ * How long a task may be `running` before it counts as stuck. Less than the 15
+ * minutes without movement after which a run is closed (`finalize.ts`) - otherwise
+ * the run would close before its task had time to go back to the queue.
  */
 export const STALE_AFTER_MS = 10 * 60_000;
 
 /**
- * Скільки разів завдання захоплюється, перш ніж зависання стає помилкою.
- * Повтори запитів до сайту - окрема річ, їх робить HTTP-клієнт.
+ * How many times a task is claimed before getting stuck becomes an error. Request
+ * retries to a site are a separate thing; the HTTP client does those.
  */
 export const MAX_ATTEMPTS = 3;
 
 const STALLED: CheckTaskError = { reason: "stalled" };
 
 export interface RecoverResult {
-  /** Повернуто в чергу. */
+  /** Put back in the queue. */
   requeued: number;
-  /** Спроби скінчилися - завдання невдале. */
+  /** Out of attempts - the task failed. */
   failed: number;
 }
 
@@ -51,7 +51,7 @@ export async function recoverStaleTasks(
       .where(and(stale, gte(checkTasks.attempts, MAX_ATTEMPTS)))
       .returning({ runId: checkTasks.runId });
 
-    // Невдале завдання рахується в запуску так само, як помилка сайту.
+    // A failed task counts in the run the same way as a site error.
     const failedPerRun = new Map<string, number>();
     for (const { runId } of failed) {
       if (runId !== null) {

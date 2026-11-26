@@ -1,7 +1,6 @@
 /**
- * Виконання завдання Find new pages для однієї компанії Not tracked
- * (задача 5.10). Правила - README.md поруч,
- * «Пошук сторінок».
+ * Running the Find new pages task for one Not tracked company (task 5.10). The
+ * rules are in the README.md next to this file, "Page search".
  */
 import { and, eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -19,11 +18,11 @@ import type { ClaimedTask } from "./claim.ts";
 import { finishTask, type TaskOutcome } from "./finish.ts";
 
 export interface RunDiscoverTaskOptions {
-  /** Годинник для `finished_at`. Тести підставляють сталий момент. */
+  /** The clock for `finished_at`. Tests pass a fixed moment. */
   clock?: () => Date;
 }
 
-/** Успіх пошуку: вакансій він не рахує, лічильників запуску в нього немає. */
+/** A successful search: it counts no vacancies and has no run counters. */
 const DONE: TaskOutcome = {
   ok: true,
   newVacancies: 0,
@@ -32,11 +31,11 @@ const DONE: TaskOutcome = {
 };
 
 /**
- * Шукає сторінки компанії, додає надійні знахідки джерелами, ставить у чергу
- * їхню першу перевірку і записує статус вкладки Not tracked.
+ * Searches for the company's pages, adds the reliable findings as sources,
+ * queues their first check and records the status of the Not tracked tab.
  *
- * Повертає `false`, якщо результат відкинуто: компанію видалили або завдання
- * вже належить іншому обробнику (`finishTask`).
+ * Returns `false` if the result is discarded: the company was deleted, or the
+ * task already belongs to another worker (`finishTask`).
  */
 export async function runDiscoverTask(
   db: NodePgDatabase,
@@ -54,7 +53,7 @@ export async function runDiscoverTask(
     .from(companies)
     .where(eq(companies.id, claimed.companyId));
 
-  // Компанію видалили після захоплення - разом із нею зникло й завдання.
+  // The company was deleted after the claim - the task went with it.
   if (company === undefined) return false;
 
   let outcome: TaskOutcome = DONE;
@@ -80,19 +79,21 @@ export async function runDiscoverTask(
           userId: company.userId,
           companyId: company.id,
           sources: decision.add.map((url) => ({ url })),
-          // Платформу знахідки пошук уже знає, зокрема впізнану за вмістом
-          // сторінки (PeopleForce на домені компанії, задача 5.13): адреса
-          // її не назве, а завантажувати сторінку вдруге нема чого.
+          // The search already knows the finding's platform, including one
+          // recognised by the page content (PeopleForce on the company's domain,
+          // task 5.13): the address will not name it, and there is no point in
+          // loading the page a second time.
           pagePlatforms: platformsOf(findings),
         });
-        // Між пошуком і вставкою сторінку могла забрати інша компанія:
-        // помилка в транзакції відкочує все, а завдання стає невдалим.
+        // Between the search and the insert another company may have taken the
+        // page: an error in the transaction rolls everything back, and the task fails.
         if (!added.ok) {
           throw new Error(`Found pages were refused: ${added.problem}`);
         }
 
-        // Перша перевірка доданих дошок, як після Save (5.09), але фонова і
-        // поза History: це не ручна дія і не загальна перевірка.
+        // The first check of the added boards, as after Save (5.09), but in the
+        // background and outside History: it is neither a manual action nor a
+        // general check.
         const tracked = await tx
           .select({ id: careerSources.id })
           .from(careerSources)
@@ -121,9 +122,9 @@ export async function runDiscoverTask(
       }
     });
   } catch (error) {
-    // Збої сайтів пошук повертає значенням, тож сюди доходить помилка в
-    // нашому коді чи відмова на вставці. Статус каже людині, що варто
-    // повторити.
+    // The search returns site failures as values, so what reaches here is a bug
+    // in our code or a refused insert. The status tells the user it is worth
+    // trying again.
     console.error(`Discover task ${claimed.id} crashed`, error);
     await db
       .update(companies)
@@ -135,7 +136,7 @@ export async function runDiscoverTask(
   return finishTask(db, claimed, { now: clock(), outcome });
 }
 
-/** Платформи знахідок за очищеною адресою - як їх чекає `addCareerSources`. */
+/** Finding platforms by cleaned address - the way `addCareerSources` expects them. */
 function platformsOf(findings: Finding[]): PagePlatforms {
   const platforms = new Map<string, CareerPlatform>();
 

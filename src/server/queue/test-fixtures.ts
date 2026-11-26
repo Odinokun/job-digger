@@ -1,6 +1,6 @@
 /**
- * Дані для інтеграційних тестів черги: джерело, компанія для пошуку, запуск,
- * завдання.
+ * Data for the queue's integration tests: a source, a company for search, a run,
+ * tasks.
  */
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
@@ -13,7 +13,7 @@ import {
 import { seedSystemUser } from "../db/system-user.ts";
 import { companySiteValues } from "../db/testing/company-values.ts";
 
-/** Компанія з одним джерелом Greenhouse - повертає id джерела. */
+/** A company with one Greenhouse source - returns the source id. */
 export async function greenhouseSource(
   db: NodePgDatabase,
   board: string,
@@ -36,7 +36,7 @@ export async function greenhouseSource(
   return source.id;
 }
 
-/** Активний запуск системного користувача - повертає його id. */
+/** An active run of the system user - returns its id. */
 export async function activeRun(
   db: NodePgDatabase,
   values: Partial<typeof checkRuns.$inferInsert> = {},
@@ -50,7 +50,7 @@ export async function activeRun(
   return run.id;
 }
 
-/** Компанія без джерел із сайтом `{slug}.example` - повертає її id. */
+/** A company without sources with the site `{slug}.example` - returns its id. */
 export async function companyToDiscover(
   db: NodePgDatabase,
   name: string,
@@ -70,7 +70,7 @@ export async function companyToDiscover(
   return company.id;
 }
 
-/** Завдання для джерела чи компанії - повертає його id. */
+/** A task for a source or a company - returns its id. */
 export async function task(
   db: NodePgDatabase,
   values: Partial<typeof checkTasks.$inferInsert>,
@@ -80,7 +80,7 @@ export async function task(
   return row.id;
 }
 
-/** Момент `minutes` хвилин після `from`. */
+/** The moment `minutes` minutes after `from`. */
 export function minutesAfter(from: Date, minutes: number): Date {
   return new Date(from.getTime() + minutes * 60_000);
 }

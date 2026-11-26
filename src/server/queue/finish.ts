@@ -1,5 +1,5 @@
 /**
- * Результат захопленого завдання. Правила - README.md поруч, «Результат».
+ * The result of a claimed task. The rules are in the README.md next to this file, "Result".
  */
 import { and, eq, isNull, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -10,8 +10,8 @@ import type { ClaimedTask } from "./claim.ts";
 import type { CheckTaskError } from "./task-error.ts";
 
 /**
- * Результат завдання: підсумок перевірки джерела або помилка від самої черги
- * (`task-error.ts`).
+ * A task result: the outcome of a source check, or an error from the queue
+ * itself (`task-error.ts`).
  */
 export type TaskOutcome =
   SourceCheckOutcome | { ok: false; error: CheckTaskError };
@@ -22,9 +22,9 @@ export interface FinishInput {
 }
 
 /**
- * Записує результат завдання і додає його до лічильників запуску. Повертає
- * `false`, якщо результат відкинуто: завдання вже не належить цьому обробнику
- * або його джерело видалили.
+ * Records the task result and adds it to the run counters. Returns `false` if
+ * the result is discarded: the task no longer belongs to this worker, or its
+ * source was deleted.
  */
 export async function finishTask(
   db: NodePgDatabase,
@@ -47,8 +47,8 @@ export async function finishTask(
         and(
           eq(checkTasks.id, claimed.id),
           eq(checkTasks.status, "running"),
-          // Знак власності: завдання, яке повернули в чергу й захопили знову,
-          // має інший `locked_at`.
+          // The sign of ownership: a task that went back to the queue and was
+          // claimed again has a different `locked_at`.
           eq(checkTasks.lockedAt, claimed.lockedAt),
         ),
       )
@@ -69,7 +69,7 @@ export async function finishTask(
         newVacancies: sql`${checkRuns.newVacancies} + ${newVacancies}`,
         removedVacancies: sql`${checkRuns.removedVacancies} + ${removedVacancies}`,
       })
-      // Завершений запуск уже в History, і його числа не змінюються.
+      // A finished run is already in History, and its numbers do not change.
       .where(
         and(eq(checkRuns.id, finished.runId), isNull(checkRuns.finishedAt)),
       );

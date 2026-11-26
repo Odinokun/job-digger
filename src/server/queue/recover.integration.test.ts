@@ -33,7 +33,7 @@ async function runRow(id: string) {
 
 describe("recoverStaleTasks", () => {
   it("returns a task stuck in running to the queue", async () => {
-    // Процес упав посеред перевірки - завдання не має висіти вічно.
+    // The process crashed in the middle of a check - the task must not hang forever.
     const sourceId = await greenhouseSource(testDb, "discord");
     const id = await task(testDb, {
       sourceId,
@@ -73,7 +73,7 @@ describe("recoverStaleTasks", () => {
   });
 
   it("fails a task that stalled on its last attempt and counts it", async () => {
-    // Завдання, яке щоразу валить обробник, не крутиться в черзі вічно.
+    // A task that crashes the worker every time does not circle in the queue forever.
     const sourceId = await greenhouseSource(testDb, "discord");
     const runId = await activeRun(testDb, { sourcesTotal: 2 });
     const id = await task(testDb, {

@@ -23,12 +23,12 @@ import {
   task,
 } from "./test-fixtures.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** Request scheduling is not checked here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, work) => work() };
 
 const claimedAt = new Date("2026-11-19T10:00:00Z");
 const doneAt = minutesAfter(claimedAt, 1);
-/** Дошка Discord у збережених відповідях фейкового сервера - 26 вакансій. */
+/** The Discord board in the fake server's saved responses - 26 vacancies. */
 const DISCORD_BOARD_SIZE = 26;
 
 let fakeWeb: FakeWeb;
@@ -53,7 +53,7 @@ function client(): HttpClient {
   });
 }
 
-/** Завдання джерела в новому запуску, вже захоплене. */
+/** A source task in a new run, already claimed. */
 async function claimedTaskOf(sourceId: string) {
   const runId = await activeRun(testDb, { sourcesTotal: 1 });
   await task(testDb, { sourceId, runId });
@@ -91,8 +91,8 @@ async function sourceRow(id: string) {
 }
 
 /**
- * Джерело PeopleForce Webellian: у збереженій сторінці є `rel="next"`, тож
- * список за першою сторінкою не скінчився.
+ * The PeopleForce Webellian source: the saved page has `rel="next"`, so the list
+ * did not end with the first page.
  */
 async function webellianSource() {
   const greenhouse = await greenhouseSource(testDb, "discord");
@@ -128,8 +128,8 @@ describe("runTask", () => {
       sourcesFailed: 0,
       newVacancies: DISCORD_BOARD_SIZE,
     });
-    // Момент перевірки - момент захоплення: від нього рахуються дата
-    // виявлення вакансій і стан джерела.
+    // The check moment is the claim moment: the discovery date of the vacancies
+    // and the source state are counted from it.
     expect(await sourceRow(sourceId)).toMatchObject({
       lastCheckedAt: claimedAt,
       lastSuccessAt: claimedAt,
@@ -154,7 +154,7 @@ describe("runTask", () => {
   });
 
   it("counts a first-page read of a list that ended by itself as a full read", async () => {
-    // Greenhouse віддає все одним запитом: перша сторінка і є весь список.
+    // Greenhouse returns everything in one request: the first page is the whole list.
     const sourceId = await greenhouseSource(testDb, "discord");
     const runId = await activeRun(testDb, { sourcesTotal: 1 });
     await task(testDb, { sourceId, runId, readDepth: "first-page" });
@@ -169,7 +169,7 @@ describe("runTask", () => {
   });
 
   it("reads only the first page for a first-page task and closes nothing", async () => {
-    // Задача 6.16: PeopleForce по 10 на сторінку, у Webellian сторінок більше.
+    // Task 6.16: PeopleForce has 10 per page, and Webellian has more pages.
     const source = await webellianSource();
     const earlier = minutesAfter(claimedAt, -60);
     await testDb.insert(vacancies).values({
@@ -191,7 +191,7 @@ describe("runTask", () => {
       .select()
       .from(vacancies)
       .where(eq(vacancies.sourceId, source.id));
-    // Одна сторінка - 10 вакансій, і та, що була до перевірки, лишилась.
+    // One page - 10 vacancies, and the one that was there before the check stayed.
     expect(rows).toHaveLength(11);
     expect(await sourceRow(source.id)).toMatchObject({
       lastSuccessAt: claimedAt,
@@ -200,9 +200,9 @@ describe("runTask", () => {
   });
 
   it("counts a full task as a full read even when the list hit the limit", async () => {
-    // Пара до попереднього тесту: те саме джерело, але завдання `full`.
-    // Фейковий сервер на кожну `?page=N` віддає ту саму сторінку з
-    // `rel="next"`, тож читання впирається в ліміт.
+    // The counterpart of the previous test: the same source, but a `full` task.
+    // The fake server returns the same page with `rel="next"` for every
+    // `?page=N`, so the read runs into the limit.
     const source = await webellianSource();
     const runId = await activeRun(testDb, { sourcesTotal: 1 });
     await task(testDb, { sourceId: source.id, runId, readDepth: "full" });
@@ -217,7 +217,7 @@ describe("runTask", () => {
   });
 
   it("records a failed source as a failed task", async () => {
-    // Дошки немає серед збережених відповідей - фейковий сервер дає 404.
+    // The board is not among the saved responses - the fake server gives 404.
     const sourceId = await greenhouseSource(testDb, "missing");
     const { runId, claimed } = await claimedTaskOf(sourceId);
 
@@ -253,8 +253,8 @@ describe("runTask", () => {
   });
 
   it("fails the task instead of the worker when the check throws", async () => {
-    // Помилка в нашому коді не має валити обробник і чекати 30 хвилин
-    // повернень завислого завдання.
+    // A bug in our code must not crash the worker and wait 30 minutes of
+    // stuck-task returns.
     const sourceId = await greenhouseSource(testDb, "discord");
     const { claimed } = await claimedTaskOf(sourceId);
     const broken: HttpClient = {
