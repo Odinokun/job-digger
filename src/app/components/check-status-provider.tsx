@@ -97,11 +97,20 @@ export function CheckStatusProvider({
       onLost: () => {
         toast.danger(latest.current.t("connectionLost"));
       },
+      isHidden: () => document.visibilityState === "hidden",
     });
     poller.current = current;
     current.start();
 
+    // Поза перевіркою прихована вкладка не опитується: коли її знову
+    // показали, питаємо одразу (https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilitychange_event).
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") current.resume();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       current.stop();
       poller.current = null;
     };
