@@ -159,7 +159,7 @@ PR: #57
 | [Фавіконка з літерами JD](favicon-jd.md)                                                         | done      |
 | [Пошук компанії на сторінці Companies](companies-search.md)                                      | done      |
 | [Один помаранчевий у кожній темі](one-orange.md)                                                 | done      |
-| [Ліцензія і перевірка історії](public-license-history.md)                                        | todo      |
+| [Ліцензія і перевірка історії](public-license-history.md)                                        | done      |
 | [Прибрати план docs/](remove-docs-plan.md)                                                       | backlog   |
 | [CLAUDE.md і .claude/ англійською](claude-md-english.md)                                         | backlog   |
 | [Переклад src/app](translate-app.md)                                                             | backlog   |
