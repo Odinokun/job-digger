@@ -239,8 +239,7 @@ export async function addCompany(
               url: absoluteCompanyUrl(typed),
               normalizedUrl,
               platform,
-              // Сторінку, яку нічим прочитати, зберігаємо без відстеження
-              // (docs/ui.md, розділ 4.3).
+              // Сторінку, яку нічим прочитати, зберігаємо без відстеження.
               isTracked: platform !== "unsupported",
             },
             pagePlatforms,

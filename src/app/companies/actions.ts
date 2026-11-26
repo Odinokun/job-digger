@@ -661,7 +661,7 @@ function addedSource(
 }
 
 /**
- * Mark all as read / Mark all as unread для компанії (docs/ui.md, розділ 4.2).
+ * Mark all as read / Mark all as unread для компанії.
  * Аргументи - недовірений ввід: id перевіряє `setCompanyVacanciesRead` (UUID і
  * власник), а позначка має бути саме булевою. `revalidateHeaderCounts` - заради
  * лічильника в шапці і щоб Jobs, відкритий одразу після дії, не показав список

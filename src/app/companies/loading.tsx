@@ -5,8 +5,7 @@ import { getTranslations } from "next-intl/server";
 const CARDS = 4;
 
 /**
- * Заготовка сторінки Companies, поки сервер читає компанії (docs/ui.md,
- * розділ 4, «Очікування»). Заголовок справжній, картки повторюють обриси
+ * Заготовка сторінки Companies, поки сервер читає компанії. Заголовок справжній, картки повторюють обриси
  * [`company-card.tsx`](./company-card.tsx): назва, джерело, підвал із кнопками.
  */
 export default async function CompaniesLoading() {

@@ -5,8 +5,7 @@ import { getTranslations } from "next-intl/server";
 const ROWS = 8;
 
 /**
- * Заготовка сторінки History, поки сервер читає перевірки (docs/ui.md,
- * розділ 4, «Очікування»). Заголовок справжній, рядки повторюють таблицю
+ * Заготовка сторінки History, поки сервер читає перевірки. Заголовок справжній, рядки повторюють таблицю
  * [`history-board.tsx`](./history-board.tsx): дата й чотири числа.
  */
 export default async function HistoryLoading() {

@@ -10,7 +10,7 @@ import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import { startCheckAllAction } from "./actions";
 
 interface CheckAllButtonProps {
-  /** Вкладка Tracked порожня - перевіряти нічого (docs/ui.md, розділ 4.2). */
+  /** Вкладка Tracked порожня - перевіряти нічого. */
   isDisabled: boolean;
 }
 

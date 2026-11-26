@@ -246,8 +246,7 @@ export function CompaniesBoard({
         </h1>
         <div className="flex flex-wrap items-center gap-2">
           {/* Check all - на Tracked і Needs attention: Not tracked у
-              загальній перевірці не бере участі ніколи (docs/ui.md,
-              розділ 4.3), а на Needs attention перевірка й покаже, чи
+              загальній перевірці не бере участі ніколи, а на Needs attention перевірка й покаже, чи
               джерело, що падало, ожило. */}
           {tab !== "not-tracked" ? (
             <CheckAllButton isDisabled={!hasTracked} />
@@ -255,8 +254,7 @@ export function CompaniesBoard({
             // На Not tracked замість Check all - Find new pages (розділ 4.3).
             <FindNewPagesButton isDisabled={!hasNotTracked} />
           )}
-          {/* Кнопка Add живе на сторінці Companies, поруч зі списком
-              (docs/ui.md, розділ 4.2). */}
+          {/* Кнопка Add живе на сторінці Companies, поруч зі списком. */}
           <AddCompanyDialog
             tab={tab}
             onAdded={addRow}

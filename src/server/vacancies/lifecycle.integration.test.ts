@@ -388,7 +388,7 @@ describe("syncSourceVacancies", () => {
 });
 
 describe("syncSourceVacancies counts", () => {
-  // Нові й видалені вакансії - числа рядка History (docs/ui.md, розділ 4.4).
+  // Нові й видалені вакансії - числа рядка History.
   it("counts every vacancy of the first check as new", async () => {
     const sourceId = await greenhouseSource();
 

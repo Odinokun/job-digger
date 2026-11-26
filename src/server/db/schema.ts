@@ -44,7 +44,7 @@ export const users = pgTable("users", {
 });
 
 /**
- * Стани компанії на вкладці Not tracked (docs/ui.md, розділ 4.3). Решта статусів
+ * Стани компанії на вкладці Not tracked. Решта статусів
  * зі списку компаній тут не зберігається: Tracked - це «є хоч одне джерело, що
  * відстежується», а OK / Has errors / Checking рахуються з джерел і черги.
  *
@@ -129,7 +129,7 @@ export const careerSources = pgTable(
     label: text("label"),
     platform: careerPlatform("platform").notNull(),
     // Адреса, яку нічим прочитати, зберігається без відстеження: знадобиться,
-    // якщо зʼявляться нові способи читання (docs/ui.md, розділ 4.3).
+    // якщо зʼявляться нові способи читання.
     isTracked: boolean("is_tracked").notNull().default(true),
     // Сторінку, яку нічим прочитати, людина позначила «лише посиланням»
     // (задача 6.17): вона лишається в картці, але не рахується непрочитаною в
@@ -151,7 +151,7 @@ export const careerSources = pgTable(
     // решта - лише першу сторінку (задача 6.16). `null` - повністю ще не читали.
     lastFullReadAt: timestamp("last_full_read_at", { withTimezone: true }),
     // Час останньої перевірки, успішної чи ні: «Last checked: 5 min ago» у
-    // картці компанії (docs/ui.md, розділ 4.2). `null` - ще не перевірялося.
+    // картці компанії. `null` - ще не перевірялося.
     lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -170,7 +170,7 @@ export const vacancies = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     // Видалення джерела чи компанії забирає й вакансії, зокрема з Favorites:
-    // те саме правило, що для Delete компанії (docs/ui.md, розділ 4.2).
+    // те саме правило, що для Delete компанії.
     sourceId: uuid("source_id")
       .notNull()
       .references(() => careerSources.id, { onDelete: "cascade" }),
@@ -193,7 +193,7 @@ export const vacancies = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    // Коли перевірка бачила вакансію востаннє («last checked» у плані).
+    // Коли перевірка бачила вакансію востаннє.
     lastSeenAt: timestamp("last_seen_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -224,7 +224,7 @@ export const vacancies = pgTable(
 
 /**
  * Загальна перевірка (Check all чи автоперевірка) - один рядок History
- * (docs/ui.md, розділ 4.4). Check now і Retry сюди не пишуться.
+ * Check now і Retry сюди не пишуться.
  *
  * Лічильники зберігаються, а не рахуються з `check_tasks`: рядок History фіксує
  * результат на момент завершення, а завдання видаленого джерела зникають разом

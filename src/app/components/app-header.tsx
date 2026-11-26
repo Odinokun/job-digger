@@ -6,7 +6,7 @@ import { MobileNav } from "./mobile-nav";
 import { NavLink } from "./nav-link";
 import { getAttentionCount, getUnreadCount } from "./header-counts";
 
-// Порядок розділів фіксований і повторює docs/ui.md, розділ 4.
+// Порядок розділів фіксований (src/app/README.md, «Маршрути»).
 // Jobs живе в корені: він відкривається за замовчуванням.
 const sections = [
   { href: "/", key: "jobs" },

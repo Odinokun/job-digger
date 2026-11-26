@@ -49,7 +49,7 @@ const appMono = IBM_Plex_Mono({
 
 /**
  * Назва вкладки браузера з кількістю непрочитаних: «(12) Job Digger»
- * (docs/ui.md, розділ 4.1). Без непрочитаних - просто назва застосунку.
+ * Без непрочитаних - просто назва застосунку.
  */
 export async function generateMetadata(): Promise<Metadata> {
   const unread = await getUnreadCount();

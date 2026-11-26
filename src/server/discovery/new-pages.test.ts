@@ -66,7 +66,7 @@ describe("decideNewPages", () => {
   });
 
   it("keeps an own page as an untracked source next to a readable board", () => {
-    // Адреса власної сторінки зберігається (docs/ui.md, розділ 4.3).
+    // Адреса власної сторінки зберігається.
     expect(
       decideNewPages({
         findings: [SITE_BOARD, OWN_PAGE],

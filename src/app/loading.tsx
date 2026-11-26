@@ -5,8 +5,7 @@ import { getTranslations } from "next-intl/server";
 const ROWS = 8;
 
 /**
- * Заготовка сторінки Jobs, поки сервер читає вакансії (docs/ui.md, розділ 4,
- * «Очікування»). Next показує її одразу при переході й підміняє сторінкою,
+ * Заготовка сторінки Jobs, поки сервер читає вакансії. Next показує її одразу при переході й підміняє сторінкою,
  * коли та готова (node_modules/next/dist/docs/01-app/03-api-reference/
  * 03-file-conventions/loading.md).
  *

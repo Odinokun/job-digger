@@ -12,7 +12,7 @@ import { VacancyActions } from "./vacancy-actions";
 
 /**
  * Один рядок списку Jobs: назва-посилання на оригінал, компанія, локація й дата
- * виявлення й дії Read і Favorite (docs/ui.md, розділ 4.1). Непрочитана
+ * виявлення й дії Read і Favorite. Непрочитана
  * вакансія виділена жирнішою назвою і крапкою кольору уваги перед назвою -
  * на вкладках All і Favorites це те, що відрізняє її від прочитаної.
  *
@@ -85,7 +85,7 @@ export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
         </div>
       </div>
       {/* Абсолютна дата за локаллю: відносний формат лишається для «Last
-          checked» (docs/ui.md, розділ 4.1). Часовий пояс - той, що next-intl
+          checked». Часовий пояс - той, що next-intl
           передає з сервера, тож серверний і клієнтський текст збігаються. */}
       <div className="flex shrink-0 items-center gap-4">
         <time

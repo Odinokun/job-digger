@@ -98,8 +98,7 @@ export function prepareCareerSource({
     // Порожній підпис - це «підпису немає», а не порожній рядок у базі.
     label: trimmedLabel === "" ? null : trimmedLabel,
     platform,
-    // Сторінку, яку нічим прочитати, зберігаємо без відстеження
-    // (docs/ui.md, розділ 4.3).
+    // Сторінку, яку нічим прочитати, зберігаємо без відстеження.
     isTracked: platform !== "unsupported",
   };
 }

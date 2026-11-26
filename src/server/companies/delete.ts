@@ -24,7 +24,7 @@ export type DeleteCompanyResult =
  * Один запит без транзакції: джерела прибирає `ON DELETE CASCADE` на
  * `career_sources.company_id` (`db/schema.ts`), а вакансії видаленого джерела -
  * тим самим каскадом на `vacancies.source_id`. Лічильники History лежать у
- * `check_runs` і лишаються (docs/ui.md, розділ 4.2).
+ * `check_runs` і лишаються.
  *
  * Умова на `user_id` і є перевіркою доступу: чужий рядок не видалиться й
  * нічого не повернеться.

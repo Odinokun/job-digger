@@ -1,6 +1,6 @@
 /**
  * Виконання завдання Find new pages для однієї компанії Not tracked
- * (docs/ui.md, розділ 4.3; задача 5.10). Правила - README.md поруч,
+ * (задача 5.10). Правила - README.md поруч,
  * «Пошук сторінок».
  */
 import { and, eq } from "drizzle-orm";

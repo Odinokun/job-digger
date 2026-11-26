@@ -19,8 +19,7 @@ export default async function HistoryPage() {
         {t("title")}
       </h1>
       {items.length === 0 ? (
-        // Без кнопки: перевірку запускають лише зі сторінки Companies
-        // (docs/ui.md, розділ 4.4).
+        // Без кнопки: перевірку запускають лише зі сторінки Companies.
         <p className="mt-2 text-sm text-muted">{t("empty")}</p>
       ) : (
         <HistoryBoard

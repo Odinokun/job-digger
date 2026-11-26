@@ -107,8 +107,7 @@ export function CompanyCard({
                       адреси (картка 2.16). */}
                   {source.label === null ? null : <span>{source.label}</span>}
                   {/* Після збою вакансії джерела не видаляються, і без дати
-                      останнього успіху мертві виглядали б як живі
-                      (docs/ui.md, розділ 4.2). */}
+                      останнього успіху мертві виглядали б як живі. */}
                   {source.isTracked && source.lastCheck === "failed" ? (
                     source.lastSuccessAt === null ? (
                       <NeverOk />
@@ -159,7 +158,7 @@ export function CompanyCard({
         )}
       </Card.Content>
 
-      {/* Дії картки (docs/ui.md, розділ 4.2). */}
+      {/* Дії картки. */}
       <Card.Footer className="flex flex-wrap items-center justify-between gap-2">
         {/* Ліворуч - статус на Not tracked або час останньої перевірки на
             Tracked: на Not tracked перевіряти нічого. */}
@@ -190,7 +189,7 @@ export function CompanyCard({
             />
           ) : (
             // На Not tracked перевіряти нічого - замість Check now пошук
-            // сторінок для цієї компанії (docs/ui.md, розділ 4.3).
+            // сторінок для цієї компанії.
             <FindPagesDialog
               company={company}
               tab={tab}

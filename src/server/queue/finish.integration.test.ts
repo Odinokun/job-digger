@@ -69,7 +69,7 @@ describe("finishTask", () => {
   });
 
   it("records a failure with its error and counts it as checked", async () => {
-    // Sources checked у History включає невдалі (docs/ui.md, розділ 4.4).
+    // Sources checked у History включає невдалі.
     const sourceId = await greenhouseSource(testDb, "discord");
     const runId = await activeRun(testDb, { sourcesTotal: 1 });
     await task(testDb, { sourceId, runId });

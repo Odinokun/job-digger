@@ -1,5 +1,5 @@
 /**
- * Списки вакансій для сторінки Jobs (docs/ui.md, розділ 4.1).
+ * Списки вакансій для сторінки Jobs.
  */
 import { and, desc, eq, isNull, sql, type SQL } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";

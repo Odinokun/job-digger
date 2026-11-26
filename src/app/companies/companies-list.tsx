@@ -82,7 +82,7 @@ export function CompaniesList({
               tab={tab}
               startsCheck={company.id === firstCheckId}
               // Статус описує стан пошуку сторінок, тому має сенс лише там,
-              // де компанія ще не відстежується (docs/ui.md, розділ 4.3). Саме
+              // де компанія ще не відстежується. Саме
               // компанія, а не вкладка: на Needs attention змішані обидві.
               statusLabel={
                 isTrackedCompany(company.sources)

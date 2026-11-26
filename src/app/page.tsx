@@ -23,7 +23,7 @@ export default async function JobsPage({ searchParams }: PageProps<"/">) {
     countVacanciesByTab(db, user.id),
   ]);
 
-  // Порожня вкладка пояснює причину (docs/ui.md, розділ 4.1): якщо вакансій
+  // Порожня вкладка пояснює причину: якщо вакансій
   // немає зовсім - їх ще ніде шукати, і текст веде в Companies; інакше
   // порожня саме ця вкладка.
   const emptyByTab: Record<JobsTab, string> = {

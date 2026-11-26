@@ -61,7 +61,7 @@ export type PagePlatforms = ReadonlyMap<string, CareerPlatform>;
 
 /**
  * Джерело з платформою, впізнаною за вмістом сторінки, якщо адреса сама її не
- * назвала. Таке джерело читається, тож і відстежується (docs/ui.md, розділ 4.3).
+ * назвала. Таке джерело читається, тож і відстежується.
  */
 export function withPagePlatform<
   T extends {

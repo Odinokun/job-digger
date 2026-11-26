@@ -1,6 +1,6 @@
 /**
  * Find new pages: повторний пошук карʼєрних сторінок для всіх компаній вкладки
- * Not tracked (docs/ui.md, розділ 4.3; задача 5.10). Тут лише постановка в
+ * Not tracked (задача 5.10). Тут лише постановка в
  * чергу - кожну компанію шукає цикл черги (`queue/discover-task.ts`).
  */
 import { and, eq, inArray, isNull, notExists, sql } from "drizzle-orm";
