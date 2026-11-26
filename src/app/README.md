@@ -68,7 +68,7 @@
   чергу з діями користувача.
 - **Перевірка походження** - `api/same-origin.ts` (`isSameOriginRequest`), тест -
   `api/same-origin.test.ts`. Next робить її сам лише для Server Actions
-  ([`CLAUDE.md`](../../CLAUDE.md#безпека)). Перевіряється
+  ([`CLAUDE.md`](../../CLAUDE.md#security)). Перевіряється
   `Sec-Fetch-Site`, а не `Origin`: GET із тієї самої сторінки браузер шле без
   `Origin`. Дозволені `same-origin` і `none` (адреса з рядка браузера); `same-site`
   відкидається, бо інша програма на іншому порту 127.0.0.1 - той самий сайт, але не

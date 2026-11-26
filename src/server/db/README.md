@@ -241,4 +241,4 @@ PostgreSQL - «sorry, too many clients already», - щойно лічильни�
 потрібна (перевірено емпірично).
 
 Про версію Drizzle і те, чому API звіряється з типами, а не з сайтом - у
-[CLAUDE.md](../../../CLAUDE.md#стек).
+[CLAUDE.md](../../../CLAUDE.md#stack).
