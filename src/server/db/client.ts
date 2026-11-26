@@ -3,36 +3,36 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
 /**
- * База разом із пулом: `$client` потрібен службовим скриптам, щоб закрити
- * зʼєднання й дати процесу завершитися.
+ * The database together with its pool: helper scripts need `$client` to close
+ * the connections and let the process exit.
  */
 export type Database = NodePgDatabase & { $client: Pool };
 
-// Пул зʼєднань: встановлення зʼєднання з PostgreSQL коштує часу, тому кілька
-// зʼєднань тримаються відкритими і перевикористовуються між запитами. Пул один
-// на процес - і в dev, і в продакшні.
+// The connection pool: opening a PostgreSQL connection takes time, so a few
+// connections stay open and are reused between requests. One pool per process,
+// in dev and in production alike.
 //
-// Кеш на `globalThis`, а не в змінній модуля: у dev-режимі Next перезавантажує
-// серверні модулі після кожної зміни коду, і змінна модуля обнулялася б разом
-// із ним - новий пул на кожне перезавантаження, а старий лишався б із
-// відкритими зʼєднаннями.
+// The cache is on `globalThis`, not in a module variable: in dev mode Next
+// reloads server modules after every code change, and a module variable would
+// be reset with it - a new pool on every reload, while the old one stayed with
+// its connections open.
 //
-// До 3.23 кеш вмикався лише поза продакшном, бо «модуль виконується один раз».
-// Модуль - так, але `getDb()` викликається на кожен запит, і `next start`
-// створював новий пул на кожен виклик, доки PostgreSQL не відповідав «too many
-// clients already».
+// Before 3.23 the cache was enabled only outside production, because "the module
+// runs once". The module does, but `getDb()` is called on every request, and
+// `next start` created a new pool on every call until PostgreSQL answered "too
+// many clients already".
 const globalForDb = globalThis as typeof globalThis & {
   jobDiggerPool?: Pool;
   jobDiggerDb?: Database;
 };
 
 /**
- * Єдина точка доступу до бази.
+ * The single entry point to the database.
  *
- * Підключення створюється при першому виклику, а не при імпорті модуля:
- * `next build` виконує модулі сторінок, щоб зібрати їхню конфігурацію, і якби
- * помилка про відсутній `DATABASE_URL` кидалася на імпорті, збірка вимагала б
- * бази навіть там, де жодного запиту не буде.
+ * The connection is created on the first call, not when the module is imported:
+ * `next build` executes page modules to collect their config, and if the error
+ * about a missing `DATABASE_URL` were thrown on import, the build would need a
+ * database even where no query ever runs.
  */
 export function getDb(): Database {
   if (globalForDb.jobDiggerDb) {

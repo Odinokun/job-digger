@@ -1,19 +1,20 @@
 /**
- * Демо-компанії для ручної перевірки: `npm run db:seed:demo`.
+ * Demo companies for manual testing: `npm run db:seed:demo`.
  *
- * Окремо від `db:seed`, бо це різні сорти даних: без системного користувача
- * застосунок не працює, а демо-компанії потрібні лише для того, щоб було на чому
- * клікати (див. README, «Межа між міграцією і seed»). Через це команда лишається
- * локальною і на базу онлайн-версії не запускається.
+ * Separate from `db:seed`, because these are different kinds of data: the app
+ * does not work without the system user, while demo companies are only there to
+ * have something to click (see the README, "The line between a migration and the
+ * seed"). That is why the command stays local and is never run against the
+ * online database.
  *
- * Запуск кілька разів безпечний: вже додані компанії скрипт не торкається.
+ * Running it several times is safe: the script does not touch companies already added.
  */
 import { getDb } from "./client.ts";
 import { seedDemoCompanies } from "./demo-companies.ts";
 import { getSystemUser } from "./system-user.ts";
 
 const db = getDb();
-// Лише читає: якщо користувача немає, помилка підкаже запустити `npm run db:seed`.
+// Read-only: if there is no user, the error says to run `npm run db:seed`.
 const user = await getSystemUser(db);
 const inserted = await seedDemoCompanies(db, user.id);
 

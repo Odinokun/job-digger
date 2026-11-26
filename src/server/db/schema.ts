@@ -22,46 +22,46 @@ import {
 import type { CheckTaskError } from "../queue/task-error.ts";
 
 /**
- * Єдиний користувач локальної версії. Значення технічне: пошта нікуди не йде,
- * вхід через Google зʼявиться лише в онлайн-версії з allow-list у ENV.
+ * The only user of the local version. The value is technical: no mail is sent,
+ * and Google sign-in arrives only in the online version with an allow-list in ENV.
  */
 export const SYSTEM_USER_EMAIL = "system@job-digger.local";
 
 /**
- * Власник даних. Компанії, джерела, вакансії й налаштування звʼязані з користувачем,
- * щоб дані були ізольовані навіть у локальній однокористувацькій версії
+ * The data owner. Companies, sources, vacancies and settings are tied to a user,
+ * so data stays isolated even in the local single-user version
  * (src/server/db/README.md).
  */
 export const users = pgTable("users", {
-  // uuid, а не послідовне число: після переїзду онлайн id не має бути вгадуваним.
+  // A uuid, not a sequence: after the move online an id must not be guessable.
   id: uuid("id").primaryKey().defaultRandom(),
-  // Для майбутнього входу через Google. У локальній версії - технічне значення.
+  // For the future Google sign-in. In the local version, a technical value.
   email: text("email").notNull().unique(),
-  // timestamptz, а не timestamp: зберігає момент часу, а не «настінний» час без зони.
+  // timestamptz, not timestamp: it stores a moment in time, not zoneless "wall clock" time.
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
 });
 
 /**
- * Стани компанії на вкладці Not tracked. Решта статусів
- * зі списку компаній тут не зберігається: Tracked - це «є хоч одне джерело, що
- * відстежується», а OK / Has errors / Checking рахуються з джерел і черги.
+ * Company states on the Not tracked tab. The other statuses of the company list
+ * are not stored here: Tracked means "at least one source is tracked", and
+ * OK / Has errors / Checking are computed from the sources and the queue.
  *
- * Самий перелік - у [`lib/companies/company-list.ts`](../../lib/companies/company-list.ts),
- * бо тип статусу потрібен і в клієнтському списку компаній.
+ * The list itself is in [`lib/companies/company-list.ts`](../../lib/companies/company-list.ts),
+ * because the status type is also needed in the client company list.
  */
 export const discoveryStatus = pgEnum("discovery_status", DISCOVERY_STATUSES);
 
 /**
- * Платформа карʼєрного джерела: за нею вибирається парсер. Самий перелік -
- * у [`lib/companies/platform.ts`](../../lib/companies/platform.ts), бо потрібен
- * і на клієнті.
+ * The platform of a career source: it selects the parser. The list itself is in
+ * [`lib/companies/platform.ts`](../../lib/companies/platform.ts), because the
+ * client needs it too.
  */
 export const careerPlatform = pgEnum("career_platform", CAREER_PLATFORMS);
 
 /**
- * Компанія, за вакансіями якої стежить користувач.
+ * A company whose vacancies the user follows.
  */
 export const companies = pgTable(
   "companies",
@@ -71,16 +71,16 @@ export const companies = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
-    // Головна адреса так, як її ввів користувач: зі шляхом, бо bosch.com/de і
-    // bosch.com/ua - різні компанії (src/lib/companies/README.md).
+    // The main address as the user entered it: with the path, because
+    // bosch.com/de and bosch.com/ua are different companies (src/lib/companies/README.md).
     //
-    // Обовʼязкова (рішення автора 21.11.2026, задача company-site-required):
-    // до того компанія, знайдена лише на ATS, могла жити без сайту (картка
-    // 2.17), але без нього не працює пошук сторінок на сайті і дублікати
-    // ловляться лише за джерелами.
+    // Required (the author's decision of 21.11.2026, task company-site-required):
+    // before that a company found only on an ATS could live without a site (card
+    // 2.17), but without one the search for pages on the site does not work and
+    // duplicates are caught only by sources.
     url: text("url").notNull(),
-    // Та сама адреса в очищеній формі - лише для порівняння дублікатів.
-    // Саме очищення й повідомлення про збіг - задача 2.02.
+    // The same address in normalized form - only for comparing duplicates.
+    // The normalization itself and the match message are task 2.02.
     normalizedUrl: text("normalized_url").notNull(),
     discoveryStatus: discoveryStatus("discovery_status")
       .notNull()
@@ -90,23 +90,23 @@ export const companies = pgTable(
       .defaultNow(),
   },
   (table) => [
-    // Одна й та сама компанія в одного користувача - лише раз. У різних
-    // користувачів однакові компанії дозволені: дані ізольовані.
+    // The same company only once per user. Different users may have the same
+    // companies: data is isolated.
     uniqueIndex("companies_user_normalized_url_unique").on(
       table.userId,
       table.normalizedUrl,
     ),
-    // Список компаній завжди читається для одного користувача і сортується за
-    // назвою. PostgreSQL не індексує зовнішній ключ автоматично.
+    // The company list is always read for one user and sorted by name.
+    // PostgreSQL does not index a foreign key automatically.
     index("companies_user_name_idx").on(table.userId, table.name),
-    // NOT NULL не ловить порожній рядок, а порожня назва дала б пустий рядок у списку.
+    // NOT NULL does not catch an empty string, and an empty name would give a blank row in the list.
     check("companies_name_not_blank", sql`length(trim(${table.name})) > 0`),
   ],
 );
 
 /**
- * Карʼєрне джерело компанії: одне джерело = одне завдання перевірки.
- * Одна компанія має багато джерел (src/server/db/README.md).
+ * A company's career source: one source = one check task.
+ * One company has many sources (src/server/db/README.md).
  */
 export const careerSources = pgTable(
   "career_sources",
@@ -116,42 +116,41 @@ export const careerSources = pgTable(
       .notNull()
       .references(() => companies.id, { onDelete: "cascade" }),
     url: text("url").notNull(),
-    // Та сама адреса в очищеній формі. Потрібна, щоб запитом знаходити те саме
-    // джерело в **іншої** компанії: нормалізація живе в TypeScript
-    // (`normalizeCompanyUrl`), виразом в SQL її не записати, тож результат
-    // доводиться зберігати. Для компанії без сайту це єдине, чим вона
-    // відрізняється від такої самої (картка 2.17).
+    // The same address in normalized form. Needed to find the same source in
+    // **another** company with a query: normalization lives in TypeScript
+    // (`normalizeCompanyUrl`) and cannot be written as an SQL expression, so the
+    // result has to be stored. For a company without a site this is the only
+    // thing that tells it from an identical one (card 2.17).
     normalizedUrl: text("normalized_url").notNull(),
-    // Підпис, яким користувач розрізняє джерела одного сайту: три фільтри
-    // mozilla.org відрізняються лише `query`, і сирий URL їх не розрізняє
-    // (картка 2.16). Необовʼязковий: у джерела з власним доменом підписувати
-    // нічого.
+    // A label the user tells sources of one site apart by: three mozilla.org
+    // filters differ only in `query`, and the raw URL does not tell them apart
+    // (card 2.16). Optional: a source with its own domain needs no label.
     label: text("label"),
     platform: careerPlatform("platform").notNull(),
-    // Адреса, яку нічим прочитати, зберігається без відстеження: знадобиться,
-    // якщо зʼявляться нові способи читання.
+    // An address nothing can read is stored without tracking: it will be useful
+    // if new ways of reading appear.
     isTracked: boolean("is_tracked").notNull().default(true),
-    // Сторінку, яку нічим прочитати, людина позначила «лише посиланням»
-    // (задача 6.17): вона лишається в картці, але не рахується непрочитаною в
-    // Needs attention і бейджі «N pages not read». Лише для `unsupported` -
-    // перевіряє дія, що ставить позначку.
+    // The person marked a page nothing can read as "link only" (task 6.17): it
+    // stays on the card but does not count as unread in Needs attention or in the
+    // "N pages not read" badge. Only for `unsupported` - the action that sets the
+    // mark checks this.
     isReferenceOnly: boolean("is_reference_only").notNull().default(false),
-    // Рецепт власної сторінки (платформа `own_page`, задача 6.21): вакансії -
-    // посилання, чия адреса - цей префікс (хост і шлях до останнього `/`) плюс
-    // ще один сегмент. Наприклад `kinggroup.io/vacancies/design/`. У решти
-    // платформ - `null`.
+    // The own page recipe (platform `own_page`, task 6.21): vacancies are links
+    // whose address is this prefix (the host and the path up to the last `/`) plus
+    // one more segment. For example `kinggroup.io/vacancies/design/`. For other
+    // platforms, `null`.
     vacancyLinkPrefix: text("vacancy_link_prefix"),
-    // Скільки перевірок підряд завершилися помилкою. Після збою вакансії не
-    // видаляються, тому без лічильника застарілі дані не відрізнити від свіжих.
+    // How many checks in a row ended in an error. Vacancies are not deleted after
+    // a failure, so without this counter stale data cannot be told from fresh.
     consecutiveFailures: integer("consecutive_failures").notNull().default(0),
-    // Час останньої успішної перевірки: показ «Last ok: 12 days ago» - задача 4.09.
+    // The time of the last successful check: showing "Last ok: 12 days ago" is task 4.09.
     lastSuccessAt: timestamp("last_success_at", { withTimezone: true }),
-    // Останнє успішне повне читання - усі сторінки до ліміту чи список, що
-    // скінчився сам. Автоперевірка читає повністю не частіше ніж раз на добу,
-    // решта - лише першу сторінку (задача 6.16). `null` - повністю ще не читали.
+    // The last successful full read - every page up to the limit, or a list that
+    // ended by itself. The auto-check reads in full at most once a day, otherwise
+    // only the first page (task 6.16). `null` means never read in full yet.
     lastFullReadAt: timestamp("last_full_read_at", { withTimezone: true }),
-    // Час останньої перевірки, успішної чи ні: «Last checked: 5 min ago» у
-    // картці компанії. `null` - ще не перевірялося.
+    // The time of the last check, successful or not: "Last checked: 5 min ago" on
+    // the company card. `null` means not checked yet.
     lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -161,60 +160,61 @@ export const careerSources = pgTable(
 );
 
 /**
- * Вакансія кар'єрного джерела (src/server/vacancies/README.md).
- * Компанія й адреса джерела - через звʼязок «вакансія → джерело → компанія»,
- * окремо не зберігаються; опис, зарплата й тип зайнятості - теж.
+ * A vacancy of a career source (src/server/vacancies/README.md).
+ * The company and the source address come through the "vacancy → source →
+ * company" link and are not stored separately; neither are the description,
+ * salary or employment type.
  */
 export const vacancies = pgTable(
   "vacancies",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    // Видалення джерела чи компанії забирає й вакансії, зокрема з Favorites:
-    // те саме правило, що для Delete компанії.
+    // Deleting a source or a company takes its vacancies too, Favorites included:
+    // the same rule as for Delete company.
     sourceId: uuid("source_id")
       .notNull()
       .references(() => careerSources.id, { onDelete: "cascade" }),
-    // Внутрішній ключ у межах джерела: `id:<ID на платформі>` або, якщо ID
-    // немає, `url:<очищена адреса>`. Рядок складає задача 3.05.
+    // An internal key within the source: `id:<platform ID>` or, without an ID,
+    // `url:<normalized address>`. Task 3.05 builds the string.
     key: text("key").notNull(),
     title: text("title").notNull(),
     url: text("url").notNull(),
-    // Необовʼязкова: якщо джерело її не дало, у списку стоїть «—».
+    // Optional: if the source did not give it, the list shows "—".
     location: text("location"),
-    // Дата виявлення: за нею сортується список Jobs. Це момент старту
-    // перевірки, що знайшла вакансію (`checkedAt`), а не момент запису рядка.
+    // The detection date: the Jobs list is sorted by it. It is the start of the
+    // check that found the vacancy (`checkedAt`), not the moment the row was written.
     firstDetectedAt: timestamp("first_detected_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    // Момент запису рядка - годинник бази, а не перевірки. Межа для «Mark all
-    // as read»: перевірка, що йде, поки відкритий діалог, пише вакансії з
-    // ранішим `first_detected_at`, а `created_at` у них пізніший за межу
-    // (src/server/vacancies/README.md, «Одночасні зміни»).
+    // The moment the row was written - the database clock, not the check's. The
+    // boundary for "Mark all as read": a check running while the dialog is open
+    // writes vacancies with an earlier `first_detected_at`, but their `created_at`
+    // is later than the boundary (src/server/vacancies/README.md, "Concurrent changes").
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    // Коли перевірка бачила вакансію востаннє.
+    // When a check last saw the vacancy.
     lastSeenAt: timestamp("last_seen_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
     isRead: boolean("is_read").notNull().default(false),
     isFavorite: boolean("is_favorite").notNull().default(false),
-    // Коли вакансію додали у Favorites: за ним вкладка сортується, свіжі
-    // зверху, і показує групу «додані сьогодні». Зняття зірочки очищає.
-    // У обраного, доданого до появи колонки, - `null`: такі вакансії стоять
-    // за датою виявлення (src/server/vacancies/README.md, «Списки Jobs»).
+    // When the vacancy was added to Favorites: the tab is sorted by it, newest on
+    // top, and shows an "added today" group. Removing the star clears it.
+    // Favorites added before the column existed have `null`: such vacancies are
+    // ordered by detection date (src/server/vacancies/README.md, "Jobs lists").
     favoritedAt: timestamp("favorited_at", { withTimezone: true }),
-    // Позначка Closed: вакансія з Favorites зникла з сайту. Момент, а не
-    // так/ні, - щоб було видно, коли вона закрилась.
+    // The Closed mark: a vacancy in Favorites disappeared from the site. A moment,
+    // not a yes/no, so it is visible when it closed.
     closedAt: timestamp("closed_at", { withTimezone: true }),
   },
   (table) => [
-    // Усередині одного джерела повторних записів не створюємо - це тримає база.
-    // Між джерелами дублікати дозволені.
+    // Within one source we create no repeated records - the database enforces it.
+    // Duplicates across sources are allowed.
     uniqueIndex("vacancies_source_key_idx").on(table.sourceId, table.key),
-    // Список Jobs: сортування й курсор за датою виявлення та id.
+    // The Jobs list: sorting and the cursor by detection date and id.
     index("vacancies_detected_idx").on(table.firstDetectedAt, table.id),
-    // Дата додавання буває лише в обраної вакансії.
+    // Only a favorite vacancy has an added date.
     check(
       "vacancies_favorited_at_only_for_favorites",
       sql`${table.favoritedAt} is null or ${table.isFavorite}`,
@@ -223,12 +223,12 @@ export const vacancies = pgTable(
 );
 
 /**
- * Загальна перевірка (Check all чи автоперевірка) - один рядок History
- * Check now і Retry сюди не пишуться.
+ * A general check (Check all or an auto-check) - one History row. Check now and
+ * Retry are not written here.
  *
- * Лічильники зберігаються, а не рахуються з `check_tasks`: рядок History фіксує
- * результат на момент завершення, а завдання видаленого джерела зникають разом
- * із ним (src/server/checks/README.md).
+ * The counters are stored rather than computed from `check_tasks`: a History row
+ * records the result at the moment it finished, and the tasks of a deleted
+ * source go with it (src/server/checks/README.md).
  */
 export const checkRuns = pgTable(
   "check_runs",
@@ -237,39 +237,39 @@ export const checkRuns = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    // Date & time у History і початок Duration.
+    // Date & time in History and the start of Duration.
     startedAt: timestamp("started_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
-    // `null` - запуск ще йде.
+    // `null` means the run is still going.
     finishedAt: timestamp("finished_at", { withTimezone: true }),
-    // Скільки джерел у запуску: знаменник прогресу «Checking 37/120».
+    // How many sources the run has: the denominator of the "Checking 37/120" progress.
     sourcesTotal: integer("sources_total").notNull().default(0),
-    // Скільки джерел перевірено - разом із невдалими. Чисельник прогресу і
-    // Sources checked у History.
+    // How many sources were checked, failed ones included. The progress numerator
+    // and Sources checked in History.
     sourcesChecked: integer("sources_checked").notNull().default(0),
     sourcesFailed: integer("sources_failed").notNull().default(0),
     newVacancies: integer("new_vacancies").notNull().default(0),
     removedVacancies: integer("removed_vacancies").notNull().default(0),
-    // Коли підсумок показали користувачу. Запуск часто завершується при
-    // закритій вкладці, а підсумок має спливти один раз при поверненні (4.06).
+    // When the summary was shown to the user. A run often finishes with the tab
+    // closed, and the summary has to pop up once on return (4.06).
     summaryShownAt: timestamp("summary_shown_at", { withTimezone: true }),
   },
   (table) => [
-    // Одна загальна перевірка одночасно на користувача: два одночасні Check all
-    // не проскочать навіть повз перевірку в коді.
+    // One general check at a time per user: even if two simultaneous Check all
+    // both pass the check in code, the database lets only one through.
     uniqueIndex("check_runs_one_active_per_user")
       .on(table.userId)
       .where(sql`${table.finishedAt} is null`),
-    // History: запуски користувача від найновішого.
+    // History: the user's runs, newest first.
     index("check_runs_user_started_idx").on(table.userId, table.startedAt),
   ],
 );
 
 /**
- * Пріоритет завдання. Порядок значень і є порядком захоплення: ручні дії, на
- * результат яких дивиться користувач (Check now, Retry), беруться з черги
- * раніше за фонові (src/server/queue/README.md).
+ * Task priority. The order of the values is the claim order: manual actions
+ * whose result the user is watching (Check now, Retry) are taken from the queue
+ * before background ones (src/server/queue/README.md).
  */
 export const checkTaskPriority = pgEnum("check_task_priority", [
   "manual",
@@ -277,17 +277,17 @@ export const checkTaskPriority = pgEnum("check_task_priority", [
 ]);
 
 /**
- * Що робить завдання: `check` - перевіряє одне карʼєрне джерело, `discover` -
- * шукає карʼєрні сторінки компанії на вкладці Not tracked (Find new pages,
- * задача 5.10). Одна черга на обидва: спільний ліміт одночасних завдань,
- * захоплення й повернення завислих працюють однаково.
+ * What a task does: `check` checks one career source, `discover` looks for the
+ * career pages of a company on the Not tracked tab (Find new pages, task 5.10).
+ * One queue for both: the shared limit on concurrent tasks, claiming and the
+ * return of stuck tasks work the same way.
  */
 export const checkTaskKind = pgEnum("check_task_kind", ["check", "discover"]);
 
 /**
- * Скільки читає завдання перевірки: лише першу сторінку чи до ліміту
- * (`src/server/parsers/vacancies-to-check.ts`, задача 6.16). Зберігається в
- * завданні, щоб Retry повторив саме те, що не вдалося.
+ * How much a check task reads: only the first page or up to the limit
+ * (`src/server/parsers/vacancies-to-check.ts`, task 6.16). Stored in the task so
+ * that Retry repeats exactly what failed.
  */
 export const checkTaskReadDepth = pgEnum("check_task_read_depth", [
   "first-page",
@@ -302,46 +302,46 @@ export const checkTaskStatus = pgEnum("check_task_status", [
 ]);
 
 /**
- * Завдання черги: перевірка одного карʼєрного джерела. Одне джерело = одне
- * завдання (CLAUDE.md, «Архітектура»).
+ * A queue task: the check of one career source. One source = one task
+ * (CLAUDE.md, "Architecture").
  */
 export const checkTasks = pgTable(
   "check_tasks",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     kind: checkTaskKind("kind").notNull().default("check"),
-    // Видалення джерела забирає його завдання: незавершені так і скасовуються,
-    // а результат уже захопленого відкидає життєвий цикл (3.13). Лише в
-    // `check`: у `discover` джерела ще немає.
+    // Deleting a source takes its tasks: unfinished ones are simply cancelled,
+    // and the lifecycle discards the result of one already claimed (3.13). Only in
+    // `check`: `discover` has no source yet.
     sourceId: uuid("source_id").references(() => careerSources.id, {
       onDelete: "cascade",
     }),
-    // Компанія, для якої шукаються сторінки, - лише в `discover`. Видалена
-    // компанія забирає й свій пошук.
+    // The company whose pages are searched for - only in `discover`. A deleted
+    // company takes its search with it.
     companyId: uuid("company_id").references(() => companies.id, {
       onDelete: "cascade",
     }),
-    // Загальна перевірка, що створила завдання. `null` - Check now чи Retry:
-    // вони в History не пишуться.
+    // The general check that created the task. `null` means Check now or Retry:
+    // they are not written to History.
     runId: uuid("run_id").references(() => checkRuns.id, {
       onDelete: "cascade",
     }),
     priority: checkTaskPriority("priority").notNull().default("background"),
-    // У `discover` не використовується. Типово `full` - так читали всі
-    // завдання до 6.16.
+    // Not used in `discover`. Defaults to `full` - that is how every task read
+    // before 6.16.
     readDepth: checkTaskReadDepth("read_depth").notNull().default("full"),
     status: checkTaskStatus("status").notNull().default("queued"),
-    // Скільки разів завдання захоплювали: обмежує повтори після збою.
+    // How many times the task was claimed: limits retries after a failure.
     attempts: integer("attempts").notNull().default(0),
-    // Коли обробник захопив завдання. За ним завдання, що зависло в `running`,
-    // повертається в чергу (4.02).
+    // When a worker claimed the task. By it, a task stuck in `running` goes back
+    // to the queue (4.02).
     lockedAt: timestamp("locked_at", { withTimezone: true }),
     finishedAt: timestamp("finished_at", { withTimezone: true }),
-    // Помилка парсера так, як він її повернув, або причина від самої черги
-    // (`queue/task-error.ts`): її показує Failed Sources Drawer. Технічна
-    // деталь - History її не показує.
+    // The parser error as it returned it, or a reason from the queue itself
+    // (`queue/task-error.ts`): the Failed Sources Drawer shows it. A technical
+    // detail - History does not show it.
     error: jsonb("error").$type<CheckTaskError>(),
-    // Parse warning: скільки записів парсер пропустив через ваду даних
+    // Parse warning: how many records the parser skipped because of bad data
     // (src/server/parsers/README.md).
     skippedVacancies: integer("skipped_vacancies").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -349,19 +349,19 @@ export const checkTasks = pgTable(
       .defaultNow(),
   },
   (table) => [
-    // Захоплення: черга за пріоритетом і віком. Частковий - бо в черзі завжди
-    // жменя рядків, а завершених накопичуються тисячі.
+    // Claiming: the queue by priority and age. Partial, because the queue always
+    // holds a handful of rows, while finished ones pile up in the thousands.
     index("check_tasks_queue_idx")
       .on(table.priority, table.createdAt)
       .where(sql`${table.status} = 'queued'`),
-    // Завершення запуску й прогрес рахуються по завданнях запуску.
+    // Finishing a run and its progress are counted over the run's tasks.
     index("check_tasks_run_idx").on(table.runId),
-    // Failed Sources Drawer і каскадне видалення джерела.
+    // The Failed Sources Drawer and the cascade deletion of a source.
     index("check_tasks_source_idx").on(table.sourceId),
-    // Каскадне видалення компанії і «чи триває Find new pages».
+    // The cascade deletion of a company and "is Find new pages running".
     index("check_tasks_company_idx").on(table.companyId),
-    // Кожен вид завдання має рівно свою ціль: перевірка - джерело, пошук -
-    // компанію. Інакше обробник отримав би завдання, яке нема чим виконати.
+    // Each kind of task has exactly its own target: a check has a source, a search
+    // a company. Otherwise a worker would get a task it has nothing to run on.
     check(
       "check_tasks_target_matches_kind",
       sql`(${table.kind} = 'check' and ${table.sourceId} is not null and ${table.companyId} is null) or (${table.kind} = 'discover' and ${table.companyId} is not null and ${table.sourceId} is null)`,
@@ -370,11 +370,11 @@ export const checkTasks = pgTable(
 );
 
 /**
- * Особисті налаштування користувача (src/server/db/README.md; задача 6.01).
+ * The user's personal settings (src/server/db/README.md; task 6.01).
  *
- * Один рядок на користувача, і зʼявляється він лише з першим вибором: доки
- * його немає, діють значення за замовчуванням (`server/settings`). Тема й мова
- * сюди не входять - вони в cookie (`lib/theme.ts`, `i18n/config.ts`).
+ * One row per user, and it appears only with the first choice: until then the
+ * defaults apply (`server/settings`). Theme and language are not here - they
+ * are in cookies (`lib/theme.ts`, `i18n/config.ts`).
  */
 export const settings = pgTable(
   "settings",
@@ -382,8 +382,8 @@ export const settings = pgTable(
     userId: uuid("user_id")
       .primaryKey()
       .references(() => users.id, { onDelete: "cascade" }),
-    // Інтервал автоперевірки в годинах - число, а не enum: з ним рахується час
-    // наступної перевірки (6.02).
+    // The auto-check interval in hours - a number, not an enum: the next check
+    // time is computed from it (6.02).
     autoCheckIntervalHours: integer("auto_check_interval_hours")
       .notNull()
       .default(DEFAULT_AUTO_CHECK_INTERVAL),
@@ -392,8 +392,8 @@ export const settings = pgTable(
       .defaultNow(),
   },
   (table) => [
-    // Перелік той самий, що показує Settings: інше значення база не прийме,
-    // навіть якщо запис піде поза нашим кодом.
+    // The same list Settings shows: the database refuses any other value, even if
+    // a write goes around our code.
     check(
       "settings_auto_check_interval_allowed",
       sql`${table.autoCheckIntervalHours} in (${sql.raw(AUTO_CHECK_INTERVALS.join(", "))})`,

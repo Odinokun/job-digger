@@ -1,9 +1,9 @@
 /**
- * Початкові дані: `npm run db:seed`.
+ * Initial data: `npm run db:seed`.
  *
- * Міграції створюють структуру бази, seed наповнює її даними, без яких застосунок
- * не працює. Запуск кілька разів безпечний - логіка в system-user.ts, вона ж
- * покрита інтеграційним тестом.
+ * Migrations create the database structure, the seed fills in the data the app
+ * cannot work without. Running it several times is safe - the logic is in
+ * system-user.ts, which an integration test covers.
  */
 import { getDb } from "./client.ts";
 import { seedSystemUser } from "./system-user.ts";

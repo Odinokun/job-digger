@@ -6,13 +6,14 @@ import { SYSTEM_USER_EMAIL, users } from "./schema.ts";
 export type User = typeof users.$inferSelect;
 
 /**
- * Створює системного користувача, якщо його ще немає, і повертає його рядок.
+ * Creates the system user if it does not exist yet and returns its row.
  *
- * База передається аргументом, а не беріться з client.ts: так та сама функція
- * працює і на базі розробки (`npm run db:seed`), і на тестовій базі.
+ * The database is passed as an argument rather than taken from client.ts: this
+ * way the same function works on the development database (`npm run db:seed`)
+ * and on the test database.
  *
- * Запуск кілька разів безпечний: `on conflict do nothing` замість простого
- * insert, бо email має unique-індекс.
+ * Running it several times is safe: `on conflict do nothing` instead of a plain
+ * insert, because email has a unique index.
  */
 export async function seedSystemUser(db: NodePgDatabase): Promise<User> {
   await db
@@ -33,10 +34,10 @@ export async function seedSystemUser(db: NodePgDatabase): Promise<User> {
 }
 
 /**
- * Користувач, від імені якого працює локальна версія.
+ * The user the local version runs as.
  *
- * Лише читає: сторінки викликають це на кожен перегляд, а запис у базу на GET
- * - не те, чого від перегляду очікують. Наповнення бази - `npm run db:seed`.
+ * Read-only: pages call this on every view, and a database write on a GET is
+ * not what a view is expected to do. Filling the database is `npm run db:seed`.
  */
 export async function getSystemUser(db: NodePgDatabase): Promise<User> {
   const [user] = await db

@@ -6,10 +6,10 @@ import { seedSystemUser } from "./system-user.ts";
 import { testDb } from "./testing/test-db.ts";
 import { companySiteValues } from "./testing/company-values.ts";
 
-// Drizzle обертає помилку драйвера у DrizzleQueryError, код - у `cause`.
+// Drizzle wraps the driver error in DrizzleQueryError, the code is in `cause`.
 const UNIQUE_VIOLATION = { cause: { code: "23505" } };
 
-/** Компанія з одним джерелом Greenhouse - повертає id джерела. */
+/** A company with one Greenhouse source - returns the source id. */
 async function greenhouseSource(board: string): Promise<string> {
   const user = await seedSystemUser(testDb);
   const [company] = await testDb
@@ -70,7 +70,7 @@ describe("vacancies", () => {
   });
 
   it("allows the same key in different sources", async () => {
-    // Між джерелами дублікати не обʼєднуємо (src/server/vacancies/README.md).
+    // Duplicates across sources are not merged (src/server/vacancies/README.md).
     const first = await greenhouseSource("discord");
     const second = await greenhouseSource("figma");
 

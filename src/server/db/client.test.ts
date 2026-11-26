@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-/** Кеш пулу живе на `globalThis` - кожен тест починає без нього. */
+/** The pool cache lives on `globalThis` - every test starts without it. */
 function forgetCachedDb() {
   const store = globalThis as Record<string, unknown>;
   delete store.jobDiggerPool;
@@ -14,7 +14,7 @@ afterEach(() => {
 
 describe("getDb", () => {
   it("returns one database and one pool for the whole production process", async () => {
-    // Пул нічого не відкриває, доки немає запиту, тож справжня база не потрібна.
+    // The pool opens nothing until there is a query, so no real database is needed.
     forgetCachedDb();
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("DATABASE_URL", "postgres://user:pass@127.0.0.1:1/none");
@@ -23,8 +23,8 @@ describe("getDb", () => {
     const first = getDb();
     const second = getDb();
 
-    // Новий пул на кожен виклик - нові зʼєднання на кожен запит сторінки, і
-    // `next start` упирався в ліміт PostgreSQL (задача 3.23).
+    // A new pool on every call meant new connections on every page request, and
+    // `next start` hit the PostgreSQL limit (task 3.23).
     expect(second).toBe(first);
     expect(second.$client).toBe(first.$client);
   });

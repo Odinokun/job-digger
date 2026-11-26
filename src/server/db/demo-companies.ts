@@ -4,27 +4,27 @@ import { normalizeCompanyUrl } from "../../lib/companies/url.ts";
 import { careerSources, companies } from "./schema.ts";
 
 /**
- * Карʼєрне джерело демо-компанії: без `companyId`, його дає вставка.
- * `normalizedUrl` теж не задається руками - його рахує та сама функція, що й
- * ручне додавання джерела.
+ * A demo company's career source: without `companyId`, which the insert provides.
+ * `normalizedUrl` is not set by hand either - the same function as adding a
+ * source by hand computes it.
  */
 type DemoSource = Omit<
   typeof careerSources.$inferInsert,
   "id" | "companyId" | "normalizedUrl" | "createdAt" | "lastSuccessAt"
 > & {
-  /** Скільки днів тому джерело останнього разу прочиталося без помилки. */
+  /** How many days ago the source was last read without an error. */
   lastSuccessDaysAgo?: number;
 };
 
 /**
- * Демо-компанія. `normalizedUrl` не задається руками: його обчислює та сама
- * функція, що й ручне додавання компанії.
+ * A demo company. `normalizedUrl` is not set by hand: the same function as
+ * adding a company by hand computes it.
  */
 type DemoCompany = Omit<
   typeof companies.$inferInsert,
   "id" | "userId" | "url" | "normalizedUrl" | "createdAt"
 > & {
-  /** Головний сайт - обовʼязковий, як і в схемі. */
+  /** The main site - required, as in the schema. */
   url: string;
   sources: DemoSource[];
 };
@@ -32,15 +32,15 @@ type DemoCompany = Omit<
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Набір компаній для ручної перевірки сторінки Companies.
+ * A set of companies for manually testing the Companies page.
  *
- * Адреси справжні й перевірені: у етапі 3 той самий набір знадобиться, щоб
- * прогнати парсери й Check now на реальних сторінках. Статуси й лічильники
- * помилок виставлені руками - перевірка їх ще не рахувала.
+ * The addresses are real and verified: in stage 3 the same set is needed to run
+ * the parsers and Check now on real pages. Statuses and error counters are set
+ * by hand - no check has computed them yet.
  *
- * Набір покриває всі стани списку: обидві вкладки, компанію з двома джерелами,
- * компанію з помилками і кожне значення `discovery_status` з вкладки Not tracked.
- * Платформи `schema_org` тут поки немає - вона приходить із парсером 3.11.
+ * The set covers every state of the list: both tabs, a company with two sources,
+ * a company with errors and each `discovery_status` value of the Not tracked tab.
+ * There is no `schema_org` platform here yet - it comes with parser 3.11.
  */
 export const DEMO_COMPANIES: DemoCompany[] = [
   {
@@ -55,9 +55,9 @@ export const DEMO_COMPANIES: DemoCompany[] = [
     ],
   },
   {
-    // Компанія з двома джерелами: дошка Lever і власна сторінка, яку нічим
-    // прочитати. Прогрес і Retry рахуються по джерелах, тому такий випадок
-    // потрібен для ручної перевірки.
+    // A company with two sources: a Lever board and an own page nothing can
+    // read. Progress and Retry are counted per source, so manual testing needs
+    // such a case.
     name: "Spotify",
     url: "https://www.spotify.com",
     sources: [
@@ -96,7 +96,7 @@ export const DEMO_COMPANIES: DemoCompany[] = [
     ],
   },
   {
-    // Джерело з помилками: показує «Has errors» і «Last ok: 12 days ago».
+    // A source with errors: shows "Has errors" and "Last ok: 12 days ago".
     name: "Palantir",
     url: "https://www.palantir.com",
     sources: [
@@ -113,8 +113,8 @@ export const DEMO_COMPANIES: DemoCompany[] = [
     url: "https://peopleforce.io",
     sources: [
       {
-        // Сама PeopleForce: `careers.peopleforce.io` веде на 404, сторінка
-        // кар'єри - на субдомені `team` (перевірено 18.11.2026).
+        // PeopleForce itself: `careers.peopleforce.io` leads to a 404, the career
+        // page is on the `team` subdomain (checked 18.11.2026).
         url: "https://team.peopleforce.io/careers",
         platform: "peopleforce",
         lastSuccessDaysAgo: 1,
@@ -122,8 +122,8 @@ export const DEMO_COMPANIES: DemoCompany[] = [
     ],
   },
   {
-    // Сторінку знайдено, але читати її нічим: компанія лишається в Not tracked,
-    // а адреса зберігається - знадобиться, якщо зʼявляться нові способи читання.
+    // A page was found but nothing can read it: the company stays in Not tracked,
+    // and the address is kept - it will be useful if new ways of reading appear.
     name: "Google",
     url: "https://www.google.com",
     discoveryStatus: "unsupported",
@@ -149,23 +149,24 @@ export const DEMO_COMPANIES: DemoCompany[] = [
   },
 ];
 
-/** Скільки рядків справді вставив цей запуск. */
+/** How many rows this run actually inserted. */
 export type DemoSeedResult = {
   companies: number;
   sources: number;
 };
 
 /**
- * Додає демо-компанії користувачу й повертає кількість вставлених рядків.
+ * Adds the demo companies to a user and returns the number of rows inserted.
  *
- * База передається аргументом, як і в `seedSystemUser`: так та сама функція
- * працює і на базі розробки (`npm run db:seed:demo`), і на тестовій базі.
+ * The database is passed as an argument, as in `seedSystemUser`: this way the
+ * same function works on the development database (`npm run db:seed:demo`) and
+ * on the test database.
  *
- * Запуск кілька разів безпечний. Компанію боронить unique-індекс
- * `(user_id, normalized_url)`, тому для неї достатньо `onConflictDoNothing()`.
- * На `career_sources` unique-індексу немає свідомо (див. README), тому джерела
- * вставляються лише разом із новою компанією: компанію, яка вже є, скрипт не
- * торкається зовсім, і доданого чи прибраного руками джерела не чіпає.
+ * Running it several times is safe. The unique index `(user_id, normalized_url)`
+ * guards a company, so `onConflictDoNothing()` is enough for it. `career_sources`
+ * has no unique index on purpose (see the README), so sources are inserted only
+ * together with a new company: the script does not touch an existing company at
+ * all, nor any source added or removed by hand.
  */
 export async function seedDemoCompanies(
   db: NodePgDatabase,
@@ -197,7 +198,7 @@ export async function seedDemoCompanies(
         .onConflictDoNothing()
         .returning();
 
-      // Компанія вже була: ні її, ні її джерел не торкаємось.
+      // The company already existed: neither it nor its sources are touched.
       if (!company) {
         continue;
       }
@@ -231,8 +232,9 @@ export async function seedDemoCompanies(
 }
 
 /**
- * Очищена адреса демо-джерела. Непридатна адреса тут - помилка в самих демо-даних,
- * тому виняток, а не мовчазний пропуск: те саме правило, що для адреси компанії.
+ * The normalized address of a demo source. An unusable address here is a bug in
+ * the demo data itself, hence an exception rather than a silent skip: the same
+ * rule as for a company address.
  */
 function demoSourceNormalizedUrl(companyName: string, url: string): string {
   const normalized = normalizeCompanyUrl(url);

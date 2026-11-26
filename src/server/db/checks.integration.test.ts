@@ -6,7 +6,7 @@ import { seedSystemUser } from "./system-user.ts";
 import { testDb } from "./testing/test-db.ts";
 import { companySiteValues } from "./testing/company-values.ts";
 
-// Drizzle обертає помилку драйвера у DrizzleQueryError, код - у `cause`.
+// Drizzle wraps the driver error in DrizzleQueryError, the code is in `cause`.
 const UNIQUE_VIOLATION = { cause: { code: "23505" } };
 
 describe("check_runs", () => {
@@ -31,8 +31,8 @@ describe("check_runs", () => {
   });
 
   it("refuses a second active run for the same user", async () => {
-    // Одна загальна перевірка одночасно на користувача (src/server/checks/README.md) -
-    // тримає база, тож два одночасні Check all не проскочать.
+    // One general check at a time per user (src/server/checks/README.md) - the
+    // database enforces it, so two simultaneous Check all cannot slip through.
     const user = await seedSystemUser(testDb);
     await testDb.insert(checkRuns).values({ userId: user.id });
 
@@ -58,7 +58,7 @@ describe("check_runs", () => {
   });
 });
 
-/** Компанія з одним джерелом Greenhouse - повертає id джерела. */
+/** A company with one Greenhouse source - returns the source id. */
 async function greenhouseSource(board: string): Promise<string> {
   const user = await seedSystemUser(testDb);
   const [company] = await testDb
@@ -132,8 +132,8 @@ describe("check_tasks", () => {
   });
 
   it("sorts manual tasks before background ones", async () => {
-    // Ручні дії беруться з черги раніше за фонові (src/server/queue/README.md):
-    // захоплення сортує за `priority`, і порядок задає сам enum.
+    // Manual actions are taken from the queue before background ones
+    // (src/server/queue/README.md): claiming sorts by `priority`, and the enum sets the order.
     const sourceId = await greenhouseSource("discord");
     await testDb.insert(checkTasks).values([
       { sourceId, priority: "background" },
@@ -149,8 +149,8 @@ describe("check_tasks", () => {
   });
 
   it("disappears with its source and leaves the run counters alone", async () => {
-    // Видалене джерело не потрапляє у Failed Sources Drawer, а числа запуску
-    // лишаються такими, якими були (src/server/checks/README.md).
+    // A deleted source does not get into the Failed Sources Drawer, and the run's
+    // numbers stay as they were (src/server/checks/README.md).
     const sourceId = await greenhouseSource("discord");
     const user = await seedSystemUser(testDb);
     const [run] = await testDb

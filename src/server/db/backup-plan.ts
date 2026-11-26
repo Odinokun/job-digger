@@ -1,16 +1,16 @@
 /**
- * Чиста логіка резервних копій робочої бази (задача 6.09): назви файлів, чи
- * вже час нової копії і які старі видаляти. Сам `pg_dump` - `backup.ts`.
+ * The pure logic of working database backups (task 6.09): file names, whether a
+ * new backup is due and which old ones to delete. `pg_dump` itself is in `backup.ts`.
  */
 import path from "node:path";
 
-/** Скільки копій тримати - рішення автора 20.11.2026. */
+/** How many backups to keep - the author's decision of 20.11.2026. */
 export const BACKUPS_TO_KEEP = 30;
 
-/** Не частіше ніж раз на добу: `npm run app` запускається й кілька разів на день. */
+/** At most once a day: `npm run app` may start several times a day. */
 export const BACKUP_EVERY_MS = 24 * 60 * 60 * 1000;
 
-/** `2026-11-20T13-45-07Z`: ISO без мілісекунд, `:` замінені - їх не любить Finder. */
+/** `2026-11-20T13-45-07Z`: ISO without milliseconds, with `:` replaced - Finder dislikes it. */
 const STAMP = /^(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})Z$/;
 
 export function backupFileName(databaseName: string, now: Date): string {
@@ -22,7 +22,7 @@ export function backupFileName(databaseName: string, now: Date): string {
   return `${databaseName}-${stamp}.dump`;
 }
 
-/** Час копії з назви файлу або `null`, якщо це не готова копія цієї бази. */
+/** The backup time from a file name, or `null` if it is not a finished backup of this database. */
 function backupTime(databaseName: string, fileName: string): Date | null {
   const prefix = `${databaseName}-`;
 
@@ -37,7 +37,7 @@ function backupTime(databaseName: string, fileName: string): Date | null {
     : new Date(`${match[1]}T${match[2]}:${match[3]}:${match[4]}Z`);
 }
 
-/** Копії цієї бази, від найновішої. */
+/** Backups of this database, newest first. */
 function backupsNewestFirst(
   databaseName: string,
   fileNames: string[],
@@ -62,7 +62,7 @@ export function isBackupDue(latest: Date | null, now: Date): boolean {
   return latest === null || now.getTime() - latest.getTime() >= BACKUP_EVERY_MS;
 }
 
-/** Старші копії понад `keep`. Чужих файлів у теці не чіпає. */
+/** Older backups beyond `keep`. Leaves other files in the folder alone. */
 export function backupsToDelete(
   databaseName: string,
   fileNames: string[],
@@ -74,8 +74,8 @@ export function backupsToDelete(
 }
 
 /**
- * `BACKUP_DIR`: порожньо - копій немає (так у теці розробки). Шлях лише
- * абсолютний: `~` у `.env` ніхто не розгорне.
+ * `BACKUP_DIR`: empty means no backups (as in the development folder). Only an
+ * absolute path: nobody expands `~` in `.env`.
  */
 export function parseBackupDir(value: string | undefined): string | null {
   const trimmed = value?.trim() ?? "";

@@ -3,9 +3,9 @@ import { sql } from "drizzle-orm";
 import { testDb } from "./test-db.ts";
 
 /**
- * Чекає, поки якийсь запит у тестовій базі стане в чергу за блокуванням -
- * так тест знає, що гонка справді сталася, а не що перевірка просто не
- * встигла.
+ * Waits until some query in the test database queues behind a lock - this way
+ * the test knows the race really happened, not that the check simply was not
+ * fast enough.
  */
 export async function untilSomeoneWaitsForLock(): Promise<void> {
   for (let attempt = 0; attempt < 100; attempt++) {

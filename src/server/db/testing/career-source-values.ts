@@ -1,18 +1,18 @@
 import { normalizeCompanyUrl } from "../../../lib/companies/url.ts";
 
 /**
- * Очищена адреса для прямої вставки карʼєрного джерела в тестах.
+ * A normalized address for directly inserting a career source in tests.
  *
- * `career_sources.normalized_url` заповнюється завжди, і в застосунку це робить
- * `prepareCareerSource`. Тести вставляють рядки повз нього - як заготовку, а не
- * як перевірку правила, - тому їм потрібне те саме обчислення, але без решти
- * підготовки джерела.
+ * `career_sources.normalized_url` is always filled in, and in the app
+ * `prepareCareerSource` does it. Tests insert rows around it - as fixtures, not
+ * to check the rule - so they need the same computation without the rest of
+ * the source preparation.
  *
- * Руками записувати очищену форму в кожному тесті не можна: тоді правило
- * нормалізації жило б і в коді, і в десятку літералів, і розійшлося б при
- * першій же зміні.
+ * Writing the normalized form by hand in every test is not an option: the
+ * normalization rule would then live both in code and in a dozen literals, and
+ * they would drift apart at the first change.
  *
- * Непридатна адреса тут - помилка в самому тесті, тому виняток.
+ * An unusable address here is a bug in the test itself, hence an exception.
  */
 export function normalizedSourceUrl(url: string): string {
   const normalized = normalizeCompanyUrl(url);
