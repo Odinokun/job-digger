@@ -281,8 +281,8 @@ async function removeGone(
     with deleted as (
       delete from ${vacancies}
       where ${gone} and not ${vacancies.isFavorite}
-      -- Закриту, прибрану з Favorites, видаляємо, але вдруге не рахуємо:
-      -- зниклою вона вже порахована, коли закрилась.
+      -- A closed vacancy taken out of Favorites is deleted but not counted
+      -- again: it was already counted as gone when it closed.
       returning ${vacancies.closedAt} is null as counted
     ),
     closed as (

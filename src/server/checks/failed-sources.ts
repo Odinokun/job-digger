@@ -69,7 +69,7 @@ async function loadFailedSources(
       join last_run on t.run_id = last_run.id
       join career_sources s on s.id = t.source_id
       join companies c on c.id = s.company_id and c.user_id = ${userId}
-      -- Retry - завдання поза запуском, створене після завдання перевірки.
+      -- A Retry is a task outside any run, created after the check task.
       left join lateral (
         select m.status from check_tasks m
         where m.source_id = t.source_id and m.run_id is null
