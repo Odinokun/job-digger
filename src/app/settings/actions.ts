@@ -18,24 +18,24 @@ import { getSystemUser } from "@/server/db/system-user";
 import { setAutoCheckInterval } from "@/server/settings/settings";
 
 /**
- * Рік: вибір оформлення чи мови не має протухати, доки користувач його не
- * змінить.
+ * A year: a theme or language choice should not expire until the user changes
+ * it.
  */
 const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 /**
- * Запамʼятовує вибране оформлення.
+ * Remembers the chosen theme.
  *
- * Сам вигляд сторінки міняє клієнт, ще до виклику: атрибут на `<html>`
- * ставиться одразу, тож перемикання не чекає на мережу. Ця дія потрібна лише
- * для того, щоб вибір пережив перезавантаження.
+ * The client changes the look of the page itself, before the call: the
+ * attribute on `<html>` is set at once, so switching does not wait for the
+ * network. This action is needed only so the choice survives a reload.
  *
- * Аргумент приходить із клієнта й нічим не захищений - Server Action доступний
- * прямим POST-запитом, а не лише через кнопку, - тому значення проходить
- * `parseThemePreference`: у cookie потрапляє одне з трьох відомих або
- * `system`.
+ * The argument comes from the client and is not protected by anything - a
+ * Server Action can be reached with a direct POST request, not only through the
+ * button - so the value goes through `parseThemePreference`: the cookie gets one
+ * of the three known values or `system`.
  *
- * `httpOnly` не ставимо: cookie не секрет, а налаштування вигляду.
+ * No `httpOnly`: the cookie is not a secret, just a display setting.
  */
 export async function setThemeAction(preference: unknown): Promise<void> {
   const store = await cookies();
@@ -48,11 +48,12 @@ export async function setThemeAction(preference: unknown): Promise<void> {
 }
 
 /**
- * Запамʼятовує мову інтерфейсу в cookie, яку читає `i18n/request.ts`.
+ * Remembers the UI language in the cookie that `i18n/request.ts` reads.
  *
- * Невідома мова не пишеться зовсім: `request.ts` однаково відкинув би її, а
- * cookie з мотлохом лише плутала б. Тексти сторінки оновлює клієнт -
- * `router.refresh()` після дії: переклади рендерить сервер.
+ * An unknown language is not written at all: `request.ts` would reject it
+ * anyway, and a cookie with junk would only confuse. The client refreshes the
+ * page texts - `router.refresh()` after the action: the server renders the
+ * translations.
  */
 export async function setLocaleAction(locale: unknown): Promise<void> {
   if (!isSupportedLocale(locale)) {
@@ -72,10 +73,10 @@ export type SetAutoCheckIntervalResult =
   { ok: true } | { ok: false; reason: "invalid" | "unexpected" };
 
 /**
- * Запамʼятовує інтервал автоматичної перевірки (задача 6.01).
+ * Remembers the auto-check interval (task 6.01).
  *
- * Значення приходить із клієнта, тому проходить `parseAutoCheckInterval`:
- * хибне відхиляється, а не підміняється іншим інтервалом.
+ * The value comes from the client, so it goes through `parseAutoCheckInterval`:
+ * an invalid one is refused, not replaced with another interval.
  */
 export async function setAutoCheckIntervalAction(
   hours: unknown,
@@ -97,11 +98,12 @@ export async function setAutoCheckIntervalAction(
 }
 
 /**
- * Import CSV (задача 6.06): файл із форми → компанії й джерела, з підсумком.
+ * Import CSV (task 6.06): the file from the form → companies and sources, with
+ * a summary.
  *
- * Файл приходить із клієнта, тому розмір і кодування перевіряються й тут,
- * хоч сторінка перевіряє розмір ще до відправлення. Відмова за заголовком
- * відхиляє файл цілком - у базу не пишеться нічого.
+ * The file comes from the client, so its size and encoding are checked here
+ * too, although the page checks the size before sending. A refusal over the
+ * header rejects the whole file - nothing is written to the database.
  */
 export async function importCsvAction(
   _previous: ImportCsvResult | null,
@@ -120,7 +122,7 @@ export async function importCsvAction(
   let text: string;
 
   try {
-    // `fatal`: не-UTF-8 файл - відмова, а не мовчазні знаки заміни в назвах.
+    // `fatal`: a non-UTF-8 file is a refusal, not silent replacement characters in names.
     text = new TextDecoder("utf-8", { fatal: true }).decode(
       await file.arrayBuffer(),
     );
@@ -145,13 +147,13 @@ export async function importCsvAction(
     return { status: "failed-unexpectedly" };
   }
 
-  // Нові компанії - у вкладках Companies і, можливо, в лічильнику уваги.
+  // New companies - in the Companies tabs and possibly in the attention counter.
   revalidateHeaderCounts();
 
   return {
     status: "imported",
     ...outcome.value,
-    // Рядки, які не вдалося навіть розібрати, - теж помилки.
+    // Rows that could not even be parsed are errors too.
     errors: outcome.value.errors + parsed.malformed,
   };
 }

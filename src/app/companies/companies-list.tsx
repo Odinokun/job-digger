@@ -15,18 +15,18 @@ import { CompanyCard } from "./company-card";
 interface CompaniesListProps {
   tab: CompaniesTab;
   items: CompanyListItem[];
-  /** Чи є що дозавантажувати: сервер каже це курсором, список лише малює кнопку. */
+  /** Whether there is more to load: the server says so with a cursor, the list only draws the button. */
   hasMore: boolean;
   isLoadingMore: boolean;
   onLoadMore: () => void;
   onSaved: (companyId: string, saved: CompanyListItem | null) => void;
   onDeleted: (companyId: string) => void;
-  /** Власній сторінці дали рецепт (задача 6.21) - як нова компанія. */
+  /** An own page got a recipe (task 6.21) - like a new company. */
   onRecipeApplied: (company: CompanyListItem | null, companyId: string) => void;
-  /** Нова компанія, картка якої сама починає першу перевірку. */
+  /** A new company whose card starts the first check by itself. */
   firstCheckId: string | null;
   emptyLabel: string;
-  /** Прихований для очей заголовок над списком - назва вкладки. */
+  /** A heading above the list hidden from sight - the tab name. */
   heading: string;
   loadMoreLabel: string;
   noSourcesLabel: string;
@@ -35,11 +35,11 @@ interface CompaniesListProps {
 }
 
 /**
- * Список компаній із кнопкою Load more.
+ * The company list with a Load more button.
  *
- * Свого стану не має: показані рядки й курсор тримає
- * [`companies-board.tsx`](./companies-board.tsx), бо міняють їх і Add, і Edit,
- * і Load more. Тут лишилася тільки розмітка.
+ * It has no state of its own: [`companies-board.tsx`](./companies-board.tsx)
+ * holds the shown rows and the cursor, because Add, Edit and Load more all
+ * change them. Only the markup is left here.
  */
 export function CompaniesList({
   tab,
@@ -64,16 +64,16 @@ export function CompaniesList({
 
   return (
     <>
-      {/* Назви карток - `h3`: `Card.Title` HeroUI інший тег не рендерить. Без
-          `h2` між ними й `h1` сторінки заголовки стрибали б через рівень
-          (axe і Lighthouse `heading-order`), а в роторі VoiceOver список не
-          мав би назви. Тому `h2` є, але лише для читача екрана. */}
+      {/* Card titles are `h3`: HeroUI `Card.Title` renders no other tag.
+          Without an `h2` between them and the page `h1`, headings would skip a
+          level (axe and Lighthouse `heading-order`), and the list would have no
+          name in the VoiceOver rotor. So the `h2` is there, but only for screen
+          readers. */}
       <h2 className="sr-only">{heading}</h2>
-      {/* Одна колонка на будь-якій ширині (рішення автора 21.11.2026, аудит
-          інтерфейсу B2): список компаній читається згори донизу, як Jobs, а
-          картки поруч розтягувались до найвищої або лишали прогалини. `min-w-0`
-          - щоб довга адреса обрізалась «…», а не розпирала колонку ширше за
-          екран. */}
+      {/* One column at any width (UI audit, B2): the company list reads top to
+          bottom, like Jobs, while cards side by side stretched to the tallest
+          one or left gaps. `min-w-0` makes a long address truncate with "…"
+          instead of pushing the column wider than the screen. */}
       <ul className="mt-6 grid gap-4">
         {items.map((company) => (
           <li key={company.id} className="min-w-0">
@@ -81,9 +81,9 @@ export function CompaniesList({
               company={company}
               tab={tab}
               startsCheck={company.id === firstCheckId}
-              // Статус описує стан пошуку сторінок, тому має сенс лише там,
-              // де компанія ще не відстежується. Саме
-              // компанія, а не вкладка: на Needs attention змішані обидві.
+              // The status describes the state of the page search, so it only
+              // makes sense where the company is not tracked yet. The company,
+              // not the tab: Needs attention mixes both.
               statusLabel={
                 isTrackedCompany(company.sources)
                   ? undefined
@@ -99,13 +99,13 @@ export function CompaniesList({
         ))}
       </ul>
 
-      {/* Кнопки немає, коли курсора немає: сервер уже сказав, що далі нічого. */}
+      {/* No button without a cursor: the server has already said there is nothing more. */}
       {hasMore ? (
         <div className="mt-6 flex justify-center">
-          {/* Без `variant`: та сама основна кнопка, що Add company. */}
+          {/* No `variant`: the same primary button as Add company. */}
           <Button onPress={onLoadMore} isPending={isLoadingMore}>
-            {/* `isPending` у HeroUI лише вимикає кнопку - спінер малюємо самі
-                (документація Button, приклад Loading). */}
+            {/* HeroUI `isPending` only disables the button - we draw the spinner
+                ourselves (Button docs, the Loading example). */}
             {({ isPending }) => (
               <>
                 {isPending ? <Spinner color="current" size="sm" /> : null}

@@ -19,17 +19,17 @@ import {
   setVacancyRead,
 } from "@/server/vacancies/marks";
 
-/** Наступна порція вкладки Jobs або факт збою - показати його нічим, крім toast. */
+/** The next batch of a Jobs tab, or the fact of a failure - nothing to show it with but a toast. */
 export type LoadMoreVacanciesResult =
   | { ok: true; items: VacancyListItem[]; nextCursor: Cursor | null }
   | { ok: false };
 
 /**
- * Load more на сторінці Jobs.
+ * Load more on the Jobs page.
  *
- * Аргументи - недовірений ввід: Server Action досяжна прямим POST-запитом.
- * Вкладку розбирає `parseJobsTab`, курсор - `listVacancies`, а користувач
- * береться на сервері.
+ * The arguments are untrusted input: a Server Action can be reached with a
+ * direct POST request. `parseJobsTab` parses the tab, `listVacancies` the
+ * cursor, and the user is taken on the server.
  */
 export async function loadMoreVacanciesAction(
   tab: unknown,
@@ -54,15 +54,16 @@ export async function loadMoreVacanciesAction(
 }
 
 /**
- * Рядок вакансії після дії або факт збою. `vacancy: null` - вакансії вже немає
- * (зникла з сайту чи видалена разом із закритою позначкою), і список її прибирає.
+ * The vacancy row after an action, or the fact of a failure. `vacancy: null` -
+ * the vacancy is gone (it left the site, or was deleted together with its closed
+ * mark), and the list removes it.
  */
 export type VacancyMarkResult =
   { ok: true; vacancy: VacancyListItem | null } | { ok: false };
 
 /**
- * Mark as read / Mark as unread. Аргументи - недовірений ввід: id перевіряє
- * `setVacancyRead` (UUID і власник), а позначка має бути саме булевою.
+ * Mark as read / Mark as unread. The arguments are untrusted input:
+ * `setVacancyRead` checks the id (UUID and owner), and the mark must be a boolean.
  */
 export async function setVacancyReadAction(
   vacancyId: unknown,
@@ -81,10 +82,9 @@ export async function setVacancyReadAction(
 }
 
 /**
- * Favorite / Remove from Favorites - те саме, що з Read. `favoritedAt` - дата
- * додавання, яку повертає Undo після Remove from Favorites (задача
- * vacancy-undo-toast); якщо є, це має бути справжня дата або `null` (старе
- * обране без дати).
+ * Favorite / Remove from Favorites - the same as Read. `favoritedAt` is the date
+ * added that Undo restores after Remove from Favorites (task vacancy-undo-toast);
+ * if present, it must be a real date or `null` (an old favorite without a date).
  */
 export async function setVacancyFavoriteAction(
   vacancyId: unknown,
@@ -115,13 +115,13 @@ export async function setVacancyFavoriteAction(
 }
 
 /**
- * Результат дії для рядка. Після успішного запису застосунок позначається
- * застарілим (`revalidateHeaderCounts`) - заради лічильника в шапці і тому, що
- * рядок зникає з вкладки одразу, ще до запису,
- * тож людина встигає перейти на іншу вкладку, поки дія триває, - і без цього
- * бачила б там список, прочитаний до запису, без вакансії, яку щойно
- * позначила (задача 3.22). `revalidatePath` у Server Function оновлює
- * сторінку, яку зараз видно, і скидає клієнтський кеш
+ * The result of an action for a row. After a successful write the app is
+ * marked stale (`revalidateHeaderCounts`) - for the header counter, and because
+ * the row leaves the tab at once, before the write, so the user can switch to
+ * another tab while the action is still running - and without this would see a
+ * list read before the write there, without the vacancy just marked (task
+ * 3.22). `revalidatePath` in a Server Function refreshes the page currently
+ * shown and clears the client cache
  * (node_modules/next/dist/docs/01-app/03-api-reference/04-functions/revalidatePath.md).
  */
 async function markResult(
@@ -137,8 +137,9 @@ async function markResult(
 }
 
 /**
- * Mark all as read, крок 1: скільки непрочитаних і межа дії. Діалог показує
- * число, а крок 2 позначає записані не пізніше межі (`countUnread`).
+ * Mark all as read, step 1: how many are unread and the boundary of the action.
+ * The dialog shows the number, and step 2 marks those recorded up to the
+ * boundary (`countUnread`).
  */
 export async function countUnreadAction(): Promise<
   { ok: true; count: number; asOf: string } | { ok: false }
@@ -154,8 +155,9 @@ export async function countUnreadAction(): Promise<
 }
 
 /**
- * Mark all as read, крок 2. Межа - недовірений ввід: не рядок - відмова, а
- * рядок не у формі часу бази `markAllRead` просто не виконує.
+ * Mark all as read, step 2. The boundary is untrusted input: not a string - a
+ * refusal, and `markAllRead` simply does not run on a string that is not a
+ * database timestamp.
  */
 export async function markAllReadAction(
   asOf: unknown,
@@ -181,8 +183,8 @@ export async function markAllReadAction(
 }
 
 /**
- * Mark all as unread, крок 1: скільки вакансій у вкладці Read - число для
- * діалогу (задача 6.18).
+ * Mark all as unread, step 1: how many vacancies the Read tab has - the number
+ * for the dialog (task 6.18).
  */
 export async function countReadAction(): Promise<
   { ok: true; count: number } | { ok: false }
@@ -198,9 +200,9 @@ export async function countReadAction(): Promise<
 }
 
 /**
- * Mark all as unread, крок 2: усі вакансії вкладки Read - знову в Unread.
- * Аргументів немає, тож і недовіреного вводу теж; межі немає свідомо
- * (`markAllUnread`).
+ * Mark all as unread, step 2: every vacancy of the Read tab goes back to Unread.
+ * There are no arguments, so no untrusted input either; there is deliberately no
+ * boundary (`markAllUnread`).
  */
 export async function markAllUnreadAction(): Promise<
   { ok: true; marked: number } | { ok: false }

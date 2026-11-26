@@ -11,14 +11,14 @@ import type {
 import { VacancyActions } from "./vacancy-actions";
 
 /**
- * Один рядок списку Jobs: назва-посилання на оригінал, компанія, локація й дата
- * виявлення й дії Read і Favorite. Непрочитана
- * вакансія виділена жирнішою назвою і крапкою кольору уваги перед назвою -
- * на вкладках All і Favorites це те, що відрізняє її від прочитаної.
+ * One row of the Jobs list: the title as a link to the original, the company,
+ * the location, the discovery date and the Read and Favorite actions. An unread
+ * vacancy has a bolder title and a dot in the attention colour before it - on
+ * the All and Favorites tabs that is what sets it apart from a read one.
  *
- * Назва, компанія й локація прийшли з чужих сайтів, тому рендеряться лише як
- * текст - JSX екранує їх сам. Посилання відкривається в новій вкладці з
- * `rel="noopener noreferrer"` (CLAUDE.md, «Безпека»).
+ * The title, company and location come from other sites, so they render only as
+ * text - JSX escapes them itself. The link opens in a new tab with
+ * `rel="noopener noreferrer"` (CLAUDE.md, "Security").
  */
 interface VacancyRowProps {
   vacancy: VacancyListItem;
@@ -29,22 +29,23 @@ export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
   const t = useTranslations("JobsPage");
   const format = useFormatter();
 
-  // Від `sm` (640px) дата й дії завжди праворуч: довга назва переноситься
-  // всередині лівого блоку (`min-w-0`), а не виштовхує їх на новий рядок.
-  // Вужче - місця на два стовпці немає, і вони стають під назву. Вирівнювання
-  // по верху: при назві у два рядки дії стоять навпроти її початку.
+  // From `sm` (640px) the date and the actions are always on the right: a long
+  // title wraps inside the left block (`min-w-0`) instead of pushing them to a
+  // new line. Narrower, there is no room for two columns, and they go under the
+  // title. Aligned to the top: with a two-line title the actions face its start.
   //
-  // Рядок під мишею трохи світлішає - фон картки `bg-surface` із плавним
-  // переходом (задача 6.19). Щоб текст лишився на одній лінії із заголовком
-  // сторінки, фон виходить у поле сторінки: `-mx-4 px-4`. Поле не менше 16px,
-  // а `hover:` у Tailwind v4 спрацьовує лише там, де є миша.
+  // The row under the mouse lightens a little - the `bg-surface` card background
+  // with a smooth transition (task 6.19). To keep the text in line with the page
+  // heading, the background extends into the page margin: `-mx-4 px-4`. The
+  // margin is at least 16px, and `hover:` in Tailwind v4 applies only where there
+  // is a mouse.
   return (
     <div className="-mx-4 flex flex-wrap items-start justify-between gap-x-6 gap-y-1 rounded-lg px-4 py-3 transition-colors hover:bg-surface sm:flex-nowrap">
-      {/* Крапка «нова» - у власній вузькій колонці перед назвою, всередині
-          колонки тексту, а не в полі сторінки (аудит інтерфейсу, B3): там вона
-          на телефоні майже торкалась краю екрана. У прочитаної колонка
-          порожня, тож назви всіх рядків вирівняні. Центр - на середині першого
-          рядка назви (висота рядка 24px). */}
+      {/* The "new" dot sits in its own narrow column before the title, inside
+          the text column, not in the page margin (UI audit, B3): there it almost
+          touched the edge of a phone screen. For a read vacancy the column is
+          empty, so all titles line up. Its centre is at the middle of the
+          title's first line (line height 24px). */}
       <div className="flex min-w-0 gap-2">
         <span aria-hidden className="flex h-6 w-2 shrink-0 items-center">
           {vacancy.isRead ? null : (
@@ -71,22 +72,22 @@ export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
               </Chip>
             )}
           </div>
-          {/* «Компанія · місто»: компанія основним кольором, місто
-            приглушеним, між ними розділювач (аудит, B3) - раніше обидва були
-            одного кольору й читались як одна фраза. */}
+          {/* "Company · city": the company in the main colour, the city muted,
+            a separator between them (audit, B3) - before, both had the same
+            colour and read as one phrase. */}
           <div className="flex flex-wrap gap-x-2 text-hint text-muted">
             <span className="font-medium text-foreground">
               {vacancy.companyName}
             </span>
             <span aria-hidden>·</span>
-            {/* Тире не перекладається: це не слово, а знак «немає даних». */}
+            {/* The dash is not translated: it is not a word but a "no data" sign. */}
             <span>{vacancy.location ?? "—"}</span>
           </div>
         </div>
       </div>
-      {/* Абсолютна дата за локаллю: відносний формат лишається для «Last
-          checked». Часовий пояс - той, що next-intl
-          передає з сервера, тож серверний і клієнтський текст збігаються. */}
+      {/* An absolute date in the user's locale: the relative format stays for
+          "Last checked". The time zone is the one next-intl passes from the
+          server, so server and client text match. */}
       <div className="flex shrink-0 items-center gap-4">
         <time
           dateTime={vacancy.firstDetectedAt.toISOString()}

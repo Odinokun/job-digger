@@ -14,23 +14,24 @@ import { DELETE_COMPANY_INITIAL_STATE } from "./form-state";
 
 interface DeleteCompanyDialogProps {
   company: CompanyListItem;
-  /** Компанії більше немає: список прибирає її рядок зі себе. */
+  /** The company is gone: the list removes its row. */
   onDeleted: (companyId: string) => void;
 }
 
 /**
- * Кошик у картці компанії й діалог підтвердження до нього.
+ * The trash button on a company card and its confirmation dialog.
  *
- * Підтвердження обовʼязкове, бо скасувати видалення нічим: разом із компанією
- * зникають її джерела, а згодом і вакансії, зокрема вибрані в Favorites.
+ * The confirmation is required because there is no undo for a deletion: its
+ * sources and vacancies go with the company, including those in Favorites.
  *
- * Саме `AlertDialog`, а не `Modal`: це вікно вимагає рішення, і HeroUI дає
- * йому `role="alertdialog"` разом зі статусною іконкою. Модалки Add і Edit -
- * звичайні форми, тому в них `Modal`.
+ * An `AlertDialog`, not a `Modal`: this window demands a decision, and HeroUI
+ * gives it `role="alertdialog"` together with a status icon. The Add and Edit
+ * modals are plain forms, so they use `Modal`.
  *
- * Діалог називає, що саме зникне: компанію, кількість її карʼєрних сторінок і,
- * якщо вони є, вакансій - разом із тими, що в Favorites. Числа приходять зі
- * списку компаній (`company.vacancies`), окремого запиту на відкриття немає.
+ * The dialog says what exactly will disappear: the company, the number of its
+ * career pages and, if there are any, of its vacancies - including those in
+ * Favorites. The numbers come from the company list (`company.vacancies`);
+ * there is no separate request on opening.
  */
 export function DeleteCompanyDialog({
   company,
@@ -46,14 +47,15 @@ export function DeleteCompanyDialog({
   );
   const [, startSubmit] = useTransition();
 
-  // Те саме, що в модалці Edit: закриття взяте окремою змінною, бо
-  // `useOverlayState` повертає новий обʼєкт на кожен рендер.
+  // The same as in the Edit modal: `close` is taken into its own variable
+  // because `useOverlayState` returns a new object on every render.
   const closeDialog = overlay.close;
 
   useEffect(() => {
-    // `not-found` тут не помилка, а той самий результат: компанії вже немає -
-    // її видалили в іншій вкладці, поки діалог був відкритий. Користувач хотів
-    // саме цього, тому рядок прибирається так само, без окремого тексту.
+    // `not-found` is not an error here but the same result: the company is
+    // already gone - it was deleted in another tab while the dialog was open. The
+    // user wanted exactly that, so the row is removed the same way, with no
+    // separate text.
     if (
       state.status === "deleted" ||
       (state.status === "failed" && state.result.problem === "not-found")
@@ -71,9 +73,9 @@ export function DeleteCompanyDialog({
 
   return (
     <>
-      {/* Кнопка лише з іконкою: назву дає `IconButton` - і для читалок
-          екрана, і підказкою при наведенні. Розмір іконки задає сам `Button`
-          (документація HeroUI, Button - Icon Only). */}
+      {/* An icon-only button: `IconButton` gives it its name - for screen
+          readers and as a tooltip on hover. `Button` sets the icon size itself
+          (HeroUI docs, Button - Icon Only). */}
       <IconButton
         size="sm"
         variant="tertiary"
@@ -97,13 +99,14 @@ export function DeleteCompanyDialog({
               <AlertDialog.Heading>{t("title")}</AlertDialog.Heading>
             </AlertDialog.Header>
 
-            {/* Форма надсилається вручну, як і в решті модалок: React після
-                дії робить формі `reset`, і React Aria повідомляє про зміну
-                полів. Тут полів немає, але патерн лишається спільним.
+            {/* The form is submitted by hand, as in the other modals: after the
+                action React calls `reset` on the form, and React Aria reports a
+                change of the fields. There are no fields here, but the pattern
+                stays shared.
 
-                Кнопка підтвердження не має `slot="close"`, хоч приклади HeroUI
-                його й ставлять: вікно має закрити успіх дії, а не натискання,
-                інакше збій лишився б непоказаним. */}
+                The confirm button has no `slot="close"`, although HeroUI's
+                examples set it: the action's success should close the window,
+                not the click, otherwise a failure would go unreported. */}
             <form
               onSubmit={(event) => {
                 event.preventDefault();

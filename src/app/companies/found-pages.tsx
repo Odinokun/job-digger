@@ -11,21 +11,22 @@ import type { FoundPage } from "./form-state";
 
 interface FoundPagesProps {
   findings: FoundPage[];
-  /** Адреси вибраних знахідок. */
+  /** The addresses of the chosen findings. */
   selected: string[];
   onToggle: (url: string, isSelected: boolean) => void;
   platformLabels: Record<CareerPlatform, string>;
 }
 
 /**
- * Список знахідок Find pages у модалці Add company
- * (src/server/discovery/README.md): платформа, адреса і
- * результат пробного читання.
+ * The list of Find pages findings in the Add company modal
+ * (src/server/discovery/README.md): the platform, the address and the result of
+ * the trial read.
  *
- * Галочка - справжній `<input name="foundUrl">` (HeroUI передає `name` і
- * `value` у поле React Aria), тож вибрані адреси їдуть із формою на Save самі.
- * Знахідку, яка не читається, вибрати не можна. Ту, що вже відстежується в
- * іншій компанії, - теж: Save однаково відмовив би `source-taken` (задача 5.08).
+ * The checkbox is a real `<input name="foundUrl">` (HeroUI passes `name` and
+ * `value` to the React Aria field), so the chosen addresses go to Save with the
+ * form by themselves. A finding that cannot be read cannot be chosen. Neither can
+ * one already tracked by another company: Save would refuse it with
+ * `source-taken` anyway (task 5.08).
  */
 export function FoundPages({
   findings,
@@ -62,9 +63,9 @@ export function FoundPages({
                 </Checkbox.Control>
                 <span className="flex min-w-0 flex-col">
                   <span className="flex flex-wrap items-center gap-2">
-                    {/* Власна сторінка - не платформа, тож і підпис свій:
-                        «Own page - not supported yet».
-                        Відома ATS без парсера - її назва (задача 5.15). */}
+                    {/* An own page is not a platform, so it has its own caption:
+                        "Own page - not supported yet".
+                        A known ATS without a parser shows its name (task 5.15). */}
                     <span className="font-medium">
                       {finding.platform === "unsupported"
                         ? (knownAtsName(finding.url) ?? t("ownPage"))
@@ -91,12 +92,12 @@ export function FoundPages({
                 </span>
               </Checkbox.Content>
             </Checkbox>
-            {/* Адреса - поза `Checkbox.Content`: той є `<label>` із
-                `select-none`, тож усередині клік перемикав би галочку, а
-                текст не виділявся б. Тут її можна відкрити й скопіювати, щоб
-                перевірити знахідку перед вибором (задача 6.15). Відступ
-                `pl-7` = галочка `size-4` + проміжок `gap-3`, адреса стоїть
-                під назвою платформи. */}
+            {/* The address is outside `Checkbox.Content`: that is a `<label>`
+                with `select-none`, so a click inside would toggle the checkbox
+                and the text could not be selected. Here it can be opened and
+                copied to check the finding before choosing it (task 6.15). The
+                `pl-7` indent = the `size-4` checkbox + the `gap-3` gap, so the
+                address sits under the platform name. */}
             <a
               href={finding.url}
               target="_blank"
@@ -113,13 +114,14 @@ export function FoundPages({
 }
 
 /**
- * Позначка знахідки за назвою (задача 5.05). Знахідка з сайту позначки не має:
- * посилання з сайту і є доказом.
+ * The ownership note of a finding by name (task 5.05). A finding from the site
+ * has no note: the link from the site is the proof.
  *
- * - дошка веде на сайт компанії - лише тихий підпис, знахідка надійна;
- * - дошка називає своїм інший сайт - попередження з ним: у компанії буває
- *   кілька доменів, тож вирішує людина;
- * - нічого не відомо - «перевір».
+ * - the board leads to the company site - just a quiet caption, the finding is
+ *   reliable;
+ * - the board names another site as its own - a warning naming it: a company
+ *   may have several domains, so a person decides;
+ * - nothing is known - "check".
  */
 function OwnershipMark({ finding }: { finding: Finding }) {
   const t = useTranslations("CompaniesPage.addCompany.found");
