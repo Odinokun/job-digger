@@ -209,7 +209,7 @@ npx playwright install chromium
 
 Він качається в кеш системи (~290 МБ), а не в репозиторій. Ставимо лише Chromium: застосунок персональний, кросбраузерність не мета.
 
-Сценарії: `navigation.spec.ts` (застосунок відкривається), `theme.spec.ts` (перемикання оформлення), `companies.spec.ts` (компанію додано з однієї адреси, відредаговано й видалено), `vacancies.spec.ts` (дошка Greenhouse стає вакансіями в Unread - критерій етапу 3), `check-all.spec.ts` (загальна перевірка й підсумок - етап 4), `find-pages.spec.ts` (пошук сторінок - етап 5), `csv.spec.ts` (Export → Import того самого файлу без дублікатів - етап 6), `own-page.spec.ts` (власна сторінка як список за рецептом), `companies-search.spec.ts` (пошук компанії за назвою на вкладці All) і `mobile.spec.ts` (на 390 px жодна сторінка не ширша за екран, меню - з бургера). Спільні пошуки елементів - `locators.ts`.
+Сценарії: `navigation.spec.ts` (застосунок відкривається), `theme.spec.ts` (перемикання оформлення), `companies.spec.ts` (компанію додано з однієї адреси, відредаговано й видалено), `vacancies.spec.ts` (дошка Greenhouse стає вакансіями в Unread - критерій етапу 3), `check-all.spec.ts` (загальна перевірка й підсумок - етап 4), `find-pages.spec.ts` (пошук сторінок - етап 5), `csv.spec.ts` (Export → Import того самого файлу без дублікатів - етап 6), `own-page.spec.ts` (власна сторінка як список за рецептом), `companies-search.spec.ts` (пошук компанії за назвою на вкладці All) `mobile.spec.ts` (на 390 px жодна сторінка не ширша за екран, меню - з бургера) і `accessibility.spec.ts` (axe не знаходить порушень WCAG 2.2 A/AA на жодній сторінці в обох темах). Спільні пошуки елементів - `locators.ts`.
 
 **Червоний сценарій етапу.** Сценарій-критерій пишеться на початку етапу й лишається червоним до його кінця, тому має тег `@pending`. У `playwright.config.ts` два проєкти на одному браузері: `chromium` (його запускають `npm run test:e2e` і CI) пропускає `@pending`, `pending` (`npm run test:e2e:pending`) запускає лише його й показує крок, на якому він падає. Між етапами - коли критерій попереднього вже зелений, а наступного ще не написано - команда завершується «No tests found». Прапорця `--pass-with-no-tests` свідомо немає: з ним забутий тег на новому сценарії мовчки давав би зелений прогін. Проєкти, а не `grepInvert` у корені конфігу, бо `--grep` у консолі виключення з конфігу не скасовує. Голий `npx playwright test` запускає обидва проєкти, тобто й червоний сценарій. Другий лічить зміни атрибута `data-theme`, а не кінцевий стан: баг, через який він зʼявився, кінцевого стану не ламав.
 
@@ -262,6 +262,17 @@ CI=1 npm run test:e2e
 **Заблокувати merge червоного PR автоматично на цьому тарифі не вийде.** Репозиторій приватний, а для приватних репозиторіїв на GitHub Free недоступні ні classic branch protection, ні rulesets - API на обидва запити відповідає `403 Upgrade to GitHub Pro or make this repository public to enable this feature`. Тому правило «PR із червоними тестами не зливається» тримається на тому, що автор дивиться вкладку Checks перед squash merge, а не на налаштуваннях GitHub.
 
 Якщо репозиторій колись стане публічним або акаунт - Pro, вимушування вмикається опцією «Require status checks to pass before merging»: або [classic branch protection](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches), або [ruleset](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets) з тим самим обмеженням (rulesets гнучкіші: на одну гілку їх може діяти кілька, класичне правило - лише одне). Обов'язковими варто робити саме job `Lint and types` і `Tests`: сторонні чеки (наприклад сканер секретів GitGuardian) можуть червоніти через історію гілки, яка при squash merge у `main` не потрапляє.
+
+## Доступність
+
+Ціль - [WCAG 2.2](https://www.w3.org/TR/WCAG22/) рівня AA: усі критерії рівнів A і AA ([що означають рівні](https://www.w3.org/WAI/WCAG22/Understanding/conformance)). Як це перевіряється:
+
+- **Автоматично на кожному PR** - `e2e/accessibility.spec.ts`: [axe](https://playwright.dev/docs/accessibility-testing) (`@axe-core/playwright`) сканує всі сторінки й модалку Add company у світлій і темній темах за тегами WCAG 2.x A/AA. Порушення валить E2E.
+- **Руками** - клавіатура (порядок Tab, видимий фокус, повернення фокусу з модалок і меню), reflow на 320 px і масштаб 200%, сценарії з VoiceOver. Автоматика ловить лише частину проблем, тому ручна перевірка лишається.
+
+Відоме обмеження: на Companies після `h1` ідуть `h3` - назви карток компаній. Їх рендерить HeroUI `Card.Title`, і інший тег він не дозволяє. axe вважає порядок заголовків best practice, а не критерієм WCAG.
+
+Правила для коду й рішення щодо кольорів - [src/app/README.md](src/app/README.md#доступність), історія аудиту - [tasks/accessibility-audit.md](tasks/accessibility-audit.md).
 
 ## Локалізація
 

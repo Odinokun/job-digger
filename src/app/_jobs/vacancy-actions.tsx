@@ -56,7 +56,7 @@ export function VacancyActions({ vacancy, onMark }: VacancyActionsProps) {
       >
         {/* Обрана - кольором уваги (src/app/README.md#тема-ink). */}
         {vacancy.isFavorite ? (
-          <StarFill className="text-highlight" />
+          <StarFill className="text-attention" />
         ) : (
           <Star />
         )}

@@ -48,7 +48,7 @@ export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
       <div className="flex min-w-0 gap-2">
         <span aria-hidden className="flex h-6 w-2 shrink-0 items-center">
           {vacancy.isRead ? null : (
-            <span className="size-2 rounded-full bg-highlight" />
+            <span className="size-2 rounded-full bg-attention" />
           )}
         </span>
         <div className="flex min-w-0 flex-col gap-1">

@@ -71,10 +71,13 @@ export function NavLink({
         <Link
           href={countLink.href}
           aria-label={countLink.label}
+          // Ширина не менша за 24px: одна цифра давала мішень 8px завширшки,
+          // а WCAG 2.5.8 (AA) вимагає 24×24 CSS px.
+          // https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum
           className={
             layout === "list"
-              ? "py-3 text-base hover:underline"
-              : "py-2 text-sm hover:underline"
+              ? "inline-block min-w-6 py-3 text-base hover:underline"
+              : "inline-block min-w-6 py-2 text-sm hover:underline"
           }
           onClick={onNavigate}
         >
