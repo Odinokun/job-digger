@@ -102,7 +102,7 @@ export function JobsBoard({
 
   /**
    * Оптимістичний список: дія Read чи Favorite видна одразу, ще до відповіді
-   * сервера (docs/ui.md, розділ 4, «Очікування»). Поки дія триває, React
+   * сервера. Поки дія триває, React
    * показує `items` з накладеною зміною; коли вона завершується - знову сам
    * `items`. Тож при збої рядок повертається сам, бо `items` оновлюється лише
    * при успіху (https://react.dev/reference/react/useOptimistic).
@@ -301,7 +301,7 @@ export function JobsBoard({
           <p className="text-sm text-muted">{emptyLabel}</p>
           {addCompanyLabel === null ? null : (
             // Посилання, а не кнопка з модалкою: Add company живе на сторінці
-            // Companies, поруч зі списком компаній (docs/ui.md, розділ 4.2).
+            // Companies, поруч зі списком компаній.
             <Link
               href="/companies"
               className="text-sm font-medium underline underline-offset-2"

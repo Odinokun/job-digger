@@ -10,7 +10,7 @@ import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import { startFindNewPagesAction } from "./actions";
 
 interface FindNewPagesButtonProps {
-  /** Вкладка Not tracked порожня - шукати нічого (docs/ui.md, розділ 4.3). */
+  /** Вкладка Not tracked порожня - шукати нічого. */
   isDisabled: boolean;
 }
 

@@ -589,7 +589,7 @@ describe("setCompanyVacanciesRead", () => {
 
   it("leaves closed vacancies as they are", async () => {
     // Закрита живе лише у Favorites: «усі активні вакансії компанії» її не
-    // включають (docs/ui.md, розділ 4.2).
+    // включають.
     const { userId, companyId, ids } = await seedVacancies({
       closedAt: DETECTED,
       isFavorite: true,

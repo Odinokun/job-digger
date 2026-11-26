@@ -1,5 +1,5 @@
 /**
- * Export CSV: які рядки потрапляють у файл (docs/ui.md, розділ 10; задача 6.05).
+ * Export CSV: які рядки потрапляють у файл (задача 6.05).
  */
 import { and, asc, eq, exists, inArray, notExists } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";

@@ -78,7 +78,7 @@ describe("parseJobsTab", () => {
 
   it("falls back to Unread for anything else", () => {
     // Значення приходить з адреси або з аргумента Server Action: вкладка за
-    // замовчуванням краща за помилку (docs/ui.md, розділ 4.1).
+    // замовчуванням краща за помилку.
     expect(parseJobsTab(undefined)).toBe("unread");
     expect(parseJobsTab("Read")).toBe("unread");
     expect(parseJobsTab(["read"])).toBe("unread");

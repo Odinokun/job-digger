@@ -13,7 +13,7 @@ import {
 const OPTIONS = ["tracked", "notTracked", "careerUrls"] as const;
 
 /**
- * Export CSV з опціями (docs/ui.md, розділ 10; задача 6.05).
+ * Export CSV з опціями (задача 6.05).
  *
  * Файл віддає `/api/companies-csv`: перехід на адресу з
  * `Content-Disposition: attachment` браузер не відкриває, а зберігає, і

@@ -8,7 +8,6 @@ import {
 
 describe("parseAutoCheckInterval", () => {
   it("offers 3, 6, 12 and 24 hours with 6 by default", () => {
-    // docs/ui.md, розділ 4.5.
     expect(AUTO_CHECK_INTERVALS).toEqual([3, 6, 12, 24]);
     expect(DEFAULT_AUTO_CHECK_INTERVAL).toBe(6);
   });

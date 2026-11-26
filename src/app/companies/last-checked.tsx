@@ -6,7 +6,7 @@ import { useFormatter, useNow, useTranslations } from "next-intl";
 const UPDATE_INTERVAL_MS = 60_000;
 
 /**
- * «Last checked: 5 min ago» у картці компанії (docs/ui.md, розділ 4.2).
+ * «Last checked: 5 min ago» у картці компанії.
  *
  * `useNow` бере спільне «зараз» із конфігурації next-intl (`src/i18n/request.ts`),
  * тож серверний і клієнтський рендер збігаються, а далі оновлюється раз на

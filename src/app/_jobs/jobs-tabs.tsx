@@ -19,8 +19,7 @@ function hrefOf(tab: JobsTab): string {
 }
 
 /**
- * Вкладки Unread / Read / Favorites / All у фіксованому порядку
- * (docs/ui.md, розділ 4.1).
+ * Вкладки Unread / Read / Favorites / All у фіксованому порядку.
  *
  * Навігація між адресами, як вкладки Companies
  * ([`companies-tabs.tsx`](../companies/companies-tabs.tsx)): вкладку можна

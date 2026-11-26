@@ -17,7 +17,7 @@ interface HistoryBoardProps {
 }
 
 /**
- * Таблиця History з Load more (docs/ui.md, розділ 4.4). Звичайна `<table>`, а
+ * Таблиця History з Load more. Звичайна `<table>`, а
  * не Table з HeroUI: та - сітка React Aria з виділенням і навігацією
  * клавіатурою між клітинками, а тут лише читання пʼяти чисел.
  */

@@ -27,7 +27,7 @@ describe("parseThemePreference", () => {
 
   it("defaults to the system preference", () => {
     // Застосунок не вирішує за користувача: доки він не вибрав, тема береться
-    // з налаштувань операційної системи (docs/ui.md, розділ 4.5).
+    // з налаштувань операційної системи.
     expect(DEFAULT_THEME).toBe("system");
   });
 });

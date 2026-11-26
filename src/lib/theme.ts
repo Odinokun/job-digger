@@ -9,7 +9,7 @@ export const THEME_PREFERENCES = ["light", "dark", "system"] as const;
 export type ThemePreference = (typeof THEME_PREFERENCES)[number];
 
 /**
- * Доки користувач не вибрав - беремо тему з системи (docs/ui.md, розділ 4.5).
+ * Доки користувач не вибрав - беремо тему з системи.
  */
 export const DEFAULT_THEME: ThemePreference = "system";
 

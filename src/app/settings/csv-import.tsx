@@ -13,7 +13,7 @@ import {
 import { importCsvAction } from "./actions";
 
 /**
- * Import CSV з підсумком (docs/ui.md, розділ 10; задача 6.06).
+ * Import CSV з підсумком (задача 6.06).
  *
  * Звичайна форма з файлом: Server Action приймає `FormData` з `File`
  * напряму. Розмір перевіряється ще тут, до відправлення: більший файл Next

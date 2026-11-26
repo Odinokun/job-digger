@@ -10,7 +10,7 @@ import type { CareerPlatform } from "./platform";
  */
 
 /**
- * Стани компанії на вкладці Not tracked (docs/ui.md, розділ 4.3).
+ * Стани компанії на вкладці Not tracked.
  *
  * Перелік тут, а `pgEnum("discovery_status")` будується з нього: інакше ті самі
  * значення жили б у двох місцях і розходилися б.
@@ -42,7 +42,7 @@ export const COMPANIES_TABS = [
 
 /**
  * Належність до вкладки в базі не зберігається: Tracked - це «є хоч одне
- * джерело, що відстежується» (docs/ui.md, розділи 4.2 і 4.3), Needs attention -
+ * джерело, що відстежується», Needs attention -
  * правило в `src/server/companies/list.ts` (`needsAttentionSubquery`).
  */
 export type CompaniesTab = (typeof COMPANIES_TABS)[number];
@@ -70,7 +70,7 @@ export type CompanySource = {
   /**
    * Остання успішна перевірка - «Last ok: 12 days ago» біля невдалого джерела:
    * після збою вакансії не видаляються, і без цієї дати застарілі не відрізнити
-   * від живих (docs/ui.md, розділ 4.2).
+   * від живих.
    */
   lastSuccessAt: Date | null;
   /** Джерело в черзі: завдання чекає або виконується. */
@@ -92,7 +92,7 @@ export type CompanyListItem = {
   /**
    * Остання перевірка серед джерел компанії, успішна чи ні, або `null`, якщо
    * жодне ще не перевірялося. Картка показує її відносно («Last checked: 5 min
-   * ago», docs/ui.md, розділ 4.2).
+   * ago»).
    */
   lastCheckedAt: Date | null;
 };

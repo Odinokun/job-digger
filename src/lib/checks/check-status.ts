@@ -42,7 +42,7 @@ export interface CheckStatus {
 }
 
 /**
- * Рядок History (docs/ui.md, розділ 4.4): рівно пʼять показників завершеної
+ * Рядок History: рівно пʼять показників завершеної
  * загальної перевірки.
  */
 export interface CheckRunRow {

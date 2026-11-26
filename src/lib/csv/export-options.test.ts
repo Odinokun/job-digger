@@ -8,7 +8,6 @@ import {
 
 describe("export options", () => {
   it("starts with both lists and without career URLs", () => {
-    // docs/ui.md, розділ 10.
     expect(DEFAULT_EXPORT_OPTIONS).toEqual({
       tracked: true,
       notTracked: true,

@@ -143,7 +143,7 @@ describe("startCheckAll", () => {
   });
 
   it("leaves out untracked sources and companies of other users", async () => {
-    // Not tracked ніколи не бере участі в Check all (docs/ui.md, розділ 4.3).
+    // Not tracked ніколи не бере участі в Check all.
     const user = await seedSystemUser(testDb);
     const [tracked] = await companyWith(
       user.id,

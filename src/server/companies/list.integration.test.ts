@@ -773,7 +773,7 @@ describe("last checked", () => {
 });
 
 describe("source check state", () => {
-  // Статус компанії й «Last ok» на вкладці Tracked (docs/ui.md, розділ 4.2).
+  // Статус компанії й «Last ok» на вкладці Tracked.
   async function sourceOf(name: string) {
     const user = await seedSystemUser(testDb);
     const company = await insertTracked(user.id, name);
