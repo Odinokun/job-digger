@@ -1,12 +1,13 @@
 /**
- * Парсер CleverStaff (задача 3.25): вакансії з публічного API, яким
- * користується сама сторінка дошки `https://cleverstaff.net/i/{alias}-vacancies`.
+ * The CleverStaff parser (task 3.25): vacancies from the public API the board
+ * page `https://cleverstaff.net/i/{alias}-vacancies` itself uses.
  *
- * Документація (neo.cleverstaff.net/api.html) описує `getVacancies?alias=`, але
- * на дошку без вакансій він відповідає `notFound` - як на неіснуючу. Сторінка
- * дошки ходить на недокументований `getAllOpenVacancy?alias=`, і той для
- * порожньої дошки дає `ok` без вакансій. Перевірено справжніми запитами
- * 19.11.2026; деталі - src/server/parsers/README.md, «CleverStaff».
+ * The documentation (neo.cleverstaff.net/api.html) describes
+ * `getVacancies?alias=`, but for a board without vacancies it answers `notFound`,
+ * as for a missing one. The board page calls the undocumented
+ * `getAllOpenVacancy?alias=`, which gives `ok` without vacancies for an empty
+ * board. Checked with real requests on 19.11.2026; details in
+ * src/server/parsers/README.md, "CleverStaff".
  */
 import type { HttpClient } from "../http/client.ts";
 import {
@@ -20,12 +21,12 @@ import type { ParseResult } from "./types.ts";
 
 const ORIGIN = "https://cleverstaff.net";
 
-/** Дошка компанії - за аліасом, або окрема вакансія, аліас якої ще невідомий. */
+/** A company board by alias, or a single vacancy whose alias is not known yet. */
 export type CleverStaffSource = { alias: string } | { vacancy: string };
 
 /**
- * Що в адресі джерела: дошка `/i/{alias}-vacancies` (зокрема її сторінка
- * `/description`) чи вакансія `/i/vacancy-{localId}`. Інше - `null`.
+ * What the source address holds: a board `/i/{alias}-vacancies` (including its
+ * `/description` page) or a vacancy `/i/vacancy-{localId}`. Anything else is `null`.
  */
 export function cleverstaffSource(sourceUrl: string): CleverStaffSource | null {
   let url: URL;
@@ -57,18 +58,18 @@ export function cleverstaffSource(sourceUrl: string): CleverStaffSource | null {
   return null;
 }
 
-/** Адреса дошки компанії з аліасом. */
+/** The address of a company board with an alias. */
 export function cleverstaffBoardUrl(alias: string): string {
   return `${ORIGIN}/i/${encodeURIComponent(alias)}-vacancies`;
 }
 
 /**
- * Вакансії з відповіді `getAllOpenVacancy`. API відповідає 200 і тоді, коли
- * дошки немає: помилку видно з `status: "error"` і `code`.
+ * Vacancies from the `getAllOpenVacancy` response. The API answers 200 even when
+ * there is no board: the error shows in `status: "error"` and `code`.
  *
- * `externalId` - `localId` (він же в адресі вакансії), назва - `position`,
- * локація - `displayFullName` кожного з `regions` (або `region`), для
- * віддаленої роботи (`workCondition: "remote"`) - з приміткою «remote».
+ * `externalId` is `localId` (the same as in the vacancy address), the title is
+ * `position`, the location is the `displayFullName` of each of `regions` (or
+ * `region`), with a "remote" note for remote work (`workCondition: "remote"`).
  */
 export function parseCleverStaffVacancies(answer: unknown): ParseResult {
   if (!isRecord(answer)) {
@@ -85,7 +86,7 @@ export function parseCleverStaffVacancies(answer: unknown): ParseResult {
     return UNREADABLE;
   }
 
-  // Порожня дошка приходить зовсім без `objects` (дошка MEV, 19.11.2026).
+  // An empty board comes without `objects` at all (the MEV board, 19.11.2026).
   if (answer.objects === undefined) {
     return { ok: true, vacancies: [], skipped: 0 };
   }
@@ -142,9 +143,9 @@ function placeOf(vacancy: Record<string, unknown>): string | null {
 }
 
 /**
- * Вакансії кар'єрного джерела на CleverStaff. Для посилання на окрему вакансію
- * спершу дізнається аліас компанії (`getVacancy`), потім читає всю дошку.
- * Адреса без дошки CleverStaff - `unreadable` без жодного запиту.
+ * Vacancies of a career source on CleverStaff. For a link to a single vacancy it
+ * first learns the company alias (`getVacancy`), then reads the whole board. An
+ * address without a CleverStaff board is `unreadable` without any request.
  */
 export async function readCleverStaff(
   sourceUrl: string,
@@ -177,8 +178,8 @@ export async function readCleverStaff(
 }
 
 /**
- * Аліас компанії з публічних даних вакансії. Вакансія, яку закрили чи
- * прибрали з публічної дошки, - `vacancyIsNotPublic`, тобто `not-found`.
+ * The company alias from a vacancy's public data. A vacancy that was closed or
+ * taken off the public board is `vacancyIsNotPublic`, that is `not-found`.
  */
 async function aliasOfVacancy(
   localId: string,

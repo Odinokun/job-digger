@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { leverSite, parseLeverPostings } from "./lever.ts";
 
-/** Справжня відповідь Lever для демо-сайту leverdemo (src/server/http/testing). */
+/** A real Lever response for the leverdemo demo site (src/server/http/testing). */
 const leverdemo: unknown = JSON.parse(
   readFileSync(
     new URL(
@@ -15,7 +15,7 @@ const leverdemo: unknown = JSON.parse(
   ),
 );
 
-/** Мінімальне оголошення у форматі API - для ручних випадків. */
+/** A minimal posting in the API format - for hand-made cases. */
 function posting(fields: Record<string, unknown>) {
   return {
     id: "5ac21346-8e0c-4494-8e7a-3eb92ff77902",

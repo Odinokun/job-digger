@@ -8,7 +8,7 @@ import {
   parseHurmaVacancies,
 } from "./hurma.ts";
 
-/** Справжня відповідь API дошки Spribe (src/server/http/testing). */
+/** A real API response of the Spribe board (src/server/http/testing). */
 function saved(): unknown {
   return JSON.parse(
     readFileSync(
@@ -21,7 +21,7 @@ function saved(): unknown {
   );
 }
 
-/** Відповідь API з такими вакансіями й без наступної сторінки. */
+/** An API response with these vacancies and no next page. */
 function answer(data: unknown[], next: string | null = null) {
   return { data, links: { next }, meta: { per_page: 100 } };
 }
@@ -120,7 +120,7 @@ describe("parseHurmaVacancies", () => {
     expect(parseHurmaVacancies([]).ok).toBe(false);
     expect(parseHurmaVacancies({ message: "" }).ok).toBe(false);
     expect(parseHurmaVacancies(answer([{ name: "QA" }])).ok).toBe(false);
-    // Адреса без ID - змінився формат, а не вада однієї вакансії.
+    // An address without an ID means the format changed, not bad data in one vacancy.
     expect(
       parseHurmaVacancies(
         answer([{ name: "QA", public_url: "https://acme.hurma.work/jobs/qa" }]),

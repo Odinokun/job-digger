@@ -8,7 +8,7 @@ import {
   peopleforceSite,
 } from "./peopleforce.ts";
 
-/** Справжня сторінка кар'єри PeopleForce (src/server/http/testing). */
+/** A real PeopleForce career page (src/server/http/testing). */
 function saved(host: string): string {
   return readFileSync(
     new URL(`../http/testing/responses/${host}/careers`, import.meta.url),
@@ -16,19 +16,19 @@ function saved(host: string): string {
   );
 }
 
-/** Сама PeopleForce: 6 вакансій, одна сторінка. */
+/** PeopleForce itself: 6 vacancies, one page. */
 const team = saved("team.peopleforce.io");
-/** Webellian: перша сторінка з трьох, 10 вакансій з 23. */
+/** Webellian: the first page of three, 10 vacancies of 23. */
 const webellian = saved("webellian.peopleforce.io");
-/** SoftConstruct: PeopleForce на домені компанії, 10 вакансій з 215 (задача 5.13). */
+/** SoftConstruct: PeopleForce on the company's domain, 10 vacancies of 215 (task 5.13). */
 const softconstruct = saved("peopleforce.softconstruct.com");
 
 const TEAM_PAGE = "https://team.peopleforce.io/careers?page=1";
 
 /**
- * Список у розмітці PeopleForce: лічильник «X - Y з N» (текст навколо чисел
- * перекладається, числа - ні) і картки вакансій. Без лічильника - порожній
- * список, як на справжній сторінці («There are currently no vacancies.»).
+ * A list in PeopleForce markup: the "X - Y of N" counter (the text around the
+ * numbers is translated, the numbers are not) and vacancy cards. Without a
+ * counter it is an empty list, as on a real page ("There are currently no vacancies.").
  */
 function page({
   counter,
@@ -173,8 +173,8 @@ describe("parsePeopleForcePage", () => {
   });
 
   it("fails when the jobs do not match the counter", () => {
-    // Верстка змінилась так, що частину карток не видно, - нуль чи половина
-    // вакансій видалили б решту.
+    // The markup changed so that some cards are not visible - zero or half of
+    // the vacancies would delete the rest.
     expect(
       parsePeopleForcePage(
         page({ counter: ["1 - 2", "2"], cards: [card("/careers/v/7-a", "A")] }),

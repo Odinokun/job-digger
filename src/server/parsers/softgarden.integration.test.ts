@@ -9,7 +9,7 @@ import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { readSoftgarden } from "./softgarden.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 let fakeWeb: FakeWeb;
@@ -66,7 +66,7 @@ describe("readSoftgarden", () => {
   });
 
   it("reports a career site that does not exist, though it answers 400", async () => {
-    // Як справжній (перевірено 19.11.2026): невідомий сайт - 400, а не 404.
+    // Like the real one (checked 19.11.2026): an unknown site is a 400, not a 404.
     const server: Server = createServer((_request, response) => {
       response.writeHead(400, { "content-type": "application/json" });
       response.end(
@@ -91,7 +91,7 @@ describe("readSoftgarden", () => {
   it("does not request anything for an address that is not softgarden", async () => {
     const result = await readSoftgarden(
       "https://www.softgarden.io/",
-      // Порт 1 ніхто не слухає: якби запит пішов, це був би fetch-failed.
+      // Nobody listens on port 1: if a request went out, it would be fetch-failed.
       clientFor("http://127.0.0.1:1"),
     );
 

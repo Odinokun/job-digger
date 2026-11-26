@@ -7,10 +7,10 @@ import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { readPersonio } from "./personio.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
-/** Фейковий вебсервер зі справжніми збереженими відповідями. */
+/** The fake web server with real saved responses. */
 let fakeWeb: FakeWeb;
 
 beforeAll(async () => {
@@ -60,7 +60,7 @@ describe("readPersonio", () => {
   it("does not request anything for an address that is not a Personio board", async () => {
     const result = await readPersonio(
       "https://www.personio.com/careers",
-      // Порт 1 ніхто не слухає: якби запит пішов, це був би fetch-failed.
+      // Nobody listens on port 1: if a request went out, it would be fetch-failed.
       clientFor("http://127.0.0.1:1"),
     );
 

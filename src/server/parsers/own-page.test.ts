@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { findLinkGroups, parseOwnPage } from "./own-page.ts";
 
-/** Справжня кар'єрна сторінка компанії (src/server/http/testing). */
+/** A real company career page (src/server/http/testing). */
 function saved(path: string): string {
   return readFileSync(
     new URL(`../http/testing/responses/${path}`, import.meta.url),
@@ -12,22 +12,22 @@ function saved(path: string): string {
   );
 }
 
-/** Framer: назва - `h2` усередині посилання; поруч - група посилань-категорій. */
+/** Framer: the title is an `h2` inside the link; next to it, a group of category links. */
 const KINGGROUP = {
   url: "https://kinggroup.io/vacancies/tech",
   html: saved("kinggroup.io/vacancies/tech"),
 };
-/** WordPress: посилання - «View & Apply», назва - `h3` у картці поруч. */
+/** WordPress: the link says "View & Apply", the title is an `h3` in the card next to it. */
 const DELASPORT = {
   url: "https://www.delasport.com/careers/",
   html: saved("www.delasport.com/careers/index"),
 };
-/** Посилання порожнє, назва - `div.vacancies__title` у картці. */
+/** The link is empty, the title is `div.vacancies__title` in the card. */
 const NCUBE = {
   url: "https://ncube.com/career",
   html: saved("ncube.com/career"),
 };
-/** Посилання - уся картка: напрямок, назва (`career-item__position`), локація. */
+/** The link is the whole card: department, title (`career-item__position`), location. */
 const ALISTWARE = {
   url: "https://a-listware.com/career",
   html: saved("a-listware.com/career"),
@@ -37,7 +37,7 @@ describe("findLinkGroups", () => {
   it("finds the vacancy links of a Framer page", () => {
     const [best] = findLinkGroups(KINGGROUP.html, KINGGROUP.url);
 
-    // Відносні `./design/<slug>` зі сторінки `/vacancies/tech`.
+    // Relative `./design/<slug>` links from the `/vacancies/tech` page.
     expect(best.prefix).toBe("kinggroup.io/vacancies/design/");
     expect(best.vacancies).toHaveLength(10);
     expect(best.vacancies.map((vacancy) => vacancy.title)).toEqual(
@@ -50,8 +50,8 @@ describe("findLinkGroups", () => {
   });
 
   it("puts vacancies deeper than the page before categories of its level", () => {
-    // Категорії списку (`/vacancies/hr`) - того самого рівня, що й сторінка
-    // `/vacancies/tech`; вакансії - глибші. Категорій більше, але вони друга.
+    // The list categories (`/vacancies/hr`) are on the same level as the
+    // `/vacancies/tech` page; vacancies are deeper. There are more categories, but they come second.
     const html = `<html><body><main>
       <div><a href="/vacancies/hr">HR</a></div>
       <div><a href="/vacancies/finance">Finance</a></div>
@@ -105,7 +105,7 @@ describe("findLinkGroups", () => {
   });
 
   it("takes the link text over a longer department line", () => {
-    // Teamtailor (headway): назва - саме посилання, відділ нижче довший.
+    // Teamtailor (headway): the title is the link itself, the department below is longer.
     const html = `<html><body><ul>
       <li><div><a href="/jobs/1-system-engineer">System Engineer</a>
         <div><span>People Operations Team</span> · <span>Kyiv</span></div></div></li>
@@ -121,7 +121,7 @@ describe("findLinkGroups", () => {
   });
 
   it("takes the first line of the card over a longer description", () => {
-    // Webflow (codebridge): клас назви з помилкою, опис нижче довший.
+    // Webflow (codebridge): the title class has a typo, the description below is longer.
     const html = `<html><body>
       <div><div class="career-postiton">Senior Frontend Developer</div>
         <div>Build the design system of a fintech product used by millions.</div>

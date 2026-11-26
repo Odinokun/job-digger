@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { greenhouseBoardToken, parseGreenhouseJobs } from "./greenhouse.ts";
 
-/** Справжня відповідь Greenhouse для дошки Discord (src/server/http/testing). */
+/** A real Greenhouse response for the Discord board (src/server/http/testing). */
 const discordJobs: unknown = JSON.parse(
   readFileSync(
     new URL(
@@ -15,7 +15,7 @@ const discordJobs: unknown = JSON.parse(
   ),
 );
 
-/** Мінімальна вакансія у форматі API - для ручних випадків. */
+/** A minimal vacancy in the API format - for hand-made cases. */
 function job(fields: Record<string, unknown>) {
   return {
     id: 1,
@@ -70,7 +70,7 @@ describe("parseGreenhouseJobs", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.vacancies).toHaveLength(26);
-    // Значення виписані з файлу відповіді руками, а не обчислені кодом.
+    // The values are copied from the response file by hand, not computed by code.
     expect(result.vacancies[0]).toEqual({
       externalId: "8927168002",
       title: "Account Executive, Mobile Gaming & Apps",
@@ -105,8 +105,8 @@ describe("parseGreenhouseJobs", () => {
   });
 
   it("skips a vacancy with an empty title or a non-web address and counts it", () => {
-    // Вада даних однієї вакансії, а не зміна формату (src/server/parsers/README.md).
-    // Посилання в UI - лише http/https (CLAUDE.md, «Безпека»).
+    // Bad data in one vacancy, not a format change (src/server/parsers/README.md).
+    // Links in the UI are http/https only (CLAUDE.md, "Security").
     for (const bad of [
       job({ id: 2, title: "  " }),
       job({ id: 2, absolute_url: "not an address" }),
@@ -122,8 +122,8 @@ describe("parseGreenhouseJobs", () => {
   });
 
   it("refuses the whole answer when one vacancy has a broken structure", () => {
-    // Поле не того типу чи без id - сигнал зміни формату: пропускати такі
-    // записи означало б пропустити всі й видалити вакансії джерела (3.13).
+    // A field of the wrong type or a missing id signals a format change: skipping
+    // such records would mean skipping all and deleting the source's vacancies (3.13).
     for (const broken of [
       job({ title: undefined }),
       job({ title: 42 }),

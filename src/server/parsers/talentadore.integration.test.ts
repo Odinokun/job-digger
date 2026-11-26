@@ -7,7 +7,7 @@ import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { readTalentAdore } from "./talentadore.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 let fakeWeb: FakeWeb;

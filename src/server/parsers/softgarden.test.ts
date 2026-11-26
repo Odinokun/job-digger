@@ -8,7 +8,7 @@ import {
   softgardenSource,
 } from "./softgarden.ts";
 
-/** Справжня відповідь softgarden (src/server/http/testing). */
+/** A real softgarden response (src/server/http/testing). */
 function saved(path: string): string {
   return readFileSync(
     new URL(`../http/testing/responses/${path}`, import.meta.url),
@@ -19,8 +19,8 @@ function saved(path: string): string {
 const BOARD_PAGE = "https://acme.softgarden.io/en/vacancies";
 
 /**
- * Сторінка старої дошки з такими картками й ID у даних мапи - як справжня:
- * шапка списку, `SG.allJobLocations` і по `push` на кожну локацію.
+ * An old board page with these cards and IDs in the map data, like a real one:
+ * the list header, `SG.allJobLocations` and one `push` per location.
  */
 function board(cards: string, postingIds: number[] = []): string {
   const pushes = postingIds
@@ -122,7 +122,7 @@ describe("parseSoftgardenBoard", () => {
   });
 
   it("fails when the map knows a job the list does not show", () => {
-    // Змінена верстка: картки не знайшлися, а дані мапи - є.
+    // Changed markup: the cards were not found, but the map data is there.
     expect(parseSoftgardenBoard(board("", [1]), BOARD_PAGE).ok).toBe(false);
     expect(
       parseSoftgardenBoard(board(card(1, "QA"), [1, 2]), BOARD_PAGE).ok,
@@ -156,7 +156,7 @@ describe("parseSoftgardenFeed", () => {
       url: "https://spinncloud.career.softgarden.de/jobs/29892564/Embedded-Machine-Learning-Engineer/",
       location: "Dresden, Deutschland",
     });
-    // Порожні частини адреси softgarden заповнює «-».
+    // softgarden fills empty address parts with "-".
     expect(result.ok && result.vacancies[5]?.location).toBe("Germany");
   });
 
@@ -186,7 +186,7 @@ describe("parseSoftgardenFeed", () => {
   it("fails on an answer that is not a whole job feed", () => {
     expect(parseSoftgardenFeed([]).ok).toBe(false);
     expect(parseSoftgardenFeed({ success: false }).ok).toBe(false);
-    // Фід каже, що вакансій більше, ніж у ньому є.
+    // The feed says there are more vacancies than it holds.
     expect(
       parseSoftgardenFeed({ ...feed([item(7, "QA")]), numberOfItems: 2 }).ok,
     ).toBe(false);
@@ -196,7 +196,7 @@ describe("parseSoftgardenFeed", () => {
   });
 });
 
-/** Фід нового кар'єрного сайту з такими записами. */
+/** A new career site feed with these records. */
 function feed(elements: unknown[]) {
   return {
     "@type": "DataFeed",

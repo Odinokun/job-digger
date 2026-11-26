@@ -1,15 +1,15 @@
 /**
- * Парсер softgarden (задача 3.28). У softgarden два продукти з публічними
- * дошками, і читаються обидва:
+ * The softgarden parser (task 3.28). softgarden has two products with public
+ * boards, and both are read:
  *
- * - стара дошка `https://{company}.softgarden.io/{lang}/vacancies` - серверний
- *   HTML з усіма вакансіями одразу (сторінки малює JavaScript);
- * - новий кар'єрний сайт `https://{company}.career.softgarden.de` - фід
- *   schema.org `DataFeed` на `/jobs.feed.json`.
+ * - the old board `https://{company}.softgarden.io/{lang}/vacancies` - server
+ *   HTML with all vacancies at once (JavaScript draws the pages);
+ * - the new career site `https://{company}.career.softgarden.de` - a schema.org
+ *   `DataFeed` at `/jobs.feed.json`.
  *
- * Документований API (dev.softgarden.de, `api.softgarden.io`) потребує client
- * ID від softgarden, тож для нас закритий. Обидва формати перевірено
- * справжніми запитами 19.11.2026, документації в них немає.
+ * The documented API (dev.softgarden.de, `api.softgarden.io`) needs a client ID
+ * from softgarden, so it is closed to us. Both formats were checked with real
+ * requests on 19.11.2026; they have no documentation.
  */
 import * as cheerio from "cheerio";
 
@@ -28,15 +28,15 @@ import type { ParseResult } from "./types.ts";
 const BOARD_DOMAIN = "softgarden.io";
 const SITE_DOMAIN = "career.softgarden.de";
 
-/** Піддомени `softgarden.io`, що не є дошками компаній. */
+/** `softgarden.io` subdomains that are not company boards. */
 const SERVICE_LABELS = new Set(["www", "api", "dev", "app"]);
 
-/** Джерело softgarden: стара дошка чи новий кар'єрний сайт. */
+/** A softgarden source: the old board or the new career site. */
 export type SoftgardenSource = { kind: "board" | "site"; origin: string };
 
 /**
- * Дошка чи кар'єрний сайт з будь-якої їхньої адреси, зокрема з посилання на
- * вакансію, або `null`, якщо це не softgarden.
+ * The board or career site from any of their addresses, including a vacancy
+ * link, or `null` if it is not softgarden.
  */
 export function softgardenSource(sourceUrl: string): SoftgardenSource | null {
   let host: string;
@@ -66,27 +66,28 @@ export function softgardenSource(sourceUrl: string): SoftgardenSource | null {
   return null;
 }
 
-/** Адреса, з якої читається джерело: список вакансій дошки або сайт. */
+/** The address the source is read from: the board's vacancy list or the site. */
 export function softgardenBoardUrl(source: SoftgardenSource): string {
   return source.kind === "board"
     ? `${source.origin}/en/vacancies`
     : source.origin;
 }
 
-/** Ознака сторінки старої дошки: дані мапи вакансій у скрипті сторінки. */
+/** The sign of an old board page: vacancy map data in the page script. */
 const MAP_DATA = "SG.allJobLocations = [";
 
 const POSTING_ID = /SG\.allJobLocations\.push\(\{[^}]*?postingId:\s*(\d+)/g;
 
 /**
- * Вакансії старої дошки з HTML. `pageUrl` - адреса сторінки після редиректів,
- * від неї розвʼязуються відносні посилання (`../job/{id}/...`).
+ * Vacancies of the old board from HTML. `pageUrl` is the page address after
+ * redirects; relative links (`../job/{id}/...`) resolve against it.
  *
- * Картка - `.matchElement#job_id_{id}` (шапка таблиці - теж `.matchElement`), назва й посилання - `.title a`,
- * локації - `.location-view-item` через кому. Лічильника в HTML немає (його
- * підставляє JavaScript), тому нулю довіряємо через дані мапи: кожен
- * `postingId` з `SG.allJobLocations` має бути серед карток. Інакше змінена
- * верстка дала б «нуль вакансій» - видалення всіх.
+ * A card is `.matchElement#job_id_{id}` (the table header is a `.matchElement`
+ * too), the title and link are `.title a`, the locations are
+ * `.location-view-item`, comma-separated. The HTML has no counter (JavaScript
+ * fills it in), so zero is trusted through the map data: every `postingId` from
+ * `SG.allJobLocations` must be among the cards. Otherwise changed markup would
+ * give "zero vacancies" - deleting all of them.
  */
 export function parseSoftgardenBoard(
   html: string,
@@ -97,7 +98,7 @@ export function parseSoftgardenBoard(
   }
 
   const $ = cheerio.load(html);
-  // Шапка таблиці теж `.matchElement`, але з `.matchHeadline`.
+  // The table header is a `.matchElement` too, but with `.matchHeadline`.
   const cards = $(".matchElement:not(.matchHeadline)")
     .toArray()
     .map((element) => {
@@ -142,7 +143,7 @@ const boardVacancyOn =
     } catch {
       return "skip";
     }
-    // `jobDbPVId` і мова в рядку запиту до вакансії не належать.
+    // `jobDbPVId` and the language in the query string do not belong to the vacancy.
     url.search = "";
 
     if (title.trim() === "" || !isWebUrl(url.toString())) {
@@ -155,7 +156,7 @@ const boardVacancyOn =
       url: url.toString(),
       location: joinPlaces(
         (Array.isArray(places) ? places : []).map((place) =>
-          // Кома між локаціями - частина тексту кожної, крім останньої.
+          // The comma between locations is part of each one's text, except the last.
           String(place).trim().replace(/,$/, ""),
         ),
         ", ",
@@ -164,14 +165,14 @@ const boardVacancyOn =
   };
 
 /**
- * Вакансії нового кар'єрного сайту з фіду: `DataFeed` з `dataFeedElement`,
- * де кожен `item` - `JobPosting`. `numberOfItems` має дорівнювати кількості
- * записів - так видно, що фід цілий.
+ * Vacancies of the new career site from the feed: a `DataFeed` with
+ * `dataFeedElement`, where each `item` is a `JobPosting`. `numberOfItems` must
+ * equal the number of records - that shows the feed is whole.
  *
- * `externalId` - `identifier.value` (він же в адресі `/jobs/{id}/...`), назва -
- * `title`, посилання - `url`, локація - місто (або регіон) і країна кожного
- * `jobLocation`; кілька місць - через «; ». Порожні частини адреси softgarden
- * заповнює «-», вони відкидаються.
+ * `externalId` is `identifier.value` (the same as in the `/jobs/{id}/...`
+ * address), the title is `title`, the link is `url`, the location is the city (or
+ * region) and country of each `jobLocation`; several places are joined with "; ".
+ * softgarden fills empty address parts with "-", and they are dropped.
  */
 export function parseSoftgardenFeed(answer: unknown): ParseResult {
   if (
@@ -228,19 +229,20 @@ function placeOf(address: unknown): string | null {
   return joinPlaces([area, part(address.addressCountry)], ", ");
 }
 
-/** Непорожні частини без повторів через `separator`, або `null`. */
+/** Non-empty parts without repeats joined with `separator`, or `null`. */
 function joinPlaces(parts: string[], separator: string): string | null {
   const unique = [...new Set(parts.filter((part) => part !== ""))];
   return unique.length === 0 ? null : unique.join(separator);
 }
 
 /**
- * Вакансії кар'єрного джерела на softgarden: вид джерела з адреси, один запит
- * і розбір. Адреса не softgarden - `unreadable` без жодного запиту.
+ * Vacancies of a career source on softgarden: the source kind from the address,
+ * one request and parsing. A non-softgarden address is `unreadable` without any
+ * request.
  *
- * Невідомий кар'єрний сайт фід відкидає з 400 («No such client for domain»),
- * а не з 404 - тут це `not-found`, бо інших 400 у цього запиту без параметрів
- * не буває.
+ * The feed rejects an unknown career site with a 400 ("No such client for
+ * domain") rather than a 404 - here it is `not-found`, because this request
+ * without parameters has no other 400s.
  */
 export async function readSoftgarden(
   sourceUrl: string,

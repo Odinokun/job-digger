@@ -1,5 +1,5 @@
 /**
- * Парсер Greenhouse: вакансії з публічного Job Board API
+ * The Greenhouse parser: vacancies from the public Job Board API
  * (https://docs.greenhouse.io/job-board.html).
  */
 import type { HttpClient } from "../http/client.ts";
@@ -14,8 +14,8 @@ import {
 import type { ParseResult } from "./types.ts";
 
 /**
- * Хости, на яких Greenhouse показує дошки. Регіону ЄС тут немає свідомо:
- * підтвердженого API для нього немає (tasks/3.06-greenhouse-parser.md).
+ * The hosts where Greenhouse shows boards. The EU region is left out on purpose:
+ * there is no confirmed API for it (tasks/3.06-greenhouse-parser.md).
  */
 const BOARD_HOSTS = new Set([
   "job-boards.greenhouse.io",
@@ -23,9 +23,9 @@ const BOARD_HOSTS = new Set([
 ]);
 
 /**
- * Назва дошки (board token) з адреси джерела або `null`, якщо адреса - не
- * дошка Greenhouse. Розуміє саму дошку (`/discord`), посилання на вакансію
- * (`/discord/jobs/123`) і вбудовану дошку (`/embed/job_board?for=discord`).
+ * The board name (board token) from a source address, or `null` if the address is
+ * not a Greenhouse board. Understands the board itself (`/discord`), a vacancy
+ * link (`/discord/jobs/123`) and an embedded board (`/embed/job_board?for=discord`).
  */
 export function greenhouseBoardToken(sourceUrl: string): string | null {
   let url: URL;
@@ -50,14 +50,14 @@ export function greenhouseBoardToken(sourceUrl: string): string | null {
 }
 
 /**
- * Вакансії з відповіді `GET /v1/boards/{board_token}/jobs`.
+ * Vacancies from the `GET /v1/boards/{board_token}/jobs` response.
  *
- * `externalId` - поле `id`: за документацією це ID оголошення, той самий, що в
- * посиланні на вакансію (`internal_job_id` - ID самої посади, в оголошень-
- * «prospect» він `null`).
+ * `externalId` is the `id` field: per the documentation it is the posting ID, the
+ * same as in the vacancy link (`internal_job_id` is the ID of the job itself, and
+ * it is `null` for "prospect" postings).
  *
- * Зламана структура хоч одного запису - невдала вся відповідь, вада даних -
- * пропуск цієї вакансії (`collectVacancies`, README «Спільний формат»).
+ * A broken structure in even one record fails the whole response, bad data skips
+ * that vacancy (`collectVacancies`, README "Shared format").
  */
 export function parseGreenhouseJobs(answer: unknown): ParseResult {
   if (!isRecord(answer) || !Array.isArray(answer.jobs)) {
@@ -97,9 +97,9 @@ const toVacancy: ReadVacancy = (job) => {
 };
 
 /**
- * Вакансії кар'єрного джерела на Greenhouse: назва дошки з адреси, запит до
- * Job Board API через HTTP-клієнт і розбір відповіді. Адреса, у якій немає
- * дошки Greenhouse, - `unreadable` без жодного запиту.
+ * Vacancies of a career source on Greenhouse: the board name from the address, a
+ * Job Board API request through the HTTP client and parsing of the response. An
+ * address without a Greenhouse board is `unreadable` without any request.
  */
 export async function readGreenhouse(
   sourceUrl: string,

@@ -9,7 +9,7 @@ import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { readAshby } from "./ashby.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 let fakeWeb: FakeWeb;
@@ -25,7 +25,7 @@ afterAll(async () => {
   await fakeWeb.close();
 });
 
-/** Клієнт зі спільним лімітом розміру за замовчуванням - як у застосунку. */
+/** A client with the default shared size limit - as in the app. */
 function clientFor(origin: string) {
   return createHttpClient({
     fakeOrigin: origin,
@@ -63,8 +63,8 @@ describe("readAshby", () => {
   });
 
   it("reports a board that does not exist", async () => {
-    // Справжній Ashby на невідому дошку відповідає 404 `Not Found`
-    // (перевірено 18.11.2026), фейковий вебсервер без відповіді - теж.
+    // The real Ashby answers 404 `Not Found` for an unknown board (checked
+    // 18.11.2026), and so does the fake web server without a response.
     const result = await readAshby(
       "https://jobs.ashbyhq.com/no-such-board",
       clientFor(fakeWeb.origin),
@@ -76,7 +76,7 @@ describe("readAshby", () => {
   it("does not request anything for an address that is not an Ashby board", async () => {
     const result = await readAshby(
       "https://bosch.com/careers",
-      // Порт 1 ніхто не слухає: якби запит пішов, це був би fetch-failed.
+      // Nobody listens on port 1: if a request went out, it would be fetch-failed.
       clientFor("http://127.0.0.1:1"),
     );
 
@@ -84,8 +84,8 @@ describe("readAshby", () => {
   });
 
   it("reads a board larger than the usual response limit", async () => {
-    // Ashby віддає всі вакансії разом з описами одним запитом: дошка OpenAI -
-    // 14 МБ при звичайному ліміті 5 МБ. Тож для свого API парсер просить більше.
+    // Ashby returns all vacancies with descriptions in one request: the OpenAI
+    // board is 14 MB against the usual 5 MB limit. So the parser asks for more for its API.
     const description = "x".repeat(64 * 1024);
     const count = Math.ceil((MAX_BYTES * 1.5) / description.length);
     const board = {

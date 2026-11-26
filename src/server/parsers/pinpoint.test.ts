@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { parsePinpointPostings, pinpointCompany } from "./pinpoint.ts";
 
-/** Справжня відповідь `postings.json` Pinpoint, компанія GiG (src/server/http/testing). */
+/** A real Pinpoint `postings.json` response, the GiG company (src/server/http/testing). */
 const gig: unknown = JSON.parse(
   readFileSync(
     new URL(
@@ -50,7 +50,7 @@ describe("parsePinpointPostings", () => {
       url: "https://gig.pinpointhq.com/en/postings/f6d46c10-7fc0-4db6-848b-5c04e08c7e1c",
       location: "St Julians, Malta",
     });
-    // Місто й регіон однакові - один раз, без зайвого пробілу з даних.
+    // The city and region are the same - once, without the stray space from the data.
     expect(result.vacancies).toContainEqual(
       expect.objectContaining({ externalId: "534599", location: "Madrid" }),
     );

@@ -14,7 +14,7 @@ import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { readHurma } from "./hurma.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 let fakeWeb: FakeWeb;
@@ -40,8 +40,8 @@ function clientFor(origin: string) {
 }
 
 /**
- * Окремий сервер для того, чого не видно в збережених відповідях: фейковий
- * вебсервер ігнорує рядок запиту (`?page=N`) і не читає заголовків.
+ * A separate server for what the saved responses do not show: the fake web
+ * server ignores the query string (`?page=N`) and does not read headers.
  */
 async function withServer(
   respond: (request: IncomingMessage, response: ServerResponse) => void,
@@ -59,8 +59,8 @@ async function withServer(
 }
 
 /**
- * API Hurma з `total` вакансіями по `perPage` на сторінці. Як справжній, без
- * `X-Requested-With` відповідає 403, а `links.next` порожнє на останній сторінці.
+ * The Hurma API with `total` vacancies, `perPage` per page. Like the real one, it
+ * answers 403 without `X-Requested-With`, and `links.next` is empty on the last page.
  */
 function pagedApi(total: number, requested: string[], perPage = 2) {
   return (request: IncomingMessage, response: ServerResponse) => {
@@ -139,7 +139,7 @@ describe("readHurma", () => {
       );
 
       expect(result.ok && result.vacancies).toHaveLength(4);
-      // Список не дочитано - життєвий цикл не має нічого закривати (6.16).
+      // The list was not read to the end - the lifecycle must close nothing (6.16).
       expect(result.ok && result.truncated).toBe(true);
     });
 
@@ -158,7 +158,7 @@ describe("readHurma", () => {
   it("does not request anything for an address that is not a Hurma board", async () => {
     const result = await readHurma(
       "https://support.hurma.work/en",
-      // Порт 1 ніхто не слухає: якби запит пішов, це був би fetch-failed.
+      // Nobody listens on port 1: if a request went out, it would be fetch-failed.
       clientFor("http://127.0.0.1:1"),
     );
 

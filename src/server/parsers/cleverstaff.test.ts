@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { cleverstaffSource, parseCleverStaffVacancies } from "./cleverstaff.ts";
 
-/** Справжня відповідь `getAllOpenVacancy` дошки 8allocate (src/server/http/testing). */
+/** A real `getAllOpenVacancy` response of the 8allocate board (src/server/http/testing). */
 const eightAllocate: unknown = JSON.parse(
   readFileSync(
     new URL(
@@ -20,8 +20,8 @@ describe("cleverstaffSource", () => {
     expect(
       cleverstaffSource("https://cleverstaff.net/i/8allocate-vacancies"),
     ).toEqual({ alias: "8allocate" });
-    // Аліас буває з дефісами й великими літерами, і регістр важливий:
-    // `MEV` існує, `mev` - ні (перевірено 19.11.2026).
+    // An alias may have hyphens and capitals, and case matters: `MEV` exists,
+    // `mev` does not (checked 19.11.2026).
     expect(
       cleverstaffSource(
         "https://cleverstaff.net/i/-A-HR--vacancies/description",
@@ -61,7 +61,7 @@ describe("parseCleverStaffVacancies", () => {
   });
 
   it("reads the place of a vacancy and marks remote work", () => {
-    // Поля локації - з дошки -A-HR- (19.11.2026), скорочено.
+    // Location fields from the -A-HR- board (19.11.2026), shortened.
     const answer = {
       status: "ok",
       objects: [
@@ -91,7 +91,7 @@ describe("parseCleverStaffVacancies", () => {
   });
 
   it("reads a board without vacancies", () => {
-    // Справжня відповідь дошки MEV без вакансій: поля `objects` немає зовсім.
+    // A real response of the MEV board without vacancies: there is no `objects` field at all.
     const answer = {
       status: "ok",
       orgId: "830e6f8ba79a42469df7649c81bc6a1b",

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { parseTalentAdorePositions, talentadoreBoard } from "./talentadore.ts";
 
-/** Справжня відповідь TalentAdore, ELK Studios (src/server/http/testing). */
+/** A real TalentAdore response, ELK Studios (src/server/http/testing). */
 const elk: unknown = JSON.parse(
   readFileSync(
     new URL(
@@ -17,7 +17,7 @@ const elk: unknown = JSON.parse(
 
 describe("talentadoreBoard", () => {
   it("reads the company token from the positions address", () => {
-    // Сторінка ELK вбудовує віджет з цією адресою в `data-url`.
+    // The ELK page embeds the widget with this address in `data-url`.
     expect(
       talentadoreBoard(
         "https://ats.talentadore.com/positions/rR1TqSR/json?v=2&language=",
@@ -29,7 +29,7 @@ describe("talentadoreBoard", () => {
   });
 
   it("is null where the address has no company token", () => {
-    // Посилання на вакансію несе токен вакансії, а не компанії.
+    // A vacancy link carries the vacancy's token, not the company's.
     expect(
       talentadoreBoard(
         "https://ats.talentadore.com/apply/2d-game-artist/ZOjKN3",
@@ -61,7 +61,7 @@ describe("parseTalentAdorePositions", () => {
         externalId: "MlMNV",
         title: "2D Game Artist",
         url: "https://ats.talentadore.com/apply/2d-game-artist/ZOjKN3",
-        // Місто й країна, а не адреса офісу з поля `location`.
+        // The city and country, not the office address from the `location` field.
         location: "Stockholm, Sweden",
       },
       {
@@ -112,7 +112,7 @@ describe("parseTalentAdorePositions", () => {
   });
 
   it("refuses an answer that is not a positions list", () => {
-    // Невідомий токен - 404 з `{}`.
+    // An unknown token is a 404 with `{}`.
     expect(parseTalentAdorePositions({})).toEqual({
       ok: false,
       error: { reason: "unreadable" },

@@ -1,7 +1,7 @@
 /**
- * Парсер Workday: вакансії з API, яким користується сам career site Workday
- * (`/wday/cxs/{tenant}/{site}/jobs`). Публічної документації це API не має -
- * усе тут перевірено справжніми запитами (README поруч, «Workday»).
+ * The Workday parser: vacancies from the API the Workday career site itself uses
+ * (`/wday/cxs/{tenant}/{site}/jobs`). This API has no public documentation -
+ * everything here was checked with real requests (the README next to this file, "Workday").
  */
 import type { HttpClient } from "../http/client.ts";
 import {
@@ -14,26 +14,26 @@ import {
 import { pagesToRead, type ReadDepth } from "./vacancies-to-check.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
 
-/** Куди йти по вакансії сайту і звідки будувати посилання на неї. */
+/** Where to go for a site's vacancies and what to build their links from. */
 export interface WorkdaySite {
-  /** Адреса списку вакансій, на неї йде POST. */
+  /** The vacancy list address; the POST goes to it. */
   api: string;
-  /** Адреса career site; посилання на вакансію - вона плюс `externalPath`. */
+  /** The career site address; a vacancy link is it plus `externalPath`. */
   jobBase: string;
 }
 
-/** Сегмент мови на початку шляху: `en-US`, `de-DE`. */
+/** A language segment at the start of the path: `en-US`, `de-DE`. */
 const LOCALE = /^[a-z]{2}-[A-Z]{2}$/;
 
 /**
- * Сайт Workday з адреси джерела або `null`, якщо адреса - не career site Workday.
- * Два формати (`src/lib/companies/platform.ts`):
+ * The Workday site from a source address, or `null` if the address is not a
+ * Workday career site. Two formats (`src/lib/companies/platform.ts`):
  *
- * - `{tenant}.wd5.myworkdayjobs.com/{site}` - tenant у субдомені;
- * - `wd5.myworkdaysite.com/recruiting/{tenant}/{site}` - tenant у шляху.
+ * - `{tenant}.wd5.myworkdayjobs.com/{site}` - the tenant in the subdomain;
+ * - `wd5.myworkdaysite.com/recruiting/{tenant}/{site}` - the tenant in the path.
  *
- * Сегмент мови (`/en-US/...`) пропускається, хвіст після назви сайту (посилання на
- * вакансію) - теж.
+ * A language segment (`/en-US/...`) is skipped, and so is the tail after the site
+ * name (a vacancy link).
  */
 export function workdaySite(sourceUrl: string): WorkdaySite | null {
   let url: URL;
@@ -82,13 +82,14 @@ function siteOf(
 }
 
 /**
- * Вакансії з відповіді на POST `.../jobs` - обʼєкта з масивом `jobPostings`.
+ * Vacancies from the response to a POST to `.../jobs` - an object with a
+ * `jobPostings` array.
  *
- * `externalId` - `externalPath` (`/job/Poland-Warsaw/Engineer_JR1`): окремого
- * ID список не дає, а номер заявки з `bulletFields` не унікальний - в однієї
- * заявки буває кілька оголошень (`..._JR2028965-1`). Посилання - `jobBase` плюс
- * той самий шлях, локація - `locationsText` як є (буває «2 Locations»: усі
- * локації дає лише окремий запит на кожну вакансію).
+ * `externalId` is `externalPath` (`/job/Poland-Warsaw/Engineer_JR1`): the list
+ * gives no separate ID, and the requisition number from `bulletFields` is not
+ * unique - one requisition may have several postings (`..._JR2028965-1`). The
+ * link is `jobBase` plus the same path, the location is `locationsText` as it is
+ * (it can be "2 Locations": only a separate request per vacancy gives all locations).
  */
 export function parseWorkdayJobs(
   answer: unknown,
@@ -128,21 +129,21 @@ function readerFor(jobBase: string): ReadVacancy {
 }
 
 /**
- * Скільки вакансій просити за раз. Це найбільше, що Workday приймає: на
- * `limit: 50` він відповідає 400 (перевірено на NVIDIA 18.11.2026).
+ * How many vacancies to ask for at once. This is the most Workday accepts: for
+ * `limit: 50` it answers 400 (checked on NVIDIA 18.11.2026).
  */
 export const WORKDAY_PAGE_SIZE = 20;
 
 /**
- * Вакансії кар'єрного джерела на Workday: сайт з адреси, сторінки списку через
- * POST (`offset`/`limit`) і розбір кожної. Адреса не Workday - `unreadable` без
- * жодного запиту.
+ * Vacancies of a career source on Workday: the site from the address, list pages
+ * through POST (`offset`/`limit`) and parsing of each. A non-Workday address is
+ * `unreadable` without any request.
  *
- * Кінець списку - за `total` першої сторінки або за неповною сторінкою. Просто
- * «питати, доки не прийде порожня» не можна: на наступних сторінках `total`
- * дорівнює 0, а з `offset` від 2000 Workday знову віддає першу сторінку.
+ * The end of the list comes from the first page's `total` or from an incomplete
+ * page. Simply "asking until an empty one arrives" does not work: on later pages
+ * `total` is 0, and from an `offset` of 2000 Workday serves the first page again.
  *
- * Збій будь-якої сторінки - збій усього джерела, як у Lever.
+ * A failure of any page is a failure of the whole source, as in Lever.
  */
 export async function readWorkday(
   sourceUrl: string,
@@ -161,7 +162,7 @@ export async function readWorkday(
   const vacancies: ParsedVacancy[] = [];
   let skipped = 0;
   let total = Infinity;
-  // Стає `false`, лише коли список скінчився сам, а не на ліміті.
+  // Becomes `false` only when the list ended by itself, not at the limit.
   let truncated = true;
 
   for (let page = 0; page < maxPages; page += 1) {
@@ -191,7 +192,7 @@ export async function readWorkday(
       total = typeof first === "number" ? first : Infinity;
     }
 
-    // Пропущені записи теж займали місце на сторінці.
+    // Skipped records took up room on the page too.
     const read = parsed.vacancies.length + parsed.skipped;
 
     if (read < WORKDAY_PAGE_SIZE || offset + read >= total) {

@@ -1,5 +1,5 @@
 /**
- * Парсер Ashby: вакансії з публічного Job Postings API
+ * The Ashby parser: vacancies from the public Job Postings API
  * (https://developers.ashbyhq.com/docs/public-job-posting-api).
  */
 import type { HttpClient } from "../http/client.ts";
@@ -13,14 +13,14 @@ import {
 } from "./shared.ts";
 import type { ParseResult } from "./types.ts";
 
-/** Хост дошок Ashby. */
+/** The Ashby board host. */
 const BOARD_HOST = "jobs.ashbyhq.com";
 
 /**
- * Назва дошки Ashby з адреси джерела або `null`, якщо адреса - не дошка Ashby.
- * Назва - перший сегмент шляху: сама дошка (`jobs.ashbyhq.com/linear`),
- * вакансія чи форма відгуку (`/linear/<id>/application`), вбудована дошка
- * (`/linear/embed`).
+ * The Ashby board name from a source address, or `null` if the address is not an
+ * Ashby board. The name is the first path segment: the board itself
+ * (`jobs.ashbyhq.com/linear`), a vacancy or an application form
+ * (`/linear/<id>/application`), an embedded board (`/linear/embed`).
  */
 export function ashbyBoard(sourceUrl: string): string | null {
   let url: URL;
@@ -41,17 +41,18 @@ export function ashbyBoard(sourceUrl: string): string | null {
 }
 
 /**
- * Вакансії з відповіді `GET /posting-api/job-board/{name}` - обʼєкта з `jobs`.
+ * Vacancies from the `GET /posting-api/job-board/{name}` response - an object
+ * with `jobs`.
  *
- * `externalId` - `id` (UUID, він же в `jobUrl`; документація поле не описує, але
- * API його віддає - перевірено 18.11.2026), назва - `title`, посилання -
- * `jobUrl`, локація - `location` і після неї `secondaryLocations` через кому.
- * Вакансія з `isListed: false` пропускається: вона доступна лише за прямим
- * посиланням, на дошці компанії її не видно.
+ * `externalId` is `id` (a UUID, the same as in `jobUrl`; the documentation does
+ * not describe the field, but the API returns it - checked 18.11.2026), the title
+ * is `title`, the link is `jobUrl`, the location is `location` followed by
+ * `secondaryLocations`, comma-separated. A vacancy with `isListed: false` is
+ * skipped: it is reachable only by a direct link and not visible on the company board.
  *
- * Зламана структура - невдала вся відповідь, вада даних - пропуск вакансії
- * (`collectVacancies`, README «Спільний формат»). Невидима вакансія - не вада:
- * у `skipped` вона не рахується.
+ * A broken structure fails the whole response, bad data skips the vacancy
+ * (`collectVacancies`, README "Shared format"). An unlisted vacancy is not bad
+ * data: it is not counted in `skipped`.
  */
 export function parseAshbyJobs(answer: unknown): ParseResult {
   if (!isRecord(answer) || !Array.isArray(answer.jobs)) {
@@ -102,17 +103,19 @@ const toVacancy: ReadVacancy = (job) => {
 };
 
 /**
- * Ліміт розміру відповіді API Ashby. Ashby віддає всі вакансії дошки разом з
- * описами одним запитом, без сторінок і без способу прибрати описи: OpenAI
- * (839 вакансій) - 14 МБ, сама Ashby (77) - 4,4 МБ (перевірено 18.11.2026),
- * а спільний ліміт клієнта - 5 МБ. 30 МБ - із запасом понад відомі дошки й лише
- * для цього API, довільні сайти лишаються з 5 МБ (рішення автора 18.11.2026).
+ * The Ashby API response size limit. Ashby returns all of a board's vacancies
+ * with descriptions in one request, without pages and without a way to drop the
+ * descriptions: OpenAI (839 vacancies) is 14 MB, Ashby itself (77) 4.4 MB
+ * (checked 18.11.2026), while the client's shared limit is 5 MB. 30 MB leaves a
+ * margin over the known boards and applies only to this API; arbitrary sites
+ * keep 5 MB (the author's decision of 18.11.2026).
  */
 export const ASHBY_MAX_BYTES = 30 * 1024 * 1024;
 
 /**
- * Вакансії кар'єрного джерела на Ashby: назва дошки з адреси, один запит до
- * Job Postings API і розбір. Адреса без дошки Ashby - `unreadable` без запиту.
+ * Vacancies of a career source on Ashby: the board name from the address, one
+ * Job Postings API request and parsing. An address without an Ashby board is
+ * `unreadable` without a request.
  */
 export async function readAshby(
   sourceUrl: string,

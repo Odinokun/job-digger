@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { bamboohrCompany, parseBambooHrList } from "./bamboohr.ts";
 
-/** Справжня відповідь `/careers/list` BambooHR, компанія Altenar (src/server/http/testing). */
+/** A real BambooHR `/careers/list` response, the Altenar company (src/server/http/testing). */
 const altenar: unknown = JSON.parse(
   readFileSync(
     new URL(
@@ -46,11 +46,11 @@ describe("parseBambooHrList", () => {
     expect(result.vacancies[0]).toEqual({
       externalId: "88",
       title: "Senior Go Developer",
-      // У JSON посилання немає - сторінка вакансії `/careers/{id}`.
+      // The JSON has no link - the vacancy page is `/careers/{id}`.
       url: "https://altenar.bamboohr.com/careers/88",
       location: "St Julians, Malta",
     });
-    // Порожнє `location` - місце з `atsLocation`.
+    // An empty `location` - the place comes from `atsLocation`.
     expect(result.vacancies).toContainEqual(
       expect.objectContaining({ externalId: "247", location: "Serbia" }),
     );

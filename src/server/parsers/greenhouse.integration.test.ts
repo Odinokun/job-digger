@@ -9,10 +9,10 @@ import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { readGreenhouse } from "./greenhouse.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
-/** Фейковий вебсервер зі справжніми збереженими відповідями. */
+/** The fake web server with real saved responses. */
 let fakeWeb: FakeWeb;
 
 beforeAll(async () => {
@@ -26,7 +26,7 @@ afterAll(async () => {
   await fakeWeb.close();
 });
 
-/** Клієнт, що ходить на заданий сервер замість справжніх сайтів. */
+/** A client that goes to the given server instead of real sites. */
 function clientFor(origin: string) {
   return createHttpClient({
     fakeOrigin: origin,
@@ -36,7 +36,7 @@ function clientFor(origin: string) {
   });
 }
 
-/** Окремий сервер з однією відповідью - для випадків, яких немає в збережених. */
+/** A separate server with one response - for cases the saved ones do not have. */
 async function withServer(
   respond: (response: ServerResponse) => void,
   run: (origin: string) => Promise<void>,
@@ -76,7 +76,7 @@ describe("readGreenhouse", () => {
   it("does not request anything for an address that is not a Greenhouse board", async () => {
     const result = await readGreenhouse(
       "https://bosch.com/careers",
-      // Порт 1 ніхто не слухає: якби запит пішов, це був би fetch-failed.
+      // Nobody listens on port 1: if a request went out, it would be fetch-failed.
       clientFor("http://127.0.0.1:1"),
     );
 
@@ -123,7 +123,7 @@ describe("readGreenhouse", () => {
   it("reports a failed request with its cause", async () => {
     await withServer(
       () => {
-        // Мовчить - клієнт здається за тайм-аутом.
+        // Silent - the client gives up on the timeout.
       },
       async (origin) => {
         const result = await readGreenhouse(

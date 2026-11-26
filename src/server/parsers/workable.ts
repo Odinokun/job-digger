@@ -1,11 +1,11 @@
 /**
- * Парсер Workable: вакансії з публічного JSON віджета
- * `https://apply.workable.com/api/v1/widget/accounts/{account}` (задача 6.25).
+ * The Workable parser: vacancies from the public widget JSON
+ * `https://apply.workable.com/api/v1/widget/accounts/{account}` (task 6.25).
  *
- * Офіційно задокументований API Workable (workable.readme.io) потребує ключа
- * акаунта, тож для нас закритий. Цей JSON віддає вбудований віджет вакансій
- * Workable; формат перевірено справжніми запитами 20.11.2026: без ключа, усі
- * вакансії одним запитом, невідомий акаунт - 404.
+ * Workable's officially documented API (workable.readme.io) needs an account
+ * key, so it is closed to us. This JSON is served to Workable's embedded
+ * vacancy widget; the format was checked with real requests on 20.11.2026: no
+ * key, all vacancies in one request, an unknown account is a 404.
  */
 import type { HttpClient } from "../http/client.ts";
 import {
@@ -22,21 +22,21 @@ const DOMAIN = "workable.com";
 const CAREERS_HOST = `apply.${DOMAIN}`;
 
 /**
- * Перші сегменти шляху `apply.workable.com`, що не є акаунтом: коротке
- * посилання на вакансію (`/j/{shortcode}`) і API.
+ * First path segments of `apply.workable.com` that are not an account: the short
+ * vacancy link (`/j/{shortcode}`) and the API.
  */
 const SERVICE_PATHS = new Set(["j", "api"]);
 
 /**
- * Піддомени самої Workable, а не акаунтів старого формату
- * `{account}.workable.com`.
+ * Subdomains of Workable itself, not accounts of the old
+ * `{account}.workable.com` format.
  */
 const SERVICE_LABELS = new Set(["www", "apply", "jobs", "help", "resources"]);
 
 /**
- * Акаунт із адреси кар'єрної сторінки чи вакансії або `null`:
- * `apply.workable.com/{account}/…` і старий формат `{account}.workable.com`.
- * Коротке посилання `apply.workable.com/j/{shortcode}` акаунта не містить.
+ * The account from a career page or vacancy address, or `null`:
+ * `apply.workable.com/{account}/…` and the old `{account}.workable.com` format.
+ * The short link `apply.workable.com/j/{shortcode}` has no account in it.
  */
 export function workableAccount(sourceUrl: string): string | null {
   let url: URL;
@@ -66,11 +66,11 @@ export function workableAccount(sourceUrl: string): string | null {
 }
 
 /**
- * Вакансії з відповіді віджета: об'єкт із масивом `jobs`.
+ * Vacancies from the widget response: an object with a `jobs` array.
  *
- * `externalId` - `shortcode` (він же в посиланні `/j/{shortcode}`), назва -
- * `title`, посилання - `url`, локація - `city` і `country`, а віддалена
- * (`telecommuting`) - з приміткою «remote».
+ * `externalId` is `shortcode` (the same as in the `/j/{shortcode}` link), the
+ * title is `title`, the link is `url`, the location is `city` and `country`, and
+ * a remote one (`telecommuting`) gets a "remote" note.
  */
 export function parseWorkableWidget(answer: unknown): ParseResult {
   if (!isRecord(answer) || !Array.isArray(answer.jobs)) {
@@ -118,9 +118,9 @@ function placeOf(job: Record<string, unknown>): string | null {
 }
 
 /**
- * Вакансії кар'єрного джерела на Workable: акаунт з адреси, запит віджета
- * через HTTP-клієнт і розбір. Адреса без акаунта Workable - `unreadable` без
- * жодного запиту.
+ * Vacancies of a career source on Workable: the account from the address, a
+ * widget request through the HTTP client and parsing. An address without a
+ * Workable account is `unreadable` without any request.
  */
 export async function readWorkable(
   sourceUrl: string,

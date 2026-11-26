@@ -1,11 +1,11 @@
 /**
- * Парсер Pinpoint: вакансії з публічного JSON кар'єрної сторінки
- * `https://{company}.pinpointhq.com/postings.json` (задача 6.27).
+ * The Pinpoint parser: vacancies from the public JSON of the career page
+ * `https://{company}.pinpointhq.com/postings.json` (task 6.27).
  *
- * Документації в цього JSON ми не знайшли; формат перевірено справжніми
- * запитами 20.11.2026: без ключа, `{ data: [...] }`, усі вакансії одним
- * запитом, разом із повними описами (у GiG - 100 КБ на 16 вакансій), невідома
- * компанія - 404.
+ * We found no documentation for this JSON; the format was checked with real
+ * requests on 20.11.2026: no key, `{ data: [...] }`, all vacancies in one
+ * request, together with full descriptions (100 KB for 16 vacancies at GiG), an
+ * unknown company is a 404.
  */
 import type { HttpClient } from "../http/client.ts";
 import {
@@ -20,12 +20,12 @@ import type { ParseResult } from "./types.ts";
 
 const DOMAIN = "pinpointhq.com";
 
-/** Піддомени самої Pinpoint: сайт, застосунок і файли (`app.pinpointhq.com`). */
+/** Subdomains of Pinpoint itself: the site, the app and files (`app.pinpointhq.com`). */
 const SERVICE_LABELS = new Set(["www", "app", "api", "help", "developers"]);
 
 /**
- * Компанія з адреси кар'єрної сторінки чи вакансії
- * (`gig.pinpointhq.com/en/postings/…` → `gig`) або `null`.
+ * The company from a career page or vacancy address
+ * (`gig.pinpointhq.com/en/postings/…` → `gig`), or `null`.
  */
 export function pinpointCompany(sourceUrl: string): string | null {
   let host: string;
@@ -46,12 +46,12 @@ export function pinpointCompany(sourceUrl: string): string | null {
 }
 
 /**
- * Вакансії з відповіді `postings.json`: масив `data`.
+ * Vacancies from the `postings.json` response: the `data` array.
  *
- * `externalId` - `id`, назва - `title`, посилання - `url`. Локація - місто й
- * регіон (`location.city`, `location.province`) без повторів, з приміткою
- * «remote» для `workplace_type: "remote"`. Одна позиція в кількох містах -
- * кілька вакансій з різними `id`, як і на сторінці Pinpoint.
+ * `externalId` is `id`, the title is `title`, the link is `url`. The location is
+ * the city and region (`location.city`, `location.province`) without repeats,
+ * with a "remote" note for `workplace_type: "remote"`. One position in several
+ * cities is several vacancies with different `id`s, as on the Pinpoint page.
  */
 export function parsePinpointPostings(answer: unknown): ParseResult {
   if (!isRecord(answer) || !Array.isArray(answer.data)) {
@@ -103,8 +103,9 @@ function placeOf(posting: Record<string, unknown>): string | null {
 }
 
 /**
- * Вакансії кар'єрного джерела на Pinpoint: компанія з адреси, запит
- * `postings.json` і розбір. Адреса без компанії - `unreadable` без запиту.
+ * Vacancies of a career source on Pinpoint: the company from the address, a
+ * `postings.json` request and parsing. An address without a company is
+ * `unreadable` without a request.
  */
 export async function readPinpoint(
   sourceUrl: string,

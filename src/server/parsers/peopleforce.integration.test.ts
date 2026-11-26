@@ -15,7 +15,7 @@ import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { readPeopleForce } from "./peopleforce.ts";
 import { pagesToRead } from "./vacancies-to-check.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 const ACME = "https://acme.peopleforce.io/careers";
@@ -43,9 +43,9 @@ function clientFor(origin: string) {
 }
 
 /**
- * Окремий сервер для випадків, яких немає в збережених відповідях. Фейковий
- * вебсервер ігнорує рядок запиту, а сторінки PeopleForce розрізняє саме він
- * (`?page=N`), тож сторінки віддає цей сервер.
+ * A separate server for cases the saved responses do not have. The fake web
+ * server ignores the query string, and that is exactly what tells PeopleForce
+ * pages apart (`?page=N`), so this server serves the pages.
  */
 async function withServer(
   respond: (request: IncomingMessage, response: ServerResponse) => void,
@@ -63,10 +63,10 @@ async function withServer(
 }
 
 /**
- * Сайт кар'єри з `total` вакансіями по `perPage` на сторінці в розмітці
- * PeopleForce: лічильник, картки і, поки сторінка не остання, посилання
- * `rel="next"` - як на справжній, хоч парсер іде за лічильником. Як справжній
- * (перевірено на Webellian 18.11.2026), номер за межею віддає останню сторінку.
+ * A career site with `total` vacancies, `perPage` per page, in PeopleForce
+ * markup: the counter, cards and, until the last page, a `rel="next"` link - as
+ * on a real one, although the parser follows the counter. Like the real one
+ * (checked on Webellian 18.11.2026), a number past the end serves the last page.
  */
 function pagedSite(total: number, requested: string[], perPage = 10) {
   return (request: IncomingMessage, response: ServerResponse) => {
@@ -108,9 +108,9 @@ describe("readPeopleForce", () => {
   });
 
   it("reports a company that does not exist", async () => {
-    // Справжній PeopleForce відповідає 404 і на невідому компанію, і на
-    // компанію без сторінки кар'єри (через редирект на /404, перевірено
-    // 18.11.2026); фейковий вебсервер без відповіді - теж 404.
+    // The real PeopleForce answers 404 both for an unknown company and for a
+    // company without a career page (through a redirect to /404, checked
+    // 18.11.2026); the fake web server without a response is a 404 too.
     const result = await readPeopleForce(
       "https://no-such-company.peopleforce.io/careers",
       clientFor(fakeWeb.origin),
@@ -120,8 +120,8 @@ describe("readPeopleForce", () => {
   });
 
   it("reads a career site on the company's own domain (task 5.13)", async () => {
-    // Фейковий сервер на кожну сторінку віддає ту саму першу - «1 - 10 of
-    // 215», тож список іде до ліміту сторінок.
+    // For every page the fake server serves the same first one - "1 - 10 of
+    // 215" - so the list goes on up to the page limit.
     const result = await readPeopleForce(
       "https://peopleforce.softconstruct.com/careers",
       clientFor(fakeWeb.origin),
@@ -138,7 +138,7 @@ describe("readPeopleForce", () => {
   it("does not request anything for an address that is not a web page", async () => {
     const result = await readPeopleForce(
       "mailto:jobs@bosch.com",
-      // Порт 1 ніхто не слухає: якби запит пішов, це був би fetch-failed.
+      // Nobody listens on port 1: if a request went out, it would be fetch-failed.
       clientFor("http://127.0.0.1:1"),
     );
 
@@ -149,7 +149,7 @@ describe("readPeopleForce", () => {
     const requested: string[] = [];
 
     await withServer(pagedSite(23, requested), async (origin) => {
-      // Ліміт задано явно: значення з `.env` автора тут ні до чого.
+      // The limit is explicit: the value from the author's `.env` has nothing to do with it.
       const result = await readPeopleForce(ACME, clientFor(origin), {
         maxPages: 5,
       });
@@ -174,7 +174,7 @@ describe("readPeopleForce", () => {
   });
 
   it("stops at the page limit and still counts as a success", async () => {
-    // Досягнення ліміту сторінок - нормальне завершення (задача 3.12).
+    // Reaching the page limit is a normal finish (task 3.12).
     const requested: string[] = [];
 
     await withServer(pagedSite(100, requested), async (origin) => {
@@ -183,7 +183,7 @@ describe("readPeopleForce", () => {
       });
 
       expect(result.ok && result.vacancies).toHaveLength(20);
-      // Список не дочитано - життєвий цикл не має нічого закривати (6.16).
+      // The list was not read to the end - the lifecycle must close nothing (6.16).
       expect(result.ok && result.truncated).toBe(true);
       expect(requested).toHaveLength(2);
     });
@@ -202,8 +202,8 @@ describe("readPeopleForce", () => {
   });
 
   it("fails the whole check when a later page fails", async () => {
-    // Половина списку виглядала б як «решта вакансій зникла» і потягнула б
-    // їхнє видалення - тож збій будь-якої сторінки - збій усього джерела.
+    // Half a list would look like "the other vacancies are gone" and lead to
+    // their deletion - so a failure of any page is a failure of the whole source.
     const requested: string[] = [];
     const firstPage = pagedSite(23, requested);
 

@@ -1,12 +1,12 @@
 /**
- * Парсер Hurma: вакансії з API, яким користується публічна сторінка
- * `https://{company}.hurma.work/public-vacancies` (задача 3.26).
+ * The Hurma parser: vacancies from the API used by the public page
+ * `https://{company}.hurma.work/public-vacancies` (task 3.26).
  *
- * Документації ні в сторінки, ні в API немає. Сторінка - SPA, вакансій у HTML
- * немає: вона бере їх з `GET /api/v1/public-vacancies` (видно з її JavaScript).
- * Формат перевірено справжніми запитами 19.11.2026: без ключа, сторінками до
- * 100 вакансій, але лише з заголовком `X-Requested-With: XMLHttpRequest` - без
- * нього 403 з будь-яким User-Agent.
+ * Neither the page nor the API has documentation. The page is an SPA with no
+ * vacancies in its HTML: it takes them from `GET /api/v1/public-vacancies` (as
+ * its JavaScript shows). The format was checked with real requests on
+ * 19.11.2026: no key, pages of up to 100 vacancies, but only with the
+ * `X-Requested-With: XMLHttpRequest` header - without it, a 403 with any User-Agent.
  */
 import type { HttpClient } from "../http/client.ts";
 import { pagesToRead, type ReadDepth } from "./vacancies-to-check.ts";
@@ -22,22 +22,22 @@ import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 const DOMAIN = "hurma.work";
 
-/** Найбільша сторінка, яку приймає API: `per_page=1000` - 422. */
+/** The largest page the API accepts: `per_page=1000` gives a 422. */
 export const HURMA_PAGE_SIZE = 100;
 
 /**
- * Без цього заголовка API відповідає 403. Це позначка Laravel «запит від
- * JavaScript сторінки», а не захист від ботів: браузерний User-Agent без неї теж
- * дає 403. Рішення автора 19.11.2026 - слати, UA лишається чесним.
+ * Without this header the API answers 403. It is Laravel's "request from the
+ * page's JavaScript" marker, not bot protection: a browser User-Agent without it
+ * gets a 403 too. The author's decision of 19.11.2026: send it, the UA stays honest.
  */
 const API_HEADERS = { "X-Requested-With": "XMLHttpRequest" };
 
-/** Піддомени самої Hurma, а не компаній: сайт, навчання й довідка. */
+/** Subdomains of Hurma itself, not of companies: the site, training and help. */
 const SERVICE_LABELS = new Set(["www", "academy", "support"]);
 
 /**
- * Компанія з адреси дошки чи вакансії (`acme.hurma.work/public-vacancies/7` →
- * `acme`) або `null`, якщо це не дошка Hurma.
+ * The company from a board or vacancy address (`acme.hurma.work/public-vacancies/7`
+ * → `acme`), or `null` if it is not a Hurma board.
  */
 export function hurmaCompany(sourceUrl: string): string | null {
   let host: string;
@@ -57,17 +57,18 @@ export function hurmaCompany(sourceUrl: string): string | null {
   return company.includes(".") || SERVICE_LABELS.has(company) ? null : company;
 }
 
-/** Адреса публічної сторінки вакансій компанії. */
+/** The address of the company's public vacancies page. */
 export function hurmaBoardUrl(company: string): string {
   return `https://${company}.${DOMAIN}/public-vacancies`;
 }
 
 /**
- * Вакансії однієї сторінки API: `{ data: [...], links, meta }`.
+ * Vacancies of one API page: `{ data: [...], links, meta }`.
  *
- * `externalId` - число в кінці `public_url` (`/public-vacancies/{id}`), окремого
- * поля ID немає; назва - `name`, посилання - `public_url`, локація - `residence`
- * (місця через «|» стають «, ») і за ним `work_format` («Remote»).
+ * `externalId` is the number at the end of `public_url` (`/public-vacancies/{id}`),
+ * there is no separate ID field; the title is `name`, the link is `public_url`,
+ * the location is `residence` (places separated by "|" become ", ") followed by
+ * `work_format` ("Remote").
  */
 export function parseHurmaVacancies(answer: unknown): ParseResult {
   if (!isRecord(answer) || !Array.isArray(answer.data)) {
@@ -77,7 +78,7 @@ export function parseHurmaVacancies(answer: unknown): ParseResult {
   return collectVacancies(answer.data, toVacancy);
 }
 
-/** Чи є після цієї сторінки ще одна: посилання `links.next`. */
+/** Whether there is another page after this one: the `links.next` link. */
 export function hurmaHasNextPage(answer: unknown): boolean {
   return (
     isRecord(answer) &&
@@ -125,9 +126,9 @@ function placeOf(residence: unknown, format: unknown): string | null {
 }
 
 /**
- * Вакансії кар'єрного джерела на Hurma: компанія з адреси, сторінки API по
- * `HURMA_PAGE_SIZE` до `maxPages` через HTTP-клієнт і розбір. Адреса без дошки
- * Hurma - `unreadable` без жодного запиту.
+ * Vacancies of a career source on Hurma: the company from the address, API pages
+ * of `HURMA_PAGE_SIZE` up to `maxPages` through the HTTP client and parsing. An
+ * address without a Hurma board is `unreadable` without any request.
  */
 export async function readHurma(
   sourceUrl: string,
@@ -146,7 +147,7 @@ export async function readHurma(
   const base = `https://${company}.${DOMAIN}/api/v1/public-vacancies`;
   const vacancies: ParsedVacancy[] = [];
   let skipped = 0;
-  // Стає `false`, лише коли список скінчився сам, а не на ліміті.
+  // Becomes `false` only when the list ended by itself, not at the limit.
   let truncated = true;
 
   for (let page = 1; page <= maxPages; page += 1) {

@@ -9,7 +9,7 @@ import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { readBambooHr } from "./bamboohr.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 let fakeWeb: FakeWeb;
@@ -47,7 +47,7 @@ describe("readBambooHr", () => {
   });
 
   it("calls a company BambooHR redirects to its own website not found", async () => {
-    // Невідома компанія - не 404, а редирект на www.bamboohr.com з HTML.
+    // An unknown company is not a 404 but a redirect to www.bamboohr.com with HTML.
     const server: Server = createServer((request, response) => {
       if (request.url?.startsWith("/nobody.bamboohr.com/")) {
         response.writeHead(302, { location: "https://www.bamboohr.com/" });
