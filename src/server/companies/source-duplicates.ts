@@ -4,7 +4,7 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { normalizeCompanyUrl } from "../../lib/companies/url.ts";
 import { careerSources, companies } from "../db/schema.ts";
 
-/** Компанія, яку треба назвати у відмові: більшого інтерфейсу не потрібно. */
+/** The company to name in a refusal: no larger interface is needed. */
 export type CompanyWithSource = {
   id: string;
   name: string;
@@ -12,37 +12,38 @@ export type CompanyWithSource = {
 
 export type FindCompanyWithSourceInput = {
   userId: string;
-  /** Очищена адреса джерела - та сама форма, що лежить у `normalized_url`. */
+  /** The normalized source address - the same form as in `normalized_url`. */
   normalizedUrl: string;
   /**
-   * Компанія, якій джерело саме додають. Її власні джерела дублікатом *між*
-   * компаніями не є: їх ловить `prepareCareerSource` і каже про це інакше.
+   * The company the source is being added to. Its own sources are not duplicates
+   * *between* companies: `prepareCareerSource` catches those and words it differently.
    */
   exceptCompanyId?: string;
 };
 
 /**
- * Компанія того самого користувача, яка вже має це карʼєрне джерело, або `null`.
+ * The company of the same user that already has this career source, or `null`.
  *
- * Та сама компанія може прийти під іншим сайтом (`spotify.com` і `spotify.se`) -
- * тоді перевірка по сайту її не впізнає, і друге додавання
- * `jobs.lever.co/spotify` дало б двох «Spotify» із подвійними перевірками.
- * Зʼявилась разом із компаніями без сайту (картка 2.17).
+ * The same company may come under another site (`spotify.com` and `spotify.se`):
+ * then the site check does not recognise it, and adding `jobs.lever.co/spotify`
+ * a second time would give two "Spotify" cards with double checks. Appeared
+ * together with companies without a site (card 2.17).
  *
- * **Перевірка дружня, а не атомарна.** Unique-індексу на джерелах немає:
- * `career_sources` не має `user_id`, а унікальність у межах користувача одним
- * індексом по одній таблиці не виражається - PostgreSQL не вміє unique через
- * join. Денормалізувати `user_id` заради цього не стали: ціна - колонка,
- * складений FK і індекс, а купується атомарність проти гонки «два одночасні
- * Save», яка коштує один зайвий рядок, що прибирається кнопкою Remove. Те саме
- * рішення вже ухвалене для дублікатів усередині компанії
+ * **The check is friendly, not atomic.** There is no unique index on sources:
+ * `career_sources` has no `user_id`, and uniqueness within a user cannot be
+ * expressed by one index on one table - PostgreSQL has no unique across a join.
+ * We did not denormalise `user_id` for this: the price is a column, a composite
+ * FK and an index, and it buys atomicity against a race of "two simultaneous
+ * Saves", which costs one extra row that the Remove button cleans up. The same
+ * decision was already made for duplicates within a company
  * ([`lib/companies/career-source.ts`](../../lib/companies/career-source.ts)).
  *
- * Виклик іде всередині транзакції того, хто вставляє джерело: між перевіркою і
- * вставкою компанію могли б видалити.
+ * The call runs inside the transaction of whoever inserts the source: between
+ * the check and the insert the company could be deleted.
  *
- * Запит іде через `companies` з умовою на користувача: `career_sources` власника
- * не зберігає, а без цієї умови відмова розказувала б про чужу компанію.
+ * The query goes through `companies` with a condition on the user:
+ * `career_sources` does not store the owner, and without this condition the
+ * refusal would tell about someone else's company.
  */
 export async function findCompanyWithSource(
   db: NodePgDatabase,
@@ -68,18 +69,18 @@ export async function findCompanyWithSource(
 
 export type FindCompaniesWithSourcesInput = {
   userId: string;
-  /** Адреси як є, наприклад знахідки Find pages: очищаються тут. */
+  /** Addresses as they are, for example Find pages findings: normalized here. */
   urls: string[];
 };
 
 /**
- * Для кожної адреси, яка вже є джерелом якоїсь компанії користувача, - ця
- * компанія (задача 5.08: «вже відстежується в ...» у списку знахідок).
+ * For every address that is already a source of one of the user's companies,
+ * that company (task 5.08: "already tracked in ..." in the list of findings).
  *
- * Ключ - адреса так, як її передали, а не очищена: викликач шукає знахідку
- * саме за нею. Один запит на весь список замість `findCompanyWithSource` на
- * кожну адресу. Непридатна адреса просто не має пари - джерелом вона бути не
- * може.
+ * The key is the address as it was passed, not the normalized one: the caller
+ * looks the finding up by it. One query for the whole list instead of
+ * `findCompanyWithSource` per address. An unusable address simply has no
+ * match - it cannot be a source.
  */
 export async function findCompaniesWithSources(
   db: NodePgDatabase,

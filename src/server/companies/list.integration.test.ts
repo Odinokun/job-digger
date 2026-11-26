@@ -18,7 +18,7 @@ import {
   listCompanies,
 } from "./list.ts";
 
-/** Компанія з відстежуваним джерелом - така потрапляє у вкладку Tracked. */
+/** A company with a tracked source - it goes to the Tracked tab. */
 async function insertTracked(
   userId: string,
   name: string,
@@ -44,7 +44,7 @@ async function insertTracked(
   return company;
 }
 
-/** Компанія без жодного відстежуваного джерела - вкладка Not tracked. */
+/** A company without a single tracked source - the Not tracked tab. */
 async function insertUntracked(userId: string, name: string) {
   const [company] = await testDb
     .insert(companies)
@@ -90,7 +90,7 @@ describe("listCompanies", () => {
   it("counts a company whose only source is not tracked as Not tracked", async () => {
     const user = await seedSystemUser(testDb);
     const company = await insertUntracked(user.id, "Acme");
-    // Сторінка, яку нічим прочитати: адреса збережена, але не перевіряється.
+    // A page nothing can read: the address is saved but not checked.
     await testDb.insert(careerSources).values({
       companyId: company.id,
       url: "https://acme.com/careers",
@@ -109,7 +109,7 @@ describe("listCompanies", () => {
 
   it("sorts by name, because that is the order the list is read in", async () => {
     const user = await seedSystemUser(testDb);
-    // Вставлені не за алфавітом, щоб порядок був вибором коду, а не бази.
+    // Inserted out of alphabetical order, so the order is the code's choice, not the database's.
     await insertTracked(user.id, "Zeta");
     await insertTracked(user.id, "Acme");
     await insertTracked(user.id, "Mango");
@@ -117,7 +117,7 @@ describe("listCompanies", () => {
     const { items: tracked } = await listCompanies(testDb, {
       userId: user.id,
       tab: "tracked",
-      // Ліміт заданий явно: тест про порядок, а не про розмір порції.
+      // The limit is explicit: the test is about order, not page size.
       limit: 10,
     });
 
@@ -162,8 +162,8 @@ describe("listCompanies", () => {
   it("brings the career sources along, since the list shows them", async () => {
     const user = await seedSystemUser(testDb);
     const company = await insertTracked(user.id, "Bosch");
-    // Друге джерело тієї ж компанії: у списку видно обидва. Підпис є лише в
-    // нього - саме так список показує, чим джерела відрізняються.
+    // A second source of the same company: the list shows both. Only it has a
+    // label - this is how the list shows how the sources differ.
     await testDb.insert(careerSources).values({
       companyId: company.id,
       url: "https://jobs.lever.co/bosch",
@@ -267,8 +267,8 @@ describe("listCompanies pagination", () => {
     expect(second.nextCursor).toBeNull();
   });
 
-  // Назва не унікальна, і саме на ній ламалася б пагінація за одним полем:
-  // умова `name > 'Acme'` пропустила б решту однойменних компаній.
+  // The name is not unique, and single-column pagination would break on it:
+  // the condition `name > 'Acme'` would skip the other companies of that name.
   it("walks through companies that share a name", async () => {
     const user = await seedSystemUser(testDb);
     await insertTracked(user.id, "Acme", "acme-one");
@@ -289,7 +289,7 @@ describe("listCompanies pagination", () => {
 
     expect(first.items).toHaveLength(2);
     expect(second.items).toHaveLength(1);
-    // Три різні компанії, жодна не прийшла двічі.
+    // Three different companies, none came twice.
     expect(
       new Set([...first.items, ...second.items].map((company) => company.id))
         .size,
@@ -321,7 +321,7 @@ describe("listCompanies pagination", () => {
     expect(second.items).toEqual([]);
   });
 
-  // Курсор приходить із клієнта, тому зіпсоване значення - очікуваний випадок.
+  // The cursor comes from the client, so a corrupted value is an expected case.
   it("starts from the beginning when the cursor is not usable", async () => {
     const user = await seedSystemUser(testDb);
     await insertTracked(user.id, "Acme");
@@ -384,7 +384,7 @@ describe("company search", () => {
   });
 
   it("takes % and _ in the query literally", async () => {
-    // Інакше «%» знаходив би все, а «_» - будь-який символ.
+    // Otherwise "%" would match everything and "_" any character.
     const user = await seedSystemUser(testDb);
     await insertTracked(user.id, "50% Off", "fifty");
     await insertTracked(user.id, "500 Startups", "five-hundred");
@@ -453,8 +453,8 @@ describe("countCompaniesByTab", () => {
 });
 
 describe("Needs attention", () => {
-  // Задача 6.11: компанія потребує уваги, якщо в неї є сторінка, яку ми не
-  // читаємо, або відстежуване джерело падає кілька разів поспіль.
+  // Task 6.11: a company needs attention if it has a page we do not read, or a
+  // tracked source fails several times in a row.
   async function addSource(
     companyId: string,
     url: string,
@@ -508,9 +508,9 @@ describe("Needs attention", () => {
   });
 
   it("leaves out a page the user marked as reference only", async () => {
-    // Задача 6.17: власна сторінка kinggroup, яку нічим прочитати, поруч із
-    // PeopleForce, що читається. Позначена - більше не тримає компанію тут, а
-    // в рядку джерела позначку видно.
+    // Task 6.17: the kinggroup own page nothing can read, next to a PeopleForce
+    // board that is read. Once marked, it no longer keeps the company here, and
+    // the mark is visible in the source row.
     const user = await seedSystemUser(testDb);
     const kinggroup = await insertTracked(user.id, "Kinggroup");
     const ownPage = await addSource(
@@ -532,7 +532,7 @@ describe("Needs attention", () => {
   });
 
   it("takes a source that failed twice in a row, but not once", async () => {
-    // Одна невдача - мережа моргнула, смикати користувача не варто.
+    // One failure is the network blinking, not worth bothering the user.
     const user = await seedSystemUser(testDb);
     const bosch = await insertTracked(user.id, "Bosch");
     const cisco = await insertTracked(user.id, "Cisco");
@@ -549,7 +549,7 @@ describe("Needs attention", () => {
   });
 
   it("ignores failures of a source that is not tracked", async () => {
-    // Сторінку без відстеження не перевіряють, її давній збій - не новина.
+    // An untracked page is not checked; its old failure is not news.
     const user = await seedSystemUser(testDb);
     const acme = await insertUntracked(user.id, "Acme");
     await addSource(acme.id, "https://boards.greenhouse.io/acme", {
@@ -568,7 +568,7 @@ describe("Needs attention", () => {
       platform: "unsupported",
       isTracked: false,
     });
-    // Дві сторінки, які ми не читаємо, - однаково одна компанія.
+    // Two pages we do not read are still one company.
     await addSource(mozilla.id, "https://mozilla.org/careers/listings?de", {
       platform: "unsupported",
       isTracked: false,
@@ -583,7 +583,7 @@ describe("Needs attention", () => {
   });
 
   it("answers null once the company no longer needs attention", async () => {
-    // Так список прибирає рядок, коли користувач видалив непрочитану сторінку.
+    // This is how the list removes the row when the user deleted the unread page.
     const user = await seedSystemUser(testDb);
     const bosch = await insertTracked(user.id, "Bosch");
 
@@ -631,8 +631,8 @@ describe("findCompanyInTab", () => {
     });
   });
 
-  // Саме цим список дізнається, що після Save рядок треба прибрати: компанія
-  // без відстежуваних джерел на вкладці Tracked більше не місце.
+  // This is how the list learns the row has to go after Save: a company without
+  // tracked sources no longer belongs on the Tracked tab.
   it("answers null when the company no longer belongs to the tab", async () => {
     const user = await seedSystemUser(testDb);
     const company = await insertUntracked(user.id, "Acme");
@@ -665,7 +665,7 @@ describe("findCompanyInTab", () => {
 });
 
 describe("vacancy counts", () => {
-  /** Вакансії першого джерела компанії: `favorites` із них - у Favorites. */
+  /** Vacancies of the company's first source: `favorites` of them go to Favorites. */
   async function addVacancies(
     companyId: string,
     total: number,
@@ -773,7 +773,7 @@ describe("last checked", () => {
 });
 
 describe("source check state", () => {
-  // Статус компанії й «Last ok» на вкладці Tracked.
+  // The company status and "Last ok" on the Tracked tab.
   async function sourceOf(name: string) {
     const user = await seedSystemUser(testDb);
     const company = await insertTracked(user.id, name);

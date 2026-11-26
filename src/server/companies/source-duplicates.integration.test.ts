@@ -10,7 +10,7 @@ import {
 } from "./source-duplicates.ts";
 import { companySiteValues } from "../db/testing/company-values.ts";
 
-/** Компанія без сайту з одним карʼєрним джерелом - випадок із картки 2.17. */
+/** A company without a site with one career source - the case from card 2.17. */
 async function insertCompanyWithSource(
   userId: string,
   name: string,
@@ -56,7 +56,7 @@ describe("findCompanyWithSource", () => {
       "https://jobs.lever.co/spotify",
     );
 
-    // `www.` і кінцевий слеш нічого не міняють: це та сама сторінка.
+    // `www.` and a trailing slash change nothing: it is the same page.
     const found = await findCompanyWithSource(testDb, {
       userId: user.id,
       normalizedUrl: normalizedSourceUrl("https://www.jobs.lever.co/spotify/"),
@@ -83,7 +83,7 @@ describe("findCompanyWithSource", () => {
       normalizedUrl: normalizedSourceUrl("https://jobs.lever.co/spotify"),
     });
 
-    // Дані ізольовані за користувачем: чуже джерело тут не існує.
+    // Data is isolated per user: someone else's source does not exist here.
     expect(found).toBeNull();
   });
 
@@ -95,8 +95,8 @@ describe("findCompanyWithSource", () => {
       "https://jobs.lever.co/spotify",
     );
 
-    // Власне джерело компанії дублікатом *між* компаніями не є: його ловить
-    // `prepareCareerSource` і каже про це інакше.
+    // The company's own source is not a duplicate *between* companies:
+    // `prepareCareerSource` catches it and words it differently.
     const found = await findCompanyWithSource(testDb, {
       userId: user.id,
       normalizedUrl: normalizedSourceUrl("https://jobs.lever.co/spotify"),
@@ -146,7 +146,7 @@ describe("findCompaniesWithSources", () => {
       ],
     });
 
-    // Ключ - адреса так, як її передали: знахідка шукає себе саме за нею.
+    // The key is the address as it was passed: the finding looks itself up by it.
     expect(found).toEqual(
       new Map([
         ["https://jobs.lever.co/spotify", { id: spotify.id, name: "Spotify" }],

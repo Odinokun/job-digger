@@ -98,7 +98,7 @@ describe("setSourceReferenceOnly", () => {
   });
 
   it("answers no for an id that is not a uuid", async () => {
-    // Id приходить аргументом Server Action - це будь-який рядок.
+    // The id arrives as a Server Action argument - it can be any string.
     const user = await seedSystemUser(testDb);
 
     expect(

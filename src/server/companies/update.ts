@@ -21,66 +21,66 @@ import {
   type CompanyWithSource,
 } from "./source-duplicates.ts";
 
-/** Що користувач змінив у модалці Edit. */
+/** What the user changed in the Edit modal. */
 export type UpdateCompanyInput = {
   userId: string;
   companyId: string;
-  /** Нова назва компанії. */
+  /** The new company name. */
   name: string;
   /**
-   * Головний сайт з поля модалки. Обовʼязковий, як і в Add company (задача
-   * company-site-required). `undefined` - сайт не змінюється.
+   * The main site from the modal field. Required, as in Add company (task
+   * company-site-required). `undefined` means the site does not change.
    */
   url?: string;
-  /** Джерела, позначені до видалення. Зміна застосовується на Save. */
+  /** Sources marked for deletion. The change applies on Save. */
   removeSourceIds?: string[];
   /**
-   * Підписи наявних джерел: id джерела - підпис із поля. Порожній підпис
-   * означає «прибрати підпис», а не «не чіпати»: форма надсилає всі поля.
+   * Labels of existing sources: source id → the label from the field. An empty
+   * label means "remove the label", not "leave it": the form sends every field.
    */
   sourceLabels?: Record<string, string>;
   /**
-   * Нова карʼєрна сторінка, уведена руками. Доки автоматичного пошуку немає
-   * (задача 5.07), це єдиний спосіб дати компанії друге джерело - наприклад,
-   * три фільтри однієї сторінки mozilla.org (картка 2.16).
+   * A new career page entered by hand. Until there was automatic search
+   * (task 5.07), this was the only way to give a company a second source - for
+   * example, three filters of one mozilla.org page (card 2.16).
    */
   addSource?: { url: string; label?: string };
-  /** Платформи, упізнані за вмістом сторінки (`platformsByPage`, задача 5.13). */
+  /** Platforms recognised by page content (`platformsByPage`, task 5.13). */
   pagePlatforms?: PagePlatforms;
 };
 
 /**
- * Чим закінчилося редагування.
+ * How editing ended.
  *
- * `not-found` покриває і неіснуючу компанію, і чужу: відповідь однакова, бо
- * інакше вона підказувала б, що такий рядок у базі є.
+ * `not-found` covers both a missing company and someone else's: the answer is
+ * the same, because otherwise it would hint that such a row exists in the database.
  */
 export type UpdateCompanyResult =
   | { ok: true }
   | { ok: false; problem: "name-required" }
   | { ok: false; problem: "not-found" }
-  /** Сайт порожній або непридатний - як у `addCompany`. */
+  /** The site is empty or unusable - as in `addCompany`. */
   | { ok: false; problem: "company-url"; reason: UrlRefusalReason }
-  /** Такий сайт уже має інша компанія користувача. */
+  /** Another company of the user already has this site. */
   | { ok: false; problem: "already-added"; company: ConflictingCompany }
   | { ok: false; problem: "source-url"; reason: UrlRefusalReason }
   | { ok: false; problem: "source-duplicate" }
   /**
-   * Це джерело вже належить іншій компанії того самого користувача. Окремо від
-   * `source-duplicate`: там сторінка вже є в цієї ж компанії й видно її в
-   * списку вище, а тут треба назвати, у кого вона (картка 2.17).
+   * This source already belongs to another company of the same user. Apart from
+   * `source-duplicate`: there the page is already in this very company and
+   * visible in the list above, while here we have to name who has it (card 2.17).
    */
   | { ok: false; problem: "source-taken"; company: CompanyWithSource };
 
 /**
- * Перейменовує компанію, перепідписує й видаляє її карʼєрні джерела й додає нове.
+ * Renames the company, relabels and deletes its career sources, and adds a new one.
  *
- * Усе в одній транзакції: інакше крива назва могла б лишити джерела вже
- * видаленими. Вакансії видаленого джерела, зокрема обрані, зникають разом із ним:
- * `vacancies.source_id` - `on delete cascade` (`server/db/schema.ts`).
+ * All in one transaction: otherwise a broken name could leave sources already
+ * deleted. Vacancies of a deleted source, favorites included, go with it:
+ * `vacancies.source_id` is `on delete cascade` (`server/db/schema.ts`).
  *
- * Адреса нового джерела перевіряється **до** транзакції, як і в `addCompany`:
- * відмова тоді не виконує половини роботи - ні перейменування, ні видалень.
+ * The new source's address is checked **before** the transaction, as in
+ * `addCompany`: a refusal then does not do half the work - no rename, no deletions.
  */
 export async function updateCompany(
   db: NodePgDatabase,
@@ -101,10 +101,10 @@ export async function updateCompany(
     return { ok: false, problem: "name-required" };
   }
 
-  // Сайт перевіряється до транзакції, як і нове джерело: відмова не виконує
-  // половини роботи. Точний збіг із сайтом іншої компанії - відмова; свій
-  // незмінений сайт - не конфлікт. «Той самий домен» тут не попереджає: це
-  // правка наявної компанії, а не нова картка.
+  // The site is checked before the transaction, like the new source: a refusal
+  // does not do half the work. An exact match with another company's site is a
+  // refusal; the company's own unchanged site is not a conflict. "Same domain"
+  // gives no warning here: this edits an existing company, not a new card.
   let site: { url: string; normalizedUrl: string } | null = null;
 
   if (url !== undefined) {
@@ -152,8 +152,8 @@ export async function updateCompany(
   }
 
   return db.transaction(async (tx) => {
-    // Назва оновлюється з умовою на користувача, і саме вона ж перевіряє
-    // доступ: чужий рядок не оновиться й нічого не поверне.
+    // The name is updated with a condition on the user, and that condition also
+    // checks access: someone else's row will not update and returns nothing.
     const [updated] = await tx
       .update(companies)
       .set(
@@ -167,8 +167,8 @@ export async function updateCompany(
     }
 
     if (removeSourceIds.length > 0) {
-      // Умова на `companyId` обовʼязкова: id джерел приходять із клієнта, тому
-      // без неї можна було б видалити джерело іншої компанії.
+      // The condition on `companyId` is required: source ids come from the
+      // client, so without it a source of another company could be deleted.
       await tx
         .delete(careerSources)
         .where(
@@ -179,9 +179,9 @@ export async function updateCompany(
         );
     }
 
-    // Підписи наявних джерел. Запитів тут стільки, скільки полів у модалці:
-    // джерел у компанії одиниці, тому один `UPDATE ... CASE` того не варт.
-    // `company_id` в умові обовʼязковий - id приходять із клієнта.
+    // Labels of existing sources. There are as many queries as fields in the
+    // modal: a company has only a few sources, so one `UPDATE ... CASE` is not
+    // worth it. `company_id` in the condition is required - ids come from the client.
     for (const [sourceId, label] of Object.entries(sourceLabels)) {
       const trimmed = label.trim();
 
@@ -223,9 +223,9 @@ export async function updateCompany(
       .where(eq(careerSources.companyId, companyId))
       .limit(1);
 
-    // Без джерел компанія опиняється в Not tracked, і попередній статус пошуку
-    // її більше не описує: «не перевіряли» правдивіше за «не знайдено»
-    // (картка 2.05).
+    // Without sources the company ends up in Not tracked, and the previous search
+    // status no longer describes it: "not checked" is truer than "not found"
+    // (card 2.05).
     if (left.length === 0) {
       await tx
         .update(companies)
@@ -238,13 +238,13 @@ export async function updateCompany(
 }
 
 /**
- * Адреси джерел, які компанія має зберегти після цього Save.
+ * The source addresses the company must keep after this Save.
  *
- * Позначені до видалення не враховуються: інакше заміна адреси на ту саму
- * впиралася б у джерело, якого після Save вже не буде.
+ * Those marked for deletion are left out: otherwise replacing an address with
+ * the same one would run into a source that will be gone after Save.
  *
- * Запит іде через `companies` з умовою на користувача: без неї відповідь
- * «уже є таке джерело» розказувала б про чужу компанію.
+ * The query goes through `companies` with a condition on the user: without it
+ * the answer "such a source already exists" would tell about someone else's company.
  */
 async function keptSourceUrls(
   db: NodePgDatabase,

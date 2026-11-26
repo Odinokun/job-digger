@@ -13,21 +13,21 @@ import {
   type CompanyWithSource,
 } from "./source-duplicates.ts";
 
-/** Яке джерело і якій компанії додаємо. */
+/** Which source is added to which company. */
 export type AddCareerSourceInput = {
   userId: string;
   companyId: string;
   url: string;
   label?: string;
-  /** Платформи, упізнані за вмістом сторінки (`platformsByPage`, задача 5.13). */
+  /** Platforms recognised by page content (`platformsByPage`, task 5.13). */
   pagePlatforms?: PagePlatforms;
 };
 
 /**
- * Чим закінчилося додавання джерела.
+ * How adding a source ended.
  *
- * Відмови названі так само, як у `updateCompany`: модалки показують ті самі
- * тексти, а два набори назв для однієї дії розходилися б.
+ * The refusals are named as in `updateCompany`: the modals show the same texts,
+ * and two sets of names for one action would drift apart.
  */
 export type AddCareerSourceResult =
   | { ok: true }
@@ -35,23 +35,24 @@ export type AddCareerSourceResult =
   | { ok: false; problem: "source-url"; reason: UrlRefusalReason }
   | { ok: false; problem: "source-duplicate" }
   /**
-   * Це джерело вже належить іншій компанії того самого користувача. Окремо від
-   * `source-duplicate`: там сторінка вже є в цієї ж компанії й видно її в
-   * списку вище, а тут треба назвати, у кого вона (картка 2.17).
+   * This source already belongs to another company of the same user. Apart from
+   * `source-duplicate`: there the page is already in this very company and
+   * visible in the list above, while here we have to name who has it (card 2.17).
    */
   | { ok: false; problem: "source-taken"; company: CompanyWithSource };
 
 /**
- * Додає карʼєрне джерело до вже доданої компанії.
+ * Adds a career source to a company that has already been added.
  *
- * Потрібно там, де компанію не редагують: модалка Add company, упізнавши
- * вставлену адресу як уже додану компанію, пропонує зберегти цю адресу ще одним
- * джерелом замість глухої відмови (картка 2.16). Редагування компанії робить те
- * саме своїм Save - там джерело додається в одній транзакції з перейменуванням
- * і видаленнями (`update.ts`).
+ * Needed where the company is not being edited: the Add company modal, having
+ * recognised the pasted address as an already added company, offers to save
+ * this address as one more source instead of a flat refusal (card 2.16). Editing
+ * a company does the same with its own Save - there the source is added in one
+ * transaction with the rename and the deletions (`update.ts`).
  *
- * Усе в транзакції, бо перевірка доступу й вставка - два запити: інакше між
- * ними компанію могли б видалити, і джерело лишилося б без неї.
+ * Everything is in a transaction, because the access check and the insert are
+ * two queries: otherwise the company could be deleted between them, and the
+ * source would be left without it.
  */
 export async function addCareerSource(
   db: NodePgDatabase,
@@ -65,26 +66,26 @@ export async function addCareerSource(
   });
 }
 
-/** Які джерела і якій компанії додаємо одним Save. */
+/** Which sources are added to which company in one Save. */
 export type AddCareerSourcesInput = {
   userId: string;
   companyId: string;
   sources: Array<{ url: string; label?: string }>;
-  /** Платформи, упізнані за вмістом сторінки (`platformsByPage`, задача 5.13). */
+  /** Platforms recognised by page content (`platformsByPage`, task 5.13). */
   pagePlatforms?: PagePlatforms;
 };
 
 /**
- * Додає кілька карʼєрних джерел до вже доданої компанії - вибрані знахідки
- * Find pages на картці Not tracked (задача 5.14).
+ * Adds several career sources to a company that has already been added - the
+ * Find pages findings chosen on a Not tracked card (task 5.14).
  *
- * Усе або нічого: спершу перевіряються всі адреси, і лише тоді вставка. Ранній
- * `return` із транзакції Drizzle - це commit, а не відкат, тож вставка посеред
- * перевірок лишила б половину джерел доданими.
+ * All or nothing: all addresses are checked first, and only then inserted. An
+ * early `return` from a Drizzle transaction is a commit, not a rollback, so an
+ * insert in the middle of the checks would leave half of the sources added.
  *
- * Та сама сторінка, записана двічі, - одне джерело, як і серед знахідок у
- * `addCompany`. А от сторінка, що вже є в самої компанії, - відмова
- * `source-duplicate`.
+ * The same page written twice is one source, as among the findings in
+ * `addCompany`. A page the company already has, however, is a
+ * `source-duplicate` refusal.
  */
 export async function addCareerSources(
   db: NodePgDatabase,
@@ -96,8 +97,8 @@ export async function addCareerSources(
       .from(companies)
       .where(and(eq(companies.id, companyId), eq(companies.userId, userId)));
 
-    // Відповідь однакова для неіснуючої та чужої компанії: інакше вона
-    // підказувала б, що такий рядок у базі є.
+    // The answer is the same for a missing company and someone else's: otherwise
+    // it would hint that such a row exists in the database.
     if (!company) {
       return { ok: false, problem: "not-found" };
     }
@@ -153,11 +154,11 @@ export async function addCareerSources(
 }
 
 /**
- * Джерела компанії - id та адреса.
+ * The company's sources - id and address.
  *
- * Доступ тут не перевіряється: виклики спершу впевнюються, що компанія належить
- * користувачеві (`addCareerSource` - окремим запитом, `updateCompany` - умовою
- * самого `UPDATE`).
+ * Access is not checked here: callers first make sure the company belongs to the
+ * user (`addCareerSource` with a separate query, `updateCompany` with a
+ * condition of the `UPDATE` itself).
  */
 export async function companySources(
   db: NodePgDatabase,

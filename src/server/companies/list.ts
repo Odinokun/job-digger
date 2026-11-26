@@ -28,15 +28,15 @@ import type {
 import { parseCursor, type Cursor } from "../../lib/pagination/cursor.ts";
 
 /**
- * Скільки компаній показуємо одразу. Далі - Load more тією самою порцією.
+ * How many companies we show at once. After that, Load more adds the same amount.
  */
 export const DEFAULT_LIMIT = 50;
 
 /**
- * Порція списку: самі компанії і те, звідки читати наступну.
+ * A page of the list: the companies themselves and where to read the next one from.
  *
- * `nextCursor` є лише тоді, коли далі справді щось є, тому кнопка Load more
- * не питає базу, щоб дізнатися, що показувати більше нічого.
+ * `nextCursor` is there only when there really is more, so the Load more button
+ * does not ask the database just to learn there is nothing more to show.
  */
 export type CompanyListPage = {
   items: CompanyListItem[];
@@ -44,10 +44,10 @@ export type CompanyListPage = {
 };
 
 /**
- * Підзапит «у цієї компанії є відстежуване джерело».
+ * The subquery "this company has a tracked source".
  *
- * Будується через query builder, а не сирим `sql`: тоді Drizzle сам огортає
- * підзапит дужками, яких `exists` не додає.
+ * Built with the query builder rather than raw `sql`: then Drizzle wraps the
+ * subquery in the parentheses that `exists` does not add.
  */
 function trackedSourceSubquery(
   db: NodePgDatabase,
@@ -65,17 +65,17 @@ function trackedSourceSubquery(
 }
 
 /**
- * Скільки невдач поспіль робить джерело проблемою для Needs attention. Одна -
- * мережа моргнула, смикати користувача не варто (задача 6.11).
+ * How many failures in a row make a source a Needs attention problem. One is
+ * the network blinking, not worth bothering the user (task 6.11).
  */
 export const ATTENTION_FAILURES = 2;
 
 /**
- * Підзапит «компанія потребує уваги» (задача 6.11): є сторінка, яку ми не
- * читаємо (`unsupported`, у Tracked чи Not tracked), або відстежуване джерело
- * падає `ATTENTION_FAILURES` разів поспіль і більше. Збій сторінки без
- * відстеження не рахується - її не перевіряють. Сторінка, яку людина позначила
- * «лише посиланням» (задача 6.17), теж не рахується.
+ * The subquery "the company needs attention" (task 6.11): there is a page we do
+ * not read (`unsupported`, in Tracked or Not tracked), or a tracked source fails
+ * `ATTENTION_FAILURES` times in a row or more. A failure of an untracked page
+ * does not count - it is not checked. A page the person marked "link only"
+ * (task 6.17) does not count either.
  */
 function needsAttentionSubquery(
   db: NodePgDatabase,
@@ -101,7 +101,7 @@ function needsAttentionSubquery(
     );
 }
 
-/** Умова належності компанії до вкладки. */
+/** The condition for a company to belong to a tab. */
 function tabCondition(db: NodePgDatabase, tab: CompaniesTab): SQL {
   if (tab === "all") {
     return sql`true`;
@@ -116,14 +116,14 @@ function tabCondition(db: NodePgDatabase, tab: CompaniesTab): SQL {
   return tab === "tracked" ? exists(tracked) : notExists(tracked);
 }
 
-/** Довший рядок пошуку обрізається: назва компанії такої довжини не буває. */
+/** A longer search string is cut: no company name is that long. */
 const QUERY_MAX_LENGTH = 100;
 
 /**
- * Умова пошуку за назвою: назва містить рядок пошуку, без огляду на регістр.
- * `%`, `_` і `\` у рядку - звичайні символи, а не шаблон `LIKE`: екрануються
- * зворотною скісною рискою, типовим символом екранування PostgreSQL. Порожній
- * рядок - без умови.
+ * The search-by-name condition: the name contains the search string, ignoring
+ * case. `%`, `_` and `\` in the string are ordinary characters, not a `LIKE`
+ * pattern: they are escaped with a backslash, PostgreSQL's default escape
+ * character. An empty string means no condition.
  */
 function nameCondition(query: string | undefined): SQL | undefined {
   const text = query?.trim().slice(0, QUERY_MAX_LENGTH) ?? "";
@@ -136,12 +136,12 @@ function nameCondition(query: string | undefined): SQL | undefined {
 }
 
 /**
- * Порція компаній однієї вкладки для одного користувача.
+ * A page of companies of one tab for one user.
  *
- * `after` - курсор останнього показаного рядка; без нього читається початок
- * списку. Значення приходить із клієнта, тому проходить `parseCursor`:
- * непридатний курсор означає «почни з початку», а не помилку. `query` - пошук
- * за назвою (вкладка All); наступна порція просить його так само.
+ * `after` is the cursor of the last row shown; without it the start of the list
+ * is read. The value comes from the client, so it goes through `parseCursor`: an
+ * unusable cursor means "start from the beginning", not an error. `query` is the
+ * search by name (the All tab); the next page asks for it the same way.
  */
 export async function listCompanies(
   db: NodePgDatabase,
@@ -174,20 +174,20 @@ export async function listCompanies(
         eq(companies.userId, userId),
         tabCondition(db, tab),
         nameCondition(query),
-        // Порівняння пари, а не двох умов через OR: у PostgreSQL
-        // `(a, b) > (x, y)` - це рівно «наступний рядок за тим самим
-        // порядком», і воно збігається з `ORDER BY name, id`.
+        // A row comparison, not two conditions joined by OR: in PostgreSQL
+        // `(a, b) > (x, y)` is exactly "the next row in the same order", and it
+        // matches `ORDER BY name, id`.
         cursor
           ? sql`(${companies.name}, ${companies.id}) > (${cursor.key}, ${cursor.id}::uuid)`
           : undefined,
       ),
     )
-    // Порядок задає код, а не база: список читається за алфавітом назв, а `id`
-    // робить порядок однозначним при однакових назвах - без цього курсор
-    // губив би рядки на межі порції.
+    // The code sets the order, not the database: the list reads alphabetically by
+    // name, and `id` makes the order unambiguous for equal names - without it the
+    // cursor would lose rows at the page boundary.
     .orderBy(asc(companies.name), asc(companies.id))
-    // Один рядок понад порцію - дешевший спосіб дізнатися, що далі ще є, ніж
-    // окремий `count` на кожне Load more.
+    // One row beyond the page is a cheaper way to learn there is more than a
+    // separate `count` for every Load more.
     .limit(limit + 1);
 
   const hasMore = rows.length > limit;
@@ -201,11 +201,12 @@ export async function listCompanies(
 }
 
 /**
- * Дотягує до показаних компаній джерела й числа вакансій - окремими запитами.
+ * Fetches the sources and vacancy counts of the companies shown - with separate
+ * queries.
  *
- * Окремі запити, а не join: join дублював би рядок компанії на кожне джерело,
- * а агрегація в json зробила б запит помітно складнішим заради того самого
- * результату на півсотні рядків.
+ * Separate queries, not a join: a join would repeat the company row for every
+ * source, and aggregating into json would make the query noticeably more complex
+ * for the same result on fifty rows.
  */
 async function attachDetails(
   db: NodePgDatabase,
@@ -227,12 +228,12 @@ async function attachDetails(
       lastCheckedAt: careerSources.lastCheckedAt,
       lastSuccessAt: careerSources.lastSuccessAt,
       consecutiveFailures: careerSources.consecutiveFailures,
-      // Джерело в черзі - Checking у статусі компанії. Завдань у черзі на
-      // джерело - одиниці, а індекс `check_tasks_source_idx` є.
+      // A source in the queue means Checking in the company status. A source has
+      // only a few tasks in the queue, and there is the `check_tasks_source_idx` index.
       //
-      // Імена таблиць - явно: у запиті з однієї таблиці Drizzle пише колонки
-      // без них, і всередині підзапиту `"source_id" = "id"` порівнювало б
-      // колонки самої `check_tasks`.
+      // Table names are explicit: in a single-table query Drizzle writes columns
+      // without them, and inside the subquery `"source_id" = "id"` would compare
+      // columns of `check_tasks` itself.
       isChecking: sql<boolean>`exists (
         select 1 from ${checkTasks} as queued_task
         where queued_task.source_id = ${careerSources}.id
@@ -246,11 +247,11 @@ async function attachDetails(
         rows.map((row) => row.id),
       ),
     )
-    // Порядок джерел теж задає код: спершу додане - першим.
+    // The code sets the order of sources too: the first added comes first.
     .orderBy(asc(careerSources.createdAt), asc(careerSources.id));
 
   const byCompany = new Map<string, CompanySource[]>();
-  // Остання перевірка компанії - найпізніша серед її джерел.
+  // The company's last check is the latest among its sources.
   const lastChecked = new Map<string, Date>();
 
   for (const {
@@ -262,7 +263,7 @@ async function attachDetails(
     const list = byCompany.get(companyId) ?? [];
     list.push({
       ...source,
-      // Невдала остання перевірка - та, після якої лічильник збоїв не нуль.
+      // A failed last check is one after which the failure counter is not zero.
       lastCheck:
         lastCheckedAt === null
           ? null
@@ -294,7 +295,7 @@ async function attachDetails(
   }));
 }
 
-/** Вакансії компаній: усього й у Favorites, по всіх джерелах кожної. */
+/** Company vacancies: total and in Favorites, across all of each company's sources. */
 async function countVacancies(
   db: NodePgDatabase,
   companyIds: string[],
@@ -319,9 +320,9 @@ async function countVacancies(
 }
 
 /**
- * Скільки компаній у кожній вкладці. Усі числа стоять у назвах вкладок
- * одночасно, тому рахуються одним запитом. `attention` - ще й число в меню біля
- * Companies.
+ * How many companies each tab has. All the numbers are in the tab names at
+ * once, so they are counted in one query. `attention` is also the number in the
+ * menu next to Companies.
  */
 export async function countCompaniesByTab(
   db: NodePgDatabase,
@@ -350,12 +351,11 @@ export async function countCompaniesByTab(
 }
 
 /**
- * Одна компанія вкладки - такою, якою її показує список.
+ * One company of a tab, as the list shows it.
  *
- * Потрібна після Save у модалці Edit: список замінює в себе саме цей рядок,
- * не перечитуючи порції. `null` означає «на цій вкладці її більше немає» -
- * компанія без відстежуваних джерел переїхала в Not tracked, тож рядок треба
- * прибрати.
+ * Needed after Save in the Edit modal: the list replaces exactly this row
+ * without rereading the page. `null` means "it is no longer on this tab": a
+ * company without tracked sources moved to Not tracked, so the row has to go.
  */
 export async function findCompanyInTab(
   db: NodePgDatabase,
@@ -376,8 +376,8 @@ export async function findCompanyInTab(
     .where(
       and(
         eq(companies.id, companyId),
-        // Умова на користувача тут і є перевіркою доступу: чужа компанія
-        // просто не знайдеться.
+        // The condition on the user is the access check: someone else's company
+        // simply will not be found.
         eq(companies.userId, userId),
         tabCondition(db, tab),
       ),

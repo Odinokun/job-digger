@@ -3,31 +3,31 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { companies } from "../db/schema.ts";
 
-/** Яку компанію видаляємо і хто її власник. */
+/** Which company is deleted and who owns it. */
 export type DeleteCompanyInput = {
   userId: string;
   companyId: string;
 };
 
 /**
- * Чим закінчилося видалення.
+ * How deleting ended.
  *
- * `not-found` покриває і неіснуючу компанію, і чужу - так само, як у
- * `updateCompany`: інакше відповідь підказувала б, що такий рядок у базі є.
+ * `not-found` covers both a missing company and someone else's - as in
+ * `updateCompany`: otherwise the answer would hint that such a row exists.
  */
 export type DeleteCompanyResult =
   { ok: true } | { ok: false; problem: "not-found" };
 
 /**
- * Видаляє компанію разом з усіма її карʼєрними джерелами.
+ * Deletes a company together with all its career sources.
  *
- * Один запит без транзакції: джерела прибирає `ON DELETE CASCADE` на
- * `career_sources.company_id` (`db/schema.ts`), а вакансії видаленого джерела -
- * тим самим каскадом на `vacancies.source_id`. Лічильники History лежать у
- * `check_runs` і лишаються.
+ * One query without a transaction: `ON DELETE CASCADE` on
+ * `career_sources.company_id` (`db/schema.ts`) removes the sources, and the same
+ * cascade on `vacancies.source_id` removes the vacancies of a deleted source.
+ * History counters live in `check_runs` and stay.
  *
- * Умова на `user_id` і є перевіркою доступу: чужий рядок не видалиться й
- * нічого не повернеться.
+ * The condition on `user_id` is the access check: someone else's row is not
+ * deleted and nothing is returned.
  */
 export async function deleteCompany(
   db: NodePgDatabase,
