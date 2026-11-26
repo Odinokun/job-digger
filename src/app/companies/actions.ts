@@ -44,11 +44,11 @@ import type {
 } from "./form-state";
 
 /**
- * Обгортка Server Action над `addCompany`.
+ * Server Action wrapper around `addCompany`.
  *
- * Сама нічого не вирішує: читає поля форми, бере користувача й передає роботу
- * серверному модулю. Форма надсилається з клієнта, тому поля тут - недовірений
- * ввід, і перевіряє їх `addCompany`.
+ * It decides nothing itself: it reads the form fields, takes the user and hands
+ * the work to the server module. The form is sent from the client, so the
+ * fields here are untrusted input, and `addCompany` checks them.
  */
 export async function addCompanyAction(
   _state: AddCompanyFormState,
@@ -61,7 +61,7 @@ export async function addCompanyAction(
     const user = await getSystemUser(db);
 
     const careerUrl = readField(formData, "careerUrl");
-    // Вибрані знахідки Find pages: галочки списку з `name="foundUrl"`.
+    // Chosen Find pages findings: the list checkboxes with `name="foundUrl"`.
     const foundUrls = formData
       .getAll("foundUrl")
       .filter((value): value is string => typeof value === "string");
@@ -76,9 +76,9 @@ export async function addCompanyAction(
         [careerUrl, ...foundUrls],
         httpClient,
       ),
-      // Прапорець зʼявляється у формі лише після попередження - про домен або
-      // про однакову назву. Один на обидва: користувач підтверджує рішення
-      // «усе одно додати», а не кожну перевірку окремо.
+      // The flag appears in the form only after a warning - about the domain or
+      // about the same name. One for both: the user confirms the decision
+      // "add it anyway", not each check separately.
       confirmed: formData.get("confirmed") === "true",
     });
 
@@ -86,16 +86,16 @@ export async function addCompanyAction(
       return result;
     }
 
-    // Рядок для списку: без нього клієнт мусив би перечитувати сторінку, а з
-    // нею й дозавантажені порції.
+    // The row for the list: without it the client would have to re-read the
+    // page, and the loaded batches with it.
     const company = await findCompanyInTab(db, {
       userId: user.id,
       companyId: result.companyId,
       tab,
     });
 
-    // Компанія на Tracked - у неї є джерела, що відстежуються, і її одразу
-    // перевіряють (src/app/README.md, «Додавання компанії»).
+    // A company on Tracked has tracked sources and is checked right away
+    // (src/app/README.md, "Adding a company").
     const isTracked =
       tab === "tracked"
         ? company !== null
@@ -122,7 +122,7 @@ export async function addCompanyAction(
     return { status: "failed", result };
   }
 
-  // Рядок список вставить сам, а лічильники вкладок і шапки рендерить сервер.
+  // The list inserts the row itself, while the server renders the tab and header counters.
   revalidateHeaderCounts();
 
   return {
@@ -133,17 +133,18 @@ export async function addCompanyAction(
 }
 
 /**
- * Find pages у модалці Add company: пошук кар'єрних джерел за сайтом і назвою
- * (`discoverSources`, src/server/discovery/README.md).
+ * Find pages in the Add company modal: a search for career sources by site and
+ * name (`discoverSources`, src/server/discovery/README.md).
  *
- * Нічого не змінює - лише читає чужі сайти, - але Server Action, бо пошук
- * ходить у мережу з сервера. Аргументи - недовірений ввід, тому адреса
- * перевіряється тут: крива дає ту саму відмову, що й Save.
+ * It changes nothing - it only reads other sites - but it is a Server Action
+ * because the search goes to the network from the server. The arguments are
+ * untrusted input, so the address is checked here: a bad one gets the same
+ * refusal as Save.
  *
- * `companyId` - пошук для вже доданої компанії (Find pages на картці Not
- * tracked, задача 5.14): її власні джерела вже на картці, тож зі знахідок
- * вони прибираються. Id - недовірений ввід, але лише фільтрує знахідки:
- * компанії шукаються серед компаній самого користувача.
+ * `companyId` is a search for an existing company (Find pages on a Not tracked
+ * card, task 5.14): its own sources are already on the card, so they are removed
+ * from the findings. The id is untrusted input, but it only filters findings:
+ * companies are looked up among the user's own companies.
  */
 export async function findPagesAction(
   url: unknown,
@@ -194,7 +195,7 @@ export async function findPagesAction(
     : { ok: false, problem: "failed-unexpectedly" };
 }
 
-/** Поле форми як рядок: `FormData` віддає ще й файли, їх тут бути не може. */
+/** A form field as a string: `FormData` also returns files, which cannot be here. */
 function readField(formData: FormData, name: string): string {
   const value = formData.get(name);
 
@@ -202,21 +203,21 @@ function readField(formData: FormData, name: string): string {
 }
 
 /**
- * Пошук за назвою з недовіреного аргумента: не рядок - без пошуку. Решту
- * (обрізання, екранування `%` і `_`) робить `listCompanies`.
+ * A name search from an untrusted argument: not a string - no search. The rest
+ * (trimming, escaping `%` and `_`) is done by `listCompanies`.
  */
 function searchQuery(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
 /**
- * Наступні 50 компаній після курсора.
+ * The next 50 companies after the cursor.
  *
- * Аргументи приходять із клієнта й нічим не захищені: Server Action доступний
- * прямим POST-запитом, а не лише через кнопку (документація Next, «Server
- * Functions are reachable via direct POST requests»). Тому вкладка, курсор і
- * пошук розбираються тут, а користувач береться на сервері - з клієнта він не
- * передається взагалі.
+ * The arguments come from the client and are not protected by anything: a
+ * Server Action can be reached with a direct POST request, not only through the
+ * button (Next docs, "Server Functions are reachable via direct POST
+ * requests"). So the tab, the cursor and the search are parsed here, and the
+ * user is taken on the server - it is never passed from the client.
  */
 export async function loadMoreCompaniesAction(
   tab: unknown,
@@ -231,7 +232,7 @@ export async function loadMoreCompaniesAction(
       userId: user.id,
       tab: parseCompaniesTab(tab),
       query: searchQuery(query),
-      // `after` чистить сам `listCompanies` через `parseCursor`.
+      // `listCompanies` cleans `after` itself through `parseCursor`.
       after: after as Cursor | null,
     });
   });
@@ -243,13 +244,14 @@ export async function loadMoreCompaniesAction(
   return { ok: true, ...outcome.value };
 }
 
-/** Більше рядків одним перечитуванням не віддаємо - захист від хибного числа. */
+/** No more rows than this in one re-read - a guard against a bogus number. */
 const MAX_RELOAD = 500;
 
 /**
- * Перечитує з початку стільки компаній, скільки вже показано, - після кінця
- * загальної перевірки: статуси й «Last checked» змінились, а рядки списку живуть
- * у клієнтському стані. Скільки показано - недовірене число, тож обмежене.
+ * Re-reads as many companies from the start as are already shown, after a
+ * general check ends: statuses and "Last checked" have changed, and the list
+ * rows live in client state. How many are shown is an untrusted number, so it
+ * is capped.
  */
 export async function reloadCompaniesAction(
   tab: unknown,
@@ -277,13 +279,13 @@ export async function reloadCompaniesAction(
 }
 
 /**
- * Check now для однієї компанії: перевіряє її джерела й повертає оновлений
- * рядок списку.
+ * Check now for one company: checks its sources and returns the updated list
+ * row.
  *
- * Аргументи - недовірений ввід, як і в `loadMoreCompaniesAction`: компанія
- * шукається за користувачем із сервера, тож чужу перевірити не вийде. Дія
- * чекає, поки прочитаються всі джерела. Під час загальної перевірки - відмова
- * `check-running`: компанія і так перевіряється.
+ * The arguments are untrusted input, as in `loadMoreCompaniesAction`: the
+ * company is looked up by the user from the server, so someone else's cannot be
+ * checked. The action waits until all the sources are read. During a general
+ * check it refuses with `check-running`: the company is being checked anyway.
  */
 export async function checkCompanyNowAction(
   companyId: unknown,
@@ -307,7 +309,7 @@ export async function checkCompanyNowAction(
       return "check-running" as const;
     }
 
-    // `not-found` - компанії вже немає, і `null` прибирає її рядок.
+    // `not-found` - the company is gone, and `null` removes its row.
     return checked.ok
       ? findCompanyInTab(db, {
           userId: user.id,
@@ -325,23 +327,23 @@ export async function checkCompanyNowAction(
     return { ok: false, reason: "check-running" };
   }
 
-  // Перевірка додає й прибирає вакансії - лічильник непрочитаних у шапці.
+  // A check adds and removes vacancies - the unread counter in the header.
   revalidateHeaderCounts();
 
   return { ok: true, company: outcome.value };
 }
 
 /**
- * Check all з вкладки Tracked (src/server/checks/README.md): ставить
- * у чергу всі джерела, що відстежуються, і одразу повертається - джерела
- * перевіряє цикл черги, а інтерфейс не блокується.
+ * Check all from the Tracked tab (src/server/checks/README.md): queues every
+ * tracked source and returns at once - the queue loop checks the sources, and
+ * the UI is not blocked.
  */
 export async function startCheckAllAction(): Promise<StartCheckAllResult> {
   const outcome = await runAction(async () => {
     const db = getDb();
     const user = await getSystemUser(db);
 
-    // Ручний Check all - лише перша сторінка кожного джерела (задача 6.16).
+    // A manual Check all reads only the first page of each source (task 6.16).
     const started = await startCheckAll(db, {
       userId: user.id,
       depthMode: "first-page",
@@ -365,8 +367,9 @@ export async function startCheckAllAction(): Promise<StartCheckAllResult> {
 }
 
 /**
- * Find new pages на вкладці Not tracked: ставить у чергу пошук для кожної її
- * компанії (`startFindNewPages`) і повертає стан для опитування, як Check all.
+ * Find new pages on the Not tracked tab: queues a search for each of its
+ * companies (`startFindNewPages`) and returns the state for polling, like Check
+ * all.
  */
 export async function startFindNewPagesAction(): Promise<StartFindNewPagesResult> {
   const outcome = await runAction(async () => {
@@ -395,11 +398,11 @@ export async function startFindNewPagesAction(): Promise<StartFindNewPagesResult
 }
 
 /**
- * Обгортка Server Action над `updateCompany`.
+ * Server Action wrapper around `updateCompany`.
  *
- * Поля форми - недовірений ввід, тому id компанії й джерел ідуть у
- * `updateCompany` як є: там вони перевіряються умовами запиту (компанія - за
- * користувачем, джерела - за компанією), а не довірою до клієнта.
+ * The form fields are untrusted input, so the company and source ids go to
+ * `updateCompany` as they are: there the query conditions check them (the
+ * company by user, the sources by company) instead of trusting the client.
  */
 export async function updateCompanyAction(
   _state: EditCompanyFormState,
@@ -422,8 +425,8 @@ export async function updateCompanyAction(
         .getAll("removeSourceIds")
         .filter((value): value is string => typeof value === "string"),
       sourceLabels: typedLabels(formData),
-      // Порожнє поле адреси - це «джерело не додаємо», а не крива адреса: той
-      // самий підхід, що з карʼєрною сторінкою в модалці Add company.
+      // An empty address field means "no source added", not a bad address: the
+      // same approach as with the career page in the Add company modal.
       addSource,
       pagePlatforms: await platformsByPage(
         addSource === undefined ? [] : [addSource.url],
@@ -435,8 +438,8 @@ export async function updateCompanyAction(
       return result;
     }
 
-    // Той самий рядок, яким його тепер бачить список: без цього клієнт мусив
-    // би або перечитувати всі дозавантажені порції, або вгадувати результат.
+    // The same row the list now sees: without it the client would have to
+    // either re-read every loaded batch or guess the result.
     return {
       ok: true as const,
       company: await findCompanyInTab(db, { userId: user.id, companyId, tab }),
@@ -453,20 +456,20 @@ export async function updateCompanyAction(
     return { status: "failed", result };
   }
 
-  // Рядок список оновить сам, а от лічильники вкладок рендерить сервер:
-  // компанія без джерел переїжджає між Tracked і Not tracked. Прибране джерело
-  // забирає свої вакансії - тож і лічильник непрочитаних у шапці.
+  // The list updates the row itself, but the server renders the tab counters:
+  // a company without sources moves between Tracked and Not tracked. A removed
+  // source takes its vacancies along - hence the unread counter in the header.
   revalidateHeaderCounts();
 
   return { status: "saved", company: result.company };
 }
 
 /**
- * Обгортка Server Action над `deleteCompany`.
+ * Server Action wrapper around `deleteCompany`.
  *
- * Вкладки тут немає, на відміну від Edit: після видалення перечитувати рядок
- * нічим, список просто прибирає його зі себе. Id компанії - недовірений ввід,
- * права на неї перевіряє запит у `deleteCompany`.
+ * Unlike Edit, there is no tab here: after deletion there is no row to re-read,
+ * the list simply removes it. The company id is untrusted input; the query in
+ * `deleteCompany` checks the rights to it.
  */
 export async function deleteCompanyAction(
   _state: DeleteCompanyFormState,
@@ -492,21 +495,21 @@ export async function deleteCompanyAction(
     return { status: "failed", result };
   }
 
-  // Рядок список прибере сам, а лічильники вкладок рендерить сервер. Разом із
-  // компанією зникають її вакансії - тож і лічильник непрочитаних у шапці.
+  // The list removes the row itself, while the server renders the tab counters.
+  // The company's vacancies go with it - hence the unread counter in the header.
   revalidateHeaderCounts();
 
   return { status: "deleted" };
 }
 
 /**
- * Додає вставлену адресу карʼєрною сторінкою вже доданої компанії.
+ * Adds the pasted address as a career page of an existing company.
  *
- * Викликається не з форми, а кнопкою в модалці Add company, коли адреса
- * збіглася з уже доданою компанією (картка 2.16). Аргументи приходять із
- * клієнта й нічим не захищені - Server Action доступний прямим POST-запитом,
- * тому тут вони зводяться до рядків, а права на компанію перевіряє
- * `addCareerSource` своїм запитом.
+ * It is called not from the form but by a button in the Add company modal, when
+ * the address matched an existing company (task 2.16). The arguments come from
+ * the client and are not protected by anything - a Server Action can be reached
+ * with a direct POST request - so here they are reduced to strings, and
+ * `addCareerSource` checks the rights to the company with its own query.
  */
 export async function addCareerSourceAction(
   companyId: unknown,
@@ -553,20 +556,21 @@ export async function addCareerSourceAction(
     return { status: "failed", result };
   }
 
-  // Рядок список замінить сам, а лічильники вкладок і шапки рендерить сервер:
-  // із новим джерелом компанія переїжджає з Not tracked у Tracked.
+  // The list replaces the row itself, while the server renders the tab and
+  // header counters: with a new source the company moves from Not tracked to Tracked.
   revalidateHeaderCounts();
 
   return { status: "added", companyId: company, company: result.company };
 }
 
 /**
- * Додає вибрані знахідки Find pages джерелами вже доданої компанії - модалка
- * Find pages на картці Not tracked (задача 5.14).
+ * Adds the chosen Find pages findings as sources of an existing company - the
+ * Find pages modal on a Not tracked card (task 5.14).
  *
- * Аргументи - недовірений ввід: адреси зводяться до рядків, а права на
- * компанію й самі адреси перевіряє `addCareerSources`. Перша перевірка після
- * Save - справа клієнта, як і після Add company (5.09).
+ * The arguments are untrusted input: the addresses are reduced to strings, and
+ * `addCareerSources` checks the rights to the company and the addresses
+ * themselves. The first check after Save is the client's job, as after Add
+ * company (5.09).
  */
 export async function addFoundPagesAction(
   companyId: unknown,
@@ -614,28 +618,28 @@ export async function addFoundPagesAction(
     return { status: "failed", result };
   }
 
-  // Лічильники вкладок і шапки рендерить сервер: із джерелом, що читається,
-  // компанія переїжджає з Not tracked у Tracked.
+  // The server renders the tab and header counters: with a readable source the
+  // company moves from Not tracked to Tracked.
   revalidateHeaderCounts();
 
   return { status: "added", companyId: company, company: result.company };
 }
 
-/** Аргумент Server Action як рядок: із клієнта може приїхати будь-що. */
+/** A Server Action argument as a string: anything can arrive from the client. */
 function asString(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
-/** Префікс полів із підписами джерел: далі в назві стоїть id джерела. */
+/** Prefix of the source label fields: the source id follows in the name. */
 const SOURCE_LABEL_PREFIX = "sourceLabel.";
 
 /**
- * Підписи наявних джерел із полів форми: id джерела - уведений підпис.
+ * Labels of existing sources from the form fields: source id - the label typed.
  *
- * Назва поля несе id (`sourceLabel.<id>`), а не окремий паралельний масив
- * ідентифікаторів: `FormData` не гарантує, що два масиви приїдуть однакової
- * довжини, і підпис міг би дістатися чужому джерелу. Самі id - недовірений
- * ввід, тому їх перевіряє запит у `updateCompany`.
+ * The field name carries the id (`sourceLabel.<id>`) instead of a separate
+ * parallel array of ids: `FormData` does not guarantee that two arrays arrive
+ * with the same length, and a label could end up on someone else's source. The
+ * ids themselves are untrusted input, so the query in `updateCompany` checks them.
  */
 function typedLabels(formData: FormData): Record<string, string> {
   const labels: Record<string, string> = {};
@@ -649,7 +653,7 @@ function typedLabels(formData: FormData): Record<string, string> {
   return labels;
 }
 
-/** Нове карʼєрне джерело з полів модалки Edit або `undefined`, якщо його не вводили. */
+/** The new career source from the Edit modal fields, or `undefined` if none was entered. */
 function addedSource(
   formData: FormData,
 ): { url: string; label?: string } | undefined {
@@ -661,11 +665,11 @@ function addedSource(
 }
 
 /**
- * Mark all as read / Mark all as unread для компанії.
- * Аргументи - недовірений ввід: id перевіряє `setCompanyVacanciesRead` (UUID і
- * власник), а позначка має бути саме булевою. `revalidateHeaderCounts` - заради
- * лічильника в шапці і щоб Jobs, відкритий одразу після дії, не показав список
- * до запису (задача 3.22).
+ * Mark all as read / Mark all as unread for a company.
+ * The arguments are untrusted input: `setCompanyVacanciesRead` checks the id
+ * (UUID and owner), and the mark must be a boolean. `revalidateHeaderCounts` is
+ * there for the header counter and so that Jobs, opened right after the action,
+ * does not show the list from before the write (task 3.22).
  */
 export async function setCompanyVacanciesReadAction(
   companyId: unknown,
@@ -692,13 +696,13 @@ export async function setCompanyVacanciesReadAction(
 }
 
 /**
- * Позначка «лише посилання» на сторінці Unsupported (задача 6.17).
+ * The "link only" mark on an Unsupported page (task 6.17).
  *
- * Аргументи - недовірений ввід: id і власника перевіряє
- * `setSourceReferenceOnly`, вкладку - `parseCompaniesTab`. Відповідь - рядок
- * компанії так, як його тепер бачить вкладка: на Needs attention позначена
- * компанія може з неї зникнути, тоді `company: null`. `revalidateHeaderCounts` -
- * заради числа біля Companies у шапці й лічильника вкладки.
+ * The arguments are untrusted input: `setSourceReferenceOnly` checks the id and
+ * the owner, `parseCompaniesTab` the tab. The response is the company row as the
+ * tab now sees it: on Needs attention a marked company may leave the tab, then
+ * `company: null`. `revalidateHeaderCounts` is there for the number next to
+ * Companies in the header and for the tab counter.
  */
 export async function setSourceReferenceOnlyAction(
   companyId: unknown,
@@ -737,8 +741,8 @@ export async function setSourceReferenceOnlyAction(
   });
 
   if (!outcome.ok || outcome.value === null) {
-    // `null` тут - відмова позначки, а не компанія, що пішла з вкладки:
-    // `findCompanyInTab` викликається лише після успіху.
+    // `null` here is a refusal of the mark, not a company that left the tab:
+    // `findCompanyInTab` is called only after success.
     return { ok: false };
   }
 
@@ -748,9 +752,10 @@ export async function setSourceReferenceOnlyAction(
 }
 
 /**
- * Read as list, крок 1 (задача 6.21): групи посилань власної сторінки, з яких
- * людина вибирає вакансії. Id джерела - недовірений ввід, власника й
- * платформу перевіряє `previewOwnPage`. `failed` - неочікуваний збій.
+ * Read as list, step 1 (task 6.21): the link groups of an own page from which
+ * the user picks the vacancies. The source id is untrusted input;
+ * `previewOwnPage` checks the owner and the platform. `failed` is an unexpected
+ * failure.
  */
 export async function previewOwnPageAction(
   sourceId: unknown,
@@ -770,9 +775,9 @@ export async function previewOwnPageAction(
 }
 
 /**
- * Read as list, крок 2: записує вибрану групу рецептом і повертає рядок
- * компанії для вкладки - `null`, якщо компанія з неї пішла (Not tracked стає
- * Tracked). Першу перевірку запускає клієнт, як після Add company.
+ * Read as list, step 2: saves the chosen group as a recipe and returns the
+ * company row for the tab - `null` if the company left it (Not tracked becomes
+ * Tracked). The client starts the first check, as after Add company.
  */
 export async function applyOwnPageRecipeAction(
   companyId: unknown,
@@ -814,7 +819,7 @@ export async function applyOwnPageRecipeAction(
     return { ok: false };
   }
 
-  // Сторінка перестала бути «not read»: число біля Companies і вкладки.
+  // The page is no longer "not read": the number next to Companies and the tabs.
   revalidateHeaderCounts();
 
   return { ok: true, company: outcome.value.company };

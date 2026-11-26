@@ -30,33 +30,33 @@ import { URL_ERROR_KEYS } from "./url-errors";
 
 interface EditCompanyDialogProps {
   company: CompanyListItem;
-  /** Вкладка, у якій зараз показана компанія: від неї залежить, чи лишиться вона в списку. */
+  /** The tab the company is shown in: whether it stays in the list depends on it. */
   tab: CompaniesTab;
   platformLabels: Record<CompanySource["platform"], string>;
   /**
-   * Збережений рядок або `null`, якщо компанія вкладці більше не належить.
-   * Список замінює в себе саме його, тому дозавантажені порції лишаються.
+   * The saved row, or `null` if the company no longer belongs to the tab.
+   * The list replaces exactly that row, so loaded batches stay.
    */
   onSaved: (companyId: string, saved: CompanyListItem | null) => void;
 }
 
-/** Порожній блок додавання: і початковий стан, і те, до чого він вертається. */
+/** An empty add block: both the initial state and what it returns to. */
 const EMPTY_NEW_SOURCE = { url: "", label: "" };
 
 /**
- * Модалка Edit: назва і сайт компанії, підписи карʼєрних джерел, їх видалення
- * й додавання нового.
+ * The Edit modal: the company name and site, career source labels, removing
+ * sources and adding a new one.
  *
- * Сайт редагується з задачі company-site-required: він обовʼязковий, і
- * помилку в ньому інакше було б не виправити. Адреси наявних джерел - ні:
- * виправлення адреси джерела в плані немає (картка 2.05). Нове джерело вводиться руками, бо автоматичний пошук приходить
- * лише із задачею 5.07, а друге джерело потрібне вже зараз: на mozilla.org
- * вакансії фільтруються за країною, і кожен фільтр - окрема сторінка
- * (картка 2.16).
+ * The site is editable since task company-site-required: it is required, and a
+ * mistake in it could not be fixed otherwise. The addresses of existing sources
+ * are not: fixing a source address was never planned (task 2.05). A new source
+ * is typed by hand because automatic search only came with task 5.07, while a
+ * second source was needed already: on mozilla.org vacancies are filtered by
+ * country, and every filter is a separate page (task 2.16).
  *
- * Видалення джерела лише позначає його, а застосовує Save: окремого діалогу
- * підтвердження для одного джерела немає (src/app/README.md, «Що на екранах»),
- * тому скасування має лишатися можливим до збереження.
+ * Removing a source only marks it, and Save applies it: there is no separate
+ * confirmation dialog for one source (src/app/README.md, "Screens"), so undoing
+ * has to stay possible until saving.
  */
 export function EditCompanyDialog({
   company,
@@ -66,8 +66,8 @@ export function EditCompanyDialog({
 }: EditCompanyDialogProps) {
   const t = useTranslations("CompaniesPage.editCompany");
   const tUrlError = useTranslations("CompaniesPage.urlErrors");
-  // Підпис джерела й текст про дублікат задаються у двох модалках, тому їхні
-  // тексти лежать рівнем вище, поряд із `urlErrors`.
+  // The source label and the duplicate text are set in two modals, so their
+  // texts live one level up, next to `urlErrors`.
   const tShared = useTranslations("CompaniesPage");
   const tCommon = useTranslations("Common");
   const showActionFailed = useActionFailedToast();
@@ -78,34 +78,34 @@ export function EditCompanyDialog({
   );
 
   const [removed, setRemoved] = useState<string[]>([]);
-  // Назва й сайт контрольовані: Save неактивна, доки котресь порожнє (аудит
-  // інтерфейсу, B4), а неконтрольовану форму React скидає після надсилання.
+  // Name and site are controlled: Save is disabled while either is empty (UI
+  // audit, B4), and React resets an uncontrolled form after submission.
   const [name, setName] = useState(company.name);
   const [siteUrl, setSiteUrl] = useState(company.url);
-  // Поля підписів і блок додавання контрольовані: React скидає неконтрольовану
-  // форму після надсилання, і при відмові користувач втратив би введене.
+  // The label fields and the add block are controlled: React resets an
+  // uncontrolled form after submission, and on a refusal the user would lose the input.
   const [labels, setLabels] = useState<Record<string, string>>({});
   const [newSource, setNewSource] = useState(EMPTY_NEW_SOURCE);
-  // Відмова, яку видно ще до Save: ту саму перевірку робить і сервер, але
-  // чекати на надсилання, щоб побачити `ftp://`, нема за чим.
+  // A refusal visible before Save: the server does the same check, but there is
+  // no reason to wait for submission to see `ftp://`.
   const [newSourceRefusal, setNewSourceRefusal] = useState<
     | { problem: "source-url"; reason: UrlRefusalReason }
     | { problem: "source-duplicate" }
     | null
   >(null);
   const [, startSubmit] = useTransition();
-  // Чи надсилали форму після відкриття вікна: `useActionState` переживає
-  // закриття модалки, і без прапорця наступне відкриття показувало б відмову
-  // минулого разу. Те саме в модалці Add company.
+  // Whether the form was submitted since the window opened: `useActionState`
+  // survives closing the modal, and without the flag the next opening would show
+  // last time's refusal. The same in the Add company modal.
   const [isSubmitted, setSubmitted] = useState(false);
 
-  // Модалку закриває успіх, а не кнопка: доки зміни не збереглися, користувач
-  // має бачити свої правки й повідомлення про помилку.
-  // Закриття взяте окремою змінною, бо `useOverlayState` повертає новий обʼєкт
-  // на кожен рендер (сама `close` стабільна). Із цілим `overlay` у залежностях
-  // ефект перезапускався б постійно й на відкритті модалки одразу бачив би вже
-  // відпрацьований успіх: вікно закривалося б миттєво, а кнопка виглядала б
-  // мертвою.
+  // Success closes the modal, not the button: until the changes are saved, the
+  // user has to see their edits and the error message.
+  // `close` is taken into its own variable because `useOverlayState` returns a
+  // new object on every render (`close` itself is stable). With the whole
+  // `overlay` in the dependencies the effect would re-run constantly and, when
+  // the modal opened, see the success already handled: the window would close
+  // at once and the button would look dead.
   const closeDialog = overlay.close;
 
   useEffect(() => {
@@ -122,10 +122,10 @@ export function EditCompanyDialog({
   }, [state, showActionFailed]);
 
   /**
-   * Відкриття скидає позначки й поля: вікно контрольоване, тому без цього
-   * наступне відкриття показало б минулий вибір. Скидання в кнопці, а не в
-   * ефекті - `setState` в ефекті дає каскадний рендер
-   * (`react-hooks/set-state-in-effect`).
+   * Opening resets the marks and the fields: the window is controlled, so
+   * otherwise the next opening would show the previous choice. The reset sits in
+   * the button, not in an effect - `setState` in an effect causes a cascading
+   * render (`react-hooks/set-state-in-effect`).
    */
   function openDialog() {
     setName(company.name);
@@ -151,17 +151,17 @@ export function EditCompanyDialog({
   }
 
   /**
-   * Перевіряє введену адресу на виході з поля - тією самою чистою функцією,
-   * якою потім скористається сервер (`prepareCareerSource` у `src/lib`).
+   * Checks the typed address when focus leaves the field - with the same pure
+   * function the server uses later (`prepareCareerSource` in `src/lib`).
    *
-   * Серверну перевірку це не заміняє: поля приходять із клієнта, а між
-   * перевіркою і вставкою джерела могли змінитися. Зате крива адреса й
-   * дублікат видні одразу, а не аж після Save.
+   * This does not replace the server check: the fields come from the client, and
+   * the sources may change between the check and the insert. But a bad address
+   * and a duplicate show up at once, not only after Save.
    */
   function checkNewSource() {
     const typed = newSource.url.trim();
 
-    // Порожнє поле - це «джерела не додаємо», а не помилка.
+    // An empty field means "no source added", not an error.
     if (typed === "") {
       setNewSourceRefusal(null);
       return;
@@ -169,8 +169,8 @@ export function EditCompanyDialog({
 
     const prepared = prepareCareerSource({
       url: typed,
-      // Позначені до видалення не враховуємо: після Save їх уже не буде, тому
-      // та сама адреса дублікатом не стане.
+      // Sources marked for removal do not count: after Save they are gone, so the
+      // same address does not become a duplicate.
       existingUrls: company.sources
         .filter((source) => !removed.includes(source.id))
         .map((source) => source.url),
@@ -205,7 +205,7 @@ export function EditCompanyDialog({
         ? t("errors.siteTaken", { name: failure.company.name })
         : null;
 
-  // Клієнтська відмова має перевагу: вона свіжіша за стан минулого надсилання.
+  // A client-side refusal wins: it is newer than the state of the last submission.
   const sourceRefusal =
     newSourceRefusal ??
     (failure?.problem === "source-url" ||
@@ -218,16 +218,16 @@ export function EditCompanyDialog({
       ? tUrlError(URL_ERROR_KEYS[sourceRefusal.reason])
       : sourceRefusal?.problem === "source-duplicate"
         ? tShared("sourceDuplicate")
-        : // Джерело іншої компанії: тут його в списку вище не видно, тому
-          // відмова називає, у кого саме воно (картка 2.17).
+        : // Another company's source: it is not visible in the list above, so the
+          // refusal names who has it (task 2.17).
           failure?.problem === "source-taken"
           ? tShared("sourceTaken", { name: failure.company.name })
           : null;
 
   return (
     <>
-      {/* Лише іконка, як і кошик поруч: текст «Edit» у картці нічого не
-          додавав. Назву дії дає підказка при наведенні. */}
+      {/* Icon only, like the trash button next to it: the "Edit" text on the
+          card added nothing. The tooltip gives the action its name. */}
       <IconButton
         size="sm"
         variant="secondary"
@@ -238,10 +238,10 @@ export function EditCompanyDialog({
       </IconButton>
 
       <Modal.Backdrop isOpen={overlay.isOpen} onOpenChange={overlay.setOpen}>
-        {/* Довгий вміст скролиться всередині вікна: без цього
-                  `modal__dialog` обрізає його (`overflow-clip`), і в компанії
-                  з трьома джерелами блок додавання та кнопки опинялися за
-                  межею вікна - до них не було як дотягнутися. */}
+        {/* Long content scrolls inside the window: without this
+                  `modal__dialog` clips it (`overflow-clip`), and for a company
+                  with three sources the add block and the buttons ended up
+                  past the edge of the window, out of reach. */}
         <Modal.Container scroll="inside">
           <Modal.Dialog>
             <WithTooltip label={tCommon("close")}>
@@ -251,14 +251,14 @@ export function EditCompanyDialog({
               <Modal.Heading>{t("title")}</Modal.Heading>
             </Modal.Header>
 
-            {/* Форма надсилається вручну, а не через `action={submit}`:
-                React після дії робить формі `reset`, і React Aria повідомляє
-                `onChange("")`, через що введене зникало навіть із
-                контрольованих полів. Деталі - у модалці Add company. */}
-            {/* Форма - проміжний елемент між `Modal.Dialog` і `Modal.Body`,
-                тому вона мусить сама бути колонкою flex: інакше обмеження
-                висоти до тіла не доходить, і скрол усередині вікна не
-                працює - кнопки опиняються за нижнім краєм. */}
+            {/* The form is submitted by hand, not through `action={submit}`:
+                after the action React calls `reset` on the form, and React Aria
+                reports `onChange("")`, so the input vanished even from
+                controlled fields. Details in the Add company modal. */}
+            {/* The form sits between `Modal.Dialog` and `Modal.Body`, so it has
+                to be a flex column itself: otherwise the height limit never
+                reaches the body, and scrolling inside the window does not
+                work - the buttons end up below the bottom edge. */}
             <form
               className="flex min-h-0 flex-1 flex-col gap-6"
               onSubmit={(event) => {
@@ -270,8 +270,8 @@ export function EditCompanyDialog({
               }}
             >
               <input type="hidden" name="companyId" value={company.id} />
-              {/* Вкладка потрібна серверу, щоб сказати, чи лишається
-                  компанія в цьому списку після збереження. */}
+              {/* The server needs the tab to say whether the company stays in
+                  this list after saving. */}
               <input type="hidden" name="tab" value={tab} />
 
               <Modal.Body className="flex flex-col gap-4">
@@ -289,9 +289,9 @@ export function EditCompanyDialog({
                   <FieldError>{nameError}</FieldError>
                 </TextField>
 
-                {/* Сайт обовʼязковий і редагується (задача
-                    company-site-required): помилку в ньому інакше не
-                    виправити, лише видалити компанію й додати заново. */}
+                {/* The site is required and editable (task
+                    company-site-required): otherwise a mistake in it could only
+                    be fixed by deleting the company and adding it again. */}
                 <TextField
                   fullWidth
                   isRequired
@@ -317,11 +317,12 @@ export function EditCompanyDialog({
 
                         return (
                           <li key={source.id} className="flex flex-col gap-2">
-                            {/* Платформа й повна адреса ліворуч, кошик праворуч -
-                                завжди на тому самому місці, хоч би якою довгою
-                                була адреса (аудит інтерфейсу, A5). Тут адреса
-                                повна, з переносом: у картці вона обрізана, а
-                                Edit - єдине місце, де її видно цілком. */}
+                            {/* The platform and the full address on the left,
+                                the trash button on the right - always in the
+                                same place, however long the address (UI audit,
+                                A5). Here the address is full and wraps: on the
+                                card it is truncated, and Edit is the only place
+                                where it is visible in full. */}
                             <div className="flex items-start justify-between gap-3">
                               <div
                                 className={
@@ -339,12 +340,12 @@ export function EditCompanyDialog({
                                 </p>
                               </div>
 
-                              {/* Видалення - небезпечна дія, тому кошик
-                                  червоний. Позначене джерело можна повернути
-                                  тією самою кнопкою - тоді на ній стрілка
-                                  «назад». `--button-fg` перебивається змінною:
-                                  сам `text-danger` програв би правилу
-                                  `color: var(--button-fg)` з базового класу. */}
+                              {/* Removing is a dangerous action, so the trash
+                                  button is red. A marked source can be restored
+                                  with the same button - it then shows a "back"
+                                  arrow. `--button-fg` is overridden through the
+                                  variable: `text-danger` alone would lose to
+                                  `color: var(--button-fg)` from the base class. */}
                               <IconButton
                                 size="sm"
                                 variant="tertiary"
@@ -361,12 +362,12 @@ export function EditCompanyDialog({
                               </IconButton>
                             </div>
 
-                            {/* Підпис - те, чим користувач розрізняє джерела
-                                одного сайту: три фільтри mozilla.org інакше
-                                виглядають однаково. Видимий підпис поля, а не
-                                плейсхолдер (аудит A4, A5). Підпис рядка, що йде
-                                на видалення, нікуди не надсилається: вимкнене
-                                поле у FormData не потрапляє. */}
+                            {/* The label is how the user tells sources of one
+                                site apart: three mozilla.org filters look the
+                                same otherwise. A visible field label, not a
+                                placeholder (audit A4, A5). The label of a row
+                                marked for removal is not sent anywhere: a
+                                disabled field does not get into FormData. */}
                             <TextField
                               fullWidth
                               name={`sourceLabel.${source.id}`}
@@ -380,8 +381,9 @@ export function EditCompanyDialog({
                               <Input />
                             </TextField>
 
-                            {/* Позначене джерело їде у формі як поле: Server
-                                Action читає всі `removeSourceIds` разом. */}
+                            {/* A marked source travels in the form as a field:
+                                the Server Action reads all `removeSourceIds`
+                                together. */}
                             {isRemoved ? (
                               <input
                                 type="hidden"
@@ -395,8 +397,8 @@ export function EditCompanyDialog({
                     </ul>
                   )}
 
-                  {/* Попередження замість діалогу підтвердження: компанія без
-                      джерел переїжджає в Not tracked. */}
+                  {/* A warning instead of a confirmation dialog: a company
+                      without sources moves to Not tracked. */}
                   {removed.length > 0 &&
                   removed.length === company.sources.length &&
                   newSource.url.trim() === "" ? (
@@ -414,8 +416,8 @@ export function EditCompanyDialog({
                     name="addSourceUrl"
                     value={newSource.url}
                     onChange={(url) => {
-                      // Правка знімає відмову: текст про неї стосувався
-                      // попереднього значення.
+                      // Editing clears the refusal: its text was about the
+                      // previous value.
                       setNewSourceRefusal(null);
                       setNewSource((current) => ({ ...current, url }));
                     }}
