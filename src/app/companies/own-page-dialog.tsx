@@ -28,24 +28,24 @@ interface OwnPageDialogProps {
   source: CompanySource;
   tab: CompaniesTab;
   /**
-   * Рецепт записано: рядок компанії для вкладки (або `null`) і запуск першої
-   * перевірки - той самий шлях, що після Add company (`addRow` дошки).
+   * The recipe is saved: the company row for the tab (or `null`) and the start of
+   * the first check - the same path as after Add company (the board's `addRow`).
    */
   onApplied: (company: CompanyListItem | null, companyId: string) => void;
 }
 
-/** Скільки назв групи видно в діалозі: решта - «і ще N». */
+/** How many names of a group the dialog shows: the rest is "and N more". */
 const TITLES_SHOWN = 4;
 
 /**
- * Read as list у рядку власної сторінки компанії (задача 6.21): діалог
- * завантажує сторінку й пропонує до трьох груп посилань, що повторюються,
- * найімовірнішу - вибраною. Людина підтверджує, які посилання - вакансії, і
- * префікс їхніх адрес стає рецептом сторінки. Для сторінки, яку вже читаємо
- * (`own_page`), та сама кнопка міняє рецепт - якщо сайт переробили.
+ * Read as list on a company's own page row (task 6.21): the dialog loads the
+ * page and offers up to three groups of repeating links, the most likely one
+ * selected. The user confirms which links are vacancies, and the prefix of their
+ * addresses becomes the page's recipe. For a page we already read (`own_page`)
+ * the same button changes the recipe - in case the site was redone.
  *
- * Видно саме те, що віддав сервер сайту: фільтр після `#` чи в JavaScript він
- * ігнорує, і це одразу помітно за назвами.
+ * It shows exactly what the site's server returned: a filter after `#` or in
+ * JavaScript is ignored by the server, and the names make that obvious at once.
  */
 export function OwnPageDialog({
   companyId,
@@ -78,7 +78,7 @@ export function OwnPageDialog({
       } else if (result.problem === "page-unavailable") {
         setProblem("page-unavailable");
       } else {
-        // Джерела вже немає чи його прочитав парсер - список застарів.
+        // The source is gone or a parser reads it now - the list is out of date.
         overlay.close();
         showActionFailed();
       }
@@ -153,7 +153,7 @@ export function OwnPageDialog({
                         {t("links", { count: group.vacancies.length })}
                       </Radio.Content>
                       <Description>
-                        {/* Назви - текст із чужого сайту, лише як текст. */}
+                        {/* Names are text from another site, shown only as text. */}
                         {group.vacancies
                           .slice(0, TITLES_SHOWN)
                           .map((vacancy) => vacancy.title)

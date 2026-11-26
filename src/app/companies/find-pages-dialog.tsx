@@ -25,19 +25,18 @@ interface FindPagesDialogProps {
   company: CompanyListItem;
   tab: CompaniesTab;
   platformLabels: Record<CompanySource["platform"], string>;
-  /** Збережений рядок або `null`, якщо компанія вкладці більше не належить. */
+  /** The saved row, or `null` if the company no longer belongs to the tab. */
   onSaved: (companyId: string, saved: CompanyListItem | null) => void;
 }
 
 /**
- * Find pages для вже доданої компанії - на картці Not tracked (задача
- * 5.14). Той самий пошук і список знахідок, що в модалці
- * Add company, але за сайтом і назвою самої компанії, тож пошук стартує одразу
- * на відкритті.
+ * Find pages for an existing company - on a Not tracked card (task 5.14). The
+ * same search and findings list as in the Add company modal, but by the
+ * company's own site and name, so the search starts right when it opens.
  *
- * Після Save компанія з джерелом, що читається, переїжджає в Tracked і зникає
- * з цього списку, тому перша перевірка йде без кнопки Check now - так само, як
- * після Add company з вкладки Not tracked (5.09).
+ * After Save a company with a readable source moves to Tracked and leaves this
+ * list, so the first check runs without the Check now button - the same as after
+ * Add company from the Not tracked tab (5.09).
  */
 export function FindPagesDialog({
   company,
@@ -57,7 +56,7 @@ export function FindPagesDialog({
   const [isFinding, startFinding] = useTransition();
   const [isSaving, startSaving] = useTransition();
 
-  /** Відкриття скидає минулий пошук і запускає новий. */
+  /** Opening resets the previous search and starts a new one. */
   function openDialog() {
     setFindings(null);
     setSelected([]);
@@ -111,8 +110,8 @@ export function FindPagesDialog({
       }
 
       const failure = state.result;
-      // Між пошуком і Save сторінку могли додати іншій компанії чи цій самій:
-      // відмови ті самі, що в модалках Add і Edit.
+      // Between the search and Save the page may have been added to another
+      // company or to this one: the refusals are the same as in the Add and Edit modals.
       setError(
         failure.problem === "source-taken"
           ? tShared("sourceTaken", { name: failure.company.name })
@@ -144,7 +143,7 @@ export function FindPagesDialog({
             </Modal.Header>
 
             <Modal.Body className="flex flex-col gap-4">
-              {/* Пошук читає чужі сайти з паузами ввічливості - це секунди. */}
+              {/* The search reads other sites with politeness pauses - that takes seconds. */}
               {isFinding ? (
                 <p className="flex items-center gap-2 text-sm text-muted">
                   <Spinner color="current" size="sm" />

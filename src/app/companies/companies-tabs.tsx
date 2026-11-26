@@ -19,16 +19,16 @@ const TAB_LINKS = [
 ] as const;
 
 /**
- * Вкладки Tracked / Not tracked / Needs attention / All.
+ * The Tracked / Not tracked / Needs attention / All tabs.
  *
- * Це навігація між адресами, а не перемикач усередині сторінки: стан живе в
- * URL, тому вкладку можна перезавантажити й надіслати посиланням, а список
- * лишається серверним. Тому `nav` + `aria-current`, а не `role="tablist"`
- * з HeroUI Tabs - той ще й зробив би сторінку клієнтською.
+ * This is navigation between URLs, not a switch inside the page: the state lives
+ * in the URL, so a tab can be reloaded and sent as a link, and the list stays a
+ * server list. Hence `nav` + `aria-current`, not `role="tablist"` from HeroUI
+ * Tabs - which would also make the page a client page.
  *
- * Needs attention (задача 6.11) показується, лише коли такі компанії є або
- * вкладка відкрита: у звичайному стані її немає зовсім. All - усі компанії з
- * пошуком за назвою (задача companies-search), останньою, як і на Jobs.
+ * Needs attention (task 6.11) shows only when such companies exist or the tab is
+ * open: normally it is not there at all. All lists every company with a name
+ * search (task companies-search) and comes last, as on Jobs.
  */
 export function CompaniesTabs({
   current,
@@ -37,9 +37,9 @@ export function CompaniesTabs({
   labels,
 }: CompaniesTabsProps) {
   return (
-    // На вузькому екрані вкладки не переносяться, а прокручуються в своїй
-    // смузі (аудит інтерфейсу, A1). Лінія під ними - тінь inset, а не border:
-    // прокручуваний контейнер обрізав би підкреслення, що лягає на border.
+    // On a narrow screen the tabs do not wrap but scroll in their own strip (UI
+    // audit, A1). The line under them is an inset shadow, not a border: the
+    // scrolling container would clip an underline lying on a border.
     <nav
       aria-label={label}
       className="flex [scrollbar-width:none] gap-4 overflow-x-auto shadow-[inset_0_-1px_0_var(--border)] sm:gap-6"
@@ -63,8 +63,8 @@ export function CompaniesTabs({
             }
           >
             {labels[key]}
-            {/* Пробіл - текстом, а не відступом: інакше назва для читача
-                екрана злипається з числом («Unread(12)»). */}{" "}
+            {/* The space is text, not padding: otherwise a screen reader runs
+                the name and the number together ("Unread(12)"). */}{" "}
             <span className="text-muted">({counts[key]})</span>
           </Link>
         );
