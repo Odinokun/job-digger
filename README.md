@@ -288,6 +288,10 @@ document.cookie = "locale=uk; path=/";
 
 Наслідок читання cookie: усі сторінки рендеряться на кожен запит (у виводі `npm run build` вони позначені як `ƒ Dynamic`). Для застосунку, який показує дані з бази, це не втрата.
 
+## Ліцензія
+
+Код проєкту - [MIT](LICENSE). Не під MIT: скіли агента в `.agents/skills/` (чужий код зі своїми ліцензіями, деталі - [.claude/README.md](.claude/README.md#скіли)) і збережені відповіді сайтів у `src/server/http/testing/responses/` (копії публічних сторінок лише для тестів, [src/server/http/testing/README.md](src/server/http/testing/README.md#збережені-відповіді)).
+
 ## Документація
 
 - [Технічний план](docs/README.md) - вимоги, архітектура, модель даних, етапи.

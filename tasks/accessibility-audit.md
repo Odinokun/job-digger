@@ -4,6 +4,8 @@
 
 Репозиторій стане публічним: його показуватимуть рекрутерам і на технічних співбесідах. Перед цим застосунок треба перевірити на доступність. Брати перед [public-repo-polish.md](public-repo-polish.md): перекладати й причісувати варто вже виправлений код.
 
+PR: #158
+
 ## Рішення (автор, 25.11.2026)
 
 - Ціль - [WCAG 2.2](https://www.w3.org/TR/WCAG22/) рівня AA: усі критерії рівнів A і AA ([Understanding Conformance](https://www.w3.org/WAI/WCAG22/Understanding/conformance)).

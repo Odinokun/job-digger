@@ -155,7 +155,14 @@ PR: #57
 | [Свіже обране зверху у Favorites](favorites-added-today.md)                                      | done      |
 | [Undo після дії над вакансією](vacancy-undo-toast.md)                                            | done      |
 | [Перевірка доступності](accessibility-audit.md)                                                  | done      |
-| [Підготувати репозиторій до показу](public-repo-polish.md)                                       | analyze   |
+| [Підготувати репозиторій до показу](public-repo-polish.md)                                       | backlog   |
 | [Фавіконка з літерами JD](favicon-jd.md)                                                         | done      |
 | [Пошук компанії на сторінці Companies](companies-search.md)                                      | done      |
 | [Один помаранчевий у кожній темі](one-orange.md)                                                 | done      |
+| [Ліцензія і перевірка історії](public-license-history.md)                                        | done      |
+| [Прибрати план docs/](remove-docs-plan.md)                                                       | backlog   |
+| [CLAUDE.md і .claude/ англійською](claude-md-english.md)                                         | backlog   |
+| [Переклад src/app](translate-app.md)                                                             | backlog   |
+| [Переклад src/server](translate-server.md)                                                       | backlog   |
+| [Переклад src/lib, e2e і конфігів](translate-lib-e2e.md)                                         | backlog   |
+| [Кореневий README для стороннього читача](public-readme.md)                                      | backlog   |
