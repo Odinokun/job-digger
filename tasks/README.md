@@ -128,7 +128,7 @@ PR: #57
 | [6.26 Парсер BambooHR](6.26-bamboohr-parser.md)                                                  | done      |
 | [6.27 Парсер Pinpoint](6.27-pinpoint-parser.md)                                                  | done      |
 | [6.28 Парсер TalentAdore](6.28-talentadore-parser.md)                                            | done      |
-| [6.29 Сторінка помічає автоперевірку](6.29-poll-idle-checks.md)                                  | todo      |
+| [6.29 Сторінка помічає автоперевірку](6.29-poll-idle-checks.md)                                  | done      |
 | [7.01 Neon: проєкт і підключення](7.01-neon-setup.md)                                            | backlog   |
 | [7.02 API-маршрут обробника розкладу](7.02-schedule-handler-route.md)                            | backlog   |
 | [7.03 Самоперезапуск черги на Vercel](7.03-vercel-queue-restart.md)                              | backlog   |
