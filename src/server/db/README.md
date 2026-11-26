@@ -1,244 +1,245 @@
-# src/server/db - база даних
+# src/server/db - the database
 
-Схема, підключення і службові скрипти. Модель даних - сама схема (`schema.ts`) і рішення нижче. Як підняти локальну базу і шпаргалка команд
-Docker - [кореневий README](../../../README.md#база-даних).
+The schema, the connection and helper scripts. The data model is the schema itself
+(`schema.ts`) plus the decisions below. How to start the local database and a cheat sheet
+of Docker commands: [the root README](../../../README.md#база-даних).
 
-## Файли
+## Files
 
-| Файл                  | Що в ньому                                                        |
+| File                  | Contents                                                          |
 | --------------------- | ----------------------------------------------------------------- |
-| `schema.ts`           | Таблиці як код - джерело правди про структуру бази                |
-| `client.ts`           | `getDb()` - пул зʼєднань і єдина точка доступу до бази             |
-| `client.test.ts`      | Один пул на процес і в продакшні                                     |
-| `system-user.ts`      | `seedSystemUser(db)` створює, `getSystemUser(db)` лише читає       |
-| `seed.ts`             | Раннер початкових даних (`npm run db:seed`)                       |
-| `demo-companies.ts`   | `seedDemoCompanies(db, userId)` - набір компаній для ручної перевірки |
-| `seed-demo.ts`        | Раннер демо-компаній (`npm run db:seed:demo`)                     |
-| `time.ts`             | `dbTimeText` - час бази з мікросекундами для курсорів і меж, `DB_TIME_PATTERN` |
-| `check-connection.ts` | Перевірка підключення (`npm run db:check`)                         |
-| `backup.ts`           | Резервна копія `pg_dump` у `BACKUP_DIR` (`npm run db:backup`, `npm run app`) |
-| `backup-plan.ts`      | Назви файлів копій, «чи вже доба», які старі копії видаляти (тримаємо 30) |
-| [`testing/`](testing/README.md) | Обвʼязка інтеграційних тестів: тестова база й чистий стан |
+| `schema.ts`           | Tables as code - the source of truth about the database structure |
+| `client.ts`           | `getDb()` - the connection pool and the single point of access to the database |
+| `client.test.ts`      | One pool per process, in production too                           |
+| `system-user.ts`      | `seedSystemUser(db)` creates, `getSystemUser(db)` only reads      |
+| `seed.ts`             | The initial data runner (`npm run db:seed`)                       |
+| `demo-companies.ts`   | `seedDemoCompanies(db, userId)` - a set of companies for manual testing |
+| `seed-demo.ts`        | The demo company runner (`npm run db:seed:demo`)                  |
+| `time.ts`             | `dbTimeText` - the database time with microseconds for cursors and boundaries, `DB_TIME_PATTERN` |
+| `check-connection.ts` | Checking the connection (`npm run db:check`)                      |
+| `backup.ts`           | A `pg_dump` backup into `BACKUP_DIR` (`npm run db:backup`, `npm run app`) |
+| `backup-plan.ts`      | Backup file names, "has a day passed", which old backups to delete (we keep 30) |
+| [`testing/`](testing/README.md) | The integration test harness: the test database and a clean state |
 
-Згенеровані міграції лежать у `drizzle/` у корені проєкту.
+The generated migrations are in `drizzle/` at the project root.
 
-Сторінки беруть користувача через `getSystemUser`, а не `seedSystemUser`: перегляд
-сторінки не повинен писати в базу. Якщо користувача немає, помилка каже запустити
-`npm run db:seed`.
+Pages take the user through `getSystemUser`, not `seedSystemUser`: viewing a page must
+not write to the database. If there is no user, the error says to run `npm run db:seed`.
 
-Функції на кшталт `seedSystemUser` приймають базу аргументом, а не беруть `db` з
-`client.ts`: так та сама логіка працює і на базі розробки, і на тестовій.
+Functions like `seedSystemUser` take the database as an argument instead of taking `db`
+from `client.ts`: that way the same logic works on both the development and the test
+database.
 
-## Рішення щодо схеми
+## Schema decisions
 
-**Похідні статуси не зберігаються.** Tracked / Not tracked - це «чи є в компанії хоч
-одне джерело з `is_tracked`», а OK / Has errors / Checking рахуються з джерел і черги.
-У базі лежить тільки `discovery_status` - стани вкладки Not tracked (`not_checked`,
-`not_found`, `unsupported`, `check_failed`, `possible_page`), яких нізвідки не вивести.
-Пʼятий, `possible_page`, - рішення автора 19.11.2026 (задача 5.10): Find new pages
-знайшов дошку лише за назвою, і її підтверджує людина.
+**Derived statuses are not stored.** Tracked / Not tracked is "does the company have at
+least one source with `is_tracked`", and OK / Has errors / Checking are computed from the
+sources and the queue. The database keeps only `discovery_status` - the states of the Not
+tracked tab (`not_checked`, `not_found`, `unsupported`, `check_failed`, `possible_page`),
+which cannot be derived from anything. The fifth, `possible_page` (task 5.10): Find new
+pages found a board only by name, and a person confirms it.
 
-**Адреса компанії зберігається двічі.** `url` - так, як її ввів користувач, разом зі
-шляхом: `bosch.com/de` і `bosch.com/ua` - різні компанії. `normalized_url` - очищена
-форма тієї самої адреси, потрібна лише для порівняння дублікатів. Unique-індекс стоїть
-на парі `(user_id, normalized_url)`, тому та сама компанія в одного користувача
-додається лише раз, а різні користувачі можуть стежити за однією компанією.
+**The company address is stored twice.** `url` is the address as the user typed it,
+including the path: `bosch.com/de` and `bosch.com/ua` are different companies.
+`normalized_url` is the cleaned form of the same address, needed only for comparing
+duplicates. The unique index is on the pair `(user_id, normalized_url)`, so one user adds
+the same company only once, while different users can follow one company.
 
-**Головний сайт компанії обовʼязковий** - `url` і `normalized_url` `NOT NULL` з
-міграції `0024` (рішення автора 21.11.2026, задача company-site-required). До того обидві
-колонки були nullable: адреса ATS головного сайту не дає (`jobs.lever.co/spotify`), а
-вивести його зі slug-а не можна (картка 2.17). Перед міграцією компанії без сайту
-перевірено в обох базах: у робочій їх не було, у базі розробки дві видалено. База, де
-вони лишились, міграцію не пройде - спершу заповнити сайт або видалити такі компанії.
+**The company's main site is required** - `url` and `normalized_url` are `NOT NULL` since
+migration `0024` (task company-site-required). Before that both columns were nullable: an
+ATS address gives no main site (`jobs.lever.co/spotify`), and it cannot be derived from
+the slug (task 2.17). Before the migration, companies without a site were checked in both
+databases: the working one had none, and two were deleted from the development one. A
+database where they remain will not pass the migration - first fill in the site or delete
+such companies.
 
-**Адреса джерела теж зберігається двічі.** `career_sources.normalized_url` зʼявилася
-разом із компаніями без сайту (картка 2.17) і лишилась: ту саму компанію під іншим
-сайтом впізнає лише спільне джерело (`findCompanyWithSource`). Нормалізація живе в
-TypeScript (`normalizeCompanyUrl`), виразом в SQL її не записати, тому результат
-доводиться зберігати.
+**The source address is stored twice too.** `career_sources.normalized_url` appeared
+together with companies without a site (task 2.17) and stayed: only a shared source
+recognises the same company under another site (`findCompanyWithSource`). Normalization
+lives in TypeScript (`normalizeCompanyUrl`) and cannot be written as an SQL expression, so
+the result has to be stored.
 
-**Дублікати джерел не забороняються.** На `career_sources` unique-індексу за адресою
-немає свідомо - і не зʼявився навіть тоді, коли знадобилася перевірка «це джерело вже в
-іншої компанії». Унікальність потрібна в межах користувача, а `career_sources` власника
-не зберігає: одним індексом по одній таблиці це не виражається, бо unique через join
-PostgreSQL не вміє. Щоб індекс став можливим, довелося б денормалізувати `user_id` і
-тримати його складеним зовнішнім ключем на `companies(id, user_id)`, а для того - ще й
-unique на `companies(id, user_id)`. Купується за це атомарність проти гонки «два
-одночасні Save», яка коштує один зайвий рядок, що прибирається кнопкою Remove. Тому
-перевірка лишається дружньою і живе в коді
-([`companies/source-duplicates.ts`](../companies/source-duplicates.ts)), а індекс поверх
-уже наявної колонки лишається можливим пізніше - це міграція на один рядок.
+**Duplicate sources are not forbidden.** `career_sources` deliberately has no unique index
+on the address - and did not get one even when the check "this source already belongs to
+another company" was needed. Uniqueness is needed within a user, and `career_sources` does
+not store its owner: one index on one table cannot express this, because PostgreSQL cannot
+do a unique constraint across a join. To make the index possible, `user_id` would have to
+be denormalized and held by a composite foreign key to `companies(id, user_id)`, which in
+turn needs a unique index on `companies(id, user_id)`. What that buys is atomicity against
+the "two simultaneous Saves" race, which costs one extra row removed with the Remove
+button. So the check stays friendly and lives in code
+([`companies/source-duplicates.ts`](../companies/source-duplicates.ts)), and an index on
+top of the existing column stays possible later - a one-line migration.
 
-**Підпис джерела необовʼязковий.** `career_sources.label` зберігає те, чим користувач
-розрізняє джерела одного сайту: три фільтри `mozilla.org/en-US/careers/listings/`
-відрізняються лише `query`, і сирий URL їх не розрізняє. Колонка nullable, бо джерелу з
-власним доменом підписувати нічого, а порожній підпис - законний стан, не пропущені дані
-(картка 2.16).
+**The source label is optional.** `career_sources.label` keeps what the user tells sources
+of one site apart by: three filters of `mozilla.org/en-US/careers/listings/` differ only in
+`query`, and the raw URL does not tell them apart. The column is nullable, because a source
+with its own domain needs no label, and an empty label is a legitimate state, not missing
+data (task 2.16).
 
-**Непідтримувана сторінка зберігається.** Джерело з `platform = unsupported` і
-`is_tracked = false` лишається в базі: адреса знадобиться, якщо зʼявляться нові способи
-читання.
+**An unsupported page is kept.** A source with `platform = unsupported` and `is_tracked =
+false` stays in the database: the address will be useful if new ways of reading appear.
 
-**Перелічувані значення - типи PostgreSQL** (`pgEnum`), а не текст: база сама не дасть
-записати хибне значення, навіть якщо запис піде поза нашим кодом. Ціна - нова платформа
-означає міграцію `ALTER TYPE ... ADD VALUE`, а видаляти значення з enum PostgreSQL не
-вміє.
+**Enumerated values are PostgreSQL types** (`pgEnum`), not text: the database itself will
+not accept an invalid value, even if the write goes around our code. The cost: a new
+platform means an `ALTER TYPE ... ADD VALUE` migration, and PostgreSQL cannot remove a
+value from an enum.
 
-**`CHECK` на назву компанії.** `NOT NULL` не ловить порожній рядок, а порожня назва дала
-б пустий рядок у списку компаній.
+**A `CHECK` on the company name.** `NOT NULL` does not catch an empty string, and an empty
+name would give a blank row in the company list.
 
-**Індекси проставлені руками.** PostgreSQL не індексує зовнішній ключ автоматично, тому
-є індекс на `career_sources.company_id`, а список компаній читається за `(user_id, name)`
-- тією самою парою, якою він сортується.
+**Indexes are added by hand.** PostgreSQL does not index a foreign key automatically, so
+there is an index on `career_sources.company_id`, and the company list is read by `(user_id,
+name)` - the same pair it is sorted by.
 
-**Вакансії (`vacancies`, задача 3.04).**
+**Vacancies (`vacancies`, task 3.04).**
 
-- **Ключ унікальний у межах джерела** - унікальний індекс `(source_id, key)`: «усередині
-  одного джерела повторних записів не створюємо» тримає база, а не лише код. Між
-  джерелами той самий ключ дозволений - дублікати там не обʼєднуємо. Сам рядок ключа
-  (`id:<ID на платформі>` або `url:<очищена адреса>`) складає задача 3.05.
-- **Окремого індексу на `source_id` немає:** унікальний індекс починається з цієї
-  колонки, і PostgreSQL бере його і для вакансій джерела, і для каскадного видалення.
-- **Каскад від джерела.** Видалення джерела чи компанії забирає вакансії, зокрема з
-  Favorites, - те саме правило, що для Delete компанії.
-- **`closed_at`, а не прапорець.** Позначка Closed зберігає момент зникнення вакансії з
-  Favorites, щоб було видно, коли вона закрилась.
-- **Користувача в таблиці немає** - він через джерело й компанію, так само як для
-  `career_sources` (рішення вище).
-- **Список Jobs** сортується й пагінується за `(first_detected_at, id)` - під це є
-  окремий індекс.
-- **Дві дати появи.** `first_detected_at` - момент старту перевірки, що знайшла
-  вакансію (за ним сортується Jobs), `created_at` - момент запису рядка за годинником
-  бази (міграція 0007). Друга - межа Mark all as read: перевірка, що йде, пише
-  вакансії з ранішою першою датою, але пізнішою другою
-  ([`src/server/vacancies/README.md`](../vacancies/README.md#одночасні-зміни)).
-  Індексу на `created_at` немає: запит і так обмежений вакансіями користувача.
+- **The key is unique within a source** - the unique index `(source_id, key)`: "no repeated
+  records within one source" is held by the database, not only the code. Across sources the
+  same key is allowed - duplicates there are not merged. The key string itself
+  (`id:<ID on the platform>` or `url:<cleaned address>`) is built by task 3.05.
+- **There is no separate index on `source_id`:** the unique index starts with that column,
+  and PostgreSQL uses it both for a source's vacancies and for cascade deletion.
+- **A cascade from the source.** Deleting a source or a company takes its vacancies,
+  including those in Favorites - the same rule as for Delete company.
+- **`closed_at`, not a flag.** The Closed mark keeps the moment a vacancy disappeared from
+  Favorites, so it is visible when it closed.
+- **There is no user in the table** - it comes through the source and the company, the
+  same as for `career_sources` (the decision above).
+- **The Jobs list** is sorted and paginated by `(first_detected_at, id)` - there is a
+  separate index for that.
+- **Two appearance dates.** `first_detected_at` is the start of the check that found the
+  vacancy (Jobs is sorted by it), `created_at` is the moment the row was written by the
+  database clock (migration 0007). The second is the boundary of Mark all as read: a check
+  in progress writes vacancies with an earlier first date but a later second one
+  ([`src/server/vacancies/README.md`](../vacancies/README.md#одночасні-зміни)). There is no
+  index on `created_at`: the query is limited to the user's vacancies anyway.
 
-**Запуски перевірок (`check_runs`, задача 4.01).** Тест - `checks.integration.test.ts`.
+**Check runs (`check_runs`, task 4.01).** The test is `checks.integration.test.ts`.
 
-- **Рядок - лише загальна перевірка** (Check all чи автоперевірка), тобто рядок
-  History. Check now і Retry сюди не пишуться.
-- **Лічильники зберігаються, а не рахуються з `check_tasks`.** Рядок History фіксує
-  результат на момент завершення: Retry його не змінює, а завдання видаленого джерела
-  зникають разом із ним, і числа, пораховані з завдань, поїхали б заднім числом.
-  `sources_checked` включає невдалі - так само, як Sources checked у History.
-- **Одна активна перевірка на користувача - частковий унікальний індекс**
-  `(user_id) where finished_at is null`. Два одночасні Check all не проскочать навіть
-  повз перевірку в коді: другий `insert` отримає порушення унікальності
+- **A row is only a general check** (Check all or an auto-check), that is a History row.
+  Check now and Retry are not written here.
+- **The counters are stored, not computed from `check_tasks`.** A History row records the
+  result as of the finish: Retry does not change it, and the tasks of a deleted source go
+  with it, so numbers computed from the tasks would shift after the fact. `sources_checked`
+  includes failed ones - the same as Sources checked in History.
+- **One active check per user is a partial unique index** `(user_id) where finished_at is
+  null`. Two simultaneous Check alls cannot slip past even the check in the code: the
+  second `insert` gets a uniqueness violation
   ([docs/18/indexes-partial](https://www.postgresql.org/docs/18/indexes-partial.html),
-  приклад 11.3).
-- **`summary_shown_at`, а не прапорець** - як і `closed_at`: підсумок має спливти один
-  раз, навіть якщо запуск завершився при закритій вкладці (задача 4.06).
+  example 11.3).
+- **`summary_shown_at`, not a flag** - like `closed_at`: the summary has to pop up once,
+  even if the run finished while the tab was closed (task 4.06).
 
-**Завдання черги (`check_tasks`, задача 4.01).** Тест - той самий
+**Queue tasks (`check_tasks`, task 4.01).** The test is the same
 `checks.integration.test.ts`.
 
-- **Два види завдань в одній черзі** (`kind`, міграція 0010, задача 5.10): `check` -
-  перевірка одного джерела (`source_id`), `discover` - Find new pages для однієї
-  компанії (`company_id`). Одна черга, а не дві таблиці - рішення автора: спільний ліміт
-  одночасних завдань, захоплення й повернення завислих працюють однаково для обох.
-  CHECK `check_tasks_target_matches_kind` вимагає рівно ту ціль, якої потребує вид.
-- **`run_id` вказує на загальну перевірку**, що створила завдання; у Check now, Retry і
-  Find new pages він `null`, бо в History вони не пишуться.
-- **Пріоритет - enum `manual` / `background`, і порядок значень - це порядок
-  захоплення.** «The ordering of the values in an enum type is the order in which the
-  values were listed when the type was created»
-  ([docs/18/datatype-enum](https://www.postgresql.org/docs/18/datatype-enum.html)), тож
-  `order by priority` ставить ручні завдання першими без окремої таблиці ваг.
-- **Видалення джерела забирає його завдання каскадом** - так незавершені й
-  скасовуються. Захоплене добігає, а його результат відкидає життєвий цикл, бо джерела
-  вже немає ([`vacancies/README.md`](../vacancies/README.md)). Видалене джерело само
-  собою зникає з Failed Sources Drawer, а лічильники запуску в `check_runs` не
-  змінюються. Тому статусу `cancelled` немає: план чекав його для Find pages, що
-  скасовується закриттям модалки, але Find pages через чергу не йде (наступний пункт).
-- **Find pages у модалці через чергу не йде**: його предмет - адреса, а не збережена
-  компанія, і він виконується прямо в Server Action (задача 5.07). Через чергу йде лише
-  Find new pages - він шукає для вже збережених компаній.
-- **`locked_at`** - коли обробник захопив завдання. За ним завдання, що зависло в
-  `running`, повертається в чергу (задача 4.02).
-- **`error` - `jsonb` з `CheckTaskError`**: помилка парсера так, як він її повернув
-  ([`parsers/types.ts`](../parsers/types.ts)), або причина від самої черги
-  ([`queue/task-error.ts`](../queue/task-error.ts)). Failed Sources Drawer показує
-  причину, а нова причина не потребує міграції. History цих деталей не показує.
-- **`skipped_vacancies`** - parse warning: скільки записів парсер пропустив через ваду
-  даних ([`parsers/README.md`](../parsers/README.md), «Спільний формат»).
-- **Індекс черги частковий** - `(priority, created_at) where status = 'queued'`: у черзі
-  завжди жменя рядків, а завершених завдань накопичуються тисячі.
+- **Two kinds of tasks in one queue** (`kind`, migration 0010, task 5.10): `check` - checking
+  one source (`source_id`), `discover` - Find new pages for one company (`company_id`). One
+  queue rather than two tables: the shared limit of simultaneous tasks, claiming and
+  returning stuck tasks work the same for both. The `check_tasks_target_matches_kind`
+  CHECK requires exactly the target the kind needs.
+- **`run_id` points to the general check** that created the task; for Check now, Retry and
+  Find new pages it is `null`, because they are not recorded in History.
+- **The priority is a `manual` / `background` enum, and the order of the values is the
+  claim order.** "The ordering of the values in an enum type is the order in which the
+  values were listed when the type was created"
+  ([docs/18/datatype-enum](https://www.postgresql.org/docs/18/datatype-enum.html)), so
+  `order by priority` puts manual tasks first without a separate weights table.
+- **Deleting a source takes its tasks by cascade** - that is how unfinished ones get
+  cancelled. A claimed one runs to the end, and the lifecycle discards its result because
+  the source is gone ([`vacancies/README.md`](../vacancies/README.md)). A deleted source
+  disappears from the Failed Sources Drawer by itself, and the run counters in `check_runs`
+  do not change. That is why there is no `cancelled` status: the original plan expected it
+  for Find pages, cancelled by closing the modal, but Find pages does not go through the
+  queue (the next point).
+- **Find pages in the modal does not go through the queue**: its subject is an address,
+  not a saved company, and it runs right in the Server Action (task 5.07). Only Find new
+  pages goes through the queue - it searches for companies already saved.
+- **`locked_at`** - when a worker claimed the task. By it a task stuck in `running` goes
+  back to the queue (task 4.02).
+- **`error` is `jsonb` with a `CheckTaskError`**: the parser error as the parser returned
+  it ([`parsers/types.ts`](../parsers/types.ts)), or a reason from the queue itself
+  ([`queue/task-error.ts`](../queue/task-error.ts)). The Failed Sources Drawer shows the
+  reason, and a new reason needs no migration. History does not show these details.
+- **`skipped_vacancies`** is the parse warning: how many records the parser skipped
+  because of bad data ([`parsers/README.md`](../parsers/README.md), "Спільний формат").
+- **The queue index is partial** - `(priority, created_at) where status = 'queued'`: the
+  queue always holds a handful of rows, while finished tasks pile up in the thousands.
 
-## Як змінюється структура бази
+## How the database structure changes
 
-1. Правиш `schema.ts`.
-2. `npm run db:generate` - Drizzle порівнює схему зі знімком попереднього стану
-   (`drizzle/meta/*`) і сам пише SQL-файл.
-3. Читаєш згенерований SQL. Він іде в git і проходить рев'ю як звичайний код.
-4. `npm run db:migrate` - застосовує ті міграції, яких база ще не бачила.
+1. Edit `schema.ts`.
+2. `npm run db:generate` - Drizzle compares the schema with the snapshot of the previous
+   state (`drizzle/meta/*`) and writes the SQL file itself.
+3. Read the generated SQL. It goes into git and is reviewed like ordinary code.
+4. `npm run db:migrate` - applies the migrations the database has not seen yet.
 
-База веде журнал застосованих міграцій у таблиці `drizzle.__drizzle_migrations`,
-тому повторний `db:migrate` нічого не робить.
+The database keeps a log of applied migrations in the `drizzle.__drizzle_migrations` table,
+so running `db:migrate` again does nothing.
 
-**Файли в `drizzle/` руками не редагуються** - їх пише `drizzle-kit`, а хук
-`protect-files.sh` блокує туди запис. Знімки в `drizzle/meta/` теж потрібні в git:
-без них наступний `generate` не знатиме попереднього стану схеми.
+**Files in `drizzle/` are never edited by hand** - `drizzle-kit` writes them, and the
+`protect-files.sh` hook blocks writes there. The snapshots in `drizzle/meta/` are needed in
+git too: without them the next `generate` would not know the previous state of the schema.
 
-**`drizzle-kit push` ми не використовуємо.** Він змінює базу напряму, не залишаючи
-файлів: нічого не потрапляє в git, рев'ю немає, і відтворити ту саму структуру на
-Neon нічим.
+**We do not use `drizzle-kit push`.** It changes the database directly, leaving no files:
+nothing gets into git, there is no review, and nothing can reproduce the same structure on
+Neon.
 
-## Межа між міграцією і seed
+## The line between a migration and the seed
 
-Міграція змінює **структуру** (таблиці, колонки, індекси), seed наповнює
-**даними**, без яких застосунок не працює. Вставки рядків у міграції не йдуть -
-інакше міграції перестають бути відтворюваними.
+A migration changes the **structure** (tables, columns, indexes), the seed fills in the
+**data** the app cannot work without. Row inserts do not go into migrations - otherwise
+migrations stop being reproducible.
 
-Seed має бути ідемпотентним: запуск двічі дає той самий результат, що й один раз.
-Для цього - `onConflictDoNothing()`, а не простий `insert`. Це покрито
-інтеграційним тестом `system-user.integration.test.ts`.
+The seed has to be idempotent: running it twice gives the same result as running it once.
+That takes `onConflictDoNothing()` rather than a plain `insert`. The
+`system-user.integration.test.ts` integration test covers this.
 
-**Демо-компанії - третій сорт даних і окрема команда.** `db:seed` створює те, без
-чого застосунок не працює, а `db:seed:demo` додає компанії, щоб на сторінці Companies
-було на чому клікати при ручній перевірці. Через цю межу демо-дані не можуть випадково
-поїхати на базу онлайн-версії: там запускається лише `db:seed`.
+**Demo companies are a third kind of data and a separate command.** `db:seed` creates what
+the app cannot work without, and `db:seed:demo` adds companies so there is something to
+click on the Companies page during manual testing. Thanks to this line, demo data cannot
+accidentally reach the online version's database: only `db:seed` runs there.
 
-Ідемпотентність демо-набору тримається на іншому правилі, ніж у системного
-користувача. Компанію боронить unique-індекс `(user_id, normalized_url)`, а на
-`career_sources` unique-індексу немає свідомо, тому джерела вставляються **лише разом
-із новою компанією**: компанію, яка вже є, скрипт не торкається зовсім і доданого чи
-прибраного руками джерела не чіпає.
+The demo set's idempotency rests on a different rule than the system user's. The unique
+index `(user_id, normalized_url)` guards a company, while `career_sources` deliberately has
+no unique index, so sources are inserted **only together with a new company**: the script
+does not touch an existing company at all, nor any source added or removed by hand.
 
-Адреси в наборі справжні й перевірені - у етапі 3 той самий набір знадобиться, щоб
-прогнати парсери на реальних сторінках. `normalized_url` у даних не прописаний руками:
-його обчислює `normalizeCompanyUrl`, та сама функція, що й ручне додавання компанії.
+The addresses in the set are real and verified - in stage 3 the same set was used to run
+the parsers on real pages. `normalized_url` is not written into the data by hand:
+`normalizeCompanyUrl` computes it, the same function as adding a company by hand.
 
-## Пул зʼєднань і dev-режим
+## The connection pool and dev mode
 
-`client.ts` тримає пул зʼєднань: встановлення зʼєднання з PostgreSQL коштує часу,
-тому кілька зʼєднань лишаються відкритими і перевикористовуються.
+`client.ts` keeps a connection pool: opening a connection to PostgreSQL takes time, so a
+few connections stay open and are reused.
 
-**Пул один на процес - і в dev, і в продакшні**, кеш у `globalThis`. У dev-режимі
-Next перезавантажує серверні модулі після кожної зміни коду, тож змінна модуля
-обнулялася б - новий пул на кожне перезавантаження, а старий лишався б із відкритими
-зʼєднаннями. `globalThis` переживає перезавантаження.
+**One pool per process - in dev and in production**, cached in `globalThis`. In dev mode
+Next reloads server modules after every code change, so a module variable would be reset -
+a new pool on every reload, while the old one stayed with its connections open.
+`globalThis` survives the reload.
 
-До задачі 3.23 кеш вмикався лише поза продакшном - «модуль виконується один раз».
-Модуль - так, але `getDb()` викликається на кожен запит, і `next start` створював
-новий пул на кожен виклик. E2E (він іде на продакшн-збірці) упирався в ліміт
-PostgreSQL - «sorry, too many clients already», - щойно лічильник непрочитаних
-(3.19) додав по запиту на кожен рендер. Тест - `client.test.ts`.
+Until task 3.23 the cache was on only outside production - "the module runs once". The
+module does, but `getDb()` is called on every request, and `next start` created a new pool
+on every call. E2E (which runs on a production build) ran into PostgreSQL's limit - "sorry,
+too many clients already" - as soon as the unread counter (3.19) added a query to every
+render. The test is `client.test.ts`.
 
-**Підключення створюється при першому виклику `getDb()`, а не при імпорті модуля.**
-`next build` виконує модулі сторінок, щоб зібрати їхню конфігурацію: поки помилка про
-відсутній `DATABASE_URL` кидалася на імпорті, збірка падала на сторінці, яка під час
-збірки жодного запиту не робить. Через це CI із самим лише `TEST_DATABASE_URL` не міг
-зібрати застосунок.
+**The connection is created on the first `getDb()` call, not when the module is
+imported.** `next build` executes page modules to collect their configuration: while the
+error about a missing `DATABASE_URL` was thrown on import, the build failed on a page that
+makes no query during the build. Because of this, CI with only `TEST_DATABASE_URL` could
+not build the app.
 
-## Службові скрипти
+## Helper scripts
 
-`seed.ts` і `check-connection.ts` запускаються через `node` без збирача - як і решта
-службових скриптів проєкту ([кореневий README](../../../README.md#стек)). Звідси
-розширення `.ts` в їхніх імпортах: так вимагає нативний TypeScript у Node.
+`seed.ts` and `check-connection.ts` run through `node` without a bundler - like the
+project's other helper scripts ([the root README](../../../README.md#стек)). Hence the
+`.ts` extension in their imports: native TypeScript in Node requires it.
 
-`drizzle-kit` читає `.env` самостійно, тому `dotenv` із документації Drizzle нам не
-потрібна (перевірено емпірично).
+`drizzle-kit` reads `.env` by itself, so we do not need the `dotenv` from the Drizzle docs
+(checked empirically).
 
-Про версію Drizzle і те, чому API звіряється з типами, а не з сайтом - у
-[CLAUDE.md](../../../CLAUDE.md#stack).
+About the Drizzle version and why the API is checked against the types rather than the
+site: [CLAUDE.md](../../../CLAUDE.md#stack).
