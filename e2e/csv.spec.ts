@@ -25,8 +25,18 @@ const SOURCE_FILE = [
   "",
 ].join("\r\n");
 
+/**
+ * Only inside `main`: sometimes, right after navigation, the page also holds a
+ * hidden copy of the whole Settings content outside `main` (seen in CI and
+ * locally, cause not found), and strict mode refuses to act while a locator
+ * matches two elements.
+ */
+function settings(page: Page) {
+  return page.getByRole("main");
+}
+
 async function importFile(page: Page, name: string, contents: Buffer) {
-  await page.getByLabel("CSV file").setInputFiles({
+  await settings(page).getByLabel("CSV file").setInputFiles({
     name,
     mimeType: "text/csv",
     buffer: contents,
@@ -69,7 +79,7 @@ test("exports companies to CSV and imports the same file without duplicates", as
 
   // Експорт усього списку разом із карʼєрними адресами.
   await page.goto("/settings");
-  await page.getByText("Include career page URLs").click();
+  await settings(page).getByText("Include career page URLs").click();
   const [download] = await Promise.all([
     page.waitForEvent("download"),
     page.getByRole("button", { name: "Export CSV" }).click(),
