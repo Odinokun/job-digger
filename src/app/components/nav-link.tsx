@@ -7,7 +7,7 @@ export interface NavLinkProps {
   href: string;
   label: string;
   /**
-   * Число біля назви - кольором `counter`, без заливки (src/app/README.md#тема-ink). Текст
+   * Число біля назви - кольором `counter`, без заливки (src/app/README.md#ink-theme). Текст
    * посилання - «Jobs 12»: пробіл тримає назву й число окремими словами для
    * читача екрана.
    */

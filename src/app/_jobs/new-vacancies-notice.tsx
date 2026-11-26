@@ -49,7 +49,7 @@ export function useNewVacanciesNotice({
 
     const title = t(hasMore ? "titleAtLeast" : "title", { count });
     const options = {
-      // Дзвоник кольору уваги замість типового «i» (src/app/README.md#тема-ink).
+      // Дзвоник кольору уваги замість типового «i» (src/app/README.md#ink-theme).
       indicator: <Bell className="text-highlight" />,
       timeout: 0,
       // Закрив сам користувач - наступна зміна числа покаже toast знову.

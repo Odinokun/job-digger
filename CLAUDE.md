@@ -2,7 +2,7 @@
 
 Персональний застосунок для пошуку кар'єрних сторінок компаній, моніторингу вакансій і показу нових вакансій. Масштаб - від десятків до 300+ компаній.
 
-**Джерело правди щодо вимог - код, тести й README поруч із кодом.** Цей файл їх не дублює, а збирає правила роботи й дає орієнтир в архітектурі. Продуктові правила екранів - [src/app/README.md](src/app/README.md#що-на-екранах-і-чого-свідомо-немає).
+**Джерело правди щодо вимог - код, тести й README поруч із кодом.** Цей файл їх не дублює, а збирає правила роботи й дає орієнтир в архітектурі. Продуктові правила екранів - [src/app/README.md](src/app/README.md#screens-what-they-show-and-what-is-left-out).
 
 **Джерело правди щодо задач - [tasks/README.md](tasks/README.md)**: таблиця з усіма задачами та їхнім статусом, а поруч файл кожної задачі з описом і кроками. Дошка Trello «JD - Job Digger» - лише архів задач, завершених до 17.11.2026. Етапи з описом кожного - [tasks/README.md](tasks/README.md#етапи).
 
@@ -23,13 +23,13 @@
 
 Cache Components і React Compiler вимкнені свідомо. Playwright - лише інструмент тестів, у продакшн-код не потрапляє.
 
-Тема застосунку - «Ink»: токени в `src/app/globals.css`, шрифти в `src/app/layout.tsx`. Правила, обмеження на тон accent і рішення щодо бейджів - [src/app/README.md](src/app/README.md#тема-ink).
+Тема застосунку - «Ink»: токени в `src/app/globals.css`, шрифти в `src/app/layout.tsx`. Правила, обмеження на тон accent і рішення щодо бейджів - [src/app/README.md](src/app/README.md#ink-theme).
 
-**Правила інтерфейсу** (шкала тексту, кнопки, плейсхолдери, кольори станів, телефон) - [src/app/README.md](src/app/README.md#правила-інтерфейсу). Перед правкою інтерфейсу прочитати, після - знімки в обох темах на 1280 і 390 px.
+**Правила інтерфейсу** (шкала тексту, кнопки, плейсхолдери, кольори станів, телефон) - [src/app/README.md](src/app/README.md#ui-rules). Перед правкою інтерфейсу прочитати, після - знімки в обох темах на 1280 і 390 px.
 
-**Кожна кнопка лише з іконкою має підказку при наведенні** - через `IconButton` із `src/app/components/icon-button.tsx`, а не `Button isIconOnly`. Деталі - [src/app/README.md](src/app/README.md#кнопки-лише-з-іконкою).
+**Кожна кнопка лише з іконкою має підказку при наведенні** - через `IconButton` із `src/app/components/icon-button.tsx`, а не `Button isIconOnly`. Деталі - [src/app/README.md](src/app/README.md#icon-only-buttons).
 
-Світла, темна чи системна - вибір у cookie `theme`, як і мова. Атрибутом `data-theme` володіє inline-скрипт, а не React: чому саме так і чим це загрожує при правках layout - [src/app/README.md](src/app/README.md#перемикання-теми).
+Світла, темна чи системна - вибір у cookie `theme`, як і мова. Атрибутом `data-theme` володіє inline-скрипт, а не React: чому саме так і чим це загрожує при правках layout - [src/app/README.md](src/app/README.md#theme-switching).
 
 Next.js 16 має зміни проти тренувальних даних моделей: документація встановленої версії лежить у `node_modules/next/dist/docs/`, читай її перед написанням коду (про це ж нагадує `AGENTS.md`, який генерує `next dev`).
 
@@ -61,7 +61,7 @@ Next.js 16 має зміни проти тренувальних даних мо
 
 Таблиці: `users`, `companies`, `career_sources`, `vacancies`, `check_runs`, `check_tasks`, `settings` ([src/server/db/README.md](src/server/db/README.md)). Для локальної версії - один системний користувач, але дані завжди ізольовані за користувачем.
 
-Екрани: **Jobs** (Unread / Read / Favorites / All), **Companies** (Tracked / Not tracked / Needs attention / All з пошуком), **History**, **Settings** ([src/app/README.md](src/app/README.md#маршрути)).
+Екрани: **Jobs** (Unread / Read / Favorites / All), **Companies** (Tracked / Not tracked / Needs attention / All з пошуком), **History**, **Settings** ([src/app/README.md](src/app/README.md#routes)).
 
 ## Як працюємо: маленькі кроки
 
