@@ -30,20 +30,21 @@
 - [x] Контраст 1.4.3 і 1.4.11: помаранчевий для тексту й іконок - `--attention` #b15900 (Unsupported page, зірочка, маркер непрочитаного; було 2.1:1)
 - [x] Розмір мішені 2.5.8: лічильник біля Companies 8×36 px → не менше 24 px завширшки
 - [x] Клавіатура: порядок Tab логічний, модалка й меню повертають фокус; видимий фокус 2.4.7 - рамка HeroUI `--focus` азуром замість кольору кнопки
-- [x] Структура: `lang` іде за мовою інтерфейсу, landmarks `header`/`nav`/`main`, `prefers-reduced-motion` - HeroUI сам; стрибок h1 → h3 на Companies лишився (див. нижче)
+- [x] Структура: `lang` іде за мовою інтерфейсу, landmarks `header`/`nav`/`main`, `prefers-reduced-motion` - HeroUI сам; стрибок h1 → h3 на Companies прибрала задача 6.29
 - [x] Reflow 1.4.10 на 320 px і масштаб 200% (640 px): горизонтального скролу немає
-- [ ] Lighthouse: прогін автором (нижче)
+- [x] Lighthouse: прогін автором (нижче)
 - [x] Документація: розділ у `README.md`, деталі в `src/app/README.md`
 - [x] Зняти `@pending`, задача `done`
 
 ## Що лишилось відомим обмеженням
 
-- На Companies після `h1` ідуть `h3`: назви карток рендерить HeroUI `Card.Title`, а його `render` має повертати той самий тег. axe вважає це best practice, а не критерієм WCAG.
 - Модалку axe сканує лише Add company; решта модалок і drawer - через ручну перевірку.
 
 ## Lighthouse: для автора
 
 Chrome DevTools → Lighthouse → Mode «Navigation», Categories лише «Accessibility», Device Desktop. Прогнати `/`, `/companies`, `/history`, `/settings` у робочому екземплярі. Lighthouse використовує той самий рушій axe, тож очікується 100 або зауваження поза тегами WCAG.
+
+Результат (26.11.2026, Lighthouse 13.5, axe-core 4.13): `/companies` - 98, єдине зауваження `heading-order` (best practice, не WCAG): після `h1` одразу `h3` назви картки. Решта сторінок - без зауважень. Виправлено в задачі 6.29 прихованим `h2` над списком; `heading-order` тепер перевіряє й axe у E2E.
 
 ## VoiceOver: чекліст для автора
 
