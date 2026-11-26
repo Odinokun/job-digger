@@ -76,8 +76,8 @@ export function NavLink({
           // https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum
           className={
             layout === "list"
-              ? "inline-block min-w-6 py-3 text-center text-base hover:underline"
-              : "inline-block min-w-6 py-2 text-center text-sm hover:underline"
+              ? "inline-block min-w-6 py-3 text-base hover:underline"
+              : "inline-block min-w-6 py-2 text-sm hover:underline"
           }
           onClick={onNavigate}
         >
