@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import { createHostLimiter } from "./host-limiter.ts";
 
 /**
- * Годинник, яким керує тест: `sleep` ставить таймер, `advance` пересуває час і
- * спрацьовує таймери, що настали. Справжнього часу тести не чекають.
+ * A clock the test controls: `sleep` sets a timer, `advance` moves the time and
+ * fires the timers that are due. The tests never wait for real time.
  */
 function fakeClock() {
   let time = 0;
@@ -32,14 +32,14 @@ function fakeClock() {
   };
 }
 
-/** Дати промісам, що вже можуть рухатися, дійти до наступного очікування. */
+/** Let the promises that can already move reach their next wait. */
 async function settle() {
   for (let i = 0; i < 10; i += 1) {
     await new Promise((done) => setImmediate(done));
   }
 }
 
-/** Задача, яку тест завершує сам; записує, о котрій годині вона стартувала. */
+/** A task the test finishes itself; records the time it started. */
 function controlledTask(starts: number[], clock: { now: () => number }) {
   let finish!: () => void;
   let failWith!: (error: Error) => void;

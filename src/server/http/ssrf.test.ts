@@ -52,23 +52,23 @@ describe("checkUrl", () => {
       "http://10.1.2.3/",
       "http://172.16.0.1/",
       "http://192.168.1.1/",
-      // Метадані хмари - класична ціль SSRF.
+      // Cloud metadata - the classic SSRF target.
       "http://169.254.169.254/latest/meta-data/",
       "http://0.0.0.0/",
       "http://100.64.0.1/",
-      // Ті самі адреси в записах, які `URL` зводить до звичайного вигляду.
+      // The same addresses in forms that `URL` normalises.
       "http://2130706433/",
       "http://0x7f.1/",
       "http://[::1]/",
       "http://[fd00::1]/",
       "http://[fe80::1]/",
-      // IPv4, загорнута в IPv6.
+      // IPv4 wrapped in IPv6.
       "http://[::ffff:127.0.0.1]/",
-      // IPv6-адреси з вкладеною IPv4 10.0.0.1: NAT64, 6to4, Teredo.
+      // IPv6 addresses with an embedded IPv4 10.0.0.1: NAT64, 6to4, Teredo.
       "http://[64:ff9b::a00:1]/",
       "http://[2002:a00:1::1]/",
       "http://[2001::a00:1]/",
-      // Застарілий 6to4 relay і документаційний префікс IPv6 3fff::/20.
+      // The deprecated 6to4 relay and the IPv6 documentation prefix 3fff::/20.
       "http://192.88.99.2/",
       "http://[3fff::1]/",
     ]) {
@@ -92,7 +92,7 @@ describe("checkUrl", () => {
   });
 });
 
-/** Резолвер, що завжди відповідає тими самими адресами, - замість DNS. */
+/** A resolver that always answers with the same addresses - instead of DNS. */
 function resolvesTo(...addresses: string[]): Resolve {
   return async () =>
     addresses.map((address) => ({
@@ -101,7 +101,7 @@ function resolvesTo(...addresses: string[]): Resolve {
     }));
 }
 
-/** Викликає lookup у форматі Node і повертає те, що він передав у колбек. */
+/** Calls lookup in Node's format and returns what it passed to the callback. */
 function runLookup(
   lookup: ReturnType<typeof createSafeLookup>,
   options: LookupOptions,

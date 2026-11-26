@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { startFakeWeb, type FakeWeb } from "./fake-web.ts";
 
 describe("fake web server", () => {
-  // `base/responses` - тека відповідей, `base/secret.txt` - файл поза нею.
+  // `base/responses` is the responses folder, `base/secret.txt` a file outside it.
   let base: string;
   let fakeWeb: FakeWeb;
 
@@ -44,8 +44,8 @@ describe("fake web server", () => {
   });
 
   it("serves the index file for a path that ends with a slash", async () => {
-    // Корінь сайту: HTTP-клієнт перетворює `https://acme.example` на
-    // `/acme.example/`, а тека файлом бути не може.
+    // The site root: the HTTP client turns `https://acme.example` into
+    // `/acme.example/`, and a folder cannot be a file.
     const response = await fetch(`${fakeWeb.origin}/acme.example/`);
 
     expect(response.status).toBe(200);
@@ -70,14 +70,14 @@ describe("fake web server", () => {
   });
 
   it("refuses paths that climb out of the responses folder", async () => {
-    // Сирий запит: fetch нормалізує `..` і `%2e%2e` ще до відправки, а
-    // `%2f` - закодований слеш, який URL не вважає межею сегмента. Після
-    // декодування це `/../secret.txt`, і зупинити його може лише сервер.
+    // A raw request: fetch normalises `..` and `%2e%2e` before sending, and
+    // `%2f` is an encoded slash that URL does not treat as a segment boundary.
+    // Decoded, it is `/../secret.txt`, and only the server can stop it.
     expect(await rawStatus(fakeWeb.origin, "/..%2fsecret.txt")).toBe(404);
   });
 });
 
-/** Статус відповіді на запит із шляхом рівно таким, як переданий. */
+/** The status of a response to a request with exactly the given path. */
 function rawStatus(origin: string, path: string): Promise<number> {
   const { hostname, port } = new URL(origin);
 

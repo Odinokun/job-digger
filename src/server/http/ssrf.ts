@@ -1,6 +1,6 @@
 /**
- * Захист від SSRF: сервер ходить лише на публічні адреси http/https
- * (CLAUDE.md, «Безпека»).
+ * SSRF protection: the server only visits public http/https addresses
+ * (CLAUDE.md, "Security").
  */
 import type { LookupAddress, LookupOptions } from "node:dns";
 import { lookup as dnsLookup } from "node:dns/promises";
@@ -14,67 +14,69 @@ export type UrlCheck =
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);
 
 /**
- * Мережі, куди сервер не ходить: не лише приватні, а всі, що не є звичайним
- * публічним інтернетом - петля, link-local (там живуть метадані хмари), спільний
- * простір провайдерів, документаційні, мультикаст і зарезервовані.
+ * Networks the server never visits: not only private ones but everything that
+ * is not the ordinary public internet - loopback, link-local (where cloud
+ * metadata lives), the shared provider space, documentation, multicast and
+ * reserved ranges.
  *
- * Звірено з реєстрами спеціальних адрес IANA (18.11.2026): усі блоки з
- * «Globally Reachable: False» тут є.
+ * Checked against the IANA special-purpose address registries (18.11.2026):
+ * every block marked "Globally Reachable: False" is here.
  * https://www.iana.org/assignments/iana-ipv4-special-registry/
  * https://www.iana.org/assignments/iana-ipv6-special-registry/
- * Свідомо ширше за реєстр: NAT64 (`64:ff9b::/96`), 6to4 (`2002::/16`) і весь
- * `2001::/23` разом із Teredo - адреси з вкладеною IPv4, яка може бути
- * внутрішньою (`64:ff9b::a00:1` - це 10.0.0.1). Сайтів вакансій там не буває.
+ * Deliberately wider than the registry: NAT64 (`64:ff9b::/96`), 6to4
+ * (`2002::/16`) and the whole of `2001::/23` including Teredo - addresses with an
+ * embedded IPv4 that may be internal (`64:ff9b::a00:1` is 10.0.0.1). Job sites
+ * never live there.
  *
- * `BlockList` застосовує правила IPv4 і до IPv4, загорнутої в IPv6
- * (`::ffff:10.0.0.1`), тому окремо такі адреси не перелічуються.
+ * `BlockList` applies the IPv4 rules to IPv4 wrapped in IPv6 as well
+ * (`::ffff:10.0.0.1`), so such addresses are not listed separately.
  * https://nodejs.org/api/net.html#class-netblocklist
  */
 const BLOCKED_NETWORKS = new BlockList();
 
 for (const [network, prefix] of [
-  ["0.0.0.0", 8], // «ця мережа»; 0.0.0.0 на Linux означає цю машину
-  ["10.0.0.0", 8], // приватна
-  ["100.64.0.0", 10], // спільний простір провайдерів (CGNAT)
-  ["127.0.0.0", 8], // петля
-  ["169.254.0.0", 16], // link-local, метадані хмари
-  ["172.16.0.0", 12], // приватна
-  ["192.0.0.0", 24], // службові призначення IETF
-  ["192.0.2.0", 24], // документаційна
-  ["192.88.99.0", 24], // застарілий 6to4 relay
-  ["192.168.0.0", 16], // приватна
-  ["198.18.0.0", 15], // тестування мереж
-  ["198.51.100.0", 24], // документаційна
-  ["203.0.113.0", 24], // документаційна
-  ["224.0.0.0", 4], // мультикаст
-  ["240.0.0.0", 4], // зарезервована, разом із 255.255.255.255
+  ["0.0.0.0", 8], // "this network"; on Linux 0.0.0.0 means this machine
+  ["10.0.0.0", 8], // private
+  ["100.64.0.0", 10], // shared provider space (CGNAT)
+  ["127.0.0.0", 8], // loopback
+  ["169.254.0.0", 16], // link-local, cloud metadata
+  ["172.16.0.0", 12], // private
+  ["192.0.0.0", 24], // IETF protocol assignments
+  ["192.0.2.0", 24], // documentation
+  ["192.88.99.0", 24], // deprecated 6to4 relay
+  ["192.168.0.0", 16], // private
+  ["198.18.0.0", 15], // network benchmarking
+  ["198.51.100.0", 24], // documentation
+  ["203.0.113.0", 24], // documentation
+  ["224.0.0.0", 4], // multicast
+  ["240.0.0.0", 4], // reserved, including 255.255.255.255
 ] as const) {
   BLOCKED_NETWORKS.addSubnet(network, prefix, "ipv4");
 }
 
 for (const [network, prefix] of [
-  ["::", 128], // невизначена адреса
-  ["::1", 128], // петля
-  ["64:ff9b::", 96], // NAT64: веде на IPv4, зокрема внутрішню
-  ["64:ff9b:1::", 48], // локальний NAT64
-  ["100::", 64], // лише для відкидання
-  ["2001::", 23], // службові IETF, разом із Teredo (вкладена IPv4)
-  ["2001:db8::", 32], // документаційна
-  ["2002::", 16], // 6to4: вкладена IPv4
-  ["3fff::", 20], // документаційна
+  ["::", 128], // unspecified address
+  ["::1", 128], // loopback
+  ["64:ff9b::", 96], // NAT64: leads to IPv4, internal ones included
+  ["64:ff9b:1::", 48], // local-use NAT64
+  ["100::", 64], // discard-only
+  ["2001::", 23], // IETF protocol assignments, including Teredo (embedded IPv4)
+  ["2001:db8::", 32], // documentation
+  ["2002::", 16], // 6to4: embedded IPv4
+  ["3fff::", 20], // documentation
   ["5f00::", 16], // Segment Routing
-  ["fc00::", 7], // унікальні локальні
+  ["fc00::", 7], // unique local
   ["fe80::", 10], // link-local
-  ["ff00::", 8], // мультикаст
+  ["ff00::", 8], // multicast
 ] as const) {
   BLOCKED_NETWORKS.addSubnet(network, prefix, "ipv6");
 }
 
 /**
- * Чи можна сервер пустити за цією адресою, - до будь-якого запиту.
+ * Whether the server may be let through to this address, before any request.
  *
- * Повертає вже розібраний `URL`, щоб далі працювали саме з ним, а не з рядком:
- * перевірене й використане мають бути одним і тим самим.
+ * Returns the parsed `URL` so the rest of the code works with it rather than
+ * with the string: what was checked and what is used must be the same thing.
  */
 export function checkUrl(input: string): UrlCheck {
   let url: URL;
@@ -93,7 +95,7 @@ export function checkUrl(input: string): UrlCheck {
     return { ok: false, reason: "local-host" };
   }
 
-  // IPv6 у хості `URL` стоїть у квадратних дужках: `[::1]`.
+  // In a `URL` host, IPv6 sits in square brackets: `[::1]`.
   const host = url.hostname.replace(/^\[(.*)\]$/, "$1");
 
   if (isIP(host) !== 0 && !isPublicIp(host)) {
@@ -104,12 +106,12 @@ export function checkUrl(input: string): UrlCheck {
 }
 
 /**
- * `localhost` і будь-який його піддомен. RFC 6761, розділ 6.3: «address
+ * `localhost` and any of its subdomains. RFC 6761, section 6.3: "address
  * queries for localhost names will always resolve to the respective IP loopback
- * address» - і для «any names falling within ".localhost."». Відхиляємо за
- * іменем, не чекаючи DNS: резолверу лише рекомендовано (SHOULD) так робити.
- * `URL` уже привів хост до нижнього регістру; кінцеву крапку (`localhost.` -
- * повне доменне імʼя) прибираємо самі.
+ * address" - also for "any names falling within ".localhost."". We refuse by
+ * name without waiting for DNS: resolvers are only advised (SHOULD) to do so.
+ * `URL` has already lower-cased the host; we strip the trailing dot
+ * (`localhost.` is a fully qualified domain name) ourselves.
  */
 function isLocalHostName(hostname: string): boolean {
   const name = hostname.endsWith(".") ? hostname.slice(0, -1) : hostname;
@@ -117,8 +119,8 @@ function isLocalHostName(hostname: string): boolean {
 }
 
 /**
- * Чи публічна IP-адреса. Хитрі записи (`2130706433`, `0x7f.1`) сюди не доходять:
- * `URL` уже звів їх до звичайного вигляду, а DNS повертає лише звичайний.
+ * Whether an IP address is public. Tricky forms (`2130706433`, `0x7f.1`) never
+ * reach here: `URL` has already normalised them, and DNS only returns normal ones.
  */
 export function isPublicIp(ip: string): boolean {
   const family = isIP(ip);
@@ -130,7 +132,7 @@ export function isPublicIp(ip: string): boolean {
   return !BLOCKED_NETWORKS.check(ip, family === 4 ? "ipv4" : "ipv6");
 }
 
-/** Запит до DNS: усі адреси імені. У тестах підмінюється. */
+/** A DNS query: all addresses of a name. Replaced in tests. */
 export type Resolve = (
   hostname: string,
   options: LookupOptions,
@@ -140,15 +142,16 @@ const resolveWithDns: Resolve = (hostname, options) =>
   dnsLookup(hostname, { ...options, all: true as const });
 
 /**
- * Функція `lookup` для `http.request`, що відмовляє, коли домен веде на
- * внутрішню адресу.
+ * A `lookup` function for `http.request` that refuses when the domain points
+ * at an internal address.
  *
- * Перевірка йде в момент зʼєднання, на тих самих адресах, до яких воно й
- * піде. Окрема перевірка DNS до запиту лишала б вікно: між нею і запитом домен
- * може почати вказувати вже на внутрішню адресу (DNS rebinding).
+ * The check runs at connection time, on the very addresses the connection
+ * will use. A separate DNS check before the request would leave a window: between
+ * it and the request the domain may start pointing at an internal address
+ * (DNS rebinding).
  *
- * Відмова - якщо внутрішня **хоч одна** адреса: інакше зʼєднання могло б
- * потрапити саме на неї. Помилка DNS передається далі без змін.
+ * It refuses if **at least one** address is internal: otherwise the connection
+ * could land on exactly that one. A DNS error is passed on unchanged.
  * https://nodejs.org/api/net.html#socketconnectoptions-connectlistener
  */
 export function createSafeLookup(resolve: Resolve): LookupFunction {
@@ -166,7 +169,7 @@ export function createSafeLookup(resolve: Resolve): LookupFunction {
           return;
         }
 
-        // З `all: true` Node чекає масив, інакше - одну адресу і її родину.
+        // With `all: true` Node expects an array, otherwise one address and its family.
         if (options.all) {
           callback(null, addresses);
         } else {
@@ -179,5 +182,5 @@ export function createSafeLookup(resolve: Resolve): LookupFunction {
   };
 }
 
-/** `lookup` зі справжнім DNS - для HTTP-модуля. */
+/** `lookup` with real DNS - for the HTTP module. */
 export const safeLookup = createSafeLookup(resolveWithDns);

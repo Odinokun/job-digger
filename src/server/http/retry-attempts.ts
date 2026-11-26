@@ -1,19 +1,19 @@
 /**
- * Retry attempts: скільки повторів після збою мережі чи помилки сервера
- * (src/server/http/README.md). Повтори робить HTTP-клієнт
+ * Retry attempts: how many retries after a network failure or a server error
+ * (src/server/http/README.md). The HTTP client does the retries
  * (`client.ts`, `sendWithRetries`).
  *
- * Задається змінною `RETRY_ATTEMPTS` (`.env.example`). Хибне значення -
- * помилка, а не тихе значення за замовчуванням, як і в `PARALLEL_SOURCE_CHECKS`:
- * клієнт створюється на старті сервера, тож помилка зупиняє старт.
+ * Set by the `RETRY_ATTEMPTS` variable (`.env.example`). A wrong value is an
+ * error, not a silent fallback to the default, as with `PARALLEL_SOURCE_CHECKS`:
+ * the client is created when the server starts, so the error stops the start.
  */
 
-/** Типове значення - воно ж і верхня межа: більше не дозволяє ввічливість. */
+/** The default value, which is also the upper bound: politeness allows no more. */
 export const DEFAULT_RETRY_ATTEMPTS = 2;
 
 export const MAX_RETRY_ATTEMPTS = 2;
 
-/** Значення змінної `RETRY_ATTEMPTS`; порожня - значення за замовчуванням. */
+/** The value of the `RETRY_ATTEMPTS` variable; empty means the default. */
 export function parseRetryAttempts(raw: string | undefined): number {
   const value = raw?.trim() ?? "";
 

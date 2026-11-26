@@ -1,10 +1,10 @@
 /**
- * Модуль HTTP-запитів: єдиний шлях, яким сервер ходить на чужі сайти
+ * The HTTP request module: the only way the server reaches other websites
  * (src/server/http/README.md).
  *
- * Транспорт - `node:http` / `node:https`, а не глобальний `fetch`: тільки сюди
- * можна передати власну функцію `lookup` і перевіряти адреси з DNS у момент
- * зʼєднання (`safeLookup` у ssrf.ts).
+ * The transport is `node:http` / `node:https`, not the global `fetch`: only
+ * these accept a custom `lookup` function, which checks DNS addresses at
+ * connection time (`safeLookup` in ssrf.ts).
  */
 import { request as httpRequest, type IncomingHttpHeaders } from "node:http";
 import { request as httpsRequest } from "node:https";
@@ -13,12 +13,12 @@ import type { LookupFunction } from "node:net";
 import { createHostLimiter, type HostLimiter } from "./host-limiter.ts";
 import { checkUrl, safeLookup } from "./ssrf.ts";
 
-/** Чесне представлення: хто ходить на сайт і навіщо. */
+/** An honest User-Agent: who visits the site and why. */
 export const USER_AGENT = "JobDigger/0.1 (personal job tracker)";
 
 export interface HttpResponse {
   status: number;
-  /** Логічна адреса відповіді - та, яку бачив би браузер, без підміни. */
+  /** The logical address of the response - the one a browser would see, unswapped. */
   url: string;
   headers: IncomingHttpHeaders;
   body: string;
@@ -26,69 +26,69 @@ export interface HttpResponse {
 
 export interface HttpClientOptions {
   /**
-   * Адреса фейкового вебсервера для тестів. Запит на `https://host/path` тоді
-   * йде на `{fakeOrigin}/host/path` (src/server/http/testing/README.md).
+   * The fake web server's address for tests. A request to `https://host/path`
+   * then goes to `{fakeOrigin}/host/path` (src/server/http/testing/README.md).
    */
   fakeOrigin?: string;
-  /** Скільки чекати на всю відповідь. За замовчуванням `TIMEOUT_MS`. */
+  /** How long to wait for the whole response. Defaults to `TIMEOUT_MS`. */
   timeoutMs?: number;
-  /** Найбільший розмір тіла в байтах. За замовчуванням `MAX_BYTES`. */
+  /** The largest body size in bytes. Defaults to `MAX_BYTES`. */
   maxBytes?: number;
-  /** Пауза між спробами. Тести передають свою, щоб не чекати справжні секунди. */
+  /** The pause between attempts. Tests pass their own so they don't wait real seconds. */
   sleep?: (ms: number) => Promise<void>;
-  /** Поточний час у мс - для `Retry-After` у форматі дати й обмежувача. */
+  /** The current time in ms - for a date-format `Retry-After` and the limiter. */
   now?: () => number;
   /**
-   * Скільки повторів після збою: 0-2 (`RETRY_ATTEMPTS`, `retry-attempts.ts`).
-   * За замовчуванням - усі паузи з `RETRY_PAUSES_MS`, тобто два.
+   * How many retries after a failure: 0-2 (`RETRY_ATTEMPTS`, `retry-attempts.ts`).
+   * Defaults to all the pauses in `RETRY_PAUSES_MS`, that is two.
    */
   retryAttempts?: number;
   /**
-   * Розклад запитів до хостів. За замовчуванням - `MAX_PER_HOST` одночасно і
-   * `GAP_PER_HOST_MS` між стартами. Один клієнт - один розклад, тож ліміт діє на
-   * всі запити, що йдуть через нього.
+   * The schedule of requests to hosts. Defaults to `MAX_PER_HOST` at once and
+   * `GAP_PER_HOST_MS` between starts. One client has one schedule, so the limit
+   * covers every request that goes through it.
    */
   limiter?: HostLimiter;
   /**
-   * DNS для справжніх запитів. За замовчуванням `safeLookup` - перевірка адрес у
-   * момент зʼєднання. Тести передають свій, щоб пройти справжнім шляхом без мережі.
+   * DNS for real requests. Defaults to `safeLookup`, which checks addresses at
+   * connection time. Tests pass their own to take the real path without a network.
    */
   lookup?: LookupFunction;
 }
 
-/** Не більше двох запитів одночасно до одного сайту. */
+/** At most two requests at once to one site. */
 export const MAX_PER_HOST = 2;
 
-/** Щонайменше 2 с між стартами запитів до одного сайту. */
+/** At least 2 s between the starts of requests to one site. */
 export const GAP_PER_HOST_MS = 2000;
 
-/** 20 с на весь запит - від зʼєднання до останнього байта. */
+/** 20 s for the whole request - from connecting to the last byte. */
 export const TIMEOUT_MS = 20_000;
 
 /**
- * 5 МБ. Найбільша відома дошка (Anthropic на Greenhouse, 658 вакансій) -
- * 471 КБ; ліміт захищає від гігантських і нескінченних відповідей.
+ * 5 MB. The largest known board (Anthropic on Greenhouse, 658 vacancies) is
+ * 471 KB; the limit protects against giant and endless responses.
  */
 export const MAX_BYTES = 5 * 1024 * 1024;
 
 export type HttpErrorReason =
-  /** Захист від SSRF не пустив за адресою - на будь-якому кроці редиректу. */
+  /** SSRF protection refused the address - at any step of a redirect. */
   | "blocked"
-  /** Більше ніж `MAX_REDIRECTS` переходів поспіль. */
+  /** More than `MAX_REDIRECTS` hops in a row. */
   | "too-many-redirects"
-  /** Відповідь не прийшла повністю за `timeoutMs`. */
+  /** The response did not arrive in full within `timeoutMs`. */
   | "timeout"
-  /** Тіло більше за `maxBytes` - заявлене чи фактичне. */
+  /** The body is larger than `maxBytes` - declared or actual. */
   | "too-large"
-  /** Збій мережі (обрив, відмова в зʼєднанні), що не минув і після повторів. */
+  /** A network failure (dropped or refused connection) that persisted after retries. */
   | "network"
   /**
-   * Сайт відповів 429 і просить чекати довше за `MAX_RETRY_AFTER_MS`, не каже
-   * скільки, або відповідає 429 і після двох очікувань.
+   * The site answered 429 and asks to wait longer than `MAX_RETRY_AFTER_MS`,
+   * does not say how long, or still answers 429 after two waits.
    */
   | "rate-limited";
 
-/** Запит не вдався. `reason` - щоб парсер міг відрізнити причини. */
+/** The request failed. `reason` lets a parser tell the causes apart. */
 export class HttpError extends Error {
   readonly reason: HttpErrorReason;
   readonly url: string;
@@ -101,33 +101,34 @@ export class HttpError extends Error {
   }
 }
 
-/** Налаштування одного запиту. */
+/** Settings of a single request. */
 export interface RequestOptions {
   /**
-   * Ліміт розміру саме цього запиту замість спільного. Для відомих API, що
-   * віддають усе одним запитом (Ashby), - не для довільних сайтів.
+   * A size limit for this request instead of the shared one. For known APIs
+   * that return everything in one request (Ashby), not for arbitrary sites.
    */
   maxBytes?: number;
   /**
-   * Додаткові заголовки саме цього запиту - для API, що без них не відповідає
-   * (Hurma чекає `X-Requested-With`). Свій User-Agent і заголовки тіла клієнт
-   * ставить сам, і замінити їх тут не можна.
+   * Extra headers for this request - for APIs that do not answer without them
+   * (Hurma expects `X-Requested-With`). The client sets its own User-Agent and
+   * body headers, and they cannot be replaced here.
    */
   headers?: Record<string, string>;
 }
 
-/** Налаштування, з якими йде один запит: клієнта плюс запиту. */
+/** The settings one request runs with: the client's plus the request's. */
 type SendOptions = HttpClientOptions & Pick<RequestOptions, "headers">;
 
-/** Заголовки, які клієнт ставить сам, - у нижньому регістрі. */
+/** Headers the client sets itself, in lower case. */
 const OWN_HEADERS = new Set(["user-agent", "content-type", "content-length"]);
 
 export interface HttpClient {
   get(url: string, request?: RequestOptions): Promise<HttpResponse>;
   /**
-   * POST з тілом JSON - для API, що віддають дані лише так (Workday). Редирект
-   * не виконується, а повертається як відповідь: що він означає для API,
-   * вирішує парсер. Решта - як у `get`: захист від SSRF, ліміти, повтори.
+   * POST with a JSON body - for APIs that only return data this way (Workday).
+   * A redirect is not followed but returned as the response: the parser decides
+   * what it means for the API. The rest is as in `get`: SSRF protection, limits,
+   * retries.
    */
   post(
     url: string,
@@ -136,24 +137,24 @@ export interface HttpClient {
   ): Promise<HttpResponse>;
 }
 
-/** Тіло запиту JSON; без нього запит - GET. */
+/** The JSON request body; without it the request is a GET. */
 type JsonBody = string | undefined;
 
-/** Скільки переходів поспіль дозволено, перш ніж здатися. */
+/** How many hops in a row are allowed before giving up. */
 const MAX_REDIRECTS = 5;
 
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 
 /**
- * Паузи перед повторами - що далі, то довші. Повторів стільки, скільки пауз
- * бере `retryAttempts`: за замовчуванням два, тобто до трьох спроб на адресу.
+ * Pauses before retries, each longer than the last. There are as many retries
+ * as `retryAttempts` takes pauses: two by default, so up to three attempts per URL.
  */
 const RETRY_PAUSES_MS = [1000, 2000];
 
-/** Найдовше очікування за `Retry-After`: на Vercel уся перевірка - 4,5 хв. */
+/** The longest `Retry-After` wait: on Vercel the whole check gets 4.5 min. */
 const MAX_RETRY_AFTER_MS = 60_000;
 
-/** Скільки разів поспіль на одну адресу чекаємо після 429. */
+/** How many times in a row we wait after a 429 for one URL. */
 const MAX_RATE_LIMIT_WAITS = 2;
 
 const realSleep = (ms: number) =>
@@ -173,7 +174,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
       sleep: options.sleep ?? realSleep,
     });
 
-  /** Ліміт окремого запиту замість спільного. */
+  /** A per-request limit instead of the shared one. */
   function withRequest(request: RequestOptions): SendOptions {
     return {
       ...options,
@@ -194,11 +195,11 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 
     async get(url, request = {}) {
       let current = allowedUrl(url);
-      // Ліміт запиту діє й на редиректи - це та сама відповідь.
+      // The request's limit covers redirects too - it is the same response.
       const requestOptions = withRequest(request);
 
-      // Редиректи - вручну, а не силами транспорту: кожна нова адреса має
-      // пройти захист від SSRF до того, як на неї піде запит.
+      // Redirects are followed by hand, not by the transport: every new address
+      // has to pass SSRF protection before a request goes to it.
       for (let redirects = 0; ; redirects += 1) {
         const response = await sendWithRetries(
           current,
@@ -219,7 +220,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
           );
         }
 
-        // Відносний `Location` рахується від поточної логічної адреси.
+        // A relative `Location` resolves against the current logical address.
         current = allowedUrl(new URL(location, current).toString());
       }
     },
@@ -227,10 +228,11 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 }
 
 /**
- * Запит із повторами: лише при збої мережі, тайм-ауті й помилці сервера (5xx) -
- * тобто коли наступна спроба справді може вдатися. Відповідь 4xx (зокрема 404)
- * повертається одразу: що з нею робити, вирішує парсер. Заборона SSRF, завелика
- * відповідь і зациклені редиректи теж не повторюються - повтор їх не змінить.
+ * A request with retries: only on a network failure, a timeout or a server
+ * error (5xx), that is when the next attempt really can succeed. A 4xx response
+ * (404 included) is returned at once: the parser decides what to do with it.
+ * An SSRF refusal, an oversized response and redirect loops are not retried
+ * either - a retry would not change them.
  */
 async function sendWithRetries(
   url: URL,
@@ -248,14 +250,14 @@ async function sendWithRetries(
     const pause = pauses[attempt];
 
     try {
-      // Через обмежувач іде кожна спроба, а не лише перша: інакше повтор
-      // після 500 одразу вдарив би по сайту вдруге.
+      // Every attempt goes through the limiter, not just the first: otherwise a
+      // retry after a 500 would hit the site a second time right away.
       const response = await limiter.run(url.hostname, () =>
         send(url, options, json),
       );
 
-      // 429 - окремо від звичайних повторів: сайт сам каже, скільки чекати,
-      // і ці очікування не зʼїдають повтори на випадок збою.
+      // 429 is handled apart from ordinary retries: the site says how long to
+      // wait, and these waits do not use up the retries meant for failures.
       if (response.status === 429) {
         const wait = retryAfterMs(response.headers["retry-after"], now());
 
@@ -293,9 +295,9 @@ async function sendWithRetries(
 }
 
 /**
- * Скільки мс просить чекати `Retry-After`: число секунд або дата HTTP
- * (https://www.rfc-editor.org/rfc/rfc9110#section-10.2.3). `null` - заголовка
- * немає або його не розібрати.
+ * How many ms `Retry-After` asks to wait: a number of seconds or an HTTP date
+ * (https://www.rfc-editor.org/rfc/rfc9110#section-10.2.3). `null` means the
+ * header is missing or cannot be parsed.
  */
 function retryAfterMs(header: string | undefined, now: number): number | null {
   if (header === undefined) {
@@ -314,14 +316,14 @@ function isRetryable(error: HttpError): boolean {
   return error.reason === "network" || error.reason === "timeout";
 }
 
-/** Збій транспорту стає `HttpError` "network", наші помилки лишаються як є. */
+/** A transport failure becomes a "network" `HttpError`; our own errors stay as they are. */
 function asHttpError(error: unknown, url: URL): HttpError {
   if (error instanceof HttpError) {
     return error;
   }
 
-  // Відмова `safeLookup`: домен веде на внутрішню адресу. Це заборона, а не
-  // збій мережі - повтор нічого не змінить і лише постукає туди ще раз.
+  // A `safeLookup` refusal: the domain points at an internal address. This is a
+  // ban, not a network failure - a retry changes nothing and only knocks again.
   if ((error as NodeJS.ErrnoException).code === "ERR_SSRF_PRIVATE_ADDRESS") {
     return new HttpError("blocked", url.toString(), (error as Error).message);
   }
@@ -334,7 +336,7 @@ function asHttpError(error: unknown, url: URL): HttpError {
   );
 }
 
-/** Адреса, яку пропустив захист від SSRF, або `HttpError` "blocked". */
+/** The address SSRF protection let through, or a "blocked" `HttpError`. */
 function allowedUrl(url: string): URL {
   const check = checkUrl(url);
 
@@ -350,9 +352,9 @@ function allowedUrl(url: string): URL {
 }
 
 /**
- * Фейковий вебсервер дозволено лише на цій машині. Підміна пускає всі запити
- * повз захист від SSRF на одну адресу - тож змінна, що випадково потрапила в
- * продакшн, має зламати запуск, а не вести запити на чужий сервер.
+ * The fake web server is allowed only on this machine. The override sends every
+ * request past SSRF protection to one address, so a variable that slips into
+ * production must break the start, not send requests to someone else's server.
  */
 function assertLoopback(fakeOrigin: string): void {
   let host: string;
@@ -370,7 +372,7 @@ function assertLoopback(fakeOrigin: string): void {
   }
 }
 
-/** Заголовки запиту без тих, що клієнт ставить сам, у будь-якому регістрі. */
+/** Request headers without the ones the client sets itself, in any case. */
 function extraHeaders(
   headers: Record<string, string> = {},
 ): Record<string, string> {
@@ -381,16 +383,17 @@ function extraHeaders(
   );
 }
 
-/** Один запит, без редиректів: GET або, з тілом `json`, POST. */
+/** One request, without redirects: GET or, with a `json` body, POST. */
 function send(
   logical: URL,
   options: SendOptions,
   json?: JsonBody,
 ): Promise<HttpResponse> {
-  // З фейковим вебсервером - на нього, домен стає частиною шляху. Без нього -
-  // на справжню адресу, і `safeLookup` перевіряє адреси з DNS у момент
-  // зʼєднання. Фейковий сервер - loopback, тож `safeLookup` його б відхилив:
-  // для нього перевірка DNS не потрібна, адресу задає не сайт, а ми.
+  // With the fake web server, the request goes to it and the domain becomes part
+  // of the path. Without it, the request goes to the real address, and
+  // `safeLookup` checks DNS addresses at connection time. The fake server is on
+  // loopback, so `safeLookup` would refuse it: it needs no DNS check, because we
+  // set its address, not the site.
   const fake = options.fakeOrigin !== undefined;
   const target = fake
     ? new URL(
@@ -408,9 +411,9 @@ function send(
     let refused = false;
 
     /**
-     * Відмова з нашого боку - завелика відповідь. Відмовляємо самі, а не
-     * чекаємо `error` від `request.destroy`: якщо відповідь уже прийшла
-     * повністю, Node його не видає, а видає `end`.
+     * A refusal on our side - the response is too large. We refuse ourselves
+     * rather than wait for `error` from `request.destroy`: if the response has
+     * already arrived in full, Node emits `end` instead of it.
      */
     function refuse(error: HttpError) {
       refused = true;
@@ -436,7 +439,7 @@ function send(
         ...(fake ? {} : { lookup: options.lookup ?? safeLookup }),
       },
       (res) => {
-        // Заявлений розмір більший за ліміт - не читаємо тіло зовсім.
+        // The declared size is over the limit - don't read the body at all.
         if (Number(res.headers["content-length"]) > maxBytes) {
           refuse(tooLarge(url, maxBytes));
           return;
@@ -448,8 +451,8 @@ function send(
         res.on("data", (chunk: Buffer) => {
           size += chunk.length;
 
-          // Обриваємо, щойно ліміт перевищено, а не після всього тіла:
-          // нескінченна відповідь інакше тримала б зʼєднання до тайм-ауту.
+          // Abort as soon as the limit is exceeded, not after the whole body:
+          // an endless response would otherwise hold the connection until the timeout.
           if (size > maxBytes) {
             refuse(tooLarge(url, maxBytes));
             return;
@@ -458,8 +461,8 @@ function send(
           chunks.push(chunk);
         });
         res.on("end", () => {
-          // Після відмови `end` усе одно приходить, якщо тіло вже доїхало, -
-          // і дав би успіх з обрізаним тілом.
+          // After a refusal `end` still arrives if the body has already come in,
+          // and would give a success with a truncated body.
           if (refused) return;
           clearTimeout(timer);
           done({
@@ -472,8 +475,8 @@ function send(
       },
     );
 
-    // Тайм-аут на весь запит, а не на тишу в сокеті: сайт, що віддає по байту
-    // на секунду, інакше тримав би запит як завгодно довго.
+    // A timeout for the whole request, not for silence on the socket: a site that
+    // sends a byte a second would otherwise hold the request for as long as it likes.
     const timer = setTimeout(() => {
       request.destroy(
         new HttpError(

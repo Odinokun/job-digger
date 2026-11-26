@@ -1,12 +1,12 @@
 /**
- * Єдиний HTTP-клієнт застосунку. Усі зовнішні запити йдуть через нього: розклад
- * запитів до сайтів належить клієнту, і лише спільний клієнт тримає ліміт «два
- * одночасно, 2 с між стартами» на весь застосунок, а не на кожного, хто
- * створив свій.
+ * The app's only HTTP client. Every outgoing request goes through it: the
+ * schedule of requests to sites belongs to the client, and only a shared client
+ * keeps the "two at once, 2 s between starts" limit for the whole app rather
+ * than for everyone who created their own.
  *
- * `FAKE_WEB_ORIGIN` задають лише тести (Playwright передає його застосунку):
- * тоді всі запити йдуть на фейковий вебсервер. Змінна має вести на цю машину,
- * інакше клієнт не створиться (src/server/http/README.md).
+ * Only tests set `FAKE_WEB_ORIGIN` (Playwright passes it to the app): then every
+ * request goes to the fake web server. The variable must point at this machine,
+ * otherwise the client is not created (src/server/http/README.md).
  */
 import { createHttpClient } from "./client.ts";
 import { parseRetryAttempts } from "./retry-attempts.ts";
