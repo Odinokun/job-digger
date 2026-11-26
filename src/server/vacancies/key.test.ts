@@ -72,7 +72,7 @@ describe("vacancyKey", () => {
   });
 
   it("ignores the address when the id is known", () => {
-    // Адреса вакансії з ID може змінитися - це та сама вакансія.
+    // The address of a vacancy with an ID may change - it is the same vacancy.
     expect(vacancyKey({ externalId: "42", url: "https://acme.com/old" })).toBe(
       vacancyKey({ externalId: "42", url: "https://acme.com/new" }),
     );

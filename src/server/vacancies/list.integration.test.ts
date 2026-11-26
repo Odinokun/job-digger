@@ -8,7 +8,7 @@ import { testDb } from "../db/testing/test-db.ts";
 import { countVacanciesByTab, hasAnyVacancy, listVacancies } from "./list.ts";
 import { companySiteValues } from "../db/testing/company-values.ts";
 
-/** Джерело компанії користувача - повертає його id. */
+/** A source of the user's company - returns its id. */
 async function sourceOf(userId: string, companyName: string): Promise<string> {
   const slug = companyName.toLowerCase();
   const [company] = await testDb
@@ -194,9 +194,9 @@ describe("listVacancies rows", () => {
 
 describe("listVacancies Favorites order", () => {
   /**
-   * Три обрані: додана найпізніше, хоч знайдена найраніше; додана раніше; і
-   * стара - у Favorites ще до появи дати додавання, тож стоїть за датою
-   * виявлення.
+   * Three favorites: one added last although found first; one added earlier; and an
+   * old one - in Favorites since before the date added existed, so it stands by its
+   * discovery date.
    */
   async function seedFavorites() {
     const user = await seedSystemUser(testDb);
@@ -325,7 +325,7 @@ describe("hasAnyVacancy", () => {
 });
 
 describe("listVacancies pagination", () => {
-  /** `count` вакансій з різними датами; повертає назви від найновішої. */
+  /** `count` vacancies with different dates; returns the titles newest first. */
   async function seedMany(userId: string, count: number) {
     const sourceId = await sourceOf(userId, "Discord");
     for (let i = 0; i < count; i += 1) {
@@ -341,7 +341,7 @@ describe("listVacancies pagination", () => {
     );
   }
 
-  /** Усі порції вкладки Unread по `limit` рядків, курсор за курсором. */
+  /** All the batches of the Unread tab, `limit` rows each, cursor after cursor. */
   async function walk(userId: string, limit: number) {
     const titles: string[] = [];
     let after = null;
@@ -394,8 +394,8 @@ describe("listVacancies pagination", () => {
   });
 
   it("walks through vacancies detected at the same moment", async () => {
-    // Одна перевірка дає всім вакансіям джерела однакову дату виявлення -
-    // звичайний випадок, а не рідкісний.
+    // One check gives all vacancies of a source the same discovery date - an
+    // ordinary case, not a rare one.
     const user = await seedSystemUser(testDb);
     const sourceId = await sourceOf(user.id, "Discord");
     for (let i = 0; i < 5; i += 1) {
@@ -409,8 +409,9 @@ describe("listVacancies pagination", () => {
   });
 
   it("keeps microseconds of the detection time in the cursor", async () => {
-    // База зберігає час до мікросекунд, JS Date - лише до мілісекунд. Якби
-    // курсор губив мікросекунди, рядок на межі порції повторювався б.
+    // The database stores time to the microsecond, a JS Date only to the
+    // millisecond. If the cursor lost the microseconds, a row at the batch boundary
+    // would repeat.
     const user = await seedSystemUser(testDb);
     const sourceId = await sourceOf(user.id, "Discord");
     for (const [title, time] of [
