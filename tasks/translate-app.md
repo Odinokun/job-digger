@@ -6,6 +6,6 @@
 
 ## Кроки
 
-- [ ] `src/app/README.md` англійською
-- [ ] Посилання на нові якорі `src/app/README.md`
-- [ ] Коментарі в коді `src/app`
+- [x] `src/app/README.md` англійською
+- [x] Посилання на нові якорі `src/app/README.md`
+- [x] Коментарі в коді `src/app`
