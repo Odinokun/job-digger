@@ -37,31 +37,32 @@ interface JobsBoardProps {
   tabsLabel: string;
   tabLabels: Record<JobsTab, string>;
   /**
-   * Скільки рядків у кожній вкладці - як знає сервер. Свіжі приходять із
-   * перечитаною сторінкою після кожної дії (`revalidateHeaderCounts`).
+   * How many rows each tab has, as the server knows it. Fresh numbers arrive
+   * with the re-read page after every action (`revalidateHeaderCounts`).
    */
   counts: JobsTabCounts;
   /**
-   * Перша порція: її рендерить сервер, тож список видно без JavaScript. Коли
-   * сторінку перечитано (`router.refresh` опитування чи дія), тут свіжа
-   * порція, а показаний список лишається в стані - див. `useNewVacanciesNotice`.
+   * The first batch: the server renders it, so the list is visible without
+   * JavaScript. When the page is re-read (`router.refresh` from polling or an
+   * action), a fresh batch arrives here, while the shown list stays in state -
+   * see `useNewVacanciesNotice`.
    */
   initialItems: VacancyListItem[];
   initialCursor: Cursor | null;
   emptyLabel: string;
-  /** Кнопка в Companies - лише коли вакансій немає зовсім, а не у вкладці. */
+  /** The button to Companies - only when there are no vacancies at all, not per tab. */
   addCompanyLabel: string | null;
   loadMoreLabel: string;
-  /** Заголовки груп у Favorites: додані за останні 12 годин і раніше. */
+  /** Group headings in Favorites: added in the last 12 hours, and earlier. */
   favoriteGroupLabels: { recent: string; earlier: string };
 }
 
 /**
- * Сторінка Jobs як одне ціле: заголовок, вкладки й список із Load more.
+ * The Jobs page as a whole: the heading, the tabs and the list with Load more.
  *
- * Показані рядки й курсор живуть тут, як у
- * [`companies-board.tsx`](../companies/companies-board.tsx). Стан не перетікає
- * між вкладками: `key` на цьому компоненті - сама вкладка.
+ * The shown rows and the cursor live here, as in
+ * [`companies-board.tsx`](../companies/companies-board.tsx). State does not leak
+ * between tabs: the `key` on this component is the tab.
  */
 export function JobsBoard({
   tab,
@@ -80,10 +81,10 @@ export function JobsBoard({
   const [cursor, setCursor] = useState(initialCursor);
 
   /**
-   * Порожній показаний список бере свіжу порцію сам (задача 6.29): зсуватися
-   * нічому, тож toast із Show тут зайвий. Порція з сервера - та сама правда,
-   * що й після переходу на вкладку. Стан підганяється під пропс під час
-   * рендеру, без ефекту
+   * An empty shown list takes the fresh batch by itself (task 6.29): nothing can
+   * move, so a toast with Show is unnecessary. The batch from the server is the
+   * same truth as after switching to the tab. The state is adjusted to the prop
+   * during render, without an effect
    * (https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes).
    */
   const [seenInitialItems, setSeenInitialItems] = useState(initialItems);
@@ -95,25 +96,25 @@ export function JobsBoard({
     }
   }
   const [isPending, startTransition] = useTransition();
-  // Окремий перехід для Read і Favorite: інакше кнопка Load more крутилася б,
-  // поки йде дія над рядком.
+  // A separate transition for Read and Favorite: otherwise the Load more button
+  // would spin while an action on a row is running.
   const [, startMark] = useTransition();
   const showActionFailed = useActionFailedToast();
 
   /**
-   * Оптимістичний список: дія Read чи Favorite видна одразу, ще до відповіді
-   * сервера. Поки дія триває, React
-   * показує `items` з накладеною зміною; коли вона завершується - знову сам
-   * `items`. Тож при збої рядок повертається сам, бо `items` оновлюється лише
-   * при успіху (https://react.dev/reference/react/useOptimistic).
+   * The optimistic list: a Read or Favorite action shows at once, before the
+   * server answers. While the action runs, React shows `items` with the change
+   * applied; when it ends, `items` alone again. So on failure the row goes back
+   * by itself, because `items` updates only on success
+   * (https://react.dev/reference/react/useOptimistic).
    */
   const [shown, addPatch] = useOptimistic(items, patchVacancy);
 
   /**
-   * Рядок після дії заміщає свій попередній на тому самому місці - дата
-   * виявлення, за якою відсортовано список, від дій не змінюється. Якщо
-   * вакансія більше не належить вкладці (прочитана в Unread, прибрана з
-   * Favorites) або її вже немає - рядок прибирається.
+   * After an action the row replaces its previous version in the same place -
+   * the discovery date the list is sorted by does not change with actions. If the
+   * vacancy no longer belongs to the tab (read in Unread, removed from Favorites)
+   * or is gone, the row is removed.
    */
   const applyRow = useCallback(
     (vacancyId: string, changed: VacancyListItem | null) => {
@@ -127,10 +128,10 @@ export function JobsBoard({
   );
 
   /**
-   * Undo: повертає вакансії позначки, які вона мала до дії, - разом із датою
-   * додавання в обране, щоб вона не стрибнула в свіже обране. Рядок стає на
-   * своє місце за порядком вкладки (`placeVacancy`): у Unread чи Favorites
-   * його вже прибрано зі списку.
+   * Undo: gives the vacancy back the marks it had before the action, together
+   * with the date it was added to favorites, so it does not jump into the recent
+   * favorites. The row goes back to its place in the tab order (`placeVacancy`):
+   * in Unread or Favorites it has already been removed from the list.
    */
   const undo = useCallback(
     (before: VacancyListItem, patch: VacancyPatch) => {
@@ -160,7 +161,7 @@ export function JobsBoard({
 
   const showUndo = useUndoNotice();
 
-  /** Read або Favorite для рядка: одразу в інтерфейсі, потім на сервері. */
+  /** Read or Favorite for a row: at once in the UI, then on the server. */
   const mark = useCallback(
     (patch: VacancyPatch) => {
       const before = items.find((item) => item.id === patch.id);
@@ -179,15 +180,15 @@ export function JobsBoard({
           return;
         }
 
-        // Після `await` оновлення стану вже не входить у перехід саме
+        // After `await` a state update is no longer part of the transition
         // (https://react.dev/reference/react/useTransition#react-doesnt-treat-my-state-update-after-await-as-a-transition).
-        // У переході рядок застосовується одним кадром зі свіжими числами
-        // вкладок із перечитаної сторінки, інакше число на мить
-        // поверталося б до старого.
+        // Inside a transition the row is applied in one frame with the fresh tab
+        // numbers from the re-read page; otherwise the number would briefly jump
+        // back to the old one.
         startMark(() => applyRow(patch.id, result.vacancy));
 
-        // Undo - лише для Mark as read і Remove from Favorites (рішення
-        // автора 24.11.2026): саме вони прибирають рядок із вкладки.
+        // Undo only for Mark as read and Remove from Favorites: those are the
+        // actions that remove the row from the tab.
         if (before !== undefined && (isRead === true || isFavorite === false)) {
           showUndo({
             action: isRead === true ? "markedRead" : "removedFromFavorites",
@@ -200,14 +201,14 @@ export function JobsBoard({
     [items, addPatch, applyRow, showActionFailed, showUndo, undo],
   );
 
-  // Рядок, який дія вивела з вкладки, зникає одразу, ще до відповіді сервера.
+  // A row the action took out of the tab disappears at once, before the server answers.
   const visible = shown.filter((vacancy) => belongsToJobsTab(vacancy, tab));
   /**
-   * Favorites ділиться на додані за останні 12 годин і раніше (задача
-   * favorites-added-today): список уже впорядкований за датою додавання, тож
-   * межу видно заголовками, без позначки в кожному рядку. Немає свіжих - немає
-   * й заголовків. «Зараз» - спільне для сервера й клієнта з next-intl, тож
-   * межа при гідратації не зсувається.
+   * Favorites splits into those added in the last 12 hours and earlier (task
+   * favorites-added-today): the list is already ordered by date added, so
+   * headings show the boundary, with no mark on each row. No recent ones - no
+   * headings. "Now" is shared by server and client through next-intl, so the
+   * boundary does not shift during hydration.
    */
   const now = useNow();
   const recent =
@@ -224,7 +225,7 @@ export function JobsBoard({
             items: visible.filter((vacancy) => !recent.includes(vacancy)),
           },
         ].filter((group) => group.items.length > 0);
-  // Числа вкладок рухаються разом із рядком, а не після відповіді сервера.
+  // Tab numbers move together with the row, not after the server answers.
   const shownCounts = adjustTabCounts(counts, items, shown);
 
   const loadMore = useCallback(() => {
@@ -246,9 +247,9 @@ export function JobsBoard({
   }, [cursor, tab, showActionFailed]);
 
   /**
-   * Після Mark all as read непрочитаних, що були в списку, більше немає: усі
-   * показані рядки записані до межі дії. Знайдені пізніше зʼявляться при
-   * наступному відкритті вкладки.
+   * After Mark all as read, none of the unread vacancies in the list are left:
+   * every shown row was recorded before the action's boundary. Ones found later
+   * fill the emptied list by themselves (task 6.29).
    */
   const clearList = useCallback(() => {
     setItems([]);
@@ -256,9 +257,10 @@ export function JobsBoard({
   }, []);
 
   /**
-   * Нові вакансії не вливаються в список самі (задача 4.13): `router.refresh`
-   * приносить свіжу першу порцію в пропси, а стан зі списком лишається. Show
-   * перечитує вкладку з першої порції - бере саме цю свіжу порцію.
+   * New vacancies do not merge into the list by themselves (task 4.13):
+   * `router.refresh` brings a fresh first batch in the props, while the list
+   * state stays. Show re-reads the tab from the first batch - exactly this fresh
+   * batch.
    */
   const newCount = countNewVacancies(items, initialItems, tab);
   const showNew = useCallback(() => {
@@ -300,8 +302,8 @@ export function JobsBoard({
         <div className="mt-6 flex flex-col items-start gap-3">
           <p className="text-sm text-muted">{emptyLabel}</p>
           {addCompanyLabel === null ? null : (
-            // Посилання, а не кнопка з модалкою: Add company живе на сторінці
-            // Companies, поруч зі списком компаній.
+            // A link, not a button with a modal: Add company lives on the
+            // Companies page, next to the company list.
             <Link
               href="/companies"
               className="text-sm font-medium underline underline-offset-2"
@@ -334,8 +336,8 @@ export function JobsBoard({
                 isPending={isPending}
                 onPress={loadMore}
               >
-                {/* `isPending` у HeroUI лише вимикає кнопку - спінер малюємо
-                    самі, як у прикладі Loading документації Button. */}
+                {/* HeroUI `isPending` only disables the button - we draw the
+                    spinner ourselves, as in the Loading example of the Button docs. */}
                 {({ isPending: isLoading }) => (
                   <>
                     {isLoading ? <Spinner color="current" size="sm" /> : null}
