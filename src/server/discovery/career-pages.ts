@@ -1,7 +1,7 @@
 /**
- * Другий спосіб пошуку: кар'єрні сторінки на сайті самої компанії
- * (src/server/discovery/README.md) - посилання Careers / Jobs /
- * Karriere / Вакансії, типові адреси, sitemap.
+ * The second search method: career pages on the company's own site
+ * (src/server/discovery/README.md) - Careers / Jobs / Karriere / Вакансії links,
+ * typical addresses, the sitemap.
  */
 import * as cheerio from "cheerio";
 
@@ -11,29 +11,30 @@ import { fetchText } from "../parsers/shared.ts";
 import { atsLinksOnPage } from "./ats-links.ts";
 import { boardKey, boardUrlOf, type BoardUrl } from "./board-url.ts";
 
-/** Типові адреси кар'єрної сторінки - лише коли на головній посилання немає. */
+/** Typical career page addresses - only when the home page has no link. */
 const USUAL_PATHS = ["/careers", "/jobs"];
 
 /**
- * Скільки кар'єрних сторінок читаємо. Кожна - запит до чужого сайту з паузою
- * ввічливості, а більше трьох окремих кар'єрних розділів у компанії не буває.
+ * How many career pages we read. Each one is a request to someone else's site
+ * with a politeness pause, and a company never has more than three separate
+ * career sections.
  */
 const MAX_CAREER_PAGES = 3;
 
-/** Що дали кар'єрні сторінки сайту. */
+/** What the site's career pages gave. */
 export type SiteCareerPages = {
-  /** Дошки ATS, на які ведуть кар'єрні сторінки. */
+  /** ATS boards the career pages lead to. */
   boards: BoardUrl[];
-  /** Кар'єрні сторінки без посилань на ATS - власні сторінки компанії. */
+  /** Career pages without links to an ATS - the company's own pages. */
   pages: string[];
 };
 
-/** Прочитана сторінка: тіло й адреса після редиректів. */
+/** A page that was read: the body and the address after redirects. */
 type Page = { body: string; url: string };
 
 /**
- * Слова, які роблять сегмент шляху кар'єрним. Лише цілий сегмент: `/jobs` -
- * так, `/jobsite-safety` - ні.
+ * Words that make a path segment a career one. Only a whole segment: `/jobs` -
+ * yes, `/jobsite-safety` - no.
  */
 const PATH_WORDS = new Set([
   "career",
@@ -58,13 +59,13 @@ const PATH_WORDS = new Set([
   "vacancy",
 ]);
 
-/** Перша мітка хоста, з якою піддомен сайту - кар'єрний (`careers.acme.com`). */
+/** The first host label that makes a site subdomain a career one (`careers.acme.com`). */
 const HOST_WORDS = new Set(["careers", "career", "jobs", "karriere"]);
 
 /**
- * Текст посилання, з яким воно кар'єрне: увесь текст - кар'єрна фраза, без
- * розділових знаків і стрілок по краях. Не «містить слово»: «Career guides» і
- * «Read our jobs report» - не кар'єрні сторінки (Grammarly, 19.11.2026).
+ * Link text that makes a link a career one: the whole text is a career phrase,
+ * without punctuation or arrows at the edges. Not "contains the word": "Career
+ * guides" and "Read our jobs report" are not career pages (Grammarly, 19.11.2026).
  */
 const TEXT_WORDS = new RegExp(
   `^(${[
@@ -93,14 +94,14 @@ const TEXT_WORDS = new RegExp(
 );
 
 /**
- * Кар'єрні сторінки сайту, на які веде сторінка, - по одній, у порядку появи.
+ * The site's career pages a page links to - one each, in order of appearance.
  *
- * Береться лише свій сайт: той самий хост без `www.` або його піддомен. Чужа
- * сторінка «Careers» належності компанії не доводить, а дошки ATS знаходить
- * `atsLinksOnPage`.
+ * Only the site itself counts: the same host without `www.` or its subdomain.
+ * Someone else's "Careers" page does not prove it belongs to the company, and
+ * `atsLinksOnPage` finds ATS boards.
  *
- * Посилання на вакансію обрізається по кар'єрний сегмент: `/careers/designer-12`
- * дає `/careers`, тож список вакансій на головній дає одну сторінку.
+ * A vacancy link is cut at the career segment: `/careers/designer-12` gives
+ * `/careers`, so a vacancy list on the home page gives a single page.
  */
 export function careerPagesOnPage(html: string, pageUrl: string): string[] {
   const $ = cheerio.load(html);
@@ -123,14 +124,15 @@ export function careerPagesOnPage(html: string, pageUrl: string): string[] {
 }
 
 /**
- * Кар'єрні сторінки сайту з його sitemap (https://www.sitemaps.org/protocol.html):
- * адреси з `<url><loc>`, у шляху яких є кар'єрне слово, обрізані по нього.
+ * The site's career pages from its sitemap (https://www.sitemaps.org/protocol.html):
+ * `<url><loc>` addresses with a career word in the path, cut at that word.
  *
- * Тексту посилання тут немає, тож рахується лише шлях і піддомен. Вкладені
- * sitemap (`<sitemapindex>`) не читаються: кожен - ще один запит до чужого сайту.
+ * There is no link text here, so only the path and the subdomain count. Nested
+ * sitemaps (`<sitemapindex>`) are not read: each is one more request to someone
+ * else's site.
  */
 export function careerPagesInSitemap(xml: string, siteUrl: string): string[] {
-  // `xml: true` - розбір як XML, а не HTML (node_modules/cheerio/dist/esm/options.d.ts).
+  // `xml: true` parses as XML, not HTML (node_modules/cheerio/dist/esm/options.d.ts).
   const $ = cheerio.load(xml, { xml: true });
   const site = new URL(siteUrl);
   const found = new Set<string>();
@@ -173,7 +175,7 @@ function careerPageOf(
     return null;
   }
 
-  // Якір на тій самій сторінці (`#careers`) - не окрема сторінка.
+  // An anchor on the same page (`#careers`) is not a separate page.
   if (url.origin === page.origin && url.pathname === page.pathname) {
     return null;
   }
@@ -198,14 +200,14 @@ function careerPageOf(
   return null;
 }
 
-/** Текст без небуквених символів по краях: «Careers →» стає «Careers». */
+/** Text without non-letter characters at the edges: "Careers →" becomes "Careers". */
 function trimToLetters(text: string): string {
   return text.replace(/^[^\p{L}]+|[^\p{L}]+$/gu, "");
 }
 
 /**
- * Чи сама адреса кар'єрна: кар'єрний сегмент шляху або піддомен. Потрібно після
- * редиректу - тексту посилання там уже немає.
+ * Whether the address itself is a career one: a career path segment or
+ * subdomain. Needed after a redirect - there is no link text there any more.
  */
 function isCareerAddress(address: string): boolean {
   const url = new URL(address);
@@ -223,23 +225,24 @@ function withoutWww(host: string): string {
   return host.startsWith("www.") ? host.slice(4) : host;
 }
 
-/** Той самий сайт: хост без `www.` збігається або є його піддоменом. */
+/** The same site: the host without `www.` matches or is its subdomain. */
 function isSameSite(host: string, site: string): boolean {
   const bare = withoutWww(host);
   return bare === site || bare.endsWith(`.${site}`);
 }
 
 /**
- * Кар'єрні сторінки сайту і дошки ATS, на які вони ведуть (задача 5.03).
+ * The site's career pages and the ATS boards they lead to (task 5.03).
  *
- * `home` - уже прочитана головна (її читав пошук посилань на ATS, 5.02). Порядок
- * - від дешевшого для чужого сайту: посилання з головної; без них - типові
- * адреси; без тих - sitemap. Знайдені сторінки (до `MAX_CAREER_PAGES`)
- * читаються, і посилання з них на ATS стають дошками. Сторінка без ATS -
- * власна сторінка компанії; чи її можна прочитати, вирішує пробне читання (5.06).
+ * `home` is the home page that was already read (the ATS link search read it,
+ * 5.02). The order goes from the cheapest for someone else's site: links from
+ * the home page; without them, typical addresses; without those, the sitemap.
+ * The pages found (up to `MAX_CAREER_PAGES`) are read, and their links to an ATS
+ * become boards. A page without an ATS is the company's own page; whether it
+ * can be read is up to the trial read (5.06).
  *
- * Сторінка, що не відповіла, просто не знахідка: головна вже прочиталась, і
- * збій однієї сторінки не робить невдалим увесь пошук.
+ * A page that did not answer is simply not a finding: the home page has already
+ * been read, and one page failing does not fail the whole search.
  */
 export async function findSiteCareerPages(
   home: Page,
@@ -247,8 +250,8 @@ export async function findSiteCareerPages(
 ): Promise<SiteCareerPages> {
   const candidates = await careerCandidates(home, client);
   const boards = new Map<string, BoardUrl>();
-  // Множина: дві адреси можуть редиректити на одну сторінку (Grammarly,
-  // 19.11.2026 - і `/careers`, і `/jobs` ведуть на `superhuman.com`).
+  // A set: two addresses may redirect to one page (Grammarly, 19.11.2026 -
+  // both `/careers` and `/jobs` lead to `superhuman.com`).
   const pages = new Set<string>();
 
   for (const candidate of candidates.slice(0, MAX_CAREER_PAGES)) {
@@ -279,15 +282,15 @@ export async function findSiteCareerPages(
 }
 
 /**
- * PeopleForce на домені компанії (задача 5.13): за хостом його не впізнати,
- * тож `atsLinksOnPage` його не бачить. Дошкою стає сама кар'єрна сторінка, якщо
- * вона в розмітці PeopleForce, або - на крок далі - кар'єрна сторінка на іншому
- * хості того самого сайту, на яку вона веде (SoftConstruct: `/careers` →
+ * PeopleForce on the company's domain (task 5.13): it cannot be recognised by
+ * the host, so `atsLinksOnPage` does not see it. The board is the career page
+ * itself if it has PeopleForce markup, or, one step further, a career page on
+ * another host of the same site that it leads to (SoftConstruct: `/careers` →
  * `peopleforce.softconstruct.com/careers`).
  *
- * Крок далі - лише на інший хост і не більше `MAX_CAREER_PAGES` сторінок:
- * сторінки свого хоста вже перебрав пошук кандидатів, а кожна сторінка - ще
- * один запит до чужого сайту.
+ * The step further goes only to another host and to at most `MAX_CAREER_PAGES`
+ * pages: the candidate search has already gone through the pages of the site's
+ * own host, and every page is one more request to someone else's site.
  */
 async function peopleForceOnSite(
   page: Page,
@@ -314,7 +317,7 @@ async function peopleForceOnSite(
   return boards;
 }
 
-/** Адреса дошки PeopleForce - `/careers` від origin, як на `*.peopleforce.io`. */
+/** A PeopleForce board address - `/careers` from the origin, as on `*.peopleforce.io`. */
 function peopleForceBoard(pageUrl: string): BoardUrl {
   return {
     url: `${new URL(pageUrl).origin}/careers`,
@@ -323,8 +326,8 @@ function peopleForceBoard(pageUrl: string): BoardUrl {
 }
 
 /**
- * Кар'єрні сторінки-кандидати: адреси, які ще треба прочитати, або вже
- * прочитані сторінки (типова адреса читається, щоб дізнатися, чи вона є).
+ * Candidate career pages: addresses still to be read, or pages already read (a
+ * typical address is read to find out whether it exists).
  */
 async function careerCandidates(
   home: Page,
@@ -352,9 +355,9 @@ async function careerCandidates(
 }
 
 /**
- * Кар'єрна сторінка за адресою або `null`, якщо вона не відповіла або редирект
- * завів туди, де кар'єри вже не видно: на сторінку помилки, що відповідає 200
- * (Palantir, 19.11.2026), чи на головну замість неіснуючого `/careers`.
+ * The career page at an address, or `null` if it did not answer or a redirect
+ * led to where careers are no longer visible: an error page that answers 200
+ * (Palantir, 19.11.2026), or the home page instead of a missing `/careers`.
  */
 async function readPage(client: HttpClient, url: string): Promise<Page | null> {
   const page = await fetchText(client, url);

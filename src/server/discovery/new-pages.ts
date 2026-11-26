@@ -1,45 +1,46 @@
 /**
- * Рішення Find new pages для однієї компанії Not tracked (задача 5.10): які знахідки додати джерелами без людини і який статус
- * поставити, якщо відстежувати так і нічого.
+ * The Find new pages decision for one Not tracked company (task 5.10): which
+ * findings to add as sources without a human, and which status to set if there
+ * is still nothing to track.
  */
 import type { DiscoveryStatus } from "../../lib/companies/company-list.ts";
 import { isReliableFinding, type Finding } from "./discover.ts";
 
 export interface NewPagesInput {
   findings: Finding[];
-  /** Сайт компанії не відповів: про сторінки на ньому нічого не відомо. */
+  /** The company site did not answer: nothing is known about its pages. */
   siteFailed: boolean;
-  /** Адреси знахідок, які вже відстежує інша компанія користувача. */
+  /** Finding addresses that another of the user's companies already tracks. */
   taken: ReadonlySet<string>;
   /**
-   * Адреси знахідок, які вже є джерелами самої компанії: на статус вони
-   * впливають (власна сторінка, збережена минулого разу, - це все ще
-   * Unsupported), але вдруге не додаються.
+   * Finding addresses that are already sources of the company itself: they
+   * affect the status (an own page saved last time is still Unsupported) but are
+   * not added a second time.
    */
   owned: ReadonlySet<string>;
 }
 
 export interface NewPagesDecision {
-  /** Адреси, які стають джерелами компанії. */
+  /** Addresses that become the company's sources. */
   add: string[];
   /**
-   * Новий `discovery_status`, або `null` - компанія з доданою дошкою
-   * переходить у Tracked, і статус вкладки Not tracked її не стосується.
+   * The new `discovery_status`, or `null`: a company with an added board moves to
+   * Tracked, and the Not tracked tab status no longer concerns it.
    */
   status: DiscoveryStatus | null;
 }
 
 /**
- * Додаються без людини лише надійні знахідки (`isReliableFinding`), що
- * читаються, і власні сторінки з сайту компанії: їх читати поки нічим, але
- * адреса зберігається - знадобиться, коли зʼявиться парсер. Знахідка, яку вже
- * відстежує інша компанія, не додається ніколи: Save однаково відмовив би
- * `source-taken` (задача 5.08).
+ * Only reliable findings (`isReliableFinding`) that can be read are added without
+ * a human, plus own pages from the company site: nothing can read them yet, but
+ * the address is kept for when a parser appears. A finding another company
+ * already tracks is never added: Save would refuse it with `source-taken` anyway
+ * (task 5.08).
  *
- * Статус, коли дошку не додано, - від найкориснішого для людини:
- * `possible_page` (є що підтвердити через Find pages), `check_failed` (сайт чи
- * дошка не відповіли - варто повторити), `unsupported` (є лише власна
- * сторінка), `not_found`.
+ * The status when no board was added, from the most useful for a person:
+ * `possible_page` (there is something to confirm through Find pages),
+ * `check_failed` (the site or a board did not answer - worth retrying),
+ * `unsupported` (there is only an own page), `not_found`.
  */
 export function decideNewPages({
   findings,

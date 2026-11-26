@@ -10,7 +10,7 @@ import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { fetchText } from "../parsers/shared.ts";
 import { findSiteCareerPages } from "./career-pages.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 let fakeWeb: FakeWeb;
@@ -35,7 +35,7 @@ function client(): HttpClient {
   });
 }
 
-/** Головна сторінка - її вже прочитав пошук посилань на ATS (5.02). */
+/** The home page - the ATS link search has already read it (5.02). */
 async function findFor(site: string) {
   const http = client();
   const home = await fetchText(http, site);
@@ -44,7 +44,7 @@ async function findFor(site: string) {
   return findSiteCareerPages(home, http);
 }
 
-// Синтетичні сайти - src/server/http/testing/README.md.
+// Synthetic sites: src/server/http/testing/README.md.
 describe("findSiteCareerPages", () => {
   it("follows a career link to the board embedded there", async () => {
     expect(await findFor("https://globex.example")).toEqual({
@@ -59,7 +59,7 @@ describe("findSiteCareerPages", () => {
   });
 
   it("tries the usual addresses when the home page has no career link", async () => {
-    // На /careers немає ATS - це власна сторінка компанії.
+    // /careers has no ATS - it is the company's own page.
     expect(await findFor("https://initech.example")).toEqual({
       boards: [],
       pages: ["https://initech.example/careers"],
@@ -67,8 +67,8 @@ describe("findSiteCareerPages", () => {
   });
 
   it("takes a career page in PeopleForce markup for a PeopleForce board (task 5.13)", async () => {
-    // Careers веде на піддомен сайту, а там PeopleForce на домені компанії:
-    // за хостом його не впізнати, лише за розміткою.
+    // Careers leads to a subdomain of the site, which has PeopleForce on the
+    // company's domain: it can be recognised only by markup, not by host.
     expect(await findFor("https://kramerica.example")).toEqual({
       boards: [
         {
@@ -81,8 +81,8 @@ describe("findSiteCareerPages", () => {
   });
 
   it("follows a career page one step further to a PeopleForce board on the site (task 5.13)", async () => {
-    // Як SoftConstruct: власна сторінка Careers без ATS веде на піддомен сайту
-    // з PeopleForce. Сама сторінка Careers знахідкою вже не є - дошка є.
+    // Like SoftConstruct: an own Careers page without an ATS leads to a subdomain
+    // with PeopleForce. The Careers page itself is no longer a finding - the board is.
     expect(await findFor("https://vandelay.example")).toEqual({
       boards: [
         {
@@ -102,10 +102,10 @@ describe("findSiteCareerPages", () => {
   });
 
   it("drops a career link that redirects away from careers", async () => {
-    // Буває, що кар'єрне посилання веде редиректом на сторінку помилки, яка
-    // відповідає 200 (так 19.11.2026 у Palantir). Фейковий вебсервер
-    // редиректів не вміє, тож тут свій сервер на кілька сторінок. Дві адреси,
-    // що редиректять на одну сторінку, дають одну знахідку (Grammarly).
+    // A career link sometimes redirects to an error page that answers 200 (as at
+    // Palantir on 19.11.2026). The fake web server cannot redirect, so this test
+    // runs its own server with a few pages. Two addresses that redirect to one
+    // page give one finding (Grammarly).
     const pages: Record<string, string> = {
       "/hooli.example/": `<a href="/careers">Careers</a><a href="/jobs-old">Jobs</a><a href="/join">Join us</a>`,
       "/hooli.example/careers": "<h1>Careers</h1>",
@@ -151,8 +151,8 @@ describe("findSiteCareerPages", () => {
   });
 
   it("finds nothing on a site without career pages", async () => {
-    // Головна Acme веде одразу на дошку - це справа atsLinksOnPage, а своїх
-    // кар'єрних сторінок, типових адрес і sitemap у неї немає.
+    // The Acme home page leads straight to a board - that is atsLinksOnPage's
+    // job - and it has no career pages, typical addresses or sitemap of its own.
     expect(await findFor("https://acme.example")).toEqual({
       boards: [],
       pages: [],
