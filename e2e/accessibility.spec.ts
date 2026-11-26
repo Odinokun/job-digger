@@ -102,40 +102,36 @@ test.beforeAll(async ({ browser }) => {
 
 // Один тест на всі сторінки, а не тест на сторінку: після падіння тесту
 // Playwright перезапускає воркер і `beforeAll` наповнював би базу вдруге.
-test(
-  "every page has no WCAG A/AA violations in both themes",
-  {
-    tag: "@pending",
-  },
-  async ({ page }) => {
-    test.slow();
+test("every page has no WCAG A/AA violations in both themes", async ({
+  page,
+}) => {
+  test.slow();
 
-    for (const colorScheme of ["light", "dark"] as const) {
-      // Без cookie `theme` застосунок іде за темою системи.
-      await page.emulateMedia({ colorScheme });
+  for (const colorScheme of ["light", "dark"] as const) {
+    // Без cookie `theme` застосунок іде за темою системи.
+    await page.emulateMedia({ colorScheme });
 
-      for (const path of PAGES) {
-        await test.step(`${colorScheme} ${path}`, async () => {
-          await page.goto(path);
-          await expectNoViolations(page, `${colorScheme} ${path}`);
-        });
-      }
-
-      await test.step(`${colorScheme} Add company dialog`, async () => {
-        await page.goto("/companies");
-        await page.getByRole("button", { name: "Add company" }).click();
-        await expect(
-          page.getByRole("dialog", { name: "Add company" }),
-        ).toBeVisible();
-        // Модалка зʼявляється з анімацією прозорості, і посеред неї axe бачить
-        // текст майже кольору фону (1.2:1) - хибне порушення контрасту.
-        await page.waitForFunction(() =>
-          document
-            .getAnimations()
-            .every((animation) => animation.playState !== "running"),
-        );
-        await expectNoViolations(page, `${colorScheme} Add company dialog`);
+    for (const path of PAGES) {
+      await test.step(`${colorScheme} ${path}`, async () => {
+        await page.goto(path);
+        await expectNoViolations(page, `${colorScheme} ${path}`);
       });
     }
-  },
-);
+
+    await test.step(`${colorScheme} Add company dialog`, async () => {
+      await page.goto("/companies");
+      await page.getByRole("button", { name: "Add company" }).click();
+      await expect(
+        page.getByRole("dialog", { name: "Add company" }),
+      ).toBeVisible();
+      // Модалка зʼявляється з анімацією прозорості, і посеред неї axe бачить
+      // текст майже кольору фону (1.2:1) - хибне порушення контрасту.
+      await page.waitForFunction(() =>
+        document
+          .getAnimations()
+          .every((animation) => animation.playState !== "running"),
+      );
+      await expectNoViolations(page, `${colorScheme} Add company dialog`);
+    });
+  }
+});
