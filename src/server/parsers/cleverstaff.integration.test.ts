@@ -7,10 +7,10 @@ import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { readCleverStaff } from "./cleverstaff.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
-/** Фейковий вебсервер зі справжніми збереженими відповідями. */
+/** The fake web server with real saved responses. */
 let fakeWeb: FakeWeb;
 
 beforeAll(async () => {
@@ -24,7 +24,7 @@ afterAll(async () => {
   await fakeWeb.close();
 });
 
-/** Клієнт, що ходить на заданий сервер замість справжніх сайтів. */
+/** A client that goes to the given server instead of real sites. */
 function clientFor(origin: string) {
   return createHttpClient({
     fakeOrigin: origin,
@@ -34,8 +34,8 @@ function clientFor(origin: string) {
   });
 }
 
-// Фейковий сервер ігнорує рядок запиту, тож на будь-який аліас віддає дошку
-// 8allocate, а на будь-яку вакансію - вакансію 8allocate.
+// The fake server ignores the query string, so for any alias it serves the
+// 8allocate board, and for any vacancy the 8allocate vacancy.
 describe("readCleverStaff", () => {
   it("reads the vacancies of a real board", async () => {
     const result = await readCleverStaff(
@@ -58,7 +58,7 @@ describe("readCleverStaff", () => {
   it("does not request anything for an address that is not a CleverStaff board", async () => {
     const result = await readCleverStaff(
       "https://cleverstaff.net/why.html",
-      // Порт 1 ніхто не слухає: якби запит пішов, це був би fetch-failed.
+      // Nobody listens on port 1: if a request went out, it would be fetch-failed.
       clientFor("http://127.0.0.1:1"),
     );
 

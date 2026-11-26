@@ -1,5 +1,5 @@
 /**
- * Export CSV: які рядки потрапляють у файл (задача 6.05).
+ * Export CSV: which rows go into the file (task 6.05).
  */
 import { and, asc, eq, exists, inArray, notExists } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -9,21 +9,21 @@ import type { CsvRow } from "./format.ts";
 
 export interface ExportOptions {
   userId: string;
-  /** Компанії з вкладки Tracked. */
+  /** Companies from the Tracked tab. */
   tracked: boolean;
-  /** Компанії без джерел, що відстежуються. */
+  /** Companies without tracked sources. */
   notTracked: boolean;
   /**
-   * Include career page URLs: по рядку на джерело, зокрема ті, що ми не
-   * читаємо. Без цього - рядок на компанію з порожніми `career_url` і
+   * Include career page URLs: a row per source, including the ones we do not
+   * read. Without it - a row per company with empty `career_url` and
    * `career_label`.
    */
   careerUrls: boolean;
 }
 
 /**
- * Рядки файлу в порядку списку компаній (за назвою, далі `id`), джерела
- * компанії - у порядку додавання, як у картці.
+ * The file rows in the order of the company list (by name, then `id`), a
+ * company's sources in the order they were added, as on the card.
  */
 export async function exportCompanyRows(
   db: NodePgDatabase,
@@ -33,7 +33,7 @@ export async function exportCompanyRows(
     return [];
   }
 
-  // Те саме правило, що ділить вкладки: Tracked - є джерело з `is_tracked`.
+  // The same rule that splits the tabs: Tracked means a source with `is_tracked`.
   const trackedSource = db
     .select({ id: careerSources.id })
     .from(careerSources)

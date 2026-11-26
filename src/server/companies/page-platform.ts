@@ -1,6 +1,6 @@
 /**
- * Платформа кар'єрної сторінки за її вмістом - для адрес, які за хостом нічим
- * не прочитати (задача 5.13).
+ * The platform of a career page by its content - for addresses whose host gives
+ * nothing to read them with (task 5.13).
  */
 import {
   detectPlatform,
@@ -15,17 +15,17 @@ import { isPeopleForcePage } from "../parsers/peopleforce.ts";
 import { fetchText } from "../parsers/shared.ts";
 
 /**
- * Платформи сторінок, які вдалося впізнати за вмістом: очищена адреса →
- * платформа. Поки це лише PeopleForce на домені компанії
- * (`peopleforce.softconstruct.com`), інші ATS - коли трапиться справжнє джерело.
+ * Page platforms recognised by content: normalized address → platform. For now
+ * this is only PeopleForce on the company's domain
+ * (`peopleforce.softconstruct.com`); other ATS come when a real source turns up.
  *
- * Завантажується лише те, що за хостом `unsupported`: адреса відомої ATS
- * платформу вже назвала, а крива адреса не завантажується взагалі. Сторінка, що
- * не відповіла чи не в розмітці PeopleForce, у результат не потрапляє -
- * джерело лишиться `unsupported`, як і без цієї перевірки.
+ * Only what is `unsupported` by host is fetched: a known ATS address has already
+ * named its platform, and a broken address is not fetched at all. A page that
+ * did not answer or has no PeopleForce markup does not get into the result - the
+ * source stays `unsupported`, as it would without this check.
  *
- * Викликається до транзакції: запит до чужого сайту може тривати до тайм-ауту,
- * і тримати весь цей час з'єднання з базою нема чого.
+ * Called before the transaction: a request to someone else's site may last until
+ * the timeout, and there is no reason to hold a database connection all that time.
  */
 export async function platformsByPage(
   urls: string[],
@@ -53,15 +53,15 @@ export async function platformsByPage(
 }
 
 /**
- * Платформи, які `platformsByPage` упізнала за вмістом: очищена адреса →
- * платформа. Функції додавання джерел беруть її до уваги лише для адрес, що за
- * хостом `unsupported`, - відому ATS вона не перепише.
+ * The platforms `platformsByPage` recognised by content: normalized address →
+ * platform. The functions that add sources take it into account only for
+ * addresses that are `unsupported` by host - it does not override a known ATS.
  */
 export type PagePlatforms = ReadonlyMap<string, CareerPlatform>;
 
 /**
- * Джерело з платформою, впізнаною за вмістом сторінки, якщо адреса сама її не
- * назвала. Таке джерело читається, тож і відстежується.
+ * A source with the platform recognised by page content, if the address did not
+ * name one itself. Such a source can be read, so it is tracked.
  */
 export function withPagePlatform<
   T extends {

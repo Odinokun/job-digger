@@ -1,9 +1,8 @@
 /**
- * Формат CSV для експорту й імпорту компаній.
+ * The CSV format for exporting and importing companies.
  *
- * Чотири колонки: план давав три, `career_label` додано рішенням автора
- * 20.11.2026 (задача 6.05) - без неї підписи джерел губилися б при перенесенні
- * Export → Import.
+ * Four columns: the original plan had three; `career_label` was added (task
+ * 6.05) because without it source labels were lost on the way Export → Import.
  */
 export const CSV_COLUMNS = [
   "company_name",
@@ -15,10 +14,10 @@ export const CSV_COLUMNS = [
 export type CsvRow = Record<(typeof CSV_COLUMNS)[number], string>;
 
 /**
- * Перші символи, з яких таблиця може почати формулу. Список OWASP «CSV
- * Injection» (https://owasp.org/www-community/attacks/CSV_Injection): ширший
- * за чотири символи з початкового плану (`=`, `+`, `-`, `@`) - ще Tab, CR, LF
- * і повноширинні варіанти, які деякі локалі теж читають як формулу.
+ * First characters a spreadsheet may start a formula with. The OWASP "CSV
+ * Injection" list (https://owasp.org/www-community/attacks/CSV_Injection): wider
+ * than the four characters of the original plan (`=`, `+`, `-`, `@`) - also Tab,
+ * CR, LF and the full-width variants, which some locales read as a formula too.
  */
 export const FORMULA_STARTS = new Set([
   "=",
@@ -34,15 +33,15 @@ export const FORMULA_STARTS = new Set([
   "＠",
 ]);
 
-/** Що змушує взяти поле в лапки за RFC 4180. Крапка з комою - для Excel з українською локаллю. */
+/** What makes a field quoted by RFC 4180. The semicolon is for Excel with a Ukrainian locale. */
 const NEEDS_QUOTES = /[",;\r\n]/;
 
 /**
- * Одне поле CSV.
+ * One CSV field.
  *
- * Небезпечний початок - одинарна лапка спереду й поле в лапках, як радить
- * OWASP. Імпорт (6.06) знімає цю лапку, якщо за нею йде такий самий символ,
- * тож експортований файл повертається в базу без змін.
+ * A dangerous start gets a single quote in front and the field in quotes, as
+ * OWASP advises. Import (6.06) removes this quote if such a character follows
+ * it, so an exported file goes back into the database unchanged.
  */
 export function escapeCsvCell(value: string): string {
   const defused = FORMULA_STARTS.has(value.charAt(0)) ? `'${value}` : value;
@@ -53,10 +52,10 @@ export function escapeCsvCell(value: string): string {
 }
 
 /**
- * Увесь файл: BOM, заголовок і рядки, кожен закінчується CRLF (RFC 4180).
- * BOM - підказка таблицям, що файл в UTF-8: без нього Excel, наскільки відомо,
- * може прочитати кирилицю в іншому кодуванні (не перевірено). Імпорт приймає
- * файл і з BOM, і без нього.
+ * The whole file: the BOM, the header and the rows, each ending with CRLF (RFC
+ * 4180). The BOM tells spreadsheets the file is UTF-8: without it Excel, as far
+ * as is known, may read Cyrillic in another encoding (not checked). Import
+ * accepts a file both with and without a BOM.
  */
 export function toCsv(rows: CsvRow[]): string {
   const lines = [

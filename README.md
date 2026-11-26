@@ -20,7 +20,7 @@ npm run dev
 
 Застосунок буде доступний на http://127.0.0.1:3000 - лише з цього комп'ютера, назовні сервер не слухає.
 
-Разом із сервером (`npm run dev` чи `npm start`) стартує фоновий цикл черги перевірок: його запускає [`src/instrumentation.ts`](src/instrumentation.ts) - файл, який Next виконує один раз на старті сервера. Цикл кожні 2 с дивиться в базу, тож без піднятої бази в лозі зʼявлятимуться помилки кроку черги. Як він працює - [`src/server/queue/README.md`](src/server/queue/README.md#цикл-обробника). Там само стартує розклад автоперевірки (вимикається `AUTO_CHECK=off`) - [`src/server/checks/README.md`](src/server/checks/README.md#автоперевірка).
+Разом із сервером (`npm run dev` чи `npm start`) стартує фоновий цикл черги перевірок: його запускає [`src/instrumentation.ts`](src/instrumentation.ts) - файл, який Next виконує один раз на старті сервера. Цикл кожні 2 с дивиться в базу, тож без піднятої бази в лозі зʼявлятимуться помилки кроку черги. Як він працює - [`src/server/queue/README.md`](src/server/queue/README.md#worker-loop). Там само стартує розклад автоперевірки (вимикається `AUTO_CHECK=off`) - [`src/server/checks/README.md`](src/server/checks/README.md#auto-check).
 
 ### Install-скрипти залежностей
 
@@ -289,7 +289,7 @@ document.cookie = "locale=uk; path=/";
 
 ## Ліцензія
 
-Код проєкту - [MIT](LICENSE). Не під MIT: скіли агента в `.agents/skills/` (чужий код зі своїми ліцензіями, деталі - [.claude/README.md](.claude/README.md#skills)) і збережені відповіді сайтів у `src/server/http/testing/responses/` (копії публічних сторінок лише для тестів, [src/server/http/testing/README.md](src/server/http/testing/README.md#збережені-відповіді)).
+Код проєкту - [MIT](LICENSE). Не під MIT: скіли агента в `.agents/skills/` (чужий код зі своїми ліцензіями, деталі - [.claude/README.md](.claude/README.md#skills)) і збережені відповіді сайтів у `src/server/http/testing/responses/` (копії публічних сторінок лише для тестів, [src/server/http/testing/README.md](src/server/http/testing/README.md#saved-responses)).
 
 ## Документація
 

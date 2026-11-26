@@ -1,8 +1,8 @@
 /**
- * Автоматична перевірка: для кожного користувача вирішує, чи настав час
- * загальної перевірки, і ставить її в чергу тим самим `startCheckAll`, що й
- * ручний Check all (src/server/checks/README.md; задача 6.03). Хто й
- * коли викликає - `auto-check-scheduler.ts`.
+ * The automatic check: for each user it decides whether a general check is due,
+ * and queues it with the same `startCheckAll` as a manual Check all
+ * (src/server/checks/README.md; task 6.03). Who calls it and when:
+ * `auto-check-scheduler.ts`.
  */
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
@@ -18,19 +18,19 @@ import { startCheckAll } from "./check-all.ts";
 export interface RunAutoChecksInput {
   now: Date;
   /**
-   * Перший виклик після старту застосунку: тоді правило інше - перевірка
-   * йде, якщо остання стартувала понад годину тому (`isStartupCheckDue`).
+   * The first call after the app starts: then the rule is different - the check
+   * runs if the last one started more than an hour ago (`isStartupCheckDue`).
    */
   isStartup: boolean;
 }
 
 /**
- * Один прохід розкладу по всіх користувачах. Кожен вирішується окремо: в
- * одного час настав, в іншого ні.
+ * One pass of the schedule over all users. Each is decided separately: for one it
+ * is time, for another it is not.
  *
- * Перевірку, що вже йде, і користувача без відстежуваних джерел відсіює сам
- * `startCheckAll` (`already-running`, `nothing-to-check`) - тут вони просто
- * пропускаються. Збій одного користувача не зупиняє інших.
+ * `startCheckAll` itself filters out a check already in progress and a user
+ * without tracked sources (`already-running`, `nothing-to-check`) - here they are
+ * simply skipped. One user's failure does not stop the others.
  */
 export async function runAutoChecks(
   db: NodePgDatabase,
@@ -51,11 +51,11 @@ export async function runAutoChecks(
         (isStartup && isStartupCheckDue({ lastStartedAt, now }));
 
       if (due) {
-        // Повністю - лише джерела, не читані повністю добу (задача 6.16).
+        // In full - only the sources not read in full for a day (task 6.16).
         await startCheckAll(db, { userId, depthMode: "auto", now });
       }
     } catch (error) {
-      // Лог англійською - технічне повідомлення.
+      // The log is in English - a technical message.
       console.error(`Auto check for user ${userId} failed to start`, error);
     }
   }

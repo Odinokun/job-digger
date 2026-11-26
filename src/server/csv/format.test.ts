@@ -12,7 +12,7 @@ describe("escapeCsvCell", () => {
   });
 
   it("quotes a value with a separator, a quote or a line break", () => {
-    // RFC 4180: такі поля беруться в лапки, а лапки всередині подвоюються.
+    // RFC 4180: such fields are quoted, and quotes inside are doubled.
     expect(escapeCsvCell("Acme, Inc.")).toBe('"Acme, Inc."');
     expect(escapeCsvCell("Acme; Inc.")).toBe('"Acme; Inc."');
     expect(escapeCsvCell('The "Best" Co')).toBe('"The ""Best"" Co"');
@@ -20,7 +20,7 @@ describe("escapeCsvCell", () => {
   });
 
   it("defuses anything a spreadsheet could run as a formula", () => {
-    // OWASP CSV Injection: одинарна лапка на початку і поле в лапках.
+    // OWASP CSV Injection: a single quote at the start and the field in quotes.
     expect(escapeCsvCell("=HYPERLINK(1)")).toBe(`"'=HYPERLINK(1)"`);
     expect(escapeCsvCell("+1")).toBe(`"'+1"`);
     expect(escapeCsvCell("-1")).toBe(`"'-1"`);
@@ -28,7 +28,7 @@ describe("escapeCsvCell", () => {
     expect(escapeCsvCell("\t=1")).toBe(`"'\t=1"`);
     expect(escapeCsvCell("\r=1")).toBe(`"'\r=1"`);
     expect(escapeCsvCell("\n=1")).toBe(`"'\n=1"`);
-    // Повноширинні варіанти деякі локалі теж читають як формулу.
+    // Some locales read the full-width variants as a formula too.
     expect(escapeCsvCell("＝1")).toBe(`"'＝1"`);
     expect(escapeCsvCell('=1+2";=1+2')).toBe(`"'=1+2"";=1+2"`);
   });
@@ -36,8 +36,8 @@ describe("escapeCsvCell", () => {
 
 describe("toCsv", () => {
   it("writes the header and rows with a BOM and CRLF", () => {
-    // BOM - підказка таблицям, що файл в UTF-8; CRLF - роздільник рядків за
-    // RFC 4180.
+    // The BOM tells spreadsheets the file is UTF-8; CRLF is the line separator
+    // by RFC 4180.
     const csv = toCsv([
       {
         company_name: "Acme",

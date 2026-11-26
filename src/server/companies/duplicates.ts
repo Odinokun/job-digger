@@ -4,7 +4,7 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { sameCompanyName } from "../../lib/companies/name.ts";
 import { companies } from "../db/schema.ts";
 
-/** Компанія в тому вигляді, в якому про неї треба сказати користувачеві. */
+/** A company in the form the user needs to be told about it. */
 export type ConflictingCompany = {
   id: string;
   name: string;
@@ -12,8 +12,8 @@ export type ConflictingCompany = {
 };
 
 /**
- * Компанія, знайдена за назвою. Окремо від `ConflictingCompany`: попередження
- * про назву ловить ту саму компанію під іншим сайтом (картка 2.17).
+ * A company found by name. Apart from `ConflictingCompany`: the name warning
+ * catches the same company under another site (card 2.17).
  */
 export type NamedCompany = {
   id: string;
@@ -22,10 +22,10 @@ export type NamedCompany = {
 };
 
 /**
- * Що знайшлося серед уже доданих компаній користувача.
+ * What was found among the user's already added companies.
  *
- * `exact` блокує додавання, `same-domain` - лише попередження: на тому самому
- * домені може бути кілька різних компаній, наприклад національних версій
+ * `exact` blocks adding, `same-domain` is only a warning: one domain can host
+ * several different companies, for example national versions
  * (src/lib/companies/README.md).
  */
 export type CompanyUrlConflict =
@@ -34,10 +34,10 @@ export type CompanyUrlConflict =
   | { kind: "same-domain"; companies: ConflictingCompany[] };
 
 /**
- * Шукає конфлікт для адреси, яку користувач хоче додати.
+ * Looks for a conflict for the address the user wants to add.
  *
- * Шукається лише серед компаній цього користувача: дані ізольовані, тому чужа
- * компанія з такою ж адресою конфліктом не є.
+ * Only this user's companies are searched: data is isolated, so someone else's
+ * company with the same address is not a conflict.
  */
 export async function findCompanyUrlConflict(
   db: NodePgDatabase,
@@ -56,13 +56,13 @@ export async function findCompanyUrlConflict(
     .where(
       and(
         eq(companies.userId, userId),
-        // Домен обчислюється в SQL, а не шукається через `like 'bosch.com%'`:
-        // інакше bosch.com.ua вважався б тим самим доменом, що bosch.com.
+        // The domain is computed in SQL rather than matched with `like 'bosch.com%'`:
+        // otherwise bosch.com.ua would count as the same domain as bosch.com.
         sql`split_part(split_part(${companies.normalizedUrl}, '/', 1), '?', 1) = ${domain}`,
       ),
     )
-    // Порядок задає код, а не база: попередження перелічує компанії домену
-    // так само, як їх показує список компаній - за назвою.
+    // The code sets the order, not the database: the warning lists the domain's
+    // companies the same way the company list shows them - by name.
     .orderBy(asc(companies.name));
 
   const exact = rows.find((row) => row.normalizedUrl === normalizedUrl);
@@ -81,7 +81,7 @@ export async function findCompanyUrlConflict(
   return { kind: "none" };
 }
 
-/** Домен адреси: усе до першого слеша або знака питання. */
+/** The domain of an address: everything before the first slash or question mark. */
 function companyUrlDomain(normalizedUrl: string): string {
   return normalizedUrl.split("/")[0].split("?")[0];
 }
@@ -95,25 +95,24 @@ function withoutNormalizedUrl({
 }
 
 /**
- * Компанії користувача з такою самою назвою.
+ * The user's companies with the same name.
  *
- * Зʼявились разом із компаніями без сайту (картка 2.17) і лишились: дві картки
- * однієї компанії можуть не мати спільної адреси - сайти на різних доменах
- * (`linear.app` і `linear.io`), джерела різні. Перевірка по сайту й по
- * джерелу таку пару не бачать; спільною лишається тільки назва.
+ * Appeared together with companies without a site (card 2.17) and stayed: two
+ * cards of one company may share no address - sites on different domains
+ * (`linear.app` and `linear.io`), different sources. The site and source checks
+ * do not see such a pair; only the name is shared.
  *
- * Це **попередження, а не заборона**: дві різні компанії цілком можуть
- * називатися однаково, і рішення лишається за користувачем - як і зі спільним
- * доменом.
+ * This is **a warning, not a ban**: two different companies may well have the
+ * same name, and the decision stays with the user - as with a shared domain.
  *
- * **Порівняння йде в коді, а не в SQL.** Правило («Rolls-Royce», «Rolls Royce»
- * і «RollsRoyce» - одна компанія) живе в
- * [`lib/companies/name.ts`](../../lib/companies/name.ts) поруч із тим кодом,
- * що назву й виводить, а не дублюється виразом `regexp_replace`: до того ж
- * POSIX-класи Postgres по-різному поводяться з не-латиницею залежно від
- * локалі бази. Ціна - читання кількох сотень коротких рядків раз на додавання
- * компанії. Якщо список виросте настільки, що це стане помітним, додамо
- * збережену колонку з індексом - так само, як зробили з адресами.
+ * **The comparison runs in code, not in SQL.** The rule ("Rolls-Royce", "Rolls
+ * Royce" and "RollsRoyce" are one company) lives in
+ * [`lib/companies/name.ts`](../../lib/companies/name.ts) next to the code that
+ * displays the name, rather than being duplicated as a `regexp_replace`
+ * expression; besides, Postgres POSIX classes treat non-Latin text differently
+ * depending on the database locale. The price is reading a few hundred short
+ * rows per company added. If the list grows enough for this to be noticeable,
+ * we will add a stored column with an index - as we did with addresses.
  */
 export async function findCompaniesByName(
   db: NodePgDatabase,
@@ -127,8 +126,8 @@ export async function findCompaniesByName(
     })
     .from(companies)
     .where(eq(companies.userId, userId))
-    // Порядок задає код, а не база: попередження перелічує компанії так само,
-    // як їх показує список.
+    // The code sets the order, not the database: the warning lists companies the
+    // same way the list shows them.
     .orderBy(asc(companies.name));
 
   return rows.filter((row) => sameCompanyName(row.name, name));

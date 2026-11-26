@@ -1,5 +1,5 @@
 /**
- * Дрібниці, спільні для парсерів платформ.
+ * Small helpers shared by the platform parsers.
  */
 import {
   HttpError,
@@ -9,13 +9,13 @@ import {
 } from "../http/client.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
 
-/** Відповідь не того формату - зокрема коли крива хоч одна вакансія. */
+/** A response of the wrong format - including when even one vacancy is broken. */
 export const UNREADABLE: Extract<ParseResult, { ok: false }> = {
   ok: false,
   error: { reason: "unreadable" },
 };
 
-/** Лише http і https: посилання з іншою схемою (`javascript:`) у UI - діра. */
+/** Only http and https: a link with another scheme (`javascript:`) is a hole in the UI. */
 export function isWebUrl(value: string): boolean {
   try {
     const { protocol } = new URL(value);
@@ -33,10 +33,11 @@ type FetchedJson =
   { ok: true; answer: unknown } | Extract<ParseResult, { ok: false }>;
 
 /**
- * Запит JSON через HTTP-клієнт: `{ ok: true, answer }` з уже розібраним тілом
- * або помилка парсера - `not-found` на 404, `bad-status` на інший не-2xx,
- * `fetch-failed` на збій запиту, `unreadable` на тіло, що не JSON. `request` -
- * налаштування запиту для клієнта, зокрема власний ліміт розміру.
+ * A JSON request through the HTTP client: `{ ok: true, answer }` with the body
+ * already parsed, or a parser error - `not-found` on a 404, `bad-status` on
+ * another non-2xx, `fetch-failed` on a failed request, `unreadable` on a body
+ * that is not JSON. `request` holds the request settings for the client,
+ * including its own size limit.
  */
 export function fetchJson(
   client: HttpClient,
@@ -46,7 +47,7 @@ export function fetchJson(
   return answerOf(() => client.get(url, request));
 }
 
-/** Те саме, що `fetchJson`, але POST з тілом JSON (Workday). */
+/** The same as `fetchJson`, but a POST with a JSON body (Workday). */
 export function postJson(
   client: HttpClient,
   url: string,
@@ -56,10 +57,10 @@ export function postJson(
 }
 
 /**
- * Сторінка через HTTP-клієнт: `{ ok: true, body, url }` - тіло як є, для
- * HTML, і адреса, з якої воно прийшло після редиректів (від неї розвʼязуються
- * відносні посилання), - або ті самі помилки, що в `fetchJson`, крім розбору
- * JSON.
+ * A page through the HTTP client: `{ ok: true, body, url }` - the body as it is,
+ * for HTML, and the address it came from after redirects (relative links
+ * resolve against it) - or the same errors as in `fetchJson`, except JSON
+ * parsing.
  */
 export async function fetchText(
   client: HttpClient,
@@ -90,7 +91,7 @@ async function answerOf(
   }
 }
 
-/** Відповідь 2xx або помилка парсера за статусом чи збоєм запиту. */
+/** A 2xx response, or a parser error by status or by request failure. */
 async function responseOf(
   send: () => Promise<HttpResponse>,
 ): Promise<
@@ -125,23 +126,23 @@ async function responseOf(
 }
 
 /**
- * Що читач платформи зробив з одним записом: вакансія, `"skip"` - вада даних
- * (порожня назва, адреса не http(s)), `"broken"` - зламана структура (id чи
- * назва не того типу).
+ * What a platform reader did with one record: a vacancy, `"skip"` - bad data
+ * (an empty title, a non-http(s) address), `"broken"` - a broken structure (an id
+ * or title of the wrong type).
  */
 export type ReadVacancy = (
   item: Record<string, unknown>,
 ) => ParsedVacancy | "skip" | "broken";
 
 /**
- * Вакансії зі списку записів платформи (src/server/parsers/README.md, «Спільний формат»):
+ * Vacancies from a platform's list of records (src/server/parsers/README.md, "Shared format"):
  *
- * - зламана структура хоч одного запису - невдала вся відповідь: це сигнал
- *   зміни формату, і якби такі записи пропускалися, пропущеними виявились би
- *   всі, а порожній список видалив би всі вакансії джерела;
- * - вада даних - запис пропускається й рахується в `skipped`;
- * - пропущені всі записи непорожнього списку - теж невдала відповідь: нуль
- *   вакансій через криві дані - не «вакансій немає».
+ * - a broken structure in even one record fails the whole response: it signals a
+ *   format change, and if such records were skipped, all of them would be, and
+ *   an empty list would delete all the source's vacancies;
+ * - bad data skips the record and counts it in `skipped`;
+ * - all records of a non-empty list skipped also fails the response: zero
+ *   vacancies because of bad data is not "there are no vacancies".
  */
 export function collectVacancies(
   items: unknown[],

@@ -13,23 +13,24 @@ import type { HostLimiter } from "./host-limiter.ts";
 import { createSafeLookup } from "./ssrf.ts";
 
 /**
- * Обмежувач без обмежень: ці тести перевіряють редиректи, ліміти й повтори, а не
- * розклад запитів - справжній додав би 2 с на кожен запит. Розклад має власні
- * тести (host-limiter.test.ts), а підключення - тест «limiter» нижче.
+ * A limiter without limits: these tests check redirects, limits and retries, not
+ * the request schedule - a real one would add 2 s to every request. The schedule
+ * has its own tests (host-limiter.test.ts), and the "limiter" test below covers
+ * the wiring.
  */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 /**
- * Локальний сервер, якому тест сам задає відповіді. Клієнт іде на нього через
- * підміну адреси: просить `https://site.test/...`, а потрапляє на
- * `{origin}/site.test/...` - так само, як застосунок у тестах іде на фейковий
- * вебсервер. Захист від SSRF при цьому перевіряє справжню, логічну адресу.
+ * A local server whose responses the test sets itself. The client reaches it
+ * through the address override: it asks for `https://site.test/...` and lands on
+ * `{origin}/site.test/...` - the same way the app reaches the fake web server in
+ * tests. SSRF protection still checks the real, logical address.
  */
 let server: Server;
 let origin: string;
-/** Шляхи всіх запитів, що дійшли до сервера, у порядку надходження. */
+/** The paths of all requests that reached the server, in order of arrival. */
 let received: IncomingMessage[];
-/** Відповідь сервера - кожен тест задає свою. */
+/** The server's response - each test sets its own. */
 let respond: (request: IncomingMessage, response: ServerResponse) => void;
 
 beforeAll(async () => {
@@ -42,8 +43,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  // Тести з тайм-аутом і лімітом лишають відповіді незавершеними - без цього
-  // `close` чекав би на них вічно.
+  // Tests with a timeout or a limit leave responses unfinished - without this
+  // `close` would wait for them forever.
   server.closeAllConnections();
   await new Promise((done) => server.close(done));
 });
@@ -56,7 +57,7 @@ beforeEach(() => {
   };
 });
 
-/** Відповідь за шляхом запиту (з підміною, тобто `/site.test/...`). */
+/** A response by request path (with the override, that is `/site.test/...`). */
 function routes(
   table: Record<string, (response: ServerResponse) => void>,
 ): typeof respond {
@@ -86,7 +87,7 @@ function ok(body: string) {
   };
 }
 
-/** Помилка, яку кинув виклик, - щоб перевірити її поля. */
+/** The error the call threw - to check its fields. */
 async function errorOf(promise: Promise<unknown>): Promise<unknown> {
   try {
     await promise;
@@ -135,7 +136,7 @@ describe("createHttpClient", () => {
   });
 
   describe("post", () => {
-    /** Сервер, що відповідає тілом запиту, - щоб побачити, що саме дійшло. */
+    /** A server that echoes the request body - to see what exactly arrived. */
     function echoBody(request: IncomingMessage, response: ServerResponse) {
       const chunks: Buffer[] = [];
       request.on("data", (chunk: Buffer) => chunks.push(chunk));
@@ -146,8 +147,8 @@ describe("createHttpClient", () => {
     }
 
     it("sends a JSON body with POST and the same User-Agent", async () => {
-      // Workday віддає список вакансій лише на POST з JSON
-      // (src/server/parsers/README.md, «Workday»).
+      // Workday returns the vacancy list only for a POST with JSON
+      // (src/server/parsers/README.md, "Workday").
       respond = echoBody;
       const client = createHttpClient({
         fakeOrigin: origin,
@@ -175,9 +176,9 @@ describe("createHttpClient", () => {
     });
 
     it("returns a redirect as it is instead of following it", async () => {
-      // За RFC 9110 (15.4) після 301/302/303 браузери повторюють запит як GET,
-      // а після 307/308 - як POST. Обидва варіанти для API, яке ми знаємо,
-      // означають, що воно змінилося, - хай це побачить парсер.
+      // Per RFC 9110 (15.4), after 301/302/303 browsers repeat the request as a
+      // GET, and after 307/308 as a POST. For an API we know, both mean that it
+      // has changed - let the parser see that.
       respond = routes({
         "/site.test/jobs": redirect("https://site.test/new"),
       });
@@ -193,7 +194,7 @@ describe("createHttpClient", () => {
     });
 
     it("retries a server error like a GET", async () => {
-      // POST тут - читання (пошук вакансій), повтор нічого не змінює на сайті.
+      // The POST here is a read (a vacancy search); a retry changes nothing on the site.
       let attempts = 0;
       respond = (request, response) => {
         attempts += 1;
@@ -295,7 +296,7 @@ describe("createHttpClient", () => {
       const error = await errorOf(client.get("https://site.test/0"));
 
       expect(error).toMatchObject({ reason: "too-many-redirects" });
-      // Початковий запит і пʼять переходів.
+      // The initial request and five hops.
       expect(received).toHaveLength(6);
     });
   });
@@ -303,27 +304,27 @@ describe("createHttpClient", () => {
   describe("limits", () => {
     it("gives up when the site does not answer in time", async () => {
       respond = () => {
-        // Мовчить: ні заголовків, ні тіла.
+        // Silent: no headers, no body.
       };
       const client = createHttpClient({
         fakeOrigin: origin,
         limiter: noLimits,
         timeoutMs: 100,
-        // Тайм-аут повторюється - без цього тест чекав би справжні 1 + 2 с.
+        // The timeout is retried - without this the test would wait a real 1 + 2 s.
         sleep: async () => {},
       });
 
       const error = await errorOf(client.get("https://site.test/slow"));
 
       expect(error).toMatchObject({ reason: "timeout" });
-      // Тайм-аут - збій, що може минути, тож повторюється, як і мережа.
+      // A timeout is a failure that may pass, so it is retried, like the network.
       expect(received).toHaveLength(3);
     });
 
     it("stops reading as soon as the body grows past the limit", async () => {
       respond = (_request, response) => {
         response.writeHead(200);
-        // Шматки без кінця: якби клієнт чекав усе тіло, тест би завис.
+        // Chunks without an end: if the client waited for the whole body, the test would hang.
         response.write("x".repeat(1024));
         response.write("x".repeat(1024));
         response.write("x".repeat(1024));
@@ -372,9 +373,9 @@ describe("createHttpClient", () => {
     });
 
     it("refuses a complete body over the limit instead of returning it empty", async () => {
-      // Тіло прийшло повністю й одним шматком: колись клієнт обривав запит, а
-      // подія `end` усе одно приходила й давала успіх із порожнім тілом - для
-      // парсера це «нуль вакансій», тобто видалення всіх.
+      // The body arrived in full and in one chunk: the client used to abort the
+      // request, yet the `end` event still arrived and gave a success with an
+      // empty body - for a parser that is "zero vacancies", that is, deleting all.
       respond = (_request, response) => {
         response.writeHead(200);
         response.end("x".repeat(3072));
@@ -391,8 +392,8 @@ describe("createHttpClient", () => {
     });
 
     it("lets one request allow a larger body, leaving the rest limited", async () => {
-      // Парсер Ashby просить більше для свого API: дошки віддають усе разом з
-      // описами одним запитом (src/server/parsers/README.md, «Ashby»).
+      // The Ashby parser asks for more for its API: boards return everything with
+      // descriptions in one request (src/server/parsers/README.md, "Ashby").
       respond = (_request, response) => {
         response.writeHead(200);
         response.end("x".repeat(3072));
@@ -414,7 +415,7 @@ describe("createHttpClient", () => {
   });
 
   describe("retries", () => {
-    /** `sleep`, що не чекає, а записує, скільки його просили чекати. */
+    /** A `sleep` that does not wait but records how long it was asked to wait. */
     function recordingSleep() {
       const pauses: number[] = [];
       return {
@@ -425,7 +426,7 @@ describe("createHttpClient", () => {
       };
     }
 
-    /** Відповідає статусами по черзі, останнім - на всі наступні запити. */
+    /** Answers with the statuses in turn, the last one for every later request. */
     function statuses(...codes: number[]): typeof respond {
       let call = 0;
       return (_request, response) => {
@@ -452,8 +453,8 @@ describe("createHttpClient", () => {
     });
 
     it("retries as many times as it is told", async () => {
-      // RETRY_ATTEMPTS=1: одна повторна спроба з першою паузою, далі - відповідь
-      // як є.
+      // RETRY_ATTEMPTS=1: one retry with the first pause, then the response as
+      // it is.
       respond = statuses(500, 503, 200);
       const { pauses, sleep } = recordingSleep();
       const client = createHttpClient({
@@ -577,7 +578,7 @@ describe("createHttpClient", () => {
   });
 
   describe("429 Too Many Requests", () => {
-    /** Спершу 429 із заголовками, далі - 200. */
+    /** A 429 with headers first, then a 200. */
     function limitedOnce(headers: Record<string, string>): typeof respond {
       let call = 0;
       return (_request, response) => {
@@ -693,7 +694,7 @@ describe("createHttpClient", () => {
         redirect("https://jobs.test/new")(response);
         return;
       }
-      // Перша спроба нової адреси - 500, друга - успіх.
+      // The first attempt at the new address is a 500, the second succeeds.
       response.writeHead(call === 2 ? 500 : 200);
       response.end();
     };
@@ -716,7 +717,7 @@ describe("createHttpClient", () => {
   });
 
   describe("real transport", () => {
-    /** DNS, у якому `site.test` веде на задану адресу. */
+    /** DNS in which `site.test` points at the given address. */
     function resolvingTo(address: string): LookupFunction {
       return (_hostname, options, callback) => {
         if (options.all) {

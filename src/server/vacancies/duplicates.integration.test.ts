@@ -11,8 +11,8 @@ import { syncSourceVacancies } from "./lifecycle.ts";
 import { companySiteValues } from "../db/testing/company-values.ts";
 
 /**
- * Дублікати між джерелами однієї компанії (задача 6.20): та сама назва на
- * PeopleForce, DOU і сайті - одна непрочитана вакансія, решта прочитані.
+ * Duplicates across the sources of one company (task 6.20): the same title on
+ * PeopleForce, DOU and the site is one unread vacancy, the rest are read.
  */
 
 const FIRST_CHECK = new Date("2026-11-01T10:00:00Z");
@@ -82,7 +82,7 @@ describe("duplicates across sources of a company", () => {
     const counts = await syncSourceVacancies(testDb, {
       sourceId: dou,
       result: ok(
-        // Регістр і зайві пробіли не роблять назву іншою.
+        // Case and extra spaces do not make the title different.
         vacancy("a", "  frontend   DEVELOPER "),
         vacancy("b", "React Native developer"),
       ),
@@ -145,7 +145,7 @@ describe("duplicates across sources of a company", () => {
   });
 
   it("does not treat two vacancies of one source as duplicates", async () => {
-    // Те саме джерело може мати дві вакансії з однією назвою в різних містах.
+    // The same source can have two vacancies with one title in different cities.
     const peopleforce = await source(await company(), "peopleforce", "pf");
 
     await syncSourceVacancies(testDb, {
@@ -164,8 +164,8 @@ describe("duplicates across sources of a company", () => {
   });
 
   it("ignores a closed vacancy kept in Favorites", async () => {
-    // Закрита вакансія живе лише у Favorites: на сайті її вже немає, і нова
-    // з тією самою назвою - справжня нова.
+    // A closed vacancy lives only in Favorites: it is no longer on the site, and a
+    // new one with the same title is a genuinely new vacancy.
     const kinggroup = await company();
     const peopleforce = await source(kinggroup, "peopleforce", "pf");
     const dou = await source(kinggroup, "lever", "dou");
@@ -191,8 +191,8 @@ describe("duplicates across sources of a company", () => {
   });
 
   it("does not mark an already known vacancy again", async () => {
-    // Правило - для щойно виявлених. Вакансію, яку людина повернула в Unread,
-    // наступна перевірка не прочитує знову.
+    // The rule is for freshly discovered ones. A vacancy the user put back into
+    // Unread is not marked read again by the next check.
     const kinggroup = await company();
     const peopleforce = await source(kinggroup, "peopleforce", "pf");
     const dou = await source(kinggroup, "lever", "dou");
@@ -223,9 +223,9 @@ describe("duplicates across sources of a company", () => {
   });
 
   it("waits for another source of the company that is being written", async () => {
-    // Джерела компанії перевіряються паралельно. Поки інше джерело
-    // записує свої вакансії (тут - відкрита транзакція з блокуванням рядка
-    // компанії), запис чекає, а тоді бачить його дублікат.
+    // The company's sources are checked in parallel. While another source writes
+    // its vacancies (here, an open transaction holding the company row lock), the
+    // write waits and then sees its duplicate.
     const kinggroup = await company();
     const peopleforce = await source(kinggroup, "peopleforce", "pf");
     const dou = await source(kinggroup, "lever", "dou");

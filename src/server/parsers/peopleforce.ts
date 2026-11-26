@@ -1,8 +1,8 @@
 /**
- * Парсер PeopleForce: вакансії з публічної сторінки кар'єри компанії
- * (`{company}.peopleforce.io/careers`). Careers API PeopleForce вимагає ключ
- * компанії (https://developer.peopleforce.io/careers/v1/getting-started), тож
- * читаємо HTML - так, як його бачить відвідувач (README поруч, «PeopleForce»).
+ * The PeopleForce parser: vacancies from a company's public career page
+ * (`{company}.peopleforce.io/careers`). The PeopleForce Careers API needs a
+ * company key (https://developer.peopleforce.io/careers/v1/getting-started), so
+ * we read the HTML as a visitor sees it (the README next to this file, "PeopleForce").
  */
 import * as cheerio from "cheerio";
 
@@ -17,9 +17,10 @@ import { pagesToRead, type ReadDepth } from "./vacancies-to-check.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 /**
- * Адреса сайту кар'єри компанії (`https://team.peopleforce.io`) або `null`, якщо
- * адреса - не сайт компанії на PeopleForce. Компанія - єдиний субдомен перед
- * `peopleforce.io`; сам `peopleforce.io` і `www` - сайт платформи, не компанії.
+ * The address of the company's career site (`https://team.peopleforce.io`), or
+ * `null` if the address is not a company site on PeopleForce. The company is the
+ * only subdomain before `peopleforce.io`; `peopleforce.io` itself and `www` are
+ * the platform's site, not a company's.
  */
 export function peopleforceSite(sourceUrl: string): string | null {
   let url: URL;
@@ -44,14 +45,14 @@ export function peopleforceSite(sourceUrl: string): string | null {
 }
 
 /**
- * Чи це сторінка кар'єри PeopleForce, хоч би на якій адресі (задача 5.13):
- * компанія може тримати PeopleForce на своєму домені
- * (`peopleforce.softconstruct.com`), і за хостом його не впізнати.
+ * Whether this is a PeopleForce career page, whatever its address (task 5.13):
+ * a company may keep PeopleForce on its own domain
+ * (`peopleforce.softconstruct.com`), and it cannot be recognised by the host.
  *
- * Ознак дві, і потрібні обидві: список `#results`, який читає парсер, і підпис
- * «Powered by PeopleForce» (`.credit` з посиланням на `peopleforce.io`) - він
- * є на кожній збереженій сторінці. Одне посилання на `peopleforce.io` - ще не
- * дошка: так пише будь-яка сторінка, що згадує цей HR-сервіс.
+ * There are two signs, and both are needed: the `#results` list the parser
+ * reads, and the "Powered by PeopleForce" credit (`.credit` with a link to
+ * `peopleforce.io`) - it is on every saved page. A single link to
+ * `peopleforce.io` is not yet a board: any page that mentions this HR service has one.
  */
 export function isPeopleForcePage(html: string): boolean {
   const $ = cheerio.load(html);
@@ -62,35 +63,36 @@ export function isPeopleForcePage(html: string): boolean {
   );
 }
 
-/** Сторінка списку: вакансії і чи є після неї ще одна. */
+/** A list page: the vacancies and whether there is another page after it. */
 export type PeopleForcePage =
   | (Extract<ParseResult, { ok: true }> & { hasNext: boolean })
   | Extract<ParseResult, { ok: false }>;
 
-/** Шлях вакансії: `/careers/v/{ID}-{slug}`, ID - число. */
+/** A vacancy path: `/careers/v/{ID}-{slug}`, the ID is a number. */
 const VACANCY_PATH = /^\/careers\/v\/(\d+)(?:-|$)/;
 
-/** Лічильник «X - Y»: які за номером вакансії на цій сторінці. */
+/** The "X - Y" counter: which vacancies by number are on this page. */
 const RANGE = /^(\d+)\s*-\s*(\d+)$/;
 
 /**
- * Вакансії однієї сторінки списку `/careers?page=N`.
+ * Vacancies of one page of the `/careers?page=N` list.
  *
- * Сторінка - HTML, тож довіра до нуля тут окрема (src/server/parsers/README.md):
- * над картками PeopleForce пише лічильник «Displaying X - Y of N»,
- * і карток має бути рівно Y - X + 1. Числа в `<strong>` від мови не залежать,
- * текст навколо - залежить («Відображено ... з ...»). Немає ні лічильника, ні
- * карток - вакансій справді немає («There are currently no vacancies.»). Будь-
- * яке інше поєднання - змінена верстка, і невдала вся відповідь.
+ * The page is HTML, so trust in zero is handled separately here
+ * (src/server/parsers/README.md): above the cards PeopleForce writes a
+ * "Displaying X - Y of N" counter, and there must be exactly Y - X + 1 cards. The
+ * numbers in `<strong>` do not depend on the language, the text around them does
+ * ("Відображено ... з ..."). No counter and no cards means there really are no
+ * vacancies ("There are currently no vacancies."). Any other combination is
+ * changed markup, and the whole response fails.
  *
- * `externalId` - числовий ID зі шляху, посилання - шлях від адреси сторінки,
- * локація - текст поруч з іконкою мітки на карті.
+ * `externalId` is the numeric ID from the path, the link is the path resolved
+ * against the page address, the location is the text next to the map pin icon.
  *
- * Чи є наступна сторінка - теж з лічильника: Y менше за N. Посилання «далі»
- * в PeopleForce буває різним - у новій розмітці з `rel="next"`, у старішій
- * (SoftConstruct на власному домені, 21.11.2026) лише з `aria-label="next"`.
- * Пропущене посилання прочитало б 10 вакансій з 215 як увесь список, а решту
- * перевірка вважала б закритими.
+ * Whether there is a next page also comes from the counter: Y is less than N.
+ * PeopleForce's "next" link varies - the new markup has `rel="next"`, the older
+ * one (SoftConstruct on its own domain, 21.11.2026) only `aria-label="next"`. A
+ * missed link would read 10 vacancies of 215 as the whole list, and the check
+ * would consider the rest closed.
  */
 export function parsePeopleForcePage(
   html: string,
@@ -186,10 +188,10 @@ function readerFor(pageUrl: string): ReadVacancy {
 }
 
 /**
- * Сайт кар'єри джерела, яке вже збережене як PeopleForce. На `*.peopleforce.io`
- * - як у `peopleforceSite`; на будь-якому іншому хості - його origin: таке
- * джерело стало PeopleForce за розміткою сторінки (`isPeopleForcePage`,
- * задача 5.13), тож хост тут уже нічого не доводить.
+ * The career site of a source already saved as PeopleForce. On `*.peopleforce.io`
+ * it is as in `peopleforceSite`; on any other host it is its origin: such a
+ * source became PeopleForce by its page markup (`isPeopleForcePage`, task 5.13),
+ * so the host proves nothing here any more.
  */
 function careerSiteOf(sourceUrl: string): string | null {
   const onPlatform = peopleforceSite(sourceUrl);
@@ -211,18 +213,18 @@ function careerSiteOf(sourceUrl: string): string | null {
     : null;
 }
 
-/** Скільки вакансій PeopleForce показує на сторінці `/careers` (не налаштовується). */
+/** How many vacancies PeopleForce shows on a `/careers` page (not configurable). */
 export const PEOPLEFORCE_PAGE_SIZE = 10;
 
 /**
- * Вакансії кар'єрного джерела на PeopleForce: сайт компанії з адреси,
- * сторінки `/careers?page=N` через HTTP-клієнт і розбір кожної. Адреса, що не
- * веб-сторінка, - `unreadable` без жодного запиту.
+ * Vacancies of a career source on PeopleForce: the company site from the
+ * address, `/careers?page=N` pages through the HTTP client and parsing of each.
+ * An address that is not a web page is `unreadable` without any request.
  *
- * Наступна сторінка - лише поки лічильник каже, що список не скінчився
- * (`parsePeopleForcePage`): номер за межею списку PeopleForce не відхиляє, а
- * віддає останню сторінку ще раз (перевірено на Webellian 18.11.2026). Збій
- * будь-якої сторінки - збій усього джерела.
+ * The next page is requested only while the counter says the list has not ended
+ * (`parsePeopleForcePage`): PeopleForce does not reject a page number past the
+ * end of the list but serves the last page again (checked on Webellian
+ * 18.11.2026). A failure of any page is a failure of the whole source.
  */
 export async function readPeopleForce(
   sourceUrl: string,
@@ -240,7 +242,7 @@ export async function readPeopleForce(
 
   const vacancies: ParsedVacancy[] = [];
   let skipped = 0;
-  // Стає `false`, лише коли список скінчився сам, а не на ліміті.
+  // Becomes `false` only when the list ended by itself, not at the limit.
   let truncated = true;
 
   for (let page = 1; page <= maxPages; page += 1) {

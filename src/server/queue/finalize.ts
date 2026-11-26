@@ -1,5 +1,5 @@
 /**
- * Завершення загальних перевірок. Правила - README.md поруч, «Завершення запуску».
+ * Finishing general checks. The rules are in the README.md next to this file, "Finishing a run".
  */
 import { sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -8,8 +8,8 @@ import { checkRuns, checkTasks } from "../db/schema.ts";
 import type { CheckTaskError } from "./task-error.ts";
 
 /**
- * Скільки запуск може стояти без руху, перш ніж закривається. Більше за
- * `STALE_AFTER_MS`: зависле завдання встигає повернутися в чергу раніше
+ * How long a run may stand without movement before it is closed. Longer than
+ * `STALE_AFTER_MS`: a stuck task has time to go back to the queue first
  * (src/server/queue/README.md).
  */
 export const IDLE_RUN_MS = 15 * 60_000;
@@ -17,9 +17,9 @@ export const IDLE_RUN_MS = 15 * 60_000;
 const ABANDONED: CheckTaskError = { reason: "abandoned" };
 
 export interface FinalizeResult {
-  /** Закрито, бо всі завдання завершилися. */
+  /** Closed because all the tasks finished. */
   completed: number;
-  /** Закрито, бо запуск стояв без руху. */
+  /** Closed because the run stood without movement. */
   abandoned: number;
 }
 
@@ -30,8 +30,8 @@ export async function finalizeRuns(
   const unfinished = sql`${checkTasks.status} in ('queued', 'running')`;
 
   return db.transaction(async (tx) => {
-    // Усі завдання завершені - запуск закінчився тоді, коли завершилося
-    // останнє. Якщо завдань не лишилося (джерела видалили) - зараз.
+    // All tasks are finished - the run ended when the last one finished. If no
+    // tasks are left (the sources were deleted), now.
     const completed = await tx.execute(sql`
       update ${checkRuns} as r
       set finished_at = coalesce(
@@ -45,10 +45,10 @@ export async function finalizeRuns(
       returning r.id
     `);
 
-    // Рух запуску - старт, захоплення чи завершення його завдань. Запуск без
-    // руху закривається моментом останнього руху: Duration у History
-    // показує роботу, а не сон компʼютера. Його незавершені завдання стають
-    // невдалими, а лічильники не змінюються - «з тими числами, які вже є».
+    // A run's movement is the start, a claim or a finish of its tasks. A run
+    // without movement is closed at the moment of its last movement: Duration in
+    // History shows the work, not the computer sleeping. Its unfinished tasks
+    // fail, and the counters do not change - "with whatever numbers there are".
     const abandoned = await tx.execute(sql`
       with idle as (
         select r.id, greatest(r.started_at, max(t.locked_at), max(t.finished_at)) as last_move

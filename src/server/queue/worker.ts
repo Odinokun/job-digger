@@ -1,5 +1,5 @@
 /**
- * Цикл обробника черги. Правила - README.md поруч, «Цикл обробника».
+ * The queue worker loop. The rules are in the README.md next to this file, "Worker loop".
  */
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
@@ -9,20 +9,20 @@ import { finalizeRuns } from "./finalize.ts";
 import { recoverStaleTasks } from "./recover.ts";
 import { runTask } from "./run-task.ts";
 
-/** Пауза між кроками циклу, поки черга порожня або повна. */
+/** The pause between loop steps while the queue is empty or full. */
 export const POLL_MS = 2000;
 
 export interface QueueWorkerOptions {
   db: NodePgDatabase;
   client: HttpClient;
-  /** Ліміт одночасних завдань - спільний для всіх процесів (`claim.ts`). */
+  /** The limit of simultaneous tasks - shared by all processes (`claim.ts`). */
   maxRunning: number;
   pollMs?: number;
 }
 
 export interface QueueWorker {
   start(): void;
-  /** Зупиняє цикл і чекає, поки добіжить уся розпочата робота. */
+  /** Stops the loop and waits until all the work started has finished. */
   stop(): Promise<void>;
 }
 
@@ -32,15 +32,15 @@ export function createQueueWorker({
   maxRunning,
   pollMs = POLL_MS,
 }: QueueWorkerOptions): QueueWorker {
-  // Завдання, що виконуються, - під ліміт `maxRunning`.
+  // Running tasks - counted against the `maxRunning` limit.
   const inFlight = new Set<Promise<unknown>>();
-  // Уся розпочата робота: кроки, дозаповнення й завдання. `stop` чекає на неї
-  // всю - інакше захоплення, що саме йде, запустило б завдання вже після зупинки.
+  // All the work started: steps, refills and tasks. `stop` waits for all of it -
+  // otherwise a claim in progress would start a task after the stop.
   const pending = new Set<Promise<unknown>>();
   let timer: NodeJS.Timeout | undefined;
   let stopped = true;
 
-  /** Захоплює завдання, поки є вільні місця і є що брати. */
+  /** Claims tasks while there are free slots and something to take. */
   async function fill(): Promise<void> {
     while (!stopped && inFlight.size < maxRunning) {
       const claimed = await claimTask(db, { now: new Date(), maxRunning });
@@ -52,7 +52,7 @@ export function createQueueWorker({
         })
         .finally(() => {
           inFlight.delete(running);
-          // Звільнене місце заповнюється одразу, а не на наступному кроці.
+          // A freed slot is filled at once, not on the next step.
           if (!stopped) track(fill().catch(logStepError));
         });
       inFlight.add(running);
@@ -75,11 +75,11 @@ export function createQueueWorker({
   function schedule(): void {
     if (stopped) return;
     timer = setTimeout(() => {
-      // Наступний крок - лише після завершення цього: кроки не накладаються.
-      // Збій бази не зупиняє цикл: наступний крок спробує знову.
+      // The next step only after this one finishes: steps never overlap. A
+      // database failure does not stop the loop: the next step tries again.
       track(step().catch(logStepError).finally(schedule));
     }, pollMs);
-    // Таймер не тримає процес живим: сервер зупиняється, не чекаючи черги.
+    // The timer does not keep the process alive: the server stops without waiting for the queue.
     timer.unref();
   }
 
@@ -92,8 +92,8 @@ export function createQueueWorker({
     async stop() {
       stopped = true;
       clearTimeout(timer);
-      // Робота може породжувати нову (завдання - дозаповнення), тож чекаємо,
-      // доки не лишиться нічого.
+      // Work can spawn new work (a task spawns a refill), so we wait until
+      // nothing is left.
       while (pending.size > 0) {
         await Promise.allSettled([...pending]);
       }

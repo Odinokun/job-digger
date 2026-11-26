@@ -1,6 +1,6 @@
 /**
- * Import CSV: рядки файлу → компанії й джерела (задача
- * 6.06). Розбір файлу - `parse.ts`.
+ * Import CSV: the file rows → companies and sources (task 6.06). Parsing the
+ * file is `parse.ts`.
  */
 import { eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -19,37 +19,37 @@ export interface ImportSummary {
   companiesAdded: number;
   sourcesAdded: number;
   /**
-   * Пропущене: сторінка, яка вже є в цієї чи іншої компанії, і рядок без
-   * сторінки для компанії, що вже є.
+   * Skipped: a page this or another company already has, and a row without a
+   * page for a company that already exists.
    */
   duplicates: number;
-  /** Рядки, які не вдалося прочитати: без назви, без сайту чи з кривою адресою. */
+  /** Rows that could not be read: without a name, without a site or with a bad address. */
   errors: number;
 }
 
-/** Рядок, що пройшов перевірку. */
+/** A row that passed the checks. */
 interface ValidRow {
   name: string;
-  /** Сайт компанії - обовʼязковий (задача company-site-required). */
+  /** The company site - required (task company-site-required). */
   companyUrl: { typed: string; normalized: string };
   careerUrl: string;
-  /** Очищена адреса карʼєрної сторінки або `null`, якщо її немає. */
+  /** The cleaned career page address, or `null` if there is none. */
   careerNormalized: string | null;
   label: string;
 }
 
 /**
- * Імпортує рядки однією транзакцією.
+ * Imports the rows in one transaction.
  *
- * **Та сама компанія** - лише точний збіг очищеної адреси сайту, як в
- * `addCompany`. Рядок без сайту - помилка: сайт компанії обовʼязковий
- * (задача company-site-required). Попередження «той
- * самий домен» і «та сама назва» тут не зупиняють: підтвердити їх у файлі
- * нікому, а на одному домені живуть і різні компанії.
+ * **The same company** is only an exact match of the cleaned site address, as in
+ * `addCompany`. A row without a site is an error: the company site is required
+ * (task company-site-required). The "same domain" and "same name" warnings do not
+ * stop anything here: nobody can confirm them in a file, and different companies
+ * do live on one domain.
  *
- * Помилковий рядок пропускається й рахується, а не зупиняє імпорт. Назва
- * наявної компанії не міняється. Компанія без джерел потрапляє в Not tracked
- * зі статусом Not checked; пошук сторінок після імпорту не запускається.
+ * A row with an error is skipped and counted instead of stopping the import. The
+ * name of an existing company does not change. A company without sources lands in
+ * Not tracked with the status Not checked; no page search runs after the import.
  */
 export async function importCompanies(
   db: NodePgDatabase,
@@ -61,7 +61,7 @@ export async function importCompanies(
     duplicates: 0,
     errors: 0,
   };
-  // Рядки однієї компанії - разом: ключ - очищений сайт.
+  // The rows of one company together: the key is the cleaned site.
   const groups = new Map<string, ValidRow[]>();
 
   for (const row of rows) {
@@ -80,7 +80,7 @@ export async function importCompanies(
     for (const group of groups.values()) {
       const [first] = group;
       let companyId = await findExisting(tx, userId, first);
-      // Перший рядок нової компанії її й додає - навіть без сторінки.
+      // The first row of a new company adds it - even without a page.
       let addedByThisFile = false;
 
       if (companyId === null) {
@@ -101,8 +101,8 @@ export async function importCompanies(
       for (const [index, row] of group.entries()) {
         const added = await addSource(tx, userId, companyId, row);
 
-        // Дублікат - кожна сторінка, яку не додали, і рядок без сторінки,
-        // якщо компанію додав не він.
+        // A duplicate is every page that was not added, and a row without a page
+        // if it was not this row that added the company.
         if (added) {
           summary.sourcesAdded += 1;
         } else if (
@@ -118,7 +118,7 @@ export async function importCompanies(
   return summary;
 }
 
-/** Рядок із придатними назвою й адресами або `null`. */
+/** A row with a usable name and addresses, or `null`. */
 function validateRow(row: CsvRow): ValidRow | null {
   const name = row.company_name.trim();
   const typedCompanyUrl = row.company_url.trim();
@@ -144,7 +144,7 @@ function validateRow(row: CsvRow): ValidRow | null {
   };
 }
 
-/** Наявна компанія користувача для групи рядків або `null`. */
+/** The user's existing company for a group of rows, or `null`. */
 async function findExisting(
   db: NodePgDatabase,
   userId: string,
@@ -159,8 +159,8 @@ async function findExisting(
 }
 
 /**
- * Додає сторінку рядка до компанії. `false` - нема чого додавати: сторінки
- * немає, вона вже є в цієї компанії або належить іншій.
+ * Adds the row's page to the company. `false` - nothing to add: there is no page,
+ * this company already has it, or it belongs to another one.
  */
 async function addSource(
   db: NodePgDatabase,

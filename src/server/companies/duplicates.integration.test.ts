@@ -52,7 +52,7 @@ describe("findCompanyUrlConflict", () => {
     const user = await seedSystemUser(testDb);
     await testDb.insert(companies).values({ userId: user.id, ...BOSCH_DE });
 
-    // bosch.com.ua лише починається так само - це інший домен.
+    // bosch.com.ua only starts the same way - it is a different domain.
     const conflict = await findCompanyUrlConflict(testDb, {
       userId: user.id,
       normalizedUrl: "bosch.com.ua/jobs",
@@ -63,7 +63,7 @@ describe("findCompanyUrlConflict", () => {
 
   it("lists every company on that domain, sorted by name", async () => {
     const user = await seedSystemUser(testDb);
-    // Вставлені не за алфавітом, щоб порядок у попередженні був саме вибором коду.
+    // Inserted out of alphabetical order, so the order in the warning is the code's choice.
     await testDb.insert(companies).values([
       { userId: user.id, ...BOSCH_DE },
       {
@@ -118,8 +118,8 @@ describe("findCompaniesByName", () => {
       name: "  linear ",
     });
 
-    // Назва - те єдине, що збігається у двох карток однієї компанії, коли в
-    // однієї немає сайту, а в іншої - карʼєрного джерела (картка 2.17).
+    // The name is the only thing two cards of one company share when one has no
+    // site and the other no career source (card 2.17).
     expect(found).toMatchObject([{ name: "Linear" }]);
   });
 
@@ -133,8 +133,8 @@ describe("findCompaniesByName", () => {
       normalizedUrl: "rolls-roycemotorcars.com",
     });
 
-    // Дефіси й пробіли в назві нічого не означають: користувач записав ту саму
-    // компанію інакше.
+    // Hyphens and spaces in a name mean nothing: the user wrote the same company
+    // differently.
     for (const typed of ["Rolls Royce", "rollsroyce", "  ROLLS-ROYCE "]) {
       expect(
         await findCompaniesByName(testDb, { userId: user.id, name: typed }),

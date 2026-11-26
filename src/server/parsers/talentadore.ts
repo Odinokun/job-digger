@@ -1,13 +1,13 @@
 /**
- * Парсер TalentAdore: вакансії з публічного JSON
- * `https://ats.talentadore.com/positions/{token}/json` (задача 6.28).
+ * The TalentAdore parser: vacancies from the public JSON
+ * `https://ats.talentadore.com/positions/{token}/json` (task 6.28).
  *
- * Цей JSON бере віджет TalentAdore, вбудований у кар'єрну сторінку компанії:
- * адреса стоїть в атрибуті `data-url` (ELK Studios). Документації немає;
- * формат перевірено справжніми запитами 20.11.2026: без ключа,
- * `{ version, company, generated_at, jobs }`, усі вакансії одним запитом,
- * невідомий токен - 404. Сторінки зі списком для людей у TalentAdore немає
- * (`/positions/{token}` - 404), тож адреса джерела - сам JSON.
+ * This JSON is what the TalentAdore widget embedded in a company career page
+ * uses: the address is in the `data-url` attribute (ELK Studios). There is no
+ * documentation; the format was checked with real requests on 20.11.2026: no
+ * key, `{ version, company, generated_at, jobs }`, all vacancies in one request,
+ * an unknown token is a 404. TalentAdore has no human-facing list page
+ * (`/positions/{token}` is a 404), so the source address is the JSON itself.
  */
 import type { HttpClient } from "../http/client.ts";
 import {
@@ -22,13 +22,13 @@ import type { ParseResult } from "./types.ts";
 
 const HOST = "ats.talentadore.com";
 
-/** Токен компанії: літери й цифри, регістр важить (`rR1TqSR`). */
+/** The company token: letters and digits, case-sensitive (`rR1TqSR`). */
 const TOKEN = /^[A-Za-z0-9_-]+$/;
 
 /**
- * Токен компанії з адреси `ats.talentadore.com/positions/{token}[/json]` або
- * `null`. Посилання на вакансію (`/apply/{slug}/{token}`) несе токен
- * вакансії, а не компанії.
+ * The company token from an `ats.talentadore.com/positions/{token}[/json]`
+ * address, or `null`. A vacancy link (`/apply/{slug}/{token}`) carries the
+ * vacancy's token, not the company's.
  */
 export function talentadoreBoard(sourceUrl: string): string | null {
   let url: URL;
@@ -50,15 +50,15 @@ export function talentadoreBoard(sourceUrl: string): string | null {
     : null;
 }
 
-/** Адреса дошки - сам JSON: сторінки зі списком для людей немає. */
+/** The board address is the JSON itself: there is no human-facing list page. */
 export function talentadoreBoardUrl(token: string): string {
   return `https://${HOST}/positions/${token}/json`;
 }
 
 /**
- * Вакансії з відповіді: масив `jobs`. `externalId` - `id`, назва - `name`,
- * посилання - `link`. Локація - місто й країна, а без них - поле `location`
- * (у ELK це адреса офісу).
+ * Vacancies from the response: the `jobs` array. `externalId` is `id`, the title
+ * is `name`, the link is `link`. The location is the city and country, and
+ * without them the `location` field (at ELK, the office address).
  */
 export function parseTalentAdorePositions(answer: unknown): ParseResult {
   if (!isRecord(answer) || !Array.isArray(answer.jobs)) {
@@ -107,8 +107,9 @@ function placeOf(job: Record<string, unknown>): string | null {
 }
 
 /**
- * Вакансії кар'єрного джерела на TalentAdore: токен з адреси, запит JSON і
- * розбір. Адреса без токена компанії - `unreadable` без жодного запиту.
+ * Vacancies of a career source on TalentAdore: the token from the address, a
+ * JSON request and parsing. An address without a company token is `unreadable`
+ * without any request.
  */
 export async function readTalentAdore(
   sourceUrl: string,

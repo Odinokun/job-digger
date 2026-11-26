@@ -8,7 +8,7 @@ import { testDb } from "../db/testing/test-db.ts";
 import { listCompanies } from "./list.ts";
 import { updateCompany } from "./update.ts";
 
-/** Компанія з одним відстежуваним джерелом. */
+/** A company with one tracked source. */
 async function insertCompany(userId: string, name: string, slug = "acme") {
   const [company] = await testDb
     .insert(companies)
@@ -92,7 +92,7 @@ describe("updateCompany", () => {
 
     expect(result).toEqual({ ok: false, problem: "name-required" });
     expect((await readCompany(company.id)).name).toBe("Acme");
-    // Джерело теж на місці: відмова не має виконати половину роботи.
+    // The source is in place too: a refusal must not do half the work.
     expect(await readSources(company.id)).toHaveLength(1);
   });
 
@@ -125,8 +125,8 @@ describe("updateCompany", () => {
   it("sends a company with no sources left to Not tracked", async () => {
     const user = await seedSystemUser(testDb);
     const { company, source } = await insertCompany(user.id, "Acme");
-    // Статус із попереднього пошуку сторінок: після видалення джерел він
-    // більше не описує стан компанії.
+    // The status from the previous page search: after the sources are deleted it
+    // no longer describes the company.
     await testDb
       .update(companies)
       .set({ discoveryStatus: "check_failed" })
@@ -219,7 +219,7 @@ describe("updateCompany adding a career source", () => {
     expect(await readSources(company.id)).toEqual([
       expect.objectContaining({ url: "https://boards.greenhouse.io/acme" }),
       expect.objectContaining({
-        // Адреса зберігається в абсолютній формі, підпис - обрізаним.
+        // The address is stored in absolute form, the label trimmed.
         url: "https://jobs.lever.co/acme",
         label: "Europe",
         platform: "lever",
@@ -286,7 +286,7 @@ describe("updateCompany adding a career source", () => {
       problem: "source-url",
       reason: "unsupported-scheme",
     });
-    // Відмова не виконує половину роботи: ні перейменування, ні вставки.
+    // A refusal does not do half the work: no rename, no insert.
     expect((await readCompany(company.id)).name).toBe("Acme");
     expect(await readSources(company.id)).toHaveLength(1);
   });
@@ -299,7 +299,7 @@ describe("updateCompany adding a career source", () => {
       userId: user.id,
       companyId: company.id,
       name: "Acme",
-      // Та сама адреса, що вставив `insertCompany`, лише з www. і слешем.
+      // The same address `insertCompany` inserted, only with www. and a slash.
       addSource: { url: "https://www.boards.greenhouse.io/acme/" },
     });
 
@@ -307,7 +307,7 @@ describe("updateCompany adding a career source", () => {
     expect(await readSources(company.id)).toHaveLength(1);
   });
 
-  // Живий кейс картки 2.16: три фільтри однієї сторінки mozilla.org.
+  // The real case of card 2.16: three filters of one mozilla.org page.
   it("takes an address that differs only by its query", async () => {
     const user = await seedSystemUser(testDb);
     const { company } = await insertCompany(user.id, "Mozilla", "mozilla");
@@ -336,8 +336,8 @@ describe("updateCompany adding a career source", () => {
     expect(await readSources(company.id)).toHaveLength(3);
   });
 
-  // Видалення застосовується до перевірки дублікатів, інакше заміна адреси
-  // на ту саму впиралася б у джерело, якого після Save вже не буде.
+  // Deletion applies before the duplicate check, otherwise replacing an address
+  // with the same one would run into a source that will be gone after Save.
   it("lets one save remove a source and add the same address again", async () => {
     const user = await seedSystemUser(testDb);
     const { company, source } = await insertCompany(user.id, "Acme");
@@ -385,7 +385,7 @@ describe("updateCompany adding a career source", () => {
     });
 
     expect(items.map((listed) => listed.name)).toEqual(["Acme"]);
-    // Статус пошуку додавання руками не чіпає: пошуку все одно не було.
+    // Adding by hand does not touch the search status: there was no search anyway.
     expect((await readCompany(company.id)).discoveryStatus).toBe("not_found");
   });
 
@@ -440,7 +440,7 @@ describe("updateCompany labelling existing sources", () => {
       sourceLabels: { [source.id]: "   " },
     });
 
-    // Порожній підпис - це «підпису немає», а не порожній рядок у базі.
+    // An empty label is "no label", not an empty string in the database.
     expect((await readSources(company.id))[0].label).toBeNull();
   });
 
@@ -526,8 +526,8 @@ describe("updateCompany labelling existing sources", () => {
     const user = await seedSystemUser(testDb);
     const { company, source } = await insertCompany(user.id, "Acme");
 
-    // Власне джерело компанії - дублікат усередині неї, і про це вже є окрема
-    // відмова. Перевірка між компаніями тут спрацювати не має.
+    // The company's own source is a duplicate within it, and that has its own
+    // refusal. The check between companies must not fire here.
     const result = await updateCompany(testDb, {
       userId: user.id,
       companyId: company.id,

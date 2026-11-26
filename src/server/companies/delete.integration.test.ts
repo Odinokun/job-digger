@@ -7,7 +7,7 @@ import { normalizedSourceUrl } from "../db/testing/career-source-values.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import { deleteCompany } from "./delete.ts";
 
-/** Компанія з одним відстежуваним джерелом. */
+/** A company with one tracked source. */
 async function insertCompany(userId: string, name: string, slug = "acme") {
   const [company] = await testDb
     .insert(companies)
@@ -62,8 +62,8 @@ describe("deleteCompany", () => {
 
     expect(result).toEqual({ ok: true });
     expect(await readCompany(company.id)).toBeUndefined();
-    // Джерела прибирає каскад на `career_sources.company_id`: окремого
-    // видалення в коді немає, тому перевіряє його саме цей тест.
+    // The cascade on `career_sources.company_id` removes the sources: the code
+    // has no separate deletion, so this very test checks it.
     expect(await readSources(company.id)).toEqual([]);
   });
 

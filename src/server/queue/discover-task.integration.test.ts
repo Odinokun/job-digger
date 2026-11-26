@@ -15,7 +15,7 @@ import { runDiscoverTask } from "./discover-task.ts";
 import { companyToDiscover, minutesAfter, task } from "./test-fixtures.ts";
 import { companySiteValues } from "../db/testing/company-values.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** Request scheduling is not checked here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, work) => work() };
 
 const claimedAt = new Date("2026-11-19T10:00:00Z");
@@ -43,7 +43,7 @@ function client(): HttpClient {
   });
 }
 
-/** Завдання пошуку для компанії, вже захоплене. */
+/** A search task for a company, already claimed. */
 async function claimedDiscovery(companyId: string) {
   const id = await task(testDb, { kind: "discover", companyId });
   const claimed = await claimTask(testDb, { now: claimedAt, maxRunning: 5 });
@@ -82,7 +82,7 @@ async function taskRow(id: string) {
   return row;
 }
 
-// Сайти й дошки - src/server/http/testing/README.md.
+// The sites and boards: src/server/http/testing/README.md.
 describe("runDiscoverTask", () => {
   it("adds the board the site links to and queues its first check", async () => {
     const companyId = await companyToDiscover(testDb, "Acme");
@@ -97,7 +97,7 @@ describe("runDiscoverTask", () => {
         isTracked: true,
       },
     ]);
-    // Перша перевірка - фонова, поза History, як Retry.
+    // The first check is in the background, outside History, like Retry.
     const [check] = await testDb
       .select()
       .from(checkTasks)
@@ -148,8 +148,8 @@ describe("runDiscoverTask", () => {
   });
 
   it("leaves a board found by name alone for a person to confirm", async () => {
-    // Сайт `linear.example` не відповідає, а дошка `linear` за назвою веде на
-    // інший сайт.
+    // The `linear.example` site does not answer, and the `linear` board found by
+    // name leads to another site.
     const companyId = await companyToDiscover(testDb, "Linear");
     const { claimed } = await claimedDiscovery(companyId);
 

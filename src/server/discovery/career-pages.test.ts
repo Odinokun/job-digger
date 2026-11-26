@@ -20,7 +20,7 @@ describe("careerPagesOnPage", () => {
   });
 
   it("finds a career page by its path", () => {
-    // Текст посилання буває будь-яким, зокрема іконкою без тексту.
+    // Link text can be anything, including an icon without text.
     const html = `<a href="/en/careers"><svg></svg></a>`;
 
     expect(careerPagesOnPage(html, PAGE)).toEqual([
@@ -29,8 +29,8 @@ describe("careerPagesOnPage", () => {
   });
 
   it("cuts a vacancy link down to its career page", () => {
-    // Список вакансій на головній: шлях обрізається по сегмент зі словом, і
-    // всі вакансії дають одну сторінку.
+    // A vacancy list on the home page: the path is cut at the segment with the
+    // word, and all vacancies give one page.
     const html = `
       <a href="/careers/designer-12">Designer</a>
       <a href="/careers/engineer-34?ref=home">Engineer</a>`;
@@ -52,7 +52,7 @@ describe("careerPagesOnPage", () => {
   });
 
   it("ignores career pages of other sites and job boards", () => {
-    // Чужий сайт не доводить належності, а дошки ATS - справа atsLinksOnPage.
+    // Someone else's site does not prove ownership, and ATS boards are atsLinksOnPage's job.
     const html = `
       <a href="https://partner.example/careers">Partner careers</a>
       <a href="https://www.linkedin.com/company/acme/jobs">Jobs on LinkedIn</a>
@@ -95,8 +95,8 @@ describe("careerPagesInSitemap", () => {
   });
 
   it("ignores other sites and nested sitemaps", () => {
-    // Вкладені sitemap не читаються: на кожен пішов би ще один запит до
-    // чужого сайту, а кар'єрну сторінку зазвичай видно й без них.
+    // Nested sitemaps are not read: each would cost one more request to someone
+    // else's site, and the career page is usually visible without them.
     const xml = `<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
         <sitemap><loc>https://acme.example/careers-sitemap.xml</loc></sitemap>
       </sitemapindex>

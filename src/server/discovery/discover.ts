@@ -1,7 +1,7 @@
 /**
- * Пошук кар'єрних джерел компанії цілком - те, що запускає Find pages
- * (src/server/discovery/README.md): три способи пошуку від
- * найнадійнішого і пробне читання кожної знахідки.
+ * The full search for a company's career sources - what Find pages runs
+ * (src/server/discovery/README.md): three search methods, most reliable first,
+ * and a trial read of every finding.
  */
 import {
   detectPlatform,
@@ -18,63 +18,63 @@ import { findSiteCareerPages } from "./career-pages.ts";
 import { boardOwnership, type BoardOwnership } from "./ownership.ts";
 
 /**
- * Результат пробного читання знахідки (задача 5.06):
+ * The result of a trial read of a finding (task 5.06):
  *
- * - `read` - прочитано, стільки вакансій зараз;
- * - `unsupported` - читати нічим: власна сторінка компанії без парсера;
- * - `failed` - парсер є, але дошка не відповіла чи відповіла помилкою. Буває
- *   тимчасовим, тому окремо від `unsupported`.
+ * - `read` - read, with this many vacancies right now;
+ * - `unsupported` - nothing can read it: the company's own page without a parser;
+ * - `failed` - there is a parser, but the board did not answer or answered with
+ *   an error. It can be temporary, hence apart from `unsupported`.
  */
 export type TrialRead =
   | {
       kind: "read";
       vacancies: number;
       /**
-       * Прочитано лише першу сторінку, а далі є ще (задача 6.16): у списку
-       * «10+ vacancies». Повністю дошку прочитає перша перевірка після Save.
+       * Only the first page was read and there is more (task 6.16): the list
+       * shows "10+ vacancies". The first check after Save reads the whole board.
        */
       more: boolean;
     }
   | { kind: "unsupported" }
   | { kind: "failed" };
 
-/** Одна знахідка в списку Find pages. */
+/** One finding in the Find pages list. */
 export type Finding = {
   url: string;
   platform: CareerPlatform;
   /**
-   * Звідки: `site` - сайт компанії веде сюди сам (посилання на ATS чи
-   * кар'єрна сторінка), `name` - лише дошка з такою самою назвою, «знайдено
-   * за назвою - перевір».
+   * Where from: `site` - the company site leads here itself (a link to an ATS or
+   * a career page), `name` - only a board with the same name, "found by name -
+   * check it".
    */
   via: "site" | "name";
-  /** Пробне читання до показу списку; вибрати можна лише прочитане. */
+  /** The trial read before the list is shown; only what was read can be selected. */
   trial: TrialRead;
   /**
-   * Чия дошка, знайдена за назвою (задача 5.05): `null` для знахідок із сайту
-   * - посилання з сайту і є доказом.
+   * Whose board this is, for one found by name (task 5.05): `null` for findings
+   * from the site - the link from the site is the proof.
    */
   ownership: BoardOwnership | null;
 };
 
 /**
- * Чи можна покладатися на знахідку без перевірки людиною: сайт компанії веде
- * на неї сам, або дошка за назвою веде на сайт компанії (рішення автора
- * 19.11.2026, tasks/5.05-page-ownership-check.md).
+ * Whether a finding can be trusted without a human check: the company site
+ * leads to it itself, or the board found by name leads to the company site (the
+ * author's decision of 19.11.2026, tasks/5.05-page-ownership-check.md).
  */
 export function isReliableFinding(finding: Finding): boolean {
   return finding.via === "site" || finding.ownership?.kind === "confirmed";
 }
 
 /**
- * Усі знахідки для компанії, у порядку надійності: дошки, на які веде сайт;
- * власні кар'єрні сторінки; дошки за назвою.
+ * All findings for a company, in order of reliability: boards the site leads
+ * to; the company's own career pages; boards found by name.
  *
- * Сайт, що не відповів, - не провал пошуку: лишається пошук за назвою. Та сама
- * дошка, знайдена кількома способами, - одна знахідка з найнадійнішого.
+ * A site that did not answer does not fail the search: search by name remains.
+ * The same board found by several methods is one finding from the most reliable.
  *
- * Пробне читання - той самий парсер, що й у перевірці (`TrialRead`). Дошки
- * за назвою вже прочитані пошуком: існує лише та, що прочиталась.
+ * The trial read uses the same parser as the check (`TrialRead`). Boards found
+ * by name have already been read by the search: only one that was read exists.
  */
 export async function discoverSources(
   company: { siteUrl: string | null; name: string },
@@ -83,18 +83,18 @@ export async function discoverSources(
   return (await discoverCompany(company, client)).findings;
 }
 
-/** Знахідки й чи відповів сайт компанії. */
+/** The findings and whether the company site answered. */
 export interface Discovery {
   findings: Finding[];
   /**
-   * Сайт компанії не відповів - про сторінки на ньому нічого не відомо. Find
-   * new pages ставить тоді Check failed, а не Not found (задача 5.10). Без
-   * сайту - `false`: не відповідати нема кому.
+   * The company site did not answer - nothing is known about its pages. Find
+   * new pages then sets Check failed, not Not found (task 5.10). Without a site
+   * it is `false`: there is no one to fail to answer.
    */
   siteFailed: boolean;
 }
 
-/** Те саме, що `discoverSources`, разом із тим, чи відповів сайт компанії. */
+/** The same as `discoverSources`, together with whether the company site answered. */
 export async function discoverCompany(
   company: { siteUrl: string | null; name: string },
   client: HttpClient,
@@ -131,8 +131,8 @@ export async function discoverCompany(
 }
 
 /**
- * Знахідки сайту: дошки з головної й кар'єрних сторінок, потім самі сторінки.
- * `null` - головна сторінка не відповіла.
+ * The site's findings: boards from the home and career pages, then the pages
+ * themselves. `null` means the home page did not answer.
  */
 async function discoverOnSite(
   siteUrl: string,
@@ -150,7 +150,7 @@ async function discoverOnSite(
     ...atsLinksOnPage(home.body, home.url),
     ...careers.boards,
   ]) {
-    // Перша знахідка лишається: головна сторінка йде раніше за кар'єрні.
+    // The first finding stays: the home page comes before the career pages.
     if (!boards.has(boardKey(board))) {
       boards.set(boardKey(board), board);
     }
@@ -171,7 +171,7 @@ async function discoverOnSite(
       url,
       platform: normalized.ok ? detectPlatform(normalized.url) : "unsupported",
       via: "site",
-      // Власна сторінка: парсера schema.org ще немає (задача 3.11).
+      // An own page: there is no schema.org parser yet (task 3.11).
       trial: { kind: "unsupported" },
       ownership: null,
     };
@@ -181,9 +181,9 @@ async function discoverOnSite(
 }
 
 /**
- * Пробне читання дошки тим самим парсером, що й перевірка, але лише першої
- * сторінки (задача 6.16): модалка не чекає хвилинами, а повністю дошку
- * прочитає перша перевірка після Save.
+ * A trial read of a board with the same parser as the check, but of the first
+ * page only (task 6.16): the modal does not wait for minutes, and the first
+ * check after Save reads the whole board.
  */
 async function trialRead(
   board: BoardUrl,
@@ -205,8 +205,8 @@ async function trialRead(
 }
 
 /**
- * Належність дошки за її сторінкою для людей (`boardOwnership`). Сторінка, що
- * не відповіла, нічого не каже - `unknown`.
+ * Board ownership by its page for people (`boardOwnership`). A page that did not
+ * answer says nothing - `unknown`.
  */
 async function ownershipOf(
   boardUrl: string,

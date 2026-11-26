@@ -8,7 +8,7 @@ import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { readOwnPage } from "./own-page.ts";
 import { readSource } from "./read-source.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 const KINGGROUP = "https://kinggroup.io/vacancies/tech";
@@ -49,12 +49,12 @@ describe("readOwnPage", () => {
       url: "https://kinggroup.io/vacancies/design/frontend-developer",
       location: null,
     });
-    // Пагінації немає - список повний.
+    // There is no pagination - the list is complete.
     expect(result.truncated).toBeUndefined();
   });
 
   it("fails rather than reporting no vacancies when the recipe finds nothing", async () => {
-    // Сайт переробили: нуль вакансій - збій, а не закриття всіх (6.21).
+    // The site was redone: zero vacancies is a failure, not closing them all (6.21).
     expect(
       await readOwnPage(KINGGROUP, "kinggroup.io/careers/", client()),
     ).toEqual({ ok: false, error: { reason: "unreadable" } });
@@ -82,8 +82,8 @@ describe("readSource for an own page", () => {
   });
 
   it("calls an own page without a recipe unreadable", async () => {
-    // Так не буває: рецепт і платформа пишуться разом. Але колонка може бути
-    // `null`, і тоді читати нічим.
+    // This does not happen: the recipe and the platform are written together. But
+    // the column may be `null`, and then nothing can read the page.
     expect(
       await readSource(
         { url: KINGGROUP, platform: "own_page", vacancyLinkPrefix: null },

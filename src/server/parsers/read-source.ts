@@ -1,6 +1,6 @@
 /**
- * Вибір парсера за платформою джерела: одна точка, через яку перевірка читає
- * будь-яке джерело.
+ * Choosing a parser by the source platform: the single point through which a
+ * check reads any source.
  */
 import type { CareerPlatform } from "../../lib/companies/platform.ts";
 import type { HttpClient } from "../http/client.ts";
@@ -23,8 +23,8 @@ import { readWorkable } from "./workable.ts";
 import { readWorkday } from "./workday.ts";
 
 /**
- * Глибина (`depth`) потрібна лише парсерам, що читають сторінками; решта
- * віддає весь список одним запитом і її не бере.
+ * Depth (`depth`) is needed only by parsers that read in pages; the rest return
+ * the whole list in one request and do not take it.
  */
 type Reader = (
   sourceUrl: string,
@@ -33,9 +33,9 @@ type Reader = (
 ) => Promise<ParseResult>;
 
 /**
- * Парсери, які вже є. Платформа без парсера тут відсутня, а не заглушка з
- * помилкою: джерело, яке нічим прочитати, - не невдала перевірка, а ще не
- * зроблена (schema.org - задача 3.11).
+ * The parsers that exist. A platform without a parser is missing here rather
+ * than stubbed with an error: a source nothing can read is not a failed check
+ * but one not built yet (schema.org is task 3.11).
  */
 const READERS: Partial<Record<CareerPlatform, Reader>> = {
   greenhouse: readGreenhouse,
@@ -57,12 +57,12 @@ const READERS: Partial<Record<CareerPlatform, Reader>> = {
 };
 
 /**
- * Вакансії джерела або `null`, якщо для платформи ще немає парсера.
+ * The source's vacancies, or `null` if the platform has no parser yet.
  *
- * Власна сторінка (`own_page`, задача 6.21) читається не за платформою, а за
- * рецептом джерела - `vacancyLinkPrefix`, тож вона поза `READERS`. Без
- * рецепта її читати нічим - `unreadable`: рецепт і платформа пишуться разом,
- * і такого рядка бути не має.
+ * An own page (`own_page`, task 6.21) is read not by platform but by the source's
+ * recipe, `vacancyLinkPrefix`, so it is outside `READERS`. Without a recipe
+ * nothing can read it - `unreadable`: the recipe and the platform are written
+ * together, and such a row should not exist.
  */
 export async function readSource(
   source: {

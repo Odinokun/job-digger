@@ -6,16 +6,16 @@ import { seedSystemUser } from "./system-user.ts";
 import { normalizedSourceUrl } from "./testing/career-source-values.ts";
 import { testDb } from "./testing/test-db.ts";
 
-// Головна адреса зберігається разом зі шляхом, а нормалізована форма - окремо:
-// bosch.com/de і bosch.com/ua - різні компанії (src/lib/companies/README.md).
+// The main address is stored with its path, and the normalized form separately:
+// bosch.com/de and bosch.com/ua are different companies (src/lib/companies/README.md).
 const BOSCH = {
   name: "Bosch",
   url: "https://www.bosch.com/de/",
   normalizedUrl: "bosch.com/de",
 };
 
-// Коди помилок PostgreSQL. Drizzle обертає помилку драйвера у власну
-// DrizzleQueryError, тому код лежить у `cause`, а не на верхньому рівні.
+// PostgreSQL error codes. Drizzle wraps the driver error in its own
+// DrizzleQueryError, so the code is in `cause`, not at the top level.
 const UNIQUE_VIOLATION = { cause: { code: "23505" } };
 const CHECK_VIOLATION = { cause: { code: "23514" } };
 
@@ -29,7 +29,7 @@ describe("companies", () => {
       .returning();
 
     expect(company.discoveryStatus).toBe("not_checked");
-    // Адреса лишається такою, як її ввів користувач, зі шляхом.
+    // The address stays as the user entered it, with the path.
     expect(company.url).toBe(BOSCH.url);
   });
 
@@ -105,7 +105,7 @@ describe("career_sources", () => {
 
     expect(source.isTracked).toBe(true);
     expect(source.consecutiveFailures).toBe(0);
-    // Поки джерело не перевірили успішно, показувати «Last ok» нічим.
+    // Until the source has been checked successfully, there is nothing to show as "Last ok".
     expect(source.lastSuccessAt).toBeNull();
   });
 

@@ -39,7 +39,7 @@ describe("claimTask", () => {
       runId: null,
       attempts: 1,
       lockedAt: now,
-      // Типова глибина завдання - повне читання (задача 6.16).
+      // The default task depth is a full read (task 6.16).
       readDepth: "full",
     });
     expect(await statusOf(id)).toMatchObject({
@@ -50,7 +50,7 @@ describe("claimTask", () => {
   });
 
   it("takes manual tasks first, then the oldest", async () => {
-    // Ручна дія чекає щонайбільше одне фонове завдання, а не всю чергу
+    // A manual action waits for at most one background task, not the whole queue
     // (src/server/queue/README.md).
     const sourceId = await greenhouseSource(testDb, "discord");
     const old = minutesAfter(now, -10);
@@ -113,9 +113,9 @@ describe("claimTask", () => {
   });
 
   it("keeps the running limit under concurrent claims", async () => {
-    // Ліміт спільний для всіх процесів: перевірка «скільки вже виконується» і
-    // захоплення мають бути одним кроком, інакше шість одночасних claim
-    // побачать нуль і візьмуть по завданню.
+    // The limit is shared by all processes: the "how many are already running"
+    // check and the claim have to be one step, otherwise six simultaneous claims
+    // see zero and each take a task.
     const sourceId = await greenhouseSource(testDb, "discord");
     for (let i = 0; i < 6; i++) await task(testDb, { sourceId });
 

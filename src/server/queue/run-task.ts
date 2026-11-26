@@ -1,7 +1,7 @@
 /**
- * Виконання захопленого завдання: перевірити джерело і записати результат, а
- * завдання пошуку (`discover`) передати `runDiscoverTask`.
- * Правила - README.md поруч, «Виконання завдання».
+ * Running a claimed task: check the source and record the result, and hand a
+ * search task (`discover`) to `runDiscoverTask`. The rules are in the README.md
+ * next to this file, "Running a task".
  */
 import { eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -14,13 +14,13 @@ import { runDiscoverTask } from "./discover-task.ts";
 import { finishTask, type TaskOutcome } from "./finish.ts";
 
 export interface RunTaskOptions {
-  /** Годинник для `finished_at`. Тести підставляють сталий момент. */
+  /** The clock for `finished_at`. Tests pass a fixed moment. */
   clock?: () => Date;
 }
 
 /**
- * Повертає `false`, якщо результат відкинуто (`finishTask`): джерело видалили
- * або завдання вже належить іншому обробнику.
+ * Returns `false` if the result is discarded (`finishTask`): the source was
+ * deleted, or the task already belongs to another worker.
  */
 export async function runTask(
   db: NodePgDatabase,
@@ -42,13 +42,13 @@ export async function runTask(
     .from(careerSources)
     .where(eq(careerSources.id, claimed.sourceId));
 
-  // Джерело видалили після захоплення - разом із ним зникло й завдання.
+  // The source was deleted after the claim - the task went with it.
   if (source === undefined) return false;
 
   let outcome: TaskOutcome;
   try {
-    // Момент перевірки - момент захоплення: від нього рахуються дата
-    // виявлення нових вакансій і стан джерела.
+    // The check moment is the claim moment: the discovery date of new vacancies
+    // and the source state are counted from it.
     outcome = (await checkSource(
       db,
       client,
@@ -56,17 +56,17 @@ export async function runTask(
       claimed.lockedAt,
       claimed.readDepth,
     )) ?? {
-      // Платформа без парсера: перевіряти нічого, і це не помилка - так само,
-      // як у Check now.
+      // A platform without a parser: there is nothing to check, and that is not
+      // an error - the same as in Check now.
       ok: true,
       newVacancies: 0,
       removedVacancies: 0,
       skipped: 0,
     };
   } catch (error) {
-    // Помилка в нашому коді, а не на сайті: парсери повертають збої сайту
-    // значенням. Завдання невдале одразу - інакше воно висіло б, доки його
-    // не поверне `recoverStaleTasks`, і так тричі.
+    // A bug in our code, not on the site: parsers return site failures as
+    // values. The task fails at once - otherwise it would hang until
+    // `recoverStaleTasks` brought it back, three times over.
     console.error(`Check task ${claimed.id} crashed`, error);
     outcome = { ok: false, error: { reason: "crashed" } };
   }

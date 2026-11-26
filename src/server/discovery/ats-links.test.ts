@@ -14,8 +14,8 @@ describe("atsLinksOnPage", () => {
   });
 
   it("finds embedded boards", () => {
-    // Greenhouse вбудовує дошку скриптом, Ashby - iframe: посилання на сторінці
-    // тоді немає зовсім.
+    // Greenhouse embeds the board with a script, Ashby with an iframe: then
+    // there is no link on the page at all.
     const html = `
       <script src="https://boards.greenhouse.io/embed/job_board/js?for=acme"></script>
       <iframe src="https://jobs.ashbyhq.com/acme/embed"></iframe>`;
@@ -35,7 +35,7 @@ describe("atsLinksOnPage", () => {
   });
 
   it("gives one finding per board", () => {
-    // Список вакансій на головній: кожна веде на свою сторінку тієї ж дошки.
+    // A vacancy list on the home page: each leads to its own page of the same board.
     const html = `
       <a href="https://jobs.lever.co/acme/1">Designer</a>
       <a href="https://jobs.lever.co/acme/2">Engineer</a>
@@ -58,7 +58,7 @@ describe("atsLinksOnPage", () => {
   });
 
   it("keeps a link to a known ATS that has no parser yet", () => {
-    // Читати нічим, але адреса знадобиться, коли зʼявиться парсер (задача 5.15).
+    // Nothing can read it, but the address will be needed once a parser appears (task 5.15).
     const html = `<a href="https://acme.teamtailor.com/jobs?source=site#top">Jobs</a>`;
 
     expect(atsLinksOnPage(html, PAGE)).toEqual([
@@ -67,8 +67,8 @@ describe("atsLinksOnPage", () => {
   });
 
   it("gives one finding per known ATS without a parser", () => {
-    // Форми дошки такої платформи ми не знаємо, тож вакансії однієї дошки
-    // склеюються за платформою: першим лишається перше посилання.
+    // We don't know the board form of such a platform, so vacancies of one board
+    // are merged by platform: the first link stays.
     const html = `
       <a href="https://jobs.smartrecruiters.com/Acme/1-designer">Designer</a>
       <a href="https://jobs.smartrecruiters.com/Acme/2-engineer">Engineer</a>
@@ -84,7 +84,7 @@ describe("atsLinksOnPage", () => {
   });
 
   it("turns BambooHR job links into the company's careers page", () => {
-    // Задача 6.26.
+    // Task 6.26.
     const html = `
       <a href="https://acme.bamboohr.com/careers/12?source=site">Designer</a>
       <a href="https://acme.bamboohr.com/careers/34">Engineer</a>`;
@@ -95,7 +95,7 @@ describe("atsLinksOnPage", () => {
   });
 
   it("turns Pinpoint posting links into the company's careers page", () => {
-    // Задача 6.27.
+    // Task 6.27.
     const html = `
       <a href="https://acme.pinpointhq.com/en/postings/1a2b">Designer</a>
       <a href="https://acme.pinpointhq.com/en/postings/3c4d">Engineer</a>`;
@@ -106,8 +106,8 @@ describe("atsLinksOnPage", () => {
   });
 
   it("finds a TalentAdore board in the data address of its widget", () => {
-    // Задача 6.28: сторінка ELK Studios не має посилань на TalentAdore -
-    // адреса JSON лише в `data-url` віджета.
+    // Task 6.28: the ELK Studios page has no links to TalentAdore - the JSON
+    // address is only in the widget's `data-url`.
     const html = `
       <script src="https://ats.talentadore.com/static/ta-json-careers.js"></script>
       <div class="ta-careers" data-url="https://ats.talentadore.com/positions/rR1TqSR/json?v=2&amp;language="></div>`;
@@ -121,7 +121,7 @@ describe("atsLinksOnPage", () => {
   });
 
   it("turns Workable job links into the account's careers page", () => {
-    // Задача 6.25: посилання на вакансії одного акаунта - одна знахідка.
+    // Task 6.25: links to vacancies of one account are one finding.
     const html = `
       <a href="https://apply.workable.com/acme/j/1/">Designer</a>
       <a href="https://apply.workable.com/acme/j/2/">Engineer</a>`;

@@ -1,12 +1,12 @@
 /**
- * Фейковий вебсервер: замінює в тестах справжні платформи й сайти компаній.
+ * The fake web server: replaces real platforms and company sites in tests.
  *
- * Запит `/{домен}/{шлях}` віддається файлом `{root}/{домен}/{шлях}` - так у
- * тестах можна зберігати справжні відповіді платформ і віддавати їх застосунку,
- * не ходячи в мережу. Рядок запиту ігнорується: відповідь визначає лише шлях.
- * Шлях, що закінчується на `/`, віддається файлом `index` у цій теці.
+ * A request to `/{domain}/{path}` is served from the file `{root}/{domain}/{path}`,
+ * so tests can keep real platform responses and serve them to the app without
+ * going to the network. The query string is ignored: only the path decides the
+ * response. A path ending in `/` is served from the `index` file in that folder.
  *
- * Слухає лише 127.0.0.1, як і сам застосунок.
+ * Listens on 127.0.0.1 only, like the app itself.
  */
 import { readFile } from "node:fs/promises";
 import { createServer } from "node:http";
@@ -14,15 +14,15 @@ import type { AddressInfo } from "node:net";
 import { resolve, sep } from "node:path";
 
 export interface FakeWeb {
-  /** Адреса сервера без кінцевого `/`, наприклад `http://127.0.0.1:4010`. */
+  /** The server address without a trailing `/`, for example `http://127.0.0.1:4010`. */
   origin: string;
   close(): Promise<void>;
 }
 
 interface FakeWebOptions {
-  /** Тека зі збереженими відповідями. */
+  /** The folder with saved responses. */
   root: string;
-  /** Порт; 0 - вільний порт на вибір системи. */
+  /** The port; 0 lets the system pick a free one. */
   port: number;
 }
 
@@ -59,10 +59,10 @@ export async function startFakeWeb({
 }
 
 /**
- * Файл для шляху запиту або `null`, якщо шлях виходить за межі `rootDir`.
+ * The file for a request path, or `null` if the path leaves `rootDir`.
  *
- * Шлях декодується до перевірки: інакше закодоване `%2e%2e` проскочило б
- * перевірку і стало б `..` уже у файловій системі.
+ * The path is decoded before the check: otherwise an encoded `%2e%2e` would slip
+ * past it and become `..` in the file system.
  */
 function responseFile(rootDir: string, requestUrl: string): string | null {
   const pathname = new URL(requestUrl, "http://fake").pathname;
@@ -74,8 +74,8 @@ function responseFile(rootDir: string, requestUrl: string): string | null {
     return null;
   }
 
-  // Шлях на `/` - тека, а її вміст лежить у файлі `index`: так віддається
-  // корінь сайту компанії (`/acme.example/`).
+  // A path ending in `/` is a folder, and its content is in the `index` file:
+  // this is how a company site's root (`/acme.example/`) is served.
   const path = decoded.endsWith("/") ? `${decoded}index` : decoded;
   const file = resolve(rootDir, `.${path}`);
   return file.startsWith(rootDir + sep) ? file : null;
@@ -85,14 +85,15 @@ async function readOptional(file: string): Promise<Buffer | null> {
   try {
     return await readFile(file);
   } catch {
-    // Немає файлу, або це тека - для тесту однаково «відповіді немає».
+    // No file, or it is a folder - for a test it is the same "no response".
     return null;
   }
 }
 
 /**
- * Тип вмісту за першим значущим символом. Розширень у файлів часто немає:
- * назва файлу повторює шлях платформи (`.../jobs`), а не тип відповіді.
+ * The content type by the first meaningful character. Files often have no
+ * extension: the file name repeats the platform path (`.../jobs`), not the
+ * response type.
  */
 function contentType(body: Buffer): string {
   const first = body.toString("utf8").trimStart()[0];

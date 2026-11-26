@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { ashbyBoard, parseAshbyJobs } from "./ashby.ts";
 
-/** Справжня відповідь Ashby для дошки Linear (src/server/http/testing). */
+/** A real Ashby response for the Linear board (src/server/http/testing). */
 const linear: unknown = JSON.parse(
   readFileSync(
     new URL(
@@ -15,7 +15,7 @@ const linear: unknown = JSON.parse(
   ),
 );
 
-/** Мінімальна вакансія у форматі API - для ручних випадків. */
+/** A minimal vacancy in the API format - for hand-made cases. */
 function job(fields: Record<string, unknown>) {
   return {
     id: "d3bc1ced-3ce4-4086-a050-555055dbb1ff",
@@ -104,8 +104,8 @@ describe("parseAshbyJobs", () => {
   });
 
   it("skips jobs that are not listed on the board", () => {
-    // `isListed: false` - вакансія доступна лише за прямим посиланням, на
-    // дошці компанії її не видно (документація Ashby).
+    // `isListed: false` means the vacancy is reachable only by a direct link and
+    // not visible on the company board (Ashby documentation).
     const result = parseAshbyJobs({
       jobs: [job({}), job({ id: "hidden", isListed: false })],
     });
@@ -129,8 +129,8 @@ describe("parseAshbyJobs", () => {
   });
 
   it("skips a job with an empty title or a non-web address and counts it", () => {
-    // Справжній випадок: у дошці OpenAI одна з 839 вакансій - з порожньою
-    // назвою (18.11.2026). Через неї не мала б зникати вся дошка.
+    // A real case: one of 839 vacancies on the OpenAI board had an empty title
+    // (18.11.2026). The whole board should not disappear because of it.
     const result = parseAshbyJobs({
       jobs: [
         job({}),

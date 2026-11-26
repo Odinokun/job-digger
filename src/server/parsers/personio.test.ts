@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { parsePersonioFeed, personioBoard } from "./personio.ts";
 
-/** Справжній XML-фід дошки Astrafy (src/server/http/testing). */
+/** A real XML feed of the Astrafy board (src/server/http/testing). */
 function saved(): string {
   return readFileSync(
     new URL(
@@ -17,7 +17,7 @@ function saved(): string {
 
 const BOARD = "https://acme.jobs.personio.de";
 
-/** Фід з такими позиціями. */
+/** A feed with these positions. */
 function feed(positions: string): string {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<workzag-jobs>${positions}</workzag-jobs>`;
 }

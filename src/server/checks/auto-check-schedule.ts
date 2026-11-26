@@ -1,10 +1,9 @@
 /**
- * Розклад автоматичної перевірки (src/server/checks/README.md; задача
- * 6.02).
+ * The auto-check schedule (src/server/checks/README.md; task 6.02).
  *
- * Відлік - від **старту** останньої загальної перевірки, автоматичної чи
- * ручної: ручний Check all перезапускає відлік, тож дві перевірки поспіль не
- * йдуть. Хто й коли питає «чи вже час» - задача 6.03.
+ * The count starts from the **start** of the last general check, automatic or
+ * manual: a manual Check all restarts the count, so two checks do not run in a
+ * row. Who asks "is it time yet" and when is task 6.03.
  */
 import { eq, max } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -14,17 +13,17 @@ import { checkRuns } from "../db/schema.ts";
 const HOUR_MS = 3_600_000;
 
 /**
- * На старті застосунку загальна перевірка йде одразу, якщо остання стартувала
- * давніше за це (src/server/checks/README.md).
+ * At app startup a general check runs at once if the last one started longer ago
+ * than this (src/server/checks/README.md).
  */
 export const STARTUP_CHECK_AFTER_MS = HOUR_MS;
 
 /**
- * Коли настає наступна автоперевірка. `null` - загальної перевірки ще не було,
- * і чекати нема чого: вона потрібна одразу.
+ * When the next auto-check is due. `null` - there has been no general check yet,
+ * and there is nothing to wait for: one is needed at once.
  *
- * Рахується від поточного інтервалу, а не від того, що діяв на момент
- * перевірки: змінений у Settings інтервал діє одразу.
+ * It is computed from the current interval, not the one in force at the time of
+ * the check: an interval changed in Settings applies at once.
  */
 export function nextAutoCheckAt(
   lastStartedAt: Date | null,
@@ -36,8 +35,8 @@ export function nextAutoCheckAt(
 }
 
 /**
- * Чи настав час автоперевірки. Пропущений час (компʼютер спав) не
- * накопичується: скільки б інтервалів не минуло, перевірка одна.
+ * Whether an auto-check is due. Missed time (the computer was asleep) does not
+ * pile up: however many intervals have passed, there is one check.
  */
 export function isAutoCheckDue({
   lastStartedAt,
@@ -54,9 +53,9 @@ export function isAutoCheckDue({
 }
 
 /**
- * Чи йти загальній перевірці на старті застосунку: остання стартувала понад
- * годину тому або її не було. Інакше відлік продовжується за інтервалом
- * (`isAutoCheckDue`).
+ * Whether a general check should run at app startup: the last one started more
+ * than an hour ago or there has been none. Otherwise the count continues by the
+ * interval (`isAutoCheckDue`).
  */
 export function isStartupCheckDue({
   lastStartedAt,
@@ -72,11 +71,11 @@ export function isStartupCheckDue({
 }
 
 /**
- * Старт останньої загальної перевірки користувача або `null`, якщо їх не
- * було. Перевірка, що ще йде, теж рахується: від неї й відлік, тож розклад не
- * запустить другу поверх неї.
+ * The start of the user's last general check, or `null` if there have been none.
+ * A check still in progress counts too: the count starts from it, so the schedule
+ * will not start a second one on top of it.
  *
- * Check now і Retry рядка в `check_runs` не мають, тож відлік не зсувають.
+ * Check now and Retry have no row in `check_runs`, so they do not shift the count.
  */
 export async function lastGeneralCheckStartedAt(
   db: NodePgDatabase,

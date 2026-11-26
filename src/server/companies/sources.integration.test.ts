@@ -7,7 +7,7 @@ import { normalizedSourceUrl } from "../db/testing/career-source-values.ts";
 import { testDb } from "../db/testing/test-db.ts";
 import { addCareerSource, addCareerSources } from "./sources.ts";
 
-/** Компанія з одним відстежуваним джерелом. */
+/** A company with one tracked source. */
 async function insertCompany(userId: string, name: string, slug = "acme") {
   const [company] = await testDb
     .insert(companies)
@@ -131,8 +131,8 @@ describe("addCareerSource", () => {
     expect(await readSources(company.id)).toHaveLength(1);
   });
 
-  // Відповідь однакова для неіснуючої та чужої компанії: інакше вона
-  // підказувала б, що такий рядок у базі є.
+  // The answer is the same for a missing company and someone else's: otherwise
+  // it would hint that such a row exists in the database.
   it("never adds a source to another user's company", async () => {
     const owner = await seedSystemUser(testDb);
     const [stranger] = await testDb
@@ -171,7 +171,7 @@ describe("addCareerSource", () => {
     const result = await addCareerSource(testDb, {
       userId: user.id,
       companyId: bosch.id,
-      // Сторінка Mozilla, записана інакше: порівняння по очищеній формі.
+      // The Mozilla page written differently: the comparison uses the normalized form.
       url: "https://www.boards.greenhouse.io/mozilla/",
     });
 
@@ -254,7 +254,7 @@ describe("addCareerSources", () => {
       ],
     });
 
-    // Усе або нічого: перше джерело не лишається доданим наполовину.
+    // All or nothing: the first source is not left half-added.
     expect(result).toEqual({
       ok: false,
       problem: "source-taken",

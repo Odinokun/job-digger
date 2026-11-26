@@ -1,11 +1,12 @@
 /**
- * Парсер Personio: вакансії з публічного XML-фіду дошки
- * `https://{company}.jobs.personio.de/xml` (задача 3.27).
+ * The Personio parser: vacancies from the public XML feed of a board
+ * `https://{company}.jobs.personio.de/xml` (task 3.27).
  *
- * Фід задокументований (developer.personio.de/docs/retrieving-open-job-positions):
- * корінь `<workzag-jobs>`, вакансія - `<position>`, посилання на вакансію -
- * `/job/{id}`. Чого документація не каже, перевірено справжніми запитами
- * 19.11.2026: без ключа, усі вакансії одним документом, невідома дошка - 404.
+ * The feed is documented (developer.personio.de/docs/retrieving-open-job-positions):
+ * the root is `<workzag-jobs>`, a vacancy is `<position>`, the vacancy link is
+ * `/job/{id}`. What the documentation does not say was checked with real
+ * requests on 19.11.2026: no key, all vacancies in one document, an unknown
+ * board is a 404.
  */
 import * as cheerio from "cheerio";
 
@@ -19,15 +20,15 @@ import {
 import type { ParseResult } from "./types.ts";
 
 /**
- * Домени дошок. `.com` віддає те саме, що `.de` (перевірено на Astrafy), тож
- * дошка лишається на тому домені, який дав користувач.
+ * Board domains. `.com` serves the same as `.de` (checked on Astrafy), so the
+ * board stays on the domain the user gave.
  */
 const DOMAINS = ["jobs.personio.de", "jobs.personio.com"];
 
 /**
- * Дошка з адреси дошки, фіду чи вакансії (`acme.jobs.personio.de/job/7` →
- * `https://acme.jobs.personio.de`) або `null`, якщо це не дошка Personio.
- * `www` - сайт самої Personio, а не компанія.
+ * The board from a board, feed or vacancy address (`acme.jobs.personio.de/job/7`
+ * → `https://acme.jobs.personio.de`), or `null` if it is not a Personio board.
+ * `www` is Personio's own site, not a company.
  */
 export function personioBoard(sourceUrl: string): string | null {
   let host: string;
@@ -52,11 +53,11 @@ export function personioBoard(sourceUrl: string): string | null {
 }
 
 /**
- * Вакансії з XML-фіду. `board` - адреса дошки, від неї складається посилання
- * на вакансію `/job/{id}`, як у прикладі документації.
+ * Vacancies from the XML feed. `board` is the board address; the vacancy link
+ * `/job/{id}` is built from it, as in the documentation example.
  *
- * `externalId` - `id` (лише цифри), назва - `name`, локація - `office` і за
- * ним `additionalOffices` через кому, без повторів.
+ * `externalId` is `id` (digits only), the title is `name`, the location is
+ * `office` followed by `additionalOffices`, comma-separated, without repeats.
  */
 export function parsePersonioFeed(xml: string, board: string): ParseResult {
   const $ = cheerio.load(xml, { xml: true });
@@ -71,7 +72,7 @@ export function parsePersonioFeed(xml: string, board: string): ParseResult {
     .toArray()
     .map((element) => {
       const position = $(element);
-      // Лише прямі нащадки: у блоків опису (`jobDescription`) теж є `<name>`.
+      // Direct children only: description blocks (`jobDescription`) have a `<name>` too.
       const field = (name: string) => {
         const found = position.children(name);
         return found.length === 0 ? null : found.first().text();
@@ -94,7 +95,7 @@ export function parsePersonioFeed(xml: string, board: string): ParseResult {
   return collectVacancies(positions, vacancyOn(board));
 }
 
-/** Читач позиції фіду; посилання на вакансію складається від `board`. */
+/** A feed position reader; the vacancy link is built from `board`. */
 const vacancyOn =
   (board: string): ReadVacancy =>
   (position) => {
@@ -131,9 +132,9 @@ function placeOf(offices: unknown): string | null {
 }
 
 /**
- * Вакансії кар'єрного джерела на Personio: дошка з адреси, запит `/xml` через
- * HTTP-клієнт і розбір. Адреса без дошки Personio - `unreadable` без жодного
- * запиту.
+ * Vacancies of a career source on Personio: the board from the address, a `/xml`
+ * request through the HTTP client and parsing. An address without a Personio
+ * board is `unreadable` without any request.
  */
 export async function readPersonio(
   sourceUrl: string,

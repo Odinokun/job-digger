@@ -180,7 +180,7 @@ PR: #57
 | [Прибрати план docs/](remove-docs-plan.md)                                                       | done      |
 | [CLAUDE.md і .claude/ англійською](claude-md-english.md)                                         | done      |
 | [Переклад src/app](translate-app.md)                                                             | done      |
-| [Переклад src/server](translate-server.md)                                                       | backlog   |
+| [Переклад src/server](translate-server.md)                                                       | done      |
 | [Переклад src/lib, e2e і конфігів](translate-lib-e2e.md)                                         | backlog   |
 | [Кореневий README для стороннього читача](public-readme.md)                                      | backlog   |
 | [Нестабільний e2e/csv.spec.ts](csv-e2e-flake.md)                                                 | done      |

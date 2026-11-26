@@ -5,8 +5,8 @@ import { describe, expect, it } from "vitest";
 import { parseWorkdayJobs, workdaySite } from "./workday.ts";
 
 /**
- * Справжня відповідь Workday: сайт NVIDIA, пошук «Warsaw» - 11 вакансій, одна
- * сторінка (src/server/http/testing).
+ * A real Workday response: the NVIDIA site, a "Warsaw" search - 11 vacancies,
+ * one page (src/server/http/testing).
  */
 const nvidiaWarsaw: unknown = JSON.parse(
   readFileSync(
@@ -21,7 +21,7 @@ const nvidiaWarsaw: unknown = JSON.parse(
 const NVIDIA_JOBS =
   "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite";
 
-/** Мінімальна вакансія у форматі API - для ручних випадків. */
+/** A minimal vacancy in the API format - for hand-made cases. */
 function posting(fields: Record<string, unknown>) {
   return {
     title: "Engineer",
@@ -98,8 +98,8 @@ describe("parseWorkdayJobs", () => {
   });
 
   it("takes the job path as the ID and builds the link from it", () => {
-    // Номер заявки (`bulletFields`) не годиться: в однієї заявки буває кілька
-    // оголошень - `..._JR2028965-1` при `bulletFields: ["JR2028965"]`.
+    // The requisition number (`bulletFields`) will not do: one requisition can
+    // have several postings - `..._JR2028965-1` with `bulletFields: ["JR2028965"]`.
     const result = parseWorkdayJobs(
       {
         total: 1,

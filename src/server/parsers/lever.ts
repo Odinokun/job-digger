@@ -1,5 +1,5 @@
 /**
- * Парсер Lever: вакансії з публічного Postings API
+ * The Lever parser: vacancies from the public Postings API
  * (https://github.com/lever/postings-api).
  */
 import type { HttpClient } from "../http/client.ts";
@@ -14,19 +14,19 @@ import {
 import { pagesToRead, type ReadDepth } from "./vacancies-to-check.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
 
-/** Регіон Lever: від нього залежить хост API (`api.lever.co` чи `api.eu.lever.co`). */
+/** The Lever region: the API host depends on it (`api.lever.co` or `api.eu.lever.co`). */
 export type LeverRegion = "global" | "eu";
 
-/** Хости дошок Lever і їхні регіони (документація Postings API, «global / EU»). */
+/** Lever board hosts and their regions (Postings API documentation, "global / EU"). */
 const BOARD_HOSTS: Record<string, LeverRegion> = {
   "jobs.lever.co": "global",
   "jobs.eu.lever.co": "eu",
 };
 
 /**
- * Сайт Lever з адреси джерела або `null`, якщо адреса - не дошка Lever. Сайт -
- * перший сегмент шляху: `jobs.lever.co/palantir`, а також посилання на
- * оголошення (`/palantir/<id>`) і на форму відгуку (`/palantir/<id>/apply`).
+ * The Lever site from a source address, or `null` if the address is not a Lever
+ * board. The site is the first path segment: `jobs.lever.co/palantir`, as well as
+ * posting links (`/palantir/<id>`) and application forms (`/palantir/<id>/apply`).
  */
 export function leverSite(
   sourceUrl: string,
@@ -46,14 +46,16 @@ export function leverSite(
 }
 
 /**
- * Вакансії з відповіді `GET /v0/postings/{site}?mode=json` - масиву оголошень.
+ * Vacancies from the `GET /v0/postings/{site}?mode=json` response - an array of
+ * postings.
  *
- * `externalId` - `id` оголошення (рядок-UUID, він же в `hostedUrl`), назва -
- * `text`, посилання - `hostedUrl`. Локація - усі з `categories.allLocations`
- * через кому (основна там теж є), а без них - `categories.location`.
+ * `externalId` is the posting `id` (a UUID string, the same as in `hostedUrl`),
+ * the title is `text`, the link is `hostedUrl`. The location is everything in
+ * `categories.allLocations`, comma-separated (the main one is there too), and
+ * without them `categories.location`.
  *
- * Зламана структура - невдала вся відповідь, вада даних - пропуск вакансії
- * (`collectVacancies`, README «Спільний формат»).
+ * A broken structure fails the whole response, bad data skips the vacancy
+ * (`collectVacancies`, README "Shared format").
  */
 export function parseLeverPostings(answer: unknown): ParseResult {
   if (!Array.isArray(answer)) {
@@ -106,27 +108,28 @@ function locationOf(categories: Record<string, unknown>): string | null {
   return primary === "" ? null : primary;
 }
 
-/** API за регіоном дошки (документація Postings API, «global / EU»). */
+/** The API by board region (Postings API documentation, "global / EU"). */
 const API_HOSTS: Record<LeverRegion, string> = {
   global: "api.lever.co",
   eu: "api.eu.lever.co",
 };
 
 /**
- * Скільки оголошень просити за раз. Без `limit` Lever віддає все одразу, а
- * разом з описами це може бути більше за ліміт розміру відповіді: Palantir з
- * 306 вакансіями - 5,9 МБ при `MAX_BYTES` 5 МБ (перевірено 18.11.2026). Сто
- * оголошень - близько 2 МБ.
+ * How many postings to ask for at once. Without `limit` Lever returns everything
+ * at once, and with descriptions that can exceed the response size limit:
+ * Palantir with 306 vacancies is 5.9 MB against a `MAX_BYTES` of 5 MB (checked
+ * 18.11.2026). A hundred postings are about 2 MB.
  */
 export const LEVER_PAGE_SIZE = 100;
 
 /**
- * Вакансії кар'єрного джерела на Lever: сайт з адреси, сторінки API через
- * HTTP-клієнт (`skip`/`limit`) і розбір кожної. Адреса без сайту Lever -
- * `unreadable` без жодного запиту.
+ * Vacancies of a career source on Lever: the site from the address, API pages
+ * through the HTTP client (`skip`/`limit`) and parsing of each. An address
+ * without a Lever site is `unreadable` without any request.
  *
- * Збій будь-якої сторінки - збій усього джерела: половина списку виглядала б як
- * «решта вакансій зникла» і потягнула б їхнє видалення (src/server/parsers/README.md).
+ * A failure of any page is a failure of the whole source: half a list would look
+ * like "the other vacancies are gone" and lead to their deletion
+ * (src/server/parsers/README.md).
  */
 export async function readLever(
   sourceUrl: string,
@@ -146,7 +149,7 @@ export async function readLever(
   const base = `https://${API_HOSTS[found.region]}/v0/postings/${encodeURIComponent(found.site)}`;
   const vacancies: ParsedVacancy[] = [];
   let skipped = 0;
-  // Стає `false`, лише коли список скінчився сам, а не на ліміті.
+  // Becomes `false` only when the list ended by itself, not at the limit.
   let truncated = true;
 
   for (let page = 0; page < maxPages; page += 1) {
@@ -168,8 +171,8 @@ export async function readLever(
     vacancies.push(...parsed.vacancies);
     skipped += parsed.skipped;
 
-    // Неповна сторінка - остання. Повна може бути й останньою: тоді наступна
-    // прийде порожньою. Пропущені записи теж займали місце на сторінці.
+    // An incomplete page is the last. A full one may be the last too: then the
+    // next comes back empty. Skipped records took up room on the page too.
     if (parsed.vacancies.length + parsed.skipped < pageSize) {
       truncated = false;
       break;

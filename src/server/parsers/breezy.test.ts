@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { breezyCompany, parseBreezyPositions } from "./breezy.ts";
 
-/** Справжня відповідь `/json` дошки Breezy (src/server/http/testing). */
+/** A real `/json` response of a Breezy board (src/server/http/testing). */
 function saved(host: string): unknown {
   return JSON.parse(
     readFileSync(
@@ -24,7 +24,7 @@ describe("breezyCompany", () => {
   });
 
   it("is null for Breezy's own services and for other sites", () => {
-    // Скрипти й стилі вбудованої дошки лежать на `assets-cdn.breezy.hr`.
+    // The embedded board's scripts and styles live on `assets-cdn.breezy.hr`.
     expect(breezyCompany("https://assets-cdn.breezy.hr/x.js")).toBeNull();
     expect(breezyCompany("https://app.breezy.hr/signin")).toBeNull();
     expect(breezyCompany("https://www.breezy.hr/")).toBeNull();

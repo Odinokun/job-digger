@@ -1,10 +1,10 @@
 /**
- * Адреса дошки ATS з будь-якого посилання на неї: саму дошку, вакансію, форму
- * відгуку чи вбудовану дошку (src/server/discovery/README.md).
+ * The ATS board address from any link to it: the board itself, a vacancy, an
+ * application form or an embedded board (src/server/discovery/README.md).
  *
- * Що вважати дошкою, кожна платформа вже знає у своєму парсері - тут лише
- * збирається єдина форма адреси з того, що парсер дістав. Тому джерело, знайдене
- * пошуком, парсер читає тим самим кодом, що й додане руками.
+ * Each platform's parser already knows what counts as a board - this only
+ * builds a single address form from what the parser extracted. That is why a
+ * source found by search is read by the same parser code as one added by hand.
  */
 import { knownAtsName } from "../../lib/companies/known-ats.ts";
 import type { CareerPlatform } from "../../lib/companies/platform.ts";
@@ -29,14 +29,14 @@ import { leverSite } from "../parsers/lever.ts";
 import { peopleforceSite } from "../parsers/peopleforce.ts";
 import { workdaySite } from "../parsers/workday.ts";
 
-/** Дошка ATS, на яку веде посилання. */
+/** The ATS board a link leads to. */
 export type BoardUrl = { url: string; platform: CareerPlatform };
 
 type BoardOf = (link: string) => string | null;
 
 /**
- * Хост для Greenhouse - `job-boards.greenhouse.io`: на ньому дошки показує сама
- * платформа зараз, а `boards.greenhouse.io` - старіший (README парсерів).
+ * The host for Greenhouse is `job-boards.greenhouse.io`: the platform shows
+ * boards there now, and `boards.greenhouse.io` is the older one (parsers README).
  */
 const BOARDS: Array<[CareerPlatform, BoardOf]> = [
   [
@@ -84,8 +84,8 @@ const BOARDS: Array<[CareerPlatform, BoardOf]> = [
   [
     "cleverstaff",
     (link) => {
-      // Посилання на окрему вакансію лишається як є: аліас компанії з нього
-      // видно лише після запиту, а його робить парсер.
+      // A link to a single vacancy stays as it is: the company alias only shows
+      // after a request, and the parser makes it.
       const source = cleverstaffSource(link);
       if (source === null) return null;
       return "alias" in source
@@ -134,8 +134,8 @@ const BOARDS: Array<[CareerPlatform, BoardOf]> = [
   [
     "workable",
     (link) => {
-      // Коротке посилання на вакансію (`/j/{shortcode}`) акаунта не містить -
-      // тоді знахідки немає.
+      // A short vacancy link (`/j/{shortcode}`) has no account in it - then
+      // there is no finding.
       const account = workableAccount(link);
       return account === null
         ? null
@@ -145,13 +145,13 @@ const BOARDS: Array<[CareerPlatform, BoardOf]> = [
 ];
 
 /**
- * Дошка, на яку веде посилання, або `null`, якщо це не дошка відомої
- * платформи. Посилання - абсолютна адреса; будь-що інше (`mailto:`, сміття)
- * теж дає `null`.
+ * The board a link leads to, or `null` if it is not a board of a known
+ * platform. The link is an absolute address; anything else (`mailto:`, junk)
+ * also gives `null`.
  *
- * Відома ATS без парсера (`known-ats.ts`) - джерело з платформою
- * `unsupported`. Форми її дошки ми не знаємо, тож адреса - саме посилання без
- * рядка запиту й якоря (задача 5.15).
+ * A known ATS without a parser (`known-ats.ts`) is a source with the
+ * `unsupported` platform. We don't know its board form, so the address is the
+ * link itself without the query string and fragment (task 5.15).
  */
 export function boardUrlOf(link: string): BoardUrl | null {
   for (const [platform, boardOf] of BOARDS) {
@@ -170,9 +170,9 @@ export function boardUrlOf(link: string): BoardUrl | null {
 }
 
 /**
- * За чим склеювати знахідки: одна на дошку, а для відомої ATS без парсера -
- * одна на платформу, бо різні посилання на неї ми не вміємо звести до однієї
- * дошки (вакансії однієї дошки інакше дали б кілька знахідок).
+ * What findings are merged by: one per board, and for a known ATS without a
+ * parser one per platform, because we cannot reduce different links to it to a
+ * single board (vacancies of one board would otherwise give several findings).
  */
 export function boardKey(board: BoardUrl): string {
   const known =

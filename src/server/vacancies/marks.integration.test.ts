@@ -18,7 +18,7 @@ import { companySiteValues } from "../db/testing/company-values.ts";
 
 const DETECTED = new Date("2026-11-18T10:00:00Z");
 
-/** Вакансія компанії системного користувача. */
+/** A vacancy of the system user's company. */
 async function seedVacancy(
   marks: {
     isRead?: boolean;
@@ -219,15 +219,15 @@ describe("setVacancyFavorite", () => {
       isFavorite: true,
     });
 
-    // Час пише база (`now()`), тож допуск - на розбіжність годинників.
+    // The database writes the time (`now()`), so the tolerance is for clock drift.
     const at = row?.favoritedAt?.getTime() ?? 0;
     expect(at).toBeGreaterThanOrEqual(from - 5_000);
     expect(at).toBeLessThanOrEqual(Date.now() + 5_000);
   });
 
   it("keeps the time of a vacancy that is already a favorite", async () => {
-    // Подвійне натискання чи дві вкладки браузера не мають піднімати вакансію
-    // нагору Favorites і робити її «доданою сьогодні».
+    // A double click or two browser tabs must not move the vacancy to the top of
+    // Favorites and make it "added today".
     const earlier = new Date("2026-11-20T09:00:00Z");
     const { userId, vacancyId } = await seedVacancy({
       isFavorite: true,
@@ -272,9 +272,9 @@ describe("setVacancyFavorite", () => {
   });
 
   it("keeps a closed vacancy that leaves Favorites for an Undo", async () => {
-    // Рядок більше не в жодній вкладці, але живе до наступної перевірки
-    // джерела, яка видаляє зниклу з сайту вакансію поза Favorites (задача
-    // vacancy-undo-toast). До того Undo може його повернути.
+    // The row is no longer in any tab, but it lives until the next check of the
+    // source, which deletes a vacancy gone from the site outside Favorites (task
+    // vacancy-undo-toast). Until then Undo can bring it back.
     const { userId, vacancyId } = await seedVacancy({
       isFavorite: true,
       favoritedAt: new Date("2026-11-20T09:00:00Z"),
@@ -296,8 +296,8 @@ describe("setVacancyFavorite", () => {
   });
 
   it("restores a missing date of an old favorite on Undo", async () => {
-    // Обране, додане до появи дати, не має її й після Undo - інакше стрибнуло б
-    // у свіже обране.
+    // A favorite added before the date existed does not have it after Undo either -
+    // otherwise it would jump into the fresh favorites.
     const { userId, vacancyId } = await seedVacancy({ isFavorite: true });
     await setVacancyFavorite(testDb, { userId, vacancyId, isFavorite: false });
 
@@ -312,8 +312,8 @@ describe("setVacancyFavorite", () => {
   });
 
   it("restores the time it was added when Remove from Favorites is undone", async () => {
-    // Інакше вакансія після Undo стрибнула б нагору Favorites, у групу
-    // свіжого обраного.
+    // Otherwise the vacancy would jump to the top of Favorites after Undo, into the
+    // group of fresh favorites.
     const earlier = new Date("2026-11-20T09:00:00Z");
     const { userId, vacancyId } = await seedVacancy({
       isFavorite: true,
@@ -354,8 +354,8 @@ describe("setVacancyFavorite", () => {
 });
 
 /**
- * Кілька вакансій в одному джерелі однієї компанії системного користувача -
- * по одній на кожен набір позначок.
+ * Several vacancies in one source of one company of the system user - one for each
+ * set of marks.
  */
 async function seedVacancies(
   ...marks: Array<{ isRead?: boolean; isFavorite?: boolean; closedAt?: Date }>
@@ -406,7 +406,7 @@ describe("countUnread", () => {
       {},
       { isFavorite: true },
       { isRead: true },
-      // Закрита живе лише у Favorites, у вкладці Unread її немає.
+      // A closed one lives only in Favorites; it is not in the Unread tab.
       { closedAt: DETECTED, isFavorite: true },
       {},
     );
@@ -414,7 +414,7 @@ describe("countUnread", () => {
     const { count, asOf } = await countUnread(testDb, { userId });
 
     expect(count).toBe(3);
-    // Межа - час бази з мікросекундами: JS Date обрізав би їх.
+    // The boundary is the database time with microseconds: a JS Date would cut them off.
     expect(asOf).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/);
   });
 
@@ -438,8 +438,8 @@ describe("markAllRead", () => {
   });
 
   it("leaves unread a vacancy written after the boundary", async () => {
-    // Перевірка, що йшла, поки був відкритий діалог: дата виявлення в неї
-    // давня (момент старту перевірки), а записана вона вже після межі.
+    // A check that ran while the dialog was open: its discovery date is old (the
+    // moment the check started), while it was written after the boundary.
     const { userId, ids } = await seedVacancies({});
     const { asOf } = await countUnread(testDb, { userId });
     const [late] = await testDb
@@ -479,7 +479,7 @@ describe("markAllRead", () => {
   });
 
   it("does nothing for a boundary that is not a database time", async () => {
-    // Межа приходить аргументом Server Action - недовірений ввід.
+    // The boundary arrives as a Server Action argument - untrusted input.
     const { userId, ids } = await seedVacancies({});
 
     for (const asOf of ["", "tomorrow", "2026-11-18", "2026-11-18T10:00:00Z"]) {
@@ -495,7 +495,7 @@ describe("countRead", () => {
       { isRead: true },
       { isRead: true, isFavorite: true },
       {},
-      // Закрита живе лише у Favorites, у вкладці Read її немає.
+      // A closed one lives only in Favorites; it is not in the Read tab.
       { isRead: true, closedAt: DETECTED, isFavorite: true },
     );
 
@@ -510,8 +510,8 @@ describe("countRead", () => {
 });
 
 describe("markAllUnread", () => {
-  // Задача 6.18: межі немає - у вкладку Read потрапляє лише прочитане самою
-  // людиною, перевірка туди нічого не додає.
+  // Task 6.18: there is no boundary - only what the user read themselves gets into
+  // the Read tab, and a check adds nothing there.
   it("returns every vacancy of the Read tab to Unread", async () => {
     const { userId, ids } = await seedVacancies(
       { isRead: true },
@@ -525,7 +525,7 @@ describe("markAllUnread", () => {
   });
 
   it("leaves a closed vacancy as it is", async () => {
-    // Закрита - лише у Favorites; Mark all as unread діє на вкладку Read.
+    // A closed one is only in Favorites; Mark all as unread acts on the Read tab.
     const { userId, ids } = await seedVacancies({
       isRead: true,
       closedAt: DETECTED,
@@ -588,8 +588,8 @@ describe("setCompanyVacanciesRead", () => {
   });
 
   it("leaves closed vacancies as they are", async () => {
-    // Закрита живе лише у Favorites: «усі активні вакансії компанії» її не
-    // включають.
+    // A closed one lives only in Favorites: "all active vacancies of the company"
+    // do not include it.
     const { userId, companyId, ids } = await seedVacancies({
       closedAt: DETECTED,
       isFavorite: true,

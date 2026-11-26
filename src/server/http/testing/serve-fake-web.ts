@@ -1,9 +1,9 @@
 /**
- * Запуск фейкового вебсервера окремим процесом - для E2E, де його піднімає
- * Playwright поруч із застосунком (`webServer` у playwright.config.ts).
+ * Runs the fake web server as a separate process - for E2E, where Playwright
+ * starts it next to the app (`webServer` in playwright.config.ts).
  *
- * Використання: `node src/server/http/testing/serve-fake-web.ts <port>`.
- * Віддає збережені відповіді з теки `responses/` поруч із цим файлом.
+ * Usage: `node src/server/http/testing/serve-fake-web.ts <port>`.
+ * Serves the saved responses from the `responses/` folder next to this file.
  */
 import { fileURLToPath } from "node:url";
 

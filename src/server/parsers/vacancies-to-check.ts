@@ -1,38 +1,38 @@
 /**
- * Vacancies to check: скільки вакансій щонайбільше читає з одного джерела
- * парсер, що читає список сторінками (Lever, Workday, PeopleForce, Hurma), і
- * скільки це сторінок (задачі 3.12 і 6.16).
+ * Vacancies to check: the most vacancies a parser that reads a list in pages
+ * (Lever, Workday, PeopleForce, Hurma) reads from one source, and how many pages
+ * that is (tasks 3.12 and 6.16).
  *
- * Ліміт у вакансіях, а не в сторінках (рішення автора 20.11.2026): сторінки в
- * платформ різні - PeopleForce по 10, Lever по 100, - і той самий ліміт у
- * сторінках давав то 50 вакансій, то 500.
+ * The limit is in vacancies, not pages (the author's decision of 20.11.2026):
+ * platforms have different page sizes - PeopleForce 10, Lever 100 - and the same
+ * limit in pages gave 50 vacancies in one case and 500 in another.
  *
- * Ліміт спільний для всіх користувачів і задається змінною `VACANCIES_TO_CHECK`
- * (`.env.example`). Хибне значення - помилка, а не тихе значення за
- * замовчуванням: інакше помилку в `.env` видно було б лише з того, що вакансій
- * менше, ніж мало бути. Next завантажує серверні модулі ліниво, тож помилка
- * з'являється, коли сервер уперше бере модуль перевірки, - найпізніше на першому
- * Check now. `npm run build` її не ловить (перевірено в 3.12).
+ * The limit is shared by all users and set by the `VACANCIES_TO_CHECK` variable
+ * (`.env.example`). A wrong value is an error, not a silent default: otherwise a
+ * mistake in `.env` would show only as fewer vacancies than there should be.
+ * Next loads server modules lazily, so the error appears when the server first
+ * takes the check module - at the latest on the first Check now. `npm run build`
+ * does not catch it (checked in 3.12).
  */
 
-/** Значення за замовчуванням - рішення автора 20.11.2026. */
+/** The default value - the author's decision of 20.11.2026. */
 export const DEFAULT_VACANCIES_TO_CHECK = 500;
 
 /**
- * Найбільше дозволене значення - страховка від помилки в `.env`. Між
- * запитами до одного сайту пауза 2 с, тож 1000 вакансій PeopleForce - 100
- * сторінок, понад 3 хвилини на джерело; більше впиралося б у 10 хвилин, після
- * яких черга вважає завдання завислим (`src/server/queue/README.md`).
+ * The largest allowed value - a guard against a mistake in `.env`. Requests to
+ * one site have a 2 s pause between them, so 1000 PeopleForce vacancies are 100
+ * pages, over 3 minutes per source; more would run into the 10 minutes after
+ * which the queue considers a task stuck (`src/server/queue/README.md`).
  */
 export const MAX_VACANCIES_TO_CHECK = 1000;
 
 /**
- * Скільки читати: лише першу сторінку чи до ліміту. Хто що читає -
- * `src/server/checks/README.md`, «Глибина читання».
+ * How much to read: only the first page or up to the limit. Who reads what:
+ * `src/server/checks/README.md`, "Read depth".
  */
 export type ReadDepth = "first-page" | "full";
 
-/** Значення змінної `VACANCIES_TO_CHECK`; порожня - значення за замовчуванням. */
+/** The value of the `VACANCIES_TO_CHECK` variable; empty means the default. */
 export function parseVacanciesToCheck(raw: string | undefined): number {
   const value = raw?.trim() ?? "";
 
@@ -51,14 +51,14 @@ export function parseVacanciesToCheck(raw: string | undefined): number {
   return count;
 }
 
-/** Ліміт застосунку. */
+/** The app's limit. */
 export const VACANCIES_TO_CHECK = parseVacanciesToCheck(
   process.env.VACANCIES_TO_CHECK,
 );
 
 /**
- * Скільки сторінок читати. Округлення вгору: ліміт 250 при сторінках по 100 -
- * три сторінки, щоб не прочитати менше, ніж обіцяє ліміт.
+ * How many pages to read. Rounded up: a limit of 250 with pages of 100 is three
+ * pages, so as not to read less than the limit promises.
  */
 export function pagesToRead({
   pageSize,

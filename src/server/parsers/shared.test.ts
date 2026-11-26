@@ -14,7 +14,7 @@ function vacancy(id: string): ParsedVacancy {
   };
 }
 
-/** Читач для тестів: запис сам каже, чим він є. */
+/** A reader for tests: the record itself says what it is. */
 const read: ReadVacancy = (item) =>
   item.kind === "skip"
     ? "skip"
@@ -32,8 +32,8 @@ describe("collectVacancies", () => {
   });
 
   it("skips a record with bad data and counts it", () => {
-    // Порожня назва чи адреса не http - вада даних однієї вакансії, а не
-    // зміна формату: OpenAI на Ashby мала таку одну з 839 (18.11.2026).
+    // An empty title or a non-http address is bad data in one vacancy, not a
+    // format change: OpenAI on Ashby had one such of 839 (18.11.2026).
     expect(collectVacancies([{ id: "1" }, { kind: "skip" }], read)).toEqual({
       ok: true,
       vacancies: [vacancy("1")],
@@ -42,9 +42,9 @@ describe("collectVacancies", () => {
   });
 
   it("fails the whole response on a record with a broken structure", () => {
-    // Зламана структура - сигнал зміни формату: якби такі записи
-    // пропускалися, пропущеними виявились би всі, і порожній список видалив
-    // би всі вакансії джерела.
+    // A broken structure signals a format change: if such records were skipped,
+    // all of them would be, and an empty list would delete all the source's
+    // vacancies.
     expect(collectVacancies([{ id: "1" }, { kind: "broken" }], read)).toEqual(
       UNREADABLE,
     );
@@ -56,8 +56,8 @@ describe("collectVacancies", () => {
   });
 
   it("fails when every record had to be skipped", () => {
-    // Нуль вакансій, бо всі криві, - не «вакансій немає»: інакше вони б
-    // видалилися.
+    // Zero vacancies because all are broken is not "there are no vacancies":
+    // otherwise they would be deleted.
     expect(
       collectVacancies([{ kind: "skip" }, { kind: "skip" }], read),
     ).toEqual(UNREADABLE);

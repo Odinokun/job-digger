@@ -6,7 +6,7 @@ import {
   type DuplicateMatch,
 } from "./duplicates.ts";
 
-/** Збіг нової вакансії `newId` з наявною `otherId` в іншому джерелі компанії. */
+/** A match of the new vacancy `newId` with the existing `otherId` in another source of the company. */
 function match(
   newId: string,
   otherId: string,
@@ -29,8 +29,8 @@ describe("resolveDuplicates", () => {
   });
 
   it("marks a later platform duplicate of a platform vacancy as read", () => {
-    // Задача 6.20: пізніший дублікат стає прочитаним, хоч би яким був
-    // наявний - навіть уже прочитаним.
+    // Task 6.20: the later duplicate becomes read, whatever the existing one is -
+    // even one already read.
     expect(
       resolveDuplicates("platform", [match("new", "old", PLATFORM_UNREAD)]),
     ).toEqual({ readNew: ["new"], readOthers: [] });
@@ -49,7 +49,7 @@ describe("resolveDuplicates", () => {
   });
 
   it("keeps a platform vacancy unread and reads its unread site duplicate", () => {
-    // Платформи мають перевагу над сайтами: показуємо вакансію з платформи.
+    // Platforms beat sites: we show the vacancy from the platform.
     expect(
       resolveDuplicates("platform", [match("new", "site-1", SITE_UNREAD)]),
     ).toEqual({ readNew: [], readOthers: ["site-1"] });
@@ -66,15 +66,15 @@ describe("resolveDuplicates", () => {
   });
 
   it("reads a platform vacancy whose site duplicates were all read already", () => {
-    // Людина вже бачила вакансію на сайті - нова копія не має знову кликати.
+    // The user has already seen the vacancy on the site - the new copy must not call out again.
     expect(
       resolveDuplicates("platform", [match("new", "site-1", SITE_READ)]),
     ).toEqual({ readNew: ["new"], readOthers: [] });
   });
 
   it("lets a platform duplicate win over an unread site one", () => {
-    // Вакансія вже є на іншій платформі: нова пізніша, тож прочитана, а
-    // сайтова лишається як була.
+    // The vacancy already exists on another platform: the new one is later, so it
+    // is read, and the site one stays as it was.
     expect(
       resolveDuplicates("platform", [
         match("new", "site-1", SITE_UNREAD),
@@ -100,9 +100,9 @@ describe("sourceKind", () => {
   });
 
   it("calls the company's own page a site", () => {
-    // schema.org JobPosting читається з власного сайту компанії (задача 3.11).
+    // schema.org JobPosting is read from the company's own site (task 3.11).
     expect(sourceKind("schema_org")).toBe("site");
-    // Сторінка за рецептом (задача 6.21).
+    // A recipe page (task 6.21).
     expect(sourceKind("own_page")).toBe("site");
   });
 });

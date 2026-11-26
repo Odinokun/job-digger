@@ -54,7 +54,7 @@ Client components never import modules from `src/server`: shared pure logic move
 - **The queue lives in PostgreSQL**, not in the memory of Next.js. Tasks are claimed so that two processes never take the same one, and stuck tasks go back to the queue. Locally a background loop runs inside the Next.js server; on Vercel it will be a function that runs for up to 4.5 minutes and restarts itself.
 - At most 5 sources are checked at once. The limit is shared by all users and set through ENV.
 - One general check at a time per user. Details in [src/server/checks/README.md](src/server/checks/README.md) and [src/server/queue/README.md](src/server/queue/README.md).
-- **A new platform (parser)** is added only for a real source, following the checklist [«Як додати платформу»](src/server/parsers/README.md#як-додати-платформу). A parser also touches the platform enum migration, address recognition, search by name, the fake server and the translations.
+- **A new platform (parser)** is added only for a real source, following the checklist [«Як додати платформу»](src/server/parsers/README.md#how-to-add-a-platform). A parser also touches the platform enum migration, address recognition, search by name, the fake server and the translations.
 
 Tables: `users`, `companies`, `career_sources`, `vacancies`, `check_runs`, `check_tasks`, `settings` ([src/server/db/README.md](src/server/db/README.md)). The local version has a single system user, but data is always scoped to a user.
 

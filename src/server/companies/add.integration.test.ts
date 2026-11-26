@@ -18,13 +18,13 @@ async function sourcesOf(companyId: string) {
 }
 
 /**
- * Чекає, поки вставка в `companies` із сусіднього зʼєднання стане в чергу за
- * блокуванням unique-індексу.
+ * Waits until an insert into `companies` from a neighbouring connection queues
+ * behind the unique index lock.
  *
- * Опитується `pg_stat_activity`, а не таймер: інакше тест міг би пройти через
- * дружню перевірку дублікатів і нічого не сказати про гонку. Запит іде поза
- * транзакцією - усередині транзакції статистика віддається з кешованого
- * знімка, у якому сусіднього зʼєднання ще немає.
+ * It polls `pg_stat_activity` rather than using a timer: otherwise the test could
+ * pass through the friendly duplicate check and say nothing about the race. The
+ * query runs outside a transaction - inside one the statistics come from a
+ * cached snapshot that does not have the neighbouring connection yet.
  */
 async function waitForBlockedInsert(): Promise<void> {
   const deadline = Date.now() + 8_000;
@@ -65,13 +65,13 @@ describe("addCompany", () => {
       .where(eq(companies.id, result.companyId));
     expect(company.name).toBe("Spotify");
     expect(company.url).toBe("https://www.spotify.com");
-    // Очищена форма потрібна лише для порівняння дублікатів.
+    // The normalized form is only needed to compare duplicates.
     expect(company.normalizedUrl).toBe("spotify.com");
     expect(company.discoveryStatus).toBe("not_checked");
 
     const sources = await sourcesOf(result.companyId);
     expect(sources).toHaveLength(1);
-    // Платформу видно з адреси, тому джерело одразу відстежується.
+    // The platform is visible from the address, so the source is tracked right away.
     expect(sources[0].platform).toBe("lever");
     expect(sources[0].isTracked).toBe(true);
   });
@@ -93,7 +93,7 @@ describe("addCompany", () => {
       .select()
       .from(companies)
       .where(eq(companies.id, result.companyId));
-    // Інакше посилання в списку компаній було б відносним і вело в нікуди.
+    // Otherwise the link in the company list would be relative and lead nowhere.
     expect(company.url).toBe("https://about.gitlab.com");
     expect((await sourcesOf(result.companyId))[0].url).toBe(
       "https://job-boards.greenhouse.io/gitlab",
@@ -156,7 +156,7 @@ describe("addCompany", () => {
       .select()
       .from(companies)
       .where(eq(companies.id, result.companyId));
-    // Пошуку сторінок ще не було, тому Not checked, а не Not found.
+    // There has been no page search yet, so Not checked, not Not found.
     expect(company.discoveryStatus).toBe("not_checked");
   });
 
@@ -240,7 +240,7 @@ describe("addCompany", () => {
       problem: "career-url",
       reason: "unsupported-scheme",
     });
-    // Перевірка адрес іде перед вставкою, інакше лишилася б компанія без джерела.
+    // Addresses are checked before the insert, otherwise a company without a source would be left.
     expect(await testDb.select().from(companies)).toHaveLength(0);
   });
 
@@ -255,7 +255,7 @@ describe("addCompany", () => {
     const result = await addCompany(testDb, {
       userId,
       name: "Spotify again",
-      // Та сама компанія, інакше записана: www і слеш нічого не змінюють.
+      // The same company written differently: www and a slash change nothing.
       url: "spotify.com/",
     });
 
@@ -329,12 +329,12 @@ describe("addCompany", () => {
 
   it("falls back to the unique index when a parallel request wins the race", async () => {
     const userId = await user();
-    // Окреме зʼєднання грає роль іншого запиту - свого чи іншого користувача.
+    // A separate connection plays another request - of the same or another user.
     const rival = await testDb.$client.connect();
 
     try {
-      // Rival уже вставив компанію, але ще не закомітив: саме той момент,
-      // якого дружня перевірка дублікатів побачити не може.
+      // Rival has inserted the company but not committed yet: exactly the moment
+      // the friendly duplicate check cannot see.
       await rival.query("begin");
       await rival.query(
         `insert into companies (user_id, name, url, normalized_url)
@@ -349,8 +349,8 @@ describe("addCompany", () => {
         careerUrl: "https://jobs.lever.co/spotify",
       });
 
-      // Чекаємо саме на блокування, а не на таймер: без цього тест міг би
-      // пройти через дружню перевірку й нічого не сказати про гонку.
+      // We wait for the lock itself, not a timer: without this the test could
+      // pass through the friendly check and say nothing about the race.
       await waitForBlockedInsert();
       await rival.query("commit");
 
@@ -360,7 +360,7 @@ describe("addCompany", () => {
         company: { name: "Spotify" },
       });
       expect(await testDb.select().from(companies)).toHaveLength(1);
-      // Друга спроба не лишила по собі осиротілого джерела.
+      // The second attempt left no orphaned source behind.
       expect(await testDb.select().from(careerSources)).toHaveLength(0);
     } finally {
       await rival.query("rollback").catch(() => undefined);
@@ -386,7 +386,7 @@ describe("addCompany", () => {
       url: "https://www.spotify.com",
     });
 
-    // Дані ізольовані за користувачем, тому це не дублікат.
+    // Data is isolated per user, so this is not a duplicate.
     expect(result.ok).toBe(true);
     expect(await testDb.select().from(companies)).toHaveLength(2);
   });
@@ -401,8 +401,8 @@ describe("addCompany", () => {
       careerUrl: "jobs.lever.co/spotify",
     });
 
-    // Сайт обовʼязковий: компанію, знайдену лише на ATS, без нього вже не
-    // додати (рішення автора 21.11.2026; до того - картка 2.17).
+    // The site is required: a company found only on an ATS can no longer be
+    // added without one (the author's decision of 21.11.2026; before that, card 2.17).
     expect(result).toEqual({
       ok: false,
       problem: "company-url",
@@ -443,12 +443,12 @@ describe("addCompany", () => {
       userId,
       name: "Spotify Technology",
       url: "spotify-technology.com",
-      // Та сама сторінка, записана інакше: порівняння йде по очищеній формі.
+      // The same page written differently: the comparison uses the normalized form.
       careerUrl: "https://www.jobs.lever.co/spotify/",
     });
 
-    // Саме це тримає від двійників компанію, яку нічим більше не відрізнити:
-    // без сайту карʼєрна сторінка - уся її ідентичність (картка 2.17).
+    // This is exactly what keeps away twins of a company nothing else tells apart:
+    // without a site, the career page is its whole identity (card 2.17).
     expect(result).toMatchObject({
       ok: false,
       problem: "source-taken",
@@ -473,9 +473,9 @@ describe("addCompany", () => {
       url: "linear.app",
     });
 
-    // Сайти різні (linear.io і linear.app - різні домени), спільного джерела
-    // немає. Збігається тільки назва - і це єдиний сигнал, що це та сама
-    // компанія (картка 2.17).
+    // The sites differ (linear.io and linear.app are different domains), and there
+    // is no shared source. Only the name matches - and that is the only signal
+    // that this is the same company (card 2.17).
     expect(result).toMatchObject({
       ok: false,
       problem: "same-name",
@@ -501,8 +501,8 @@ describe("addCompany", () => {
       confirmed: true,
     });
 
-    // Дві різні компанії можуть називатися однаково, тому це попередження, а
-    // не заборона.
+    // Two different companies may have the same name, so this is a warning, not
+    // a ban.
     expect(result.ok).toBe(true);
     expect(await testDb.select().from(companies)).toHaveLength(2);
   });
@@ -519,8 +519,8 @@ describe("addCompany", () => {
       confirmed: true,
     });
 
-    // Точний збіг адреси підтвердженням не пробивається - ні цим, ні тим, що
-    // проходить попередження про домен.
+    // An exact address match does not give way to a confirmation - neither this
+    // one nor the one that passes the domain warning.
     expect(result).toMatchObject({ ok: false, problem: "already-added" });
   });
 
@@ -556,7 +556,7 @@ describe("addCompany", () => {
         name: "Spotify",
         url: "https://www.spotify.com",
         careerUrl: "jobs.lever.co/spotify",
-        // Та сама дошка, що й у полі, - одне джерело, а не два.
+        // The same board as in the field - one source, not two.
         foundUrls: [
           "https://jobs.lever.co/spotify",
           "https://job-boards.greenhouse.io/spotify",
@@ -612,7 +612,7 @@ describe("addCompany", () => {
     });
 
     it("refuses a found address it cannot use", async () => {
-      // Знахідки приходять із клієнта, тож перевіряються так само, як поле.
+      // Findings come from the client, so they are checked the same way as the field.
       const userId = await user();
 
       const result = await addCompany(testDb, {

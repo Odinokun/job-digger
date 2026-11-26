@@ -7,7 +7,7 @@ import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { findSiteAtsLinks } from "./ats-links.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 let fakeWeb: FakeWeb;
@@ -34,8 +34,8 @@ function client() {
 
 describe("findSiteAtsLinks", () => {
   it("finds the job board the company site links to", async () => {
-    // Синтетична головна Acme (src/server/http/testing/README.md): Careers і
-    // одна вакансія ведуть на ту саму дошку Lever.
+    // The synthetic Acme home page (src/server/http/testing/README.md): Careers
+    // and one vacancy lead to the same Lever board.
     expect(await findSiteAtsLinks("https://acme.example", client())).toEqual({
       ok: true,
       boards: [{ url: "https://jobs.lever.co/leverdemo", platform: "lever" }],

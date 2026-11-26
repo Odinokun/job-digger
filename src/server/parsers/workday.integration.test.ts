@@ -15,7 +15,7 @@ import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { readWorkday } from "./workday.ts";
 import { pagesToRead } from "./vacancies-to-check.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 const ACME = "https://acme.wd3.myworkdayjobs.com/External";
@@ -43,9 +43,9 @@ function clientFor(origin: string) {
 }
 
 /**
- * Окремий сервер для випадків, яких немає в збережених відповідях. Фейковий
- * вебсервер тіло запиту не читає, а сторінки Workday розрізняє саме воно
- * (`offset`, `limit`), тож сторінки віддає цей сервер.
+ * A separate server for cases the saved responses do not have. The fake web
+ * server does not read the request body, and that is exactly what tells Workday
+ * pages apart (`offset`, `limit`), so this server serves the pages.
  */
 async function withServer(
   respond: (request: IncomingMessage, response: ServerResponse) => void,
@@ -62,7 +62,7 @@ async function withServer(
   }
 }
 
-/** Що прийшло на сервер: шлях і розібране тіло POST. */
+/** What reached the server: the path and the parsed POST body. */
 interface Received {
   method: string | undefined;
   path: string | undefined;
@@ -70,9 +70,9 @@ interface Received {
 }
 
 /**
- * Сайт Workday з `total` вакансіями, що віддає їх порціями за `offset`/`limit`.
- * Як справжній (перевірено на NVIDIA 18.11.2026): `total` - лише на першій
- * сторінці, на решті там 0.
+ * A Workday site with `total` vacancies that serves them in chunks by
+ * `offset`/`limit`. Like the real one (checked on NVIDIA 18.11.2026): `total` is
+ * only on the first page, the rest have 0 there.
  */
 function pagedSite(total: number, received: Received[]) {
   return (request: IncomingMessage, response: ServerResponse) => {
@@ -111,8 +111,8 @@ describe("readWorkday", () => {
   });
 
   it("reports a site that does not exist", async () => {
-    // Справжній Workday на невідомий сайт відповідає 404 «not found:
-    // Job_Posting_Site_ID» (перевірено 18.11.2026), фейковий вебсервер - теж.
+    // The real Workday answers 404 "not found: Job_Posting_Site_ID" for an
+    // unknown site (checked 18.11.2026), and so does the fake web server.
     const result = await readWorkday(
       "https://nvidia.wd5.myworkdayjobs.com/NoSuchSite",
       clientFor(fakeWeb.origin),
@@ -124,7 +124,7 @@ describe("readWorkday", () => {
   it("does not request anything for an address that is not a Workday site", async () => {
     const result = await readWorkday(
       "https://bosch.com/careers",
-      // Порт 1 ніхто не слухає: якби запит пішов, це був би fetch-failed.
+      // Nobody listens on port 1: if a request went out, it would be fetch-failed.
       clientFor("http://127.0.0.1:1"),
     );
 
@@ -135,7 +135,7 @@ describe("readWorkday", () => {
     const received: Received[] = [];
 
     await withServer(pagedSite(45, received), async (origin) => {
-      // Ліміт задано явно: значення з `.env` автора тут ні до чого.
+      // The limit is explicit: the value from the author's `.env` has nothing to do with it.
       const result = await readWorkday(ACME, clientFor(origin), {
         maxPages: 5,
       });
@@ -152,8 +152,8 @@ describe("readWorkday", () => {
   });
 
   it("trusts the total of the first page and does not ask past it", async () => {
-    // Сторінка після останньої не порожня: з offset від 2000 Workday знову
-    // віддає першу (перевірено на NVIDIA). Тож кінець - за `total`.
+    // The page after the last one is not empty: from an offset of 2000 Workday
+    // serves the first page again (checked on NVIDIA). So the end comes from `total`.
     const received: Received[] = [];
 
     await withServer(pagedSite(40, received), async (origin) => {
@@ -165,7 +165,7 @@ describe("readWorkday", () => {
   });
 
   it("stops at the page limit and still counts as a success", async () => {
-    // Досягнення ліміту сторінок - нормальне завершення (задача 3.12).
+    // Reaching the page limit is a normal finish (task 3.12).
     const received: Received[] = [];
 
     await withServer(pagedSite(2000, received), async (origin) => {
@@ -174,7 +174,7 @@ describe("readWorkday", () => {
       });
 
       expect(result.ok && result.vacancies).toHaveLength(60);
-      // Список не дочитано - життєвий цикл не має нічого закривати (6.16).
+      // The list was not read to the end - the lifecycle must close nothing (6.16).
       expect(result.ok && result.truncated).toBe(true);
       expect(received).toHaveLength(3);
     });
@@ -193,8 +193,8 @@ describe("readWorkday", () => {
   });
 
   it("fails the whole check when a later page fails", async () => {
-    // Половина списку виглядала б як «решта вакансій зникла» і потягнула б
-    // їхнє видалення - тож збій будь-якої сторінки - збій усього джерела.
+    // Half a list would look like "the other vacancies are gone" and lead to
+    // their deletion - so a failure of any page is a failure of the whole source.
     const received: Received[] = [];
     const firstPage = pagedSite(45, received);
 

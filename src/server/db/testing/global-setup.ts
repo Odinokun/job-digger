@@ -1,7 +1,7 @@
 /**
- * Виконується один раз на весь прогін інтеграційних тестів: створює тестову базу,
- * якщо її немає, і проганяє на ній наші міграції. Отже кожен прогін ще й перевіряє,
- * що міграції застосовні на чистій базі.
+ * Runs once for the whole integration test run: creates the test database if it
+ * does not exist and runs our migrations on it. So every run also checks that
+ * the migrations apply to a clean database.
  */
 import { createDatabaseIfMissing, migrateDatabase } from "./database.ts";
 import { testDatabaseUrl } from "./env.ts";

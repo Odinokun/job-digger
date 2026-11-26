@@ -1,55 +1,55 @@
-# src/server/db/testing - тестова база
+# src/server/db/testing - the test database
 
-Обвʼязка для інтеграційних тестів: справжній PostgreSQL замість моків бази.
-`database.ts` спільний ще й з E2E: їхня окрема база готується тим самим кодом
-([README](../../../../README.md#e2e-тести)).
-Рівні тестів і правила TDD - [CLAUDE.md](../../../../CLAUDE.md#tests-and-tdd).
+The harness for integration tests: a real PostgreSQL instead of database mocks.
+`database.ts` is shared with E2E too: their separate database is prepared by the same
+code ([README](../../../../README.md#e2e-тести)).
+Test levels and TDD rules: [CLAUDE.md](../../../../CLAUDE.md#tests-and-tdd).
 
-## Файли
+## Files
 
-| Файл              | Роль                                                                  |
+| File              | Role                                                                  |
 | ----------------- | --------------------------------------------------------------------- |
-| `env.ts`          | Читає `TEST_DATABASE_URL` і не дає переплутати її з базою розробки     |
-| `database.ts`     | `createDatabaseIfMissing`, `migrateDatabase`, `truncateAll` для бази за адресою - спільне з E2E |
-| `global-setup.ts` | Один раз на прогін: створює базу, якщо немає, і проганяє міграції       |
-| `test-db.ts`      | Підключення `testDb` і `truncateAll()` саме тестової бази               |
-| `setup.ts`        | `beforeEach(truncateAll)` і закриття пулу після файлу тестів            |
-| `locks.ts` | `untilSomeoneWaitsForLock` - чекає, поки запит стане в чергу за блокуванням: тест гонки знає, що вона справді сталася |
-| `career-source-values.ts` | `normalizedSourceUrl` - очищена адреса для прямої вставки джерела в тестах |
-| `company-values.ts` | `companySiteValues` - унікальний сайт (`url` і `normalized_url`) для прямої вставки компанії в тестах: обидві колонки обовʼязкові |
+| `env.ts`          | Reads `TEST_DATABASE_URL` and keeps it from being mixed up with the development database |
+| `database.ts`     | `createDatabaseIfMissing`, `migrateDatabase`, `truncateAll` for a database at an address - shared with E2E |
+| `global-setup.ts` | Once per run: creates the database if missing and runs the migrations |
+| `test-db.ts`      | The `testDb` connection and `truncateAll()` of the test database itself |
+| `setup.ts`        | `beforeEach(truncateAll)` and closing the pool after a test file      |
+| `locks.ts` | `untilSomeoneWaitsForLock` - waits until a query queues behind a lock: a race test knows the race really happened |
+| `career-source-values.ts` | `normalizedSourceUrl` - the cleaned address for inserting a source directly in tests |
+| `company-values.ts` | `companySiteValues` - a unique site (`url` and `normalized_url`) for inserting a company directly in tests: both columns are required |
 
-## Як це працює
+## How it works
 
-1. `global-setup.ts` підключається до службової бази `postgres`, перевіряє
-   `pg_database` і створює тестову базу, якщо її ще немає. Потім проганяє на ній
-   міграції з `drizzle/`. Отже кожен прогін заодно перевіряє, що міграції
-   застосовні на чистій базі.
-2. `setup.ts` перед **кожним** тестом чистить таблиці, тому тести не залежать від
-   порядку виконання і від даних, які залишив попередній тест.
-3. Після файлу тестів пул зʼєднань закривається - інакше прогін висне на відкритих
-   зʼєднаннях.
+1. `global-setup.ts` connects to the `postgres` maintenance database, checks
+   `pg_database` and creates the test database if it does not exist yet. Then it runs
+   the migrations from `drizzle/` on it. So every run also checks that the migrations
+   apply to a clean database.
+2. `setup.ts` clears the tables before **every** test, so tests do not depend on the
+   order they run in or on data a previous test left behind.
+3. After a test file the connection pool is closed - otherwise the run hangs on open
+   connections.
 
-## Рішення, які не варто переглядати заново
+## Decisions not worth revisiting
 
-**Окрема база в тому самому контейнері, а не другий сервіс у compose.** Та сама
-версія PostgreSQL, нуль додаткової памʼяті, один сервіс. Ізоляція потрібна на рівні
-даних, а не процесу.
+**A separate database in the same container, not a second service in compose.** The
+same PostgreSQL version, zero extra memory, one service. Isolation is needed at the
+data level, not the process level.
 
-**`truncate`, а не транзакція з відкатом.** Відкат транзакції швидший і елегантніший,
-але ламається, коли тестований код сам працює з транзакціями - а черга завдань саме
-так і працюватиме (`select ... for update skip locked`). Для головного, що ми
-збираємося тестувати, цей підхід не годиться.
+**`truncate`, not a transaction with a rollback.** Rolling back a transaction is faster
+and more elegant, but it breaks when the code under test works with transactions
+itself - and the task queue does exactly that (`select ... for update skip locked`).
+For the main thing we test, that approach does not work.
 
-**`fileParallelism: false` для інтеграційних тестів.** Файли ділять одну базу, тому
-паралельний прогін затирав би дані. Юніт-тести лишаються паралельними.
+**`fileParallelism: false` for integration tests.** The files share one database, so a
+parallel run would overwrite data. Unit tests stay parallel.
 
-**Запобіжник в `env.ts`.** Якщо `TEST_DATABASE_URL` дорівнює `DATABASE_URL`, модуль
-кидає помилку. Ціна помилки інакше - знесена база розробки.
+**The guard in `env.ts`.** If `TEST_DATABASE_URL` equals `DATABASE_URL`, the module
+throws. Otherwise the cost of the mistake is a wiped development database.
 
-## Змінні середовища
+## Environment variables
 
-Vitest автоматично підхоплює з `.env` лише змінні з префіксом `VITE_`
-([документація](https://vitest.dev/guide/features)). Тому `vitest.config.ts`
-завантажує `.env` через `loadEnv` і додатково присвоює значення в `process.env`:
-`globalSetup` виконується в головному процесі Vitest, а не у воркері тесту, і
-опція `test.env` на нього не діє.
+Vitest automatically picks up from `.env` only the variables prefixed with `VITE_`
+([documentation](https://vitest.dev/guide/features)). So `vitest.config.ts` loads
+`.env` through `loadEnv` and also assigns the values to `process.env`: `globalSetup`
+runs in Vitest's main process, not in a test worker, and the `test.env` option does
+not apply to it.

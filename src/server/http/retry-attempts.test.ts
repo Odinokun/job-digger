@@ -7,7 +7,7 @@ import {
 
 describe("parseRetryAttempts", () => {
   it("defaults to two retries", () => {
-    // src/server/http/README.md: «до 2 повторних спроб».
+    // src/server/http/README.md: "up to two" retries.
     expect(DEFAULT_RETRY_ATTEMPTS).toBe(2);
     expect(parseRetryAttempts(undefined)).toBe(2);
     expect(parseRetryAttempts("")).toBe(2);
@@ -20,7 +20,7 @@ describe("parseRetryAttempts", () => {
   });
 
   it("refuses anything else instead of guessing", () => {
-    // Більше двох - не дозволяє ввічливість до сайтів.
+    // More than two is ruled out by politeness towards websites.
     expect(() => parseRetryAttempts("3")).toThrow(/RETRY_ATTEMPTS/);
     expect(() => parseRetryAttempts("-1")).toThrow(/RETRY_ATTEMPTS/);
     expect(() => parseRetryAttempts("1.5")).toThrow(/RETRY_ATTEMPTS/);

@@ -9,31 +9,32 @@ import { findLinkGroups, type LinkGroup } from "../parsers/own-page.ts";
 import { fetchText } from "../parsers/shared.ts";
 
 /**
- * Рецепт власної кар'єрної сторінки з картки компанії (задача 6.21): кнопка
- * Read as list у рядку сторінки Unsupported. `previewOwnPage` завантажує
- * сторінку й пропонує групи посилань, `applyOwnPageRecipe` записує вибрану.
- * Пошук груп і читання за рецептом - `src/server/parsers/own-page.ts`.
+ * The recipe for an own career page from the company card (task 6.21): the
+ * Read as list button in an Unsupported page row. `previewOwnPage` fetches the
+ * page and offers groups of links, `applyOwnPageRecipe` saves the chosen one.
+ * Finding groups and reading by recipe: `src/server/parsers/own-page.ts`.
  */
 
 /**
- * Сторінки, яким можна дати рецепт: не прочитана нічим, або вже власна - тоді
- * рецепт замінюється. Джерело, яке читає парсер платформи, рецепта не
- * потребує.
+ * Pages that can be given a recipe: read by nothing, or already an own page -
+ * then the recipe is replaced. A source read by a platform parser needs no
+ * recipe.
  */
 const RECIPE_PLATFORMS: CareerPlatform[] = ["unsupported", "own_page"];
 
 /**
- * Префікс рецепта: хост (з портом) і шлях, що закінчується `/`. Приходить із
- * клієнта, тож перевіряється формою. Довжина обмежена, як і решта адрес.
+ * The recipe prefix: the host (with port) and a path ending in `/`. It comes
+ * from the client, so its form is checked. The length is limited, like other
+ * addresses.
  */
 const PREFIX_PATTERN = /^[a-z0-9.-]+(:\d+)?\/(?:[^\s/]+\/)*$/;
 const MAX_PREFIX_LENGTH = 2048;
 
 export type OwnPagePreview =
   | { ok: true; groups: LinkGroup[] }
-  /** Джерела немає, воно чуже або вже читається парсером платформи. */
+  /** The source does not exist, belongs to someone else or is already read by a platform parser. */
   | { ok: false; problem: "not-found" }
-  /** Сторінку не вдалося завантажити: 404, інший статус чи збій запиту. */
+  /** The page could not be fetched: 404, another status or a failed request. */
   | { ok: false; problem: "page-unavailable" };
 
 export async function previewOwnPage(
@@ -47,16 +48,16 @@ export async function previewOwnPage(
   const page = await fetchText(client, source.url);
   if (!page.ok) return { ok: false, problem: "page-unavailable" };
 
-  // Від адреси після редиректів розв'язуються відносні посилання - так само,
-  // як під час перевірки (`readOwnPage`), тож префікси збігаються.
+  // Relative links resolve against the address after redirects - the same as
+  // during a check (`readOwnPage`), so the prefixes match.
   return { ok: true, groups: findLinkGroups(page.body, page.url) };
 }
 
 /**
- * Записує рецепт: сторінка стає власною (`own_page`), відстежується, а
- * позначка «Link only» (6.17) знімається - сторінку тепер читаємо.
- * `{ ok: false }` - джерела немає, воно чуже, читається парсером платформи або
- * префікс не тієї форми.
+ * Saves the recipe: the page becomes an own page (`own_page`), is tracked, and
+ * the "Link only" mark (6.17) is cleared - the page is read now.
+ * `{ ok: false }` means the source does not exist, belongs to someone else, is
+ * read by a platform parser, or the prefix has the wrong form.
  */
 export async function applyOwnPageRecipe(
   db: NodePgDatabase,
@@ -86,7 +87,7 @@ export async function applyOwnPageRecipe(
   return { ok: true };
 }
 
-/** Джерело користувача, якому можна дати рецепт, або `null`. */
+/** The user's source that can be given a recipe, or `null`. */
 async function findRecipeSource(
   db: NodePgDatabase,
   { userId, sourceId }: { userId: string; sourceId: string },

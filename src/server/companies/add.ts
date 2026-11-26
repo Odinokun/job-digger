@@ -20,79 +20,78 @@ import {
   type UrlRefusalReason,
 } from "../../lib/companies/url.ts";
 
-/** Що користувач увів у модалці Add company. */
+/** What the user entered in the Add company modal. */
 export type AddCompanyInput = {
   userId: string;
   name: string;
   /**
-   * Головний сайт компанії. Зберігається зі шляхом. Обовʼязковий (задача
-   * company-site-required); до того міг бути порожнім (картка 2.17).
+   * The company's main site. Stored with its path. Required (task
+   * company-site-required); before that it could be empty (card 2.17).
    */
   url: string;
-  /** Карʼєрна сторінка. Необовʼязкова: без неї компанія йде в Not tracked. */
+  /** The career page. Optional: without it the company goes to Not tracked. */
   careerUrl?: string;
   /**
-   * Знахідки Find pages, які користувач вибрав (src/app/README.md, «Додавання компанії»).
-   * Приходять із клієнта, тож перевіряються так само, як
-   * `careerUrl`; та сама сторінка в полі й серед знахідок - одне джерело.
+   * The Find pages findings the user chose (src/app/README.md, "Adding a
+   * company"). They come from the client, so they are checked the same way as
+   * `careerUrl`; the same page in the field and among the findings is one source.
    */
   foundUrls?: string[];
   /**
-   * Користувач уже бачив попередження - про інші компанії того самого домену
-   * або про компанію з такою самою назвою - і натиснув Save вдруге.
+   * The user has already seen a warning - about other companies on the same
+   * domain or about a company with the same name - and pressed Save again.
    *
-   * Прапорець один на обидва попередження: користувач підтверджує рішення
-   * «усе одно додати», а не кожну перевірку окремо. Точний збіг адреси
-   * (`already-added`) ним не пробивається.
+   * One flag for both warnings: the user confirms the decision "add it anyway",
+   * not each check separately. It does not get past an exact address match
+   * (`already-added`).
    */
   confirmed?: boolean;
-  /** Платформи, упізнані за вмістом сторінки (`platformsByPage`, задача 5.13). */
+  /** Platforms recognised by page content (`platformsByPage`, task 5.13). */
   pagePlatforms?: PagePlatforms;
 };
 
 /**
- * Чим закінчилося додавання.
+ * How adding ended.
  *
- * Результат-обʼєкт, а не винятки: кожна відмова тут - очікуваний ввід
- * користувача, який модалка мусить показати (той самий підхід, що в
- * `normalizeCompanyUrl`). `same-domain` - не помилка, а попередження:
- * повторний Save із `sameDomainConfirmed` його проходить.
+ * A result object, not exceptions: every refusal here is expected user input
+ * that the modal has to show (the same approach as in `normalizeCompanyUrl`).
+ * `same-domain` is not an error but a warning: a repeated Save with
+ * `sameDomainConfirmed` passes it.
  */
 export type AddCompanyResult =
   | { ok: true; companyId: string }
   | { ok: false; problem: "name-required" }
   /**
-   * Сайт порожній (`reason: "empty"`) або непридатний. Сайт обовʼязковий
-   * (задача company-site-required): до того компанія з однією лише карʼєрною
-   * сторінкою додавалась без нього (картка 2.17).
+   * The site is empty (`reason: "empty"`) or unusable. The site is required
+   * (task company-site-required): before that a company with only a career page
+   * was added without one (card 2.17).
    */
   | { ok: false; problem: "company-url"; reason: UrlRefusalReason }
   | { ok: false; problem: "career-url"; reason: UrlRefusalReason }
   /**
-   * Це джерело вже належить іншій компанії того самого користувача. Окремо від
-   * `source-duplicate`: там сторінка вже є в цієї ж компанії й видно її в
-   * списку вище, а тут треба назвати, у кого вона (картка 2.17).
+   * This source already belongs to another company of the same user. Apart from
+   * `source-duplicate`: there the page is already in this very company and
+   * visible in the list above, while here we have to name who has it (card 2.17).
    */
   | { ok: false; problem: "source-taken"; company: CompanyWithSource }
   | { ok: false; problem: "already-added"; company: ConflictingCompany }
   | { ok: false; problem: "same-domain"; companies: ConflictingCompany[] }
   /**
-   * Компанія з такою самою назвою вже є. Єдиний сигнал, який лишається, коли в
-   * однієї картки є тільки сайт, а в іншої - тільки карʼєрна сторінка
-   * (картка 2.17).
+   * A company with the same name already exists. The only signal left when one
+   * card has only a site and the other only a career page (card 2.17).
    */
   | { ok: false; problem: "same-name"; companies: NamedCompany[] };
 
 /**
- * Додає компанію з карʼєрними сторінками: введеною руками і вибраними
- * знахідками Find pages.
+ * Adds a company with its career pages: the one entered by hand and the chosen
+ * Find pages findings.
  *
- * Платформа кожного джерела виводиться з адреси через `detectPlatform`, а
- * `discovery_status` лишається `not_checked`: статуси пошуку - задача 5.11.
+ * Each source's platform is derived from its address with `detectPlatform`, and
+ * `discovery_status` stays `not_checked`: search statuses are task 5.11.
  *
- * Уся перевірка вводу відбувається до першої вставки, а компанія з її джерелом
- * пишуться в одній транзакції: інакше крива карʼєрна адреса лишила б у базі
- * компанію без джерела.
+ * All input is checked before the first insert, and the company and its source
+ * are written in one transaction: otherwise a broken career address would leave
+ * a company without a source in the database.
  */
 export async function addCompany(
   db: NodePgDatabase,
@@ -112,10 +111,10 @@ export async function addCompany(
     return { ok: false, problem: "name-required" };
   }
 
-  // Сайт обовʼязковий: порожнє поле - відмова `empty` від самого
-  // `normalizeCompanyUrl`, так само як `ftp://` - `unsupported-scheme`.
+  // The site is required: an empty field is an `empty` refusal from
+  // `normalizeCompanyUrl` itself, just as `ftp://` is `unsupported-scheme`.
   const typedUrl = url.trim();
-  // Поле карʼєрної сторінки першим: так його джерело йде першим і в списку.
+  // The career page field goes first: that way its source is first in the list too.
   const typedSources = [careerUrl ?? "", ...foundUrls]
     .map((source) => source.trim())
     .filter((source) => source !== "");
@@ -130,8 +129,8 @@ export async function addCompany(
     };
   }
 
-  // Джерела без повторів за очищеною адресою: та сама дошка в полі й серед
-  // знахідок, записана інакше, - одне джерело.
+  // Sources without repeats by normalized address: the same board in the field
+  // and among the findings, written differently, is one source.
   const sources = new Map<string, string>();
 
   for (const typed of typedSources) {
@@ -161,8 +160,8 @@ export async function addCompany(
     return { ok: false, problem: "already-added", company: conflict.company };
   }
 
-  // Той самий домен - лише попередження: на ньому можуть жити різні компанії,
-  // наприклад національні версії. Рішення лишається за користувачем.
+  // The same domain is only a warning: different companies may live on it, for
+  // example national versions. The decision stays with the user.
   if (conflict.kind === "same-domain" && !confirmed) {
     return {
       ok: false,
@@ -171,16 +170,16 @@ export async function addCompany(
     };
   }
 
-  // Найслабший сигнал перевіряється останнім: спершу точний збіг адреси, потім
-  // домен, і аж тоді назва.
+  // The weakest signal is checked last: first the exact address match, then the
+  // domain, and only then the name.
   if (sameName.length > 0) {
     return { ok: false, problem: "same-name", companies: sameName };
   }
 
   return db.transaction(async (tx) => {
     for (const normalizedUrl of sources.keys()) {
-      // Та сама сторінка в іншої компанії означає, що компанію вже додано -
-      // можливо, під іншим сайтом (картка 2.17).
+      // The same page in another company means the company has already been
+      // added, possibly under another site (card 2.17).
       const taken = await findCompanyWithSource(tx, { userId, normalizedUrl });
 
       if (taken) {
@@ -196,9 +195,9 @@ export async function addCompany(
         url: absoluteCompanyUrl(typedUrl),
         normalizedUrl: companyNormalizedUrl,
       })
-      // Перевірка вище дружня, але не атомарна: між нею і цією вставкою інший
-      // запит міг додати ту саму компанію. Останнє слово за unique-індексом
-      // `(user_id, normalized_url)`, тому замість помилки - `do nothing`.
+      // The check above is friendly but not atomic: between it and this insert
+      // another request could add the same company. The unique index
+      // `(user_id, normalized_url)` has the last word, so `do nothing` instead of an error.
       .onConflictDoNothing({
         target: [companies.userId, companies.normalizedUrl],
       })
@@ -239,7 +238,7 @@ export async function addCompany(
               url: absoluteCompanyUrl(typed),
               normalizedUrl,
               platform,
-              // Сторінку, яку нічим прочитати, зберігаємо без відстеження.
+              // A page nothing can read is saved without tracking.
               isTracked: platform !== "unsupported",
             },
             pagePlatforms,

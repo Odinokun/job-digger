@@ -1,298 +1,300 @@
-# src/server/companies - компанії
+# src/server/companies - companies
 
-Серверна частина компаній: пошук конфлікту з уже доданими компаніями, списки для
-сторінки Companies, додавання, редагування й видалення. Робота з самим рядком адреси (очищення,
-платформа, підказки для полів) - [`lib/companies`](../../lib/companies/README.md),
-таблиці й рішення щодо них - [`db`](../db/README.md), сценарій додавання компанії -
+The server side of companies: finding conflicts with companies already added, the lists
+for the Companies page, adding, editing and deleting. Working with the address string
+itself (cleanup, the platform, field suggestions) is in
+[`lib/companies`](../../lib/companies/README.md), the tables and the decisions about them
+in [`db`](../db/README.md), the add-company flow in
 [`src/app/README.md`](../../app/README.md#adding-a-company).
 
-## Файли
+## Files
 
-| Файл            | Що в ньому                                                       |
+| File            | Contents                                                         |
 | --------------- | ---------------------------------------------------------------- |
-| `duplicates.ts` | `findCompanyUrlConflict` - що вже є серед компаній користувача    |
-| `list.ts`       | `listCompanies`, `findCompanyInTab` і `countCompaniesByTab`; вкладка Needs attention - `needsAttentionSubquery` (задача 6.11) |
-| `add.ts`        | `addCompany` - додавання компанії з карʼєрною сторінкою з поля і вибраними знахідками Find pages |
-| `update.ts`     | `updateCompany` - перейменування, видалення й додавання карʼєрних джерел |
-| `sources.ts`    | `addCareerSource` - джерело до вже доданої компанії; `addCareerSources` - кілька одним Save, усе або нічого (Find pages на Not tracked); `companySources` |
-| `reference-only.ts` | `setSourceReferenceOnly` - позначка «лише посилання» на сторінці Unsupported (задача 6.17) |
-| `own-page.ts` | `previewOwnPage` - групи посилань власної сторінки для діалогу Read as list; `applyOwnPageRecipe` - записує вибраний префікс рецептом (задача 6.21) |
-| `page-platform.ts` | `platformsByPage` - платформа сторінки за вмістом, для адрес, що за хостом `unsupported` (задача 5.13); `withPagePlatform` - застосовує її до джерела перед вставкою |
-| `page-platform.integration.test.ts` | `platformsByPage` через фейковий вебсервер |
-| `delete.ts`     | `deleteCompany` - компанія разом із усіма її джерелами            |
-| `source-duplicates.ts` | `findCompanyWithSource` - у кого вже є це карʼєрне джерело; `findCompaniesWithSources` - те саме для списку адрес одним запитом |
+| `duplicates.ts` | `findCompanyUrlConflict` - what already exists among the user's companies |
+| `list.ts`       | `listCompanies`, `findCompanyInTab` and `countCompaniesByTab`; the Needs attention tab - `needsAttentionSubquery` (task 6.11) |
+| `add.ts`        | `addCompany` - adding a company with the career page from the field and the chosen Find pages findings |
+| `update.ts`     | `updateCompany` - renaming, removing and adding career sources   |
+| `sources.ts`    | `addCareerSource` - a source for an existing company; `addCareerSources` - several in one Save, all or nothing (Find pages on Not tracked); `companySources` |
+| `reference-only.ts` | `setSourceReferenceOnly` - the "link only" mark on an Unsupported page (task 6.17) |
+| `own-page.ts` | `previewOwnPage` - the link groups of an own page for the Read as list dialog; `applyOwnPageRecipe` - saves the chosen prefix as a recipe (task 6.21) |
+| `page-platform.ts` | `platformsByPage` - a page's platform by its content, for addresses that are `unsupported` by host (task 5.13); `withPagePlatform` - applies it to a source before the insert |
+| `page-platform.integration.test.ts` | `platformsByPage` through the fake web server |
+| `delete.ts`     | `deleteCompany` - a company together with all its sources        |
+| `source-duplicates.ts` | `findCompanyWithSource` - who already has this career source; `findCompaniesWithSources` - the same for a list of addresses in one query |
 
-## Рішення
+## Decisions
 
-**Платформа - за адресою, а коли адреса мовчить - за сторінкою** (задача 5.13).
-PeopleForce на домені компанії (`peopleforce.softconstruct.com`) за хостом не
-впізнати, і без цього джерело ставало б Unsupported. Тому Server Action перед
-додаванням (`addCompany`, `addCareerSource`, `addCareerSources`, `updateCompany`)
-завантажує кожну адресу, що за хостом `unsupported`, і передає впізнане параметром
-`pagePlatforms`. Запит - до транзакції, бо чужий сайт може відповідати до
-тайм-ауту. Find new pages сторінки не завантажує вдруге: платформу знахідки вже
-знає пошук. Адреси відомих ATS не завантажуються зовсім, а `pagePlatforms` їхньої
-платформи не переписує. CSV-імпорт сторінок не завантажує: файл - це десятки
-адрес, і імпорт тягнувся б хвилинами; така сторінка лишається Unsupported, доки її
-не знайде Find new pages.
+**The platform comes from the address, and when the address says nothing, from the page**
+(task 5.13). PeopleForce on the company's domain (`peopleforce.softconstruct.com`) cannot
+be recognised by the host, and without this the source would become Unsupported. So before
+adding (`addCompany`, `addCareerSource`, `addCareerSources`, `updateCompany`) the Server
+Action loads every address that is `unsupported` by host and passes what it recognised in
+the `pagePlatforms` parameter. The request happens before the transaction, because another
+site may take until the timeout to answer. Find new pages does not load the pages a second
+time: the search already knows the finding's platform. Addresses of known ATSs are not
+loaded at all, and `pagePlatforms` does not overwrite their platform. CSV import does not
+load pages: a file is dozens of addresses, and the import would drag on for minutes; such
+a page stays Unsupported until Find new pages finds it.
 
-**Три види конфлікту, різної сили.** `exact` (той самий сайт) блокує додавання.
-`same-domain` лише попереджає: на одному домені може жити кілька різних компаній.
-Однакова назва - теж попередження, і найслабший сигнал із трьох, тому перевіряється
-останньою (`findCompaniesByName`). Саме правило порівняння назв - у
+**Three kinds of conflict, of different strength.** `exact` (the same site) blocks adding.
+`same-domain` only warns: several different companies can live on one domain. The same
+name is a warning too, and the weakest signal of the three, so it is checked last
+(`findCompaniesByName`). The name comparison rule itself is in
 [`lib/companies`](../../lib/companies/README.md#коли-дві-назви---одна-компанія).
 
-**Одне підтвердження на обидва попередження.** Прапорець `confirmed` проходить і
-`same-domain`, і `same-name`: користувач натискає Add anyway один раз і очікує, що
-компанія збережеться, а не що вилізе друге попередження. Точний збіг адреси ним не
-пробивається.
+**One confirmation for both warnings.** The `confirmed` flag gets past both `same-domain`
+and `same-name`: the user clicks Add anyway once and expects the company to be saved, not a
+second warning to pop up. It does not get past an exact address match.
 
-**Домен обчислюється в SQL через `split_part`**, а не шукається як `like 'bosch.com%'`:
-інакше `bosch.com.ua` вважався б тим самим доменом, що `bosch.com`. Повний перегляд
-кількасот рядків дешевший за окрему колонку з доменом; якщо список компаній виросте
-настільки, що це стане помітним, додамо колонку з індексом тоді.
+**The domain is computed in SQL with `split_part`**, not searched for as `like
+'bosch.com%'`: otherwise `bosch.com.ua` would count as the same domain as `bosch.com`. A
+full scan of a few hundred rows is cheaper than a separate domain column; if the company
+list ever grows enough for this to be noticeable, we will add an indexed column then.
 
-**Порядок компаній у попередженні задає код** (`order by name`), а не база. Без явного
-порядку PostgreSQL віддає рядки як йому зручно: тест на порядок якийсь час проходив
-випадково, і впав лише тоді, коли порядок перевірили мутацією.
+**The code sets the order of companies in the warning** (`order by name`), not the
+database. Without an explicit order PostgreSQL returns rows as it pleases: the order test
+passed by chance for a while and failed only when the order was checked with a mutation.
 
-## Списки для сторінки Companies
+## Lists for the Companies page
 
-**Вкладка - це запит, а не колонка.** Tracked означає «є хоч одне джерело з
-`is_tracked`», Not tracked - «немає жодного», тож компанія, чия єдина сторінка
-не підтримується, лишається в Not tracked, а її адреса зберігається.
+**A tab is a query, not a column.** Tracked means "has at least one source with
+`is_tracked`", Not tracked "has none", so a company whose only page is not supported stays
+in Not tracked, and its address is kept.
 
-**Джерела тягнемо другим запитом** за `in (...)`, а не join-ом: join повторював би
-рядок компанії на кожне джерело, а `json_agg` ускладнив би запит заради того самого
-результату на півсотні рядків.
+**Sources come in a second query** with `in (...)`, not a join: a join would repeat the
+company row for every source, and `json_agg` would complicate the query for the same
+result on fifty rows.
 
-**Числа вакансій - третім запитом**, згрупованим за компанією: `vacancies` →
-`career_sources` → `company_id`, скільки всього і скільки з `is_favorite`. Компанія без
-вакансій отримує нулі. Числа їдуть разом із рядком списку (`vacancies` у
-`CompanyListItem`), тож діалог видалення бере їх звідти без окремого запиту, а картка
-компанії згодом покаже їх так само. `findCompanyInTab` рахує
-так само - обидва ідуть через один `attachDetails`.
+**Vacancy counts come in a third query**, grouped by company: `vacancies` →
+`career_sources` → `company_id`, how many in total and how many with `is_favorite`. A
+company without vacancies gets zeros. The numbers travel with the list row (`vacancies` in
+`CompanyListItem`), so the delete dialog takes them from there without a separate query.
+`findCompanyInTab` counts the same way - both go through one `attachDetails`.
 
-**Остання перевірка компанії** (`lastCheckedAt`) - найпізніший `last_checked_at`
-серед її джерел, рахується в коді з того самого запиту джерел. `null` - жодне джерело
-ще не перевірялося. Пише його Check now ([`checks`](../checks/README.md)).
+**The company's last check** (`lastCheckedAt`) is the latest `last_checked_at` among its
+sources, computed in code from the same sources query. `null` - no source has been checked
+yet. Check now writes it ([`checks`](../checks/README.md)).
 
-**Стан перевірки джерела** - для статусу компанії й «Last ok». `lastCheck`: `null` - ще не перевірялося, `failed` - `consecutive_failures > 0`,
-інакше `ok`. `lastSuccessAt` - як є. `isChecking` - у джерела є завдання `queued` чи
-`running`; рахується підзапитом `exists`, і імена таблиць у ньому написані явно: у
-запиті з однієї таблиці Drizzle пише колонки без них, і `"source_id" = "id"`
-порівнювало б колонки самої `check_tasks` (тест на це впав би). Сам статус компанії
-складає [`lib/companies/company-status.ts`](../../lib/companies/company-status.ts).
+**A source's check state** - for the company status and "Last ok". `lastCheck`: `null` -
+never checked, `failed` - `consecutive_failures > 0`, otherwise `ok`. `lastSuccessAt` - as
+is. `isChecking` - the source has a `queued` or `running` task; computed with an `exists`
+subquery, and the table names in it are written explicitly: in a single-table query
+Drizzle writes columns without them, and `"source_id" = "id"` would compare columns of
+`check_tasks` itself (a test for this would fail). The company status itself is put
+together by [`lib/companies/company-status.ts`](../../lib/companies/company-status.ts).
 
-**Обидва лічильники рахуються одним запитом**, бо обидва числа стоять у назвах
-вкладок одночасно.
+**Both counters are computed in one query**, because both numbers stand in the tab names
+at the same time.
 
-**Порядок задає код** (`order by name`), а не база. Без явного порядку тест на
-сортування проходив випадково - і впав лише після того, як порядок перевірили
-мутацією.
+**The code sets the order** (`order by name`), not the database. Without an explicit order
+the sorting test passed by chance - and failed only after the order was checked with a
+mutation.
 
-**Порція - 50 компаній, а продовження задає курсор, не номер сторінки.**
-`listCompanies` приймає `after` - пару «назва + id» останнього показаного рядка -
-і віддає `{ items, nextCursor }`. `OFFSET` не беремо: він зсувається, коли під час
-перегляду додають компанії, тож одна й та сама компанія могла б прийти двічі або
-не прийти взагалі.
+**A batch is 50 companies, and a cursor, not a page number, sets where to continue.**
+`listCompanies` takes `after` - the "name + id" pair of the last shown row - and returns
+`{ items, nextCursor }`. We do not use `OFFSET`: it shifts when companies are added during
+browsing, so the same company could come twice or not at all.
 
-**Умова курсора - порівняння пари** `(name, id) > (key, id)`, а не дві умови через
-`OR`: у PostgreSQL це рівно «наступний рядок за тим самим порядком». Тому й
-`order by name, id`, а не просто `name`: назва не унікальна, і без `id` порядок
-однойменних компаній невизначений, а курсор губив би рядки на межі порції.
+**The cursor condition compares a pair** `(name, id) > (key, id)` rather than two
+conditions joined with `OR`: in PostgreSQL this is exactly "the next row in the same
+order". Hence also `order by name, id` rather than just `name`: the name is not unique, and
+without `id` the order of companies with the same name is undefined, and the cursor would
+lose rows at the batch boundary.
 
-**Про продовження дізнаємося одним зайвим рядком:** запит читає `limit + 1`, і
-`nextCursor` ставиться лише тоді, коли той рядок прийшов. Окремий `count` на
-кожне Load more коштував би дорожче, а кнопці потрібен лише факт.
+**We learn that there is more with one extra row:** the query reads `limit + 1`, and
+`nextCursor` is set only when that row arrived. A separate `count` on every Load more would
+cost more, and the button needs only the fact.
 
-**Курсор приходить із клієнта**, тому `listCompanies` проганяє його через
-`parseCursor` ([`lib/pagination`](../../lib/pagination/cursor.ts)): непридатне
-значення означає «почни з початку», а не помилку.
+**The cursor comes from the client**, so `listCompanies` runs it through `parseCursor`
+([`lib/pagination`](../../lib/pagination/cursor.ts)): an unusable value means "start from
+the beginning", not an error.
 
-**Пошук за назвою** (`query`, вкладка All, задача companies-search) - `ilike`
-на `companies.name`: назва містить рядок пошуку без огляду на регістр. `%`, `_`
-і `\` у рядку екрануються зворотною скісною рискою, тож «50%» шукає саме «50%»,
-а не все підряд. Рядок обрізається з країв і до 100 символів, порожній - без
-умови. Наступна порція просить той самий `query`, курсор від пошуку не
-залежить. Вкладка All - `tabCondition` без умови; її число в
-`countCompaniesByTab` - `count(*)`. Те саме правило на клієнті -
-`matchesCompanySearch` (`src/lib/companies/company-list.ts`).
+**Name search** (`query`, the All tab, task companies-search) is `ilike` on
+`companies.name`: the name contains the search string regardless of case. `%`, `_` and `\`
+in the string are escaped with a backslash, so "50%" looks for exactly "50%", not for
+everything. The string is trimmed at the edges and to 100 characters; an empty one adds no
+condition. The next batch asks for the same `query`; the cursor does not depend on the
+search. The All tab is `tabCondition` without a condition; its number in
+`countCompaniesByTab` is `count(*)`. The same rule on the client is `matchesCompanySearch`
+(`src/lib/companies/company-list.ts`).
 
-**Один рядок окремо читає `findCompanyInTab`.** Після збереження в модалці
-Edit чи додавання компанії список замінює в себе саме цей рядок, не
-перечитуючи дозавантажені порції. `null` означає «цій вкладці компанія більше
-не належить»: без відстежуваних джерел вона переїхала в Not tracked, тож рядок
-треба прибрати. Умова на користувача стоїть у тому самому запиті, тому чужа
-компанія просто не знаходиться.
+**`findCompanyInTab` reads one row separately.** After saving in the Edit modal or adding a
+company, the list replaces exactly that row without re-reading the loaded batches. `null`
+means "the company no longer belongs to this tab": without tracked sources it moved to Not
+tracked, so the row has to be removed. The user condition is in the same query, so another
+user's company is simply not found.
 
-## Редагування компанії
+## Editing a company
 
-`updateCompany` перейменовує компанію й видаляє позначені джерела **в одній
-транзакції**: інакше відмова через порожню назву лишила б джерела вже
-видаленими.
+`updateCompany` renames the company and removes the marked sources **in one transaction**:
+otherwise a refusal over an empty name would leave the sources already removed.
 
-**Доступ перевіряє сам `UPDATE`.** Умова `id = ? and user_id = ?` разом із
-`returning`: чужий рядок не оновиться й нічого не поверне, тому окремий запит
-на перевірку не потрібен, а відповідь `not-found` однакова для неіснуючої та
-чужої компанії - інакше вона підказувала б, що такий рядок у базі є.
+**The `UPDATE` itself checks access.** The condition `id = ? and user_id = ?` together with
+`returning`: someone else's row is not updated and returns nothing, so no separate check
+query is needed, and the `not-found` response is the same for a company that does not
+exist and for someone else's - otherwise it would hint that such a row exists.
 
-**Видалення джерел обмежене компанією.** `company_id` в умові обовʼязковий: id
-джерел приходять із клієнта, і без нього можна було б видалити джерело іншої
-компанії.
+**Removing sources is limited to the company.** `company_id` in the condition is required:
+the source ids come from the client, and without it a source of another company could be
+removed.
 
-**Нове джерело додається тим самим Save.** Доки автоматичного пошуку немає
-(задача 5.07), це єдиний спосіб дати компанії друге джерело - наприклад, три фільтри
-однієї сторінки `mozilla.org` (картка 2.16). Адресу, підпис і платформу готує
-`prepareCareerSource` із [`lib/companies`](../../lib/companies/README.md), тому те саме
-правило працює і в пропозиції модалки Add company.
+**A new source is added by the same Save.** Besides Find pages, this is how a company gets
+a second source by hand - for example, three filters of one `mozilla.org` page (task 2.16).
+`prepareCareerSource` from [`lib/companies`](../../lib/companies/README.md) prepares the
+address, the label and the platform, so the same rule works in the Add company modal's
+offer too.
 
-**Підпис наявного джерела зберігається тим самим Save.** Форма надсилає поля всіх
-джерел, тому порожній підпис означає «прибрати підпис», а не «не чіпати». Оновлень
-стільки, скільки полів у модалці: джерел у компанії одиниці, і один `UPDATE ... CASE`
-того не варт. `company_id` в умові обовʼязковий - id джерел приходять із клієнта, і без
-нього можна було б підписати джерело іншої компанії.
+**An existing source's label is saved by the same Save.** The form sends the fields of all
+sources, so an empty label means "remove the label", not "leave it alone". There are as
+many updates as fields in the modal: a company has a handful of sources, and one `UPDATE
+... CASE` is not worth it. `company_id` in the condition is required - the source ids come
+from the client, and without it a source of another company could be labelled.
 
-**Адреса джерела перевіряється до транзакції**, як і в `addCompany`: інакше відмова
-через криву адресу лишила б компанію вже перейменованою, а джерела - вже видаленими.
+**The source address is checked before the transaction**, as in `addCompany`: otherwise a
+refusal over a bad address would leave the company already renamed and the sources already
+removed.
 
-**Дублікат шукається серед джерел, які після цього Save залишаться.** Позначені до
-видалення зі списку виключаються, інакше заміна адреси на ту саму впиралася б у
-джерело, якого вже не буде. Запит іде через `companies` з умовою на користувача: без
-неї відповідь «уже є таке джерело» розказувала б про чужу компанію.
+**A duplicate is looked for among the sources that remain after this Save.** Sources marked
+for removal are left out of the list, otherwise replacing an address with the same one would
+run into a source that is about to disappear. The query goes through `companies` with a user
+condition: without it the answer "such a source already exists" would tell about someone
+else's company.
 
-**Статус пошуку додавання руками не чіпає.** Компанія з `not_found` і новим джерелом
-повертається у Tracked, але сам статус лишається: пошуку все одно не було, а на
-вкладці Tracked він не показується.
+**Adding by hand does not touch the search status.** A company with `not_found` and a new
+source goes back to Tracked, but the status itself stays: there was no search anyway, and
+the Tracked tab does not show it.
 
-**Без джерел статус пошуку скидається** на `not_checked`: компанія опиняється в
-Not tracked, і попередній `not_found` чи `check_failed` її більше не описує.
+**Without sources the search status resets** to `not_checked`: the company ends up in Not
+tracked, and the previous `not_found` or `check_failed` no longer describes it.
 
-**Компанія, в якої зняли останнє джерело, лишається - у Not tracked.** Забороняти
-Save ми не стали: вкладка Not tracked і є тим місцем, де користувач вирішує, що з
-компанією робити - додати карʼєрну сторінку через Edit або видалити її кошиком.
+**A company whose last source was removed stays - in Not tracked.** We did not forbid the
+Save: the Not tracked tab is exactly where the user decides what to do with the company -
+add a career page through Edit or delete it with the trash button.
 
-**Сайт редагується** (задача company-site-required): `url` в `updateCompany` - сайт із
-поля модалки, `undefined` - не змінювати. Порожній чи непридатний - `company-url`, як
-в `addCompany`; сайт іншої компанії користувача - `already-added`; свій незмінений -
-не конфлікт. «Той самий домен» тут не попереджає: це правка наявної компанії, а не
-нова картка. Перевірка - до транзакції, щоб відмова не виконувала половини роботи.
+**The site is editable** (task company-site-required): `url` in `updateCompany` is the site
+from the modal field, `undefined` - do not change it. Empty or unusable - `company-url`, as
+in `addCompany`; the site of another company of the user - `already-added`; its own
+unchanged one - not a conflict. "The same domain" does not warn here: this is an edit of an
+existing company, not a new card. The check happens before the transaction, so a refusal
+does not do half the work.
 
-Вакансії видаленого джерела, зокрема обрані, зникають разом із ним:
-`vacancies.source_id` - `on delete cascade`. Правило те саме, що для Delete
-компанії.
+The vacancies of a removed source, favorites included, go with it:
+`vacancies.source_id` is `on delete cascade`. The rule is the same as for Delete company.
 
-## Карʼєрне джерело вже в іншої компанії
+## A career source already in another company
 
-`findCompanyWithSource` відповідає, чи це джерело вже належить якійсь компанії того
-самого користувача. Викликають його всі три шляхи, якими джерело потрапляє в базу -
-`addCompany`, `updateCompany` і `addCareerSource`, - і кожен усередині своєї
-транзакції: між перевіркою і вставкою компанію могли б видалити.
+`findCompanyWithSource` answers whether this source already belongs to some company of the
+same user. All three paths by which a source gets into the database call it - `addCompany`,
+`updateCompany` and `addCareerSource` - each inside its own transaction: the company could
+be deleted between the check and the insert.
 
-**Навіщо.** Та сама компанія може прийти під різними сайтами (`spotify.com` і
-`spotify.se`) - тоді перевірка по сайту її не впізнає, а друге додавання
-`jobs.lever.co/spotify` дало б двох «Spotify» із подвійними перевірками. Зʼявилась ця
-перевірка разом із компаніями без сайту (картка 2.17); сайт тепер обовʼязковий
-(задача company-site-required), але сценарій із різними сайтами лишився.
+**Why.** The same company can come under different sites (`spotify.com` and `spotify.se`) -
+then the site check does not recognise it, and adding `jobs.lever.co/spotify` a second time
+would give two "Spotify" with double checks. This check appeared together with companies
+without a site (task 2.17); the site is now required (task company-site-required), but the
+scenario with different sites remains.
 
-**Відмова `source-taken` називає компанію**, у якої це джерело вже є, - на відміну від
-`source-duplicate`, де сторінка належить цій же компанії й видно її в списку вище.
+**The `source-taken` refusal names the company** that already has this source - unlike
+`source-duplicate`, where the page belongs to this very company and is visible in the list
+above.
 
-**`exceptCompanyId`** виключає компанію, якій джерело саме додають: її власні джерела -
-дублікат усередині компанії, і про нього вже є окрема відмова.
+**`exceptCompanyId`** excludes the company the source is being added to: its own sources
+are a duplicate within the company, and there is a separate refusal for that.
 
-**Список знахідок Find pages** позначає такі джерела «вже відстежується в ...»
-(задача 5.08) через `findCompaniesWithSources`: один запит на всі знахідки, ключ -
-адреса так, як її передали. Вибрати таку знахідку не можна - Save однаково
-відмовив би `source-taken`.
+**The Find pages findings list** marks such sources "already tracked in ..." (task 5.08)
+through `findCompaniesWithSources`: one query for all findings, keyed by the address as
+passed. Such a finding cannot be chosen - Save would refuse it with `source-taken` anyway.
 
-Чому перевірка дружня, а не unique-індекс - [`db/README.md`](../db/README.md#рішення-щодо-схеми).
+Why the check is friendly rather than a unique index:
+[`db/README.md`](../db/README.md#schema-decisions).
 
-## Видалення компанії
+## Deleting a company
 
-`deleteCompany` - один `DELETE` без транзакції: джерела прибирає
-`ON DELETE CASCADE` на `career_sources.company_id` ([`db`](../db/README.md)), а
-вакансії - тим самим каскадом на `vacancies.source_id`, зокрема ті, що в Favorites.
-Скільки їх зникне, діалог знає зі списку (`vacancies` у рядку компанії). Історична
-агрегована статистика перевірок при цьому лишається: лічильники History
-зберігаються в рядку `check_runs`, а не рахуються з `check_tasks`, які зникають
-разом із джерелами.
+`deleteCompany` is one `DELETE` without a transaction: `ON DELETE CASCADE` on
+`career_sources.company_id` removes the sources ([`db`](../db/README.md)), and the same
+cascade on `vacancies.source_id` removes the vacancies, including those in Favorites. The
+dialog knows how many will disappear from the list (`vacancies` in the company row). The
+historical aggregated check statistics stay: the History counters are stored in the
+`check_runs` row, not computed from the `check_tasks` that disappear with the sources.
 
-**Доступ перевіряє сам `DELETE`**, як і в `updateCompany`: умова
-`id = ? and user_id = ?` разом із `returning`. Чужий рядок не видалиться й нічого
-не поверне, тому `not-found` однаковий для неіснуючої та чужої компанії.
+**The `DELETE` itself checks access**, as in `updateCompany`: the condition `id = ? and
+user_id = ?` together with `returning`. Someone else's row is not deleted and returns
+nothing, so `not-found` is the same for a company that does not exist and for someone
+else's.
 
-## Додавання компанії
+## Adding a company
 
-`addCompany` - уся серверна частина модалки Add company, крім самого пошуку
-(`src/server/discovery`). Джерела - карʼєрна сторінка з поля і вибрані знахідки
-Find pages (`foundUrls`): кожна перевіряється так само, як поле (`career-url`,
-`source-taken`), а та сама сторінка, записана інакше, - одне джерело. Платформа
-кожного джерела виводиться з адреси, а `discovery_status` лишається `not_checked`:
-статуси пошуку - задача 5.11.
+`addCompany` is the whole server side of the Add company modal, except the search itself
+(`src/server/discovery`). The sources are the career page from the field and the chosen
+Find pages findings (`foundUrls`): each is checked the same way as the field
+(`career-url`, `source-taken`), and the same page written differently is one source. The
+platform of each source is derived from the address, and `discovery_status` stays
+`not_checked`: the search statuses are set elsewhere (task 5.11).
 
-**Відмова - результат, а не виняток.** Кожен випадок (`name-required`,
-`company-url`, `career-url`, `already-added`, `same-domain`,
-`same-name`, `source-taken`) модалка мусить показати, тому вони лежать у типі
-`AddCompanyResult` і їх не можна проґавити. Тексти повідомлень живуть у перекладах,
-а не тут.
+**A refusal is a result, not an exception.** The modal has to show every case
+(`name-required`, `company-url`, `career-url`, `already-added`, `same-domain`, `same-name`,
+`source-taken`), so they live in the `AddCompanyResult` type and cannot be missed. The
+message texts live in the translations, not here.
 
-**Сайт обовʼязковий** (рішення автора 21.11.2026, задача company-site-required): порожнє
-поле - `company-url` з причиною `empty`, як і непридатна адреса. Карʼєрна сторінка
-необовʼязкова. До того сайту могло не бути (картка 2.17) - компанія, знайдена лише на
-ATS, ідентифікувалась своїм джерелом; без сайту не працює пошук сторінок на сайті, і
-автор вирішив його вимагати. У модалці Save неактивна, доки немає назви й сайту.
+**The site is required** (task company-site-required): an empty field is `company-url`
+with the reason `empty`, like an unusable address. The career page is optional. Before, a
+company could have no site (task 2.17) - a company found only on an ATS was identified by
+its source; without a site the search for pages on the site does not work, and the author
+decided to require it. In the modal Save is disabled until there is a name and a site.
 
-**`same-domain` - попередження, а не помилка.** Перший Save повертає список
-компаній того самого домену, повторний із `sameDomainConfirmed` зберігає.
-Точний збіг (`already-added`) не проходить і з підтвердженням.
+**`same-domain` is a warning, not an error.** The first Save returns the list of companies
+on the same domain, a repeated one with `sameDomainConfirmed` saves. An exact match
+(`already-added`) does not pass even with a confirmation.
 
-**Уся перевірка вводу - до першої вставки**, а компанія з її джерелом пишуться в
-одній транзакції: інакше крива карʼєрна адреса лишила б у базі компанію без
-джерела.
+**All input checks happen before the first insert**, and the company with its source are
+written in one transaction: otherwise a bad career address would leave a company without a
+source in the database.
 
-**Адреса зберігається в абсолютній формі** (`absoluteCompanyUrl`): без протоколу
-`<a href>` у списку компаній став би відносним посиланням. Порівнянна форма
-лежить окремо, у `normalized_url`.
+**The address is stored in absolute form** (`absoluteCompanyUrl`): without a protocol the
+`<a href>` in the company list would become a relative link. The comparable form lives
+separately, in `normalized_url`.
 
-**Останнє слово за unique-індексом, а не за перевіркою.**
-`findCompanyUrlConflict` виконується до вставки й дає дружній текст, але
-атомарним він бути не може: між перевіркою і вставкою інший запит може додати ту
-саму компанію. Тому вставка йде з `on conflict (user_id, normalized_url) do
-nothing`, і якщо вона нічого не повернула - компанію перечитуємо й віддаємо той
-самий `already-added`. Результат не залежить від того, хто виграв гонку, тож
-застосунок витримує кількох користувачів і кілька вкладок одного користувача.
+**The unique index, not the check, has the last word.** `findCompanyUrlConflict` runs
+before the insert and gives a friendly text, but it cannot be atomic: between the check and
+the insert another request may add the same company. So the insert goes with `on conflict
+(user_id, normalized_url) do nothing`, and if it returned nothing, the company is re-read
+and the same `already-added` is returned. The result does not depend on who won the race,
+so the app copes with several users and several tabs of one user.
 
-Це покрито тестом із двома зʼєднаннями: сусіднє тримає незакомічену вставку,
-`addCompany` стає в чергу за блокуванням індексу, і аж після `commit` отримує
-`already-added`. Момент блокування тест вичікує опитуванням `pg_stat_activity`,
-а не таймером - інакше він проходив би через дружню перевірку й про гонку не
-казав би нічого. Опитування йде поза транзакцією: усередині неї статистика
-віддається з кешованого знімка, у якому сусіднього зʼєднання ще немає.
+A test with two connections covers this: the other one holds an uncommitted insert,
+`addCompany` queues behind the index lock, and only after `commit` gets `already-added`.
+The test waits for the lock moment by polling `pg_stat_activity`, not with a timer -
+otherwise it would pass through the friendly check and say nothing about the race. The
+polling happens outside a transaction: inside one, the statistics come from a cached
+snapshot in which the other connection is not there yet.
 
-## Джерело до вже доданої компанії
+## A source for an existing company
 
-`addCareerSource` потрібен там, де компанію не редагують: модалка Add company, упізнавши
-вставлену адресу як уже додану компанію, пропонує зберегти цю адресу ще одним джерелом
-замість глухої відмови (картка 2.16). Те саме правило, що в `updateCompany`, бо адресу
-обом готує `prepareCareerSource`.
+`addCareerSource` is needed where the company is not being edited: the Add company modal,
+having recognised the pasted address as an existing company, offers to save this address as
+one more source instead of a dead end (task 2.16). The same rule as in `updateCompany`,
+because `prepareCareerSource` prepares the address for both.
 
-**Перевірка доступу й вставка - в одній транзакції.** Це два запити: без транзакції між
-ними компанію могли б видалити, і джерело лишилося б без неї.
+**The access check and the insert are in one transaction.** They are two queries: without a
+transaction the company could be deleted between them, and the source would be left without
+it.
 
-**Відмови названі так само, як в `updateCompany`** (`not-found`, `source-url`,
-`source-duplicate`): модалки показують ті самі тексти, а два набори назв для однієї дії
-розходилися б.
+**The refusals are named the same as in `updateCompany`** (`not-found`, `source-url`,
+`source-duplicate`): the modals show the same texts, and two sets of names for one action
+would drift apart.
 
-**`companySources` доступу не перевіряє** - це робить виклик: `addCareerSource` окремим
-запитом за `(id, user_id)`, `updateCompany` - умовою самого `UPDATE`. Тому
-`updateCompany` читає джерела своїм запитом через `companies`: йому потрібна саме умова
-на користувача, інакше відповідь «уже є таке джерело» розказувала б про чужу компанію.
+**`companySources` does not check access** - the caller does: `addCareerSource` with a
+separate query by `(id, user_id)`, `updateCompany` with the condition of the `UPDATE`
+itself. So `updateCompany` reads the sources with its own query through `companies`: it
+needs exactly the user condition, otherwise the answer "such a source already exists" would
+tell about someone else's company.
 
-## Межі
+## Boundaries
 
-`findCompanyUrlConflict` приймає **уже очищену** адресу: очищення й пошук - два
-окремих кроки, бо очищену форму все одно треба зберегти в `companies.normalized_url`.
+`findCompanyUrlConflict` takes an **already cleaned** address: cleaning and searching are
+two separate steps, because the cleaned form has to be stored in `companies.normalized_url`
+anyway.
 
-Тексти повідомлень («Компанія вже додана», «На цьому домені вже є: ...») і їх показ -
-задача модалки Add company, не цих модулів.
+The message texts ("Company already added", "This domain already has: ...") and showing
+them are the Add company modal's job, not these modules'.

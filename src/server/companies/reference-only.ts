@@ -5,18 +5,18 @@ import { isUuid } from "../../lib/uuid.ts";
 import { careerSources, companies } from "../db/schema.ts";
 
 /**
- * Позначка «лише посилання» на сторінці, яку нічим прочитати (задача 6.17).
+ * The "link only" mark on a page nothing can read (task 6.17).
  *
- * Сторінка лишається в картці посиланням, але не рахується непрочитаною: не
- * тримає компанію в Needs attention і не входить у бейдж «N pages not read».
- * Позначається лише `unsupported` - джерело, яке читається чи падає, так не
- * сховати. Автоматично позначка не ставиться: застосунок не знає, чи на сайті
- * немає вакансій, яких нема в ATS.
+ * The page stays on the card as a link but does not count as unread: it does
+ * not keep the company in Needs attention and is not part of the "N pages not
+ * read" badge. Only an `unsupported` page can be marked - a source that is read
+ * or failing cannot be hidden this way. The mark is never set automatically: the
+ * app does not know whether the site has vacancies that are not in an ATS.
  *
- * `{ ok: false }` - джерела немає, воно чуже, читається парсером або id не у
- * формі UUID. Причини не
- * розрізняються: кнопка є лише в рядку Unsupported, тож відмова означає, що
- * список застарів, і відповідь на неї одна - перечитати його.
+ * `{ ok: false }` means the source does not exist, belongs to someone else, is
+ * read by a parser, or the id is not a UUID. The reasons are not told apart: the
+ * button exists only in an Unsupported row, so a refusal means the list is
+ * stale, and the answer is always the same - reread it.
  */
 export async function setSourceReferenceOnly(
   db: NodePgDatabase,
@@ -30,7 +30,7 @@ export async function setSourceReferenceOnly(
     return { ok: false };
   }
 
-  // Власника перевіряє підзапит: id джерела приходить із клієнта.
+  // The subquery checks the owner: the source id comes from the client.
   const ownCompanies = db
     .select({ id: companies.id })
     .from(companies)

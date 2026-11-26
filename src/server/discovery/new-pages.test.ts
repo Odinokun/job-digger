@@ -66,7 +66,7 @@ describe("decideNewPages", () => {
   });
 
   it("keeps an own page as an untracked source next to a readable board", () => {
-    // Адреса власної сторінки зберігається.
+    // The own page's address is kept.
     expect(
       decideNewPages({
         findings: [SITE_BOARD, OWN_PAGE],
@@ -133,7 +133,7 @@ describe("decideNewPages", () => {
   });
 
   it("never takes a page another company already tracks", () => {
-    // Save однаково відмовив би `source-taken` (задача 5.08).
+    // Save would refuse it with `source-taken` anyway (task 5.08).
     expect(
       decideNewPages({
         findings: [SITE_BOARD, NAME_BOARD],

@@ -1,25 +1,25 @@
 /**
- * Дублікати вакансій між джерелами однієї компанії (задача 6.20): та сама
- * вакансія на ATS, на агрегаторі й на сайті компанії. Дублікат не відкидається,
- * а зберігається прочитаним - його немає в Unread, лічильнику й «N new
- * vacancies». Правила й рішення - README.md поруч, розділ «Дублікати між
- * джерелами».
+ * Vacancy duplicates across the sources of one company (task 6.20): the same
+ * vacancy on an ATS, on an aggregator and on the company site. A duplicate is not
+ * dropped but stored as read - it is not in Unread, the counter or "N new
+ * vacancies". The rules and decisions are in the README.md next to this file,
+ * section "Duplicates across sources".
  *
- * Тут - чиста частина: який із дублікатів стає прочитаним. Пошук збігів і
- * запис - `lifecycle.ts`.
+ * Here is the pure part: which of the duplicates becomes read. Finding matches and
+ * writing are in `lifecycle.ts`.
  */
 import type { CareerPlatform } from "../../lib/companies/platform.ts";
 
 /**
- * Платформа - ATS чи агрегатор (PeopleForce, DOU…), сайт - власна сторінка
- * компанії. Платформи мають перевагу: вони «гнучкіші й живіші» в показі
- * (рішення автора 20.11.2026).
+ * A platform is an ATS or an aggregator (PeopleForce, DOU…), a site is the
+ * company's own page. Platforms win: they are "more flexible and more alive" in
+ * how they present vacancies.
  */
 export type SourceKind = "platform" | "site";
 
 /**
- * Платформи, які читають власний сайт компанії, а не ATS: schema.org
- * `JobPosting` (задача 3.11) і сторінка за рецептом (задача 6.21).
+ * Platforms that read the company's own site rather than an ATS: schema.org
+ * `JobPosting` (task 3.11) and the recipe page (task 6.21).
  */
 const SITE_PLATFORMS: ReadonlySet<CareerPlatform> = new Set([
   "schema_org",
@@ -31,8 +31,8 @@ export function sourceKind(platform: CareerPlatform): SourceKind {
 }
 
 /**
- * Збіг: щойно виявлена вакансія `newId` має ту саму назву, що й активна
- * вакансія `otherId` з іншого джерела тієї самої компанії.
+ * A match: the freshly discovered vacancy `newId` has the same title as the active
+ * vacancy `otherId` from another source of the same company.
  */
 export interface DuplicateMatch {
   newId: string;
@@ -41,19 +41,19 @@ export interface DuplicateMatch {
   otherIsRead: boolean;
 }
 
-/** Що позначити прочитаним: нові вакансії і наявні, які поступаються новим. */
+/** What to mark read: new vacancies and existing ones that give way to new ones. */
 export interface DuplicateDecision {
   readNew: string[];
   readOthers: string[];
 }
 
 /**
- * Пізніший дублікат стає прочитаним. Виняток - перевага платформи: нова
- * вакансія з платформи, чиї дублікати лише на сайті й хоч один непрочитаний,
- * лишається непрочитаною, а непрочитані сайтові стають прочитаними. Якщо
- * сайтові всі вже прочитані, людина вакансію бачила - нова теж прочитана.
+ * The later duplicate becomes read. The exception is the platform's priority: a
+ * new vacancy from a platform whose duplicates are only on sites, with at least one
+ * unread, stays unread, and the unread site ones become read. If all the site ones
+ * are already read, the user has seen the vacancy - the new one is read too.
  *
- * `kind` - вид джерела, з якого прийшли нові вакансії.
+ * `kind` is the kind of source the new vacancies came from.
  */
 export function resolveDuplicates(
   kind: SourceKind,

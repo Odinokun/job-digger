@@ -15,8 +15,8 @@ import { previewOwnPage, applyOwnPageRecipe } from "./own-page.ts";
 import { companySiteValues } from "../db/testing/company-values.ts";
 
 /**
- * Рецепт власної сторінки з картки компанії (задача 6.21): кнопка Read as
- * list показує групи посилань, людина підтверджує одну.
+ * The own page recipe from the company card (task 6.21): the Read as list
+ * button shows groups of links, and the person confirms one.
  */
 
 const noLimits: HostLimiter = { run: (_host, task) => task() };
@@ -105,7 +105,7 @@ describe("previewOwnPage", () => {
 
   it("says when the page has no links to offer", async () => {
     const user = await seedSystemUser(testDb);
-    // Сторінка дошки Ashby: список малює JavaScript, посилань свого сайту немає.
+    // An Ashby board page: JavaScript renders the list, there are no links to its own site.
     const source = await ownPageSource(
       user.id,
       "unsupported",
@@ -169,7 +169,7 @@ describe("applyOwnPageRecipe", () => {
       platform: "own_page",
       vacancyLinkPrefix: RECIPE,
       isTracked: true,
-      // «Link only» для сторінки, яку тепер читаємо, втрачає сенс (6.17).
+      // "Link only" makes no sense for a page that is read now (6.17).
       isReferenceOnly: false,
     });
   });
@@ -190,7 +190,7 @@ describe("applyOwnPageRecipe", () => {
   });
 
   it("refuses a recipe that is not a host and a path", async () => {
-    // Префікс приходить із клієнта.
+    // The prefix comes from the client.
     const user = await seedSystemUser(testDb);
     const source = await ownPageSource(user.id);
 

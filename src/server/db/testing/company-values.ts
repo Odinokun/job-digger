@@ -3,13 +3,13 @@ import { normalizeCompanyUrl } from "../../../lib/companies/url.ts";
 let nextSite = 0;
 
 /**
- * Сайт компанії для прямої вставки в тестах: `url` і `normalized_url`.
+ * A company site for direct inserts in tests: `url` and `normalized_url`.
  *
- * Обидві колонки обовʼязкові (задача company-site-required), а тестам, яким
- * сайт байдужий, потрібна лише будь-яка унікальна адреса: назва плюс номер
- * виклику на зарезервованому домені `.example` (RFC 2606). Номер - бо тести
- * створюють і дві компанії з однаковою назвою в одного користувача, а
- * унікальний індекс `(user_id, normalized_url)` таких сайтів не пропустив би.
+ * Both columns are required (task company-site-required), and tests that do not
+ * care about the site only need some unique address: the name plus the call
+ * number on the reserved `.example` domain (RFC 2606). The number is there
+ * because tests also create two companies with the same name for one user, and
+ * the unique index `(user_id, normalized_url)` would not let such sites through.
  */
 export function companySiteValues(name: string): {
   url: string;

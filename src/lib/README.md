@@ -30,8 +30,8 @@
 Списки читаються не номером сторінки, а курсором - парою «поле сортування + id»
 останнього показаного рядка: назва компанії в Companies, дата виявлення в Jobs. Як
 курсор працює в запиті -
-[`server/companies/README.md`](../server/companies/README.md#списки-для-сторінки-companies)
-і [`server/vacancies/README.md`](../server/vacancies/README.md#списки-jobs).
+[`server/companies/README.md`](../server/companies/README.md#lists-for-the-companies-page)
+і [`server/vacancies/README.md`](../server/vacancies/README.md#jobs-lists).
 
 Тут лежить лише форма курсора й `parseCursor`: значення приходить із клієнта, тож
 непридатний курсор означає «почни з початку», а не помилку. Той самий курсор

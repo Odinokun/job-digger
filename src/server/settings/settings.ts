@@ -11,8 +11,8 @@ import {
 export type Settings = { autoCheckIntervalHours: AutoCheckInterval };
 
 /**
- * Налаштування користувача. Рядка може не бути - тоді значення за
- * замовчуванням: рядок зʼявляється лише з першим вибором.
+ * The user's settings. The row may be missing - then the defaults apply: the row
+ * appears only with the first choice.
  */
 export async function getSettings(
   db: NodePgDatabase,
@@ -24,7 +24,7 @@ export async function getSettings(
     .where(eq(settings.userId, userId));
 
   return {
-    // `CHECK` у базі не пускає інших значень, а розбір лише звужує тип.
+    // The `CHECK` in the database lets no other values in, and parsing only narrows the type.
     autoCheckIntervalHours:
       parseAutoCheckInterval(row?.autoCheckIntervalHours) ??
       DEFAULT_AUTO_CHECK_INTERVAL,
@@ -32,8 +32,8 @@ export async function getSettings(
 }
 
 /**
- * Запамʼятовує інтервал автоперевірки. Один запит `insert ... on conflict`:
- * перший вибір створює рядок, наступні його оновлюють.
+ * Remembers the auto-check interval. One `insert ... on conflict` query: the
+ * first choice creates the row, the next ones update it.
  */
 export async function setAutoCheckInterval(
   db: NodePgDatabase,

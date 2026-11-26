@@ -3,9 +3,9 @@ import { describe, expect, it } from "vitest";
 import { boardUrlOf } from "./board-url.ts";
 
 describe("boardUrlOf", () => {
-  // Сайт компанії веде не лише на саму дошку, а й на окрему вакансію чи форму
-  // відгуку. Джерело - завжди дошка: її читає парсер, і дві різні вакансії
-  // однієї дошки мають дати одну знахідку.
+  // The company site leads not only to the board itself but also to a single
+  // vacancy or an application form. The source is always the board: the parser
+  // reads it, and two different vacancies of one board must give one finding.
   const cases: Array<[string, string, string]> = [
     [
       "https://boards.greenhouse.io/discord/jobs/4567",
@@ -87,14 +87,14 @@ describe("boardUrlOf", () => {
   });
 
   it("ignores a platform's own pages without a board", () => {
-    // Сайт самої платформи, а не дошка компанії: «Powered by Greenhouse» у
-    // футері кар'єрної сторінки трапляється часто.
+    // The platform's own site, not a company board: "Powered by Greenhouse" in
+    // the footer of a career page is common.
     expect(boardUrlOf("https://boards.greenhouse.io/")).toBeNull();
     expect(boardUrlOf("https://www.peopleforce.io/")).toBeNull();
-    // Скрипт вбудованої дошки Breezy лежить на її CDN.
+    // The Breezy embedded board script lives on its CDN.
     expect(boardUrlOf("https://assets-cdn.breezy.hr/x.js")).toBeNull();
     expect(boardUrlOf("https://cleverstaff.net/why.html")).toBeNull();
-    // Довідка Hurma - на її піддомені, як і дошки компаній.
+    // Hurma's help centre is on its subdomain, like the company boards.
     expect(boardUrlOf("https://support.hurma.work/en")).toBeNull();
     expect(boardUrlOf("https://www.jobs.personio.de/")).toBeNull();
     expect(boardUrlOf("https://www.softgarden.io/")).toBeNull();

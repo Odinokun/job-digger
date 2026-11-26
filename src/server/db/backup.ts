@@ -1,18 +1,18 @@
 /**
- * Резервна копія бази з `DATABASE_URL` у теку `BACKUP_DIR` (задача 6.09).
+ * A backup of the `DATABASE_URL` database into the `BACKUP_DIR` folder (task 6.09).
  *
- * - `npm run db:backup` - копія зараз; так її робить `npm run app:update`
- *   перед міграціями;
- * - `npm run app` - з `--if-due`: лише якщо остання копія старша за добу.
+ * - `npm run db:backup` makes a backup now; `npm run app:update` does it this way
+ *   before migrations;
+ * - `npm run app` runs it with `--if-due`: only if the last backup is older than a day.
  *
- * `pg_dump` - з образу `postgres` через `docker exec`, тож версія збігається
- * з сервером і нова залежність не потрібна. Пароль не потрібен: усередині
- * контейнера підключення локальне, як у `npm run db:psql`.
+ * `pg_dump` comes from the `postgres` image through `docker exec`, so its version
+ * matches the server and no new dependency is needed. No password is needed:
+ * inside the container the connection is local, as in `npm run db:psql`.
  *
- * Копія пишеться в `.partial` і перейменовується лише після успіху - обірвана
- * копія не вважається свіжою й не витісняє справжніх. Тека не створюється:
- * друкарська помилка в `BACKUP_DIR` має бути помилкою, а не новою текою.
- * Службовий скрипт, у застосунок не імпортується.
+ * The backup is written to `.partial` and renamed only on success - an aborted
+ * backup does not count as fresh and does not push out real ones. The folder is
+ * not created: a typo in `BACKUP_DIR` has to be an error, not a new folder.
+ * A helper script, never imported into the app.
  */
 import { spawn } from "node:child_process";
 import { createWriteStream } from "node:fs";
@@ -29,7 +29,7 @@ import {
   parseBackupDir,
 } from "./backup-plan.ts";
 
-/** `container_name` у `docker-compose.yml`. */
+/** `container_name` in `docker-compose.yml`. */
 const CONTAINER = "job-digger-db";
 
 const backupDir = parseBackupDir(process.env.BACKUP_DIR);
@@ -86,7 +86,7 @@ async function backUp(
   }
 }
 
-/** `pg_dump` у форматі custom (`-Fc`) - його читає `pg_restore`. */
+/** `pg_dump` in the custom format (`-Fc`), which `pg_restore` reads. */
 async function dump({
   user,
   database,

@@ -1,10 +1,10 @@
 /**
- * Парсер Breezy HR: вакансії з публічного JSON дошки
- * `https://{company}.breezy.hr/json` (задача 3.24).
+ * The Breezy HR parser: vacancies from a board's public JSON
+ * `https://{company}.breezy.hr/json` (task 3.24).
  *
- * Офіційної документації в цього JSON немає - його описують лише сторонні
- * скрапери. Формат перевірено справжніми запитами 19.11.2026: без ключа, масив
- * вакансій одним запитом, без сторінок; невідома дошка - 404.
+ * This JSON has no official documentation - only third-party scrapers describe
+ * it. The format was checked with real requests on 19.11.2026: no key, an array
+ * of vacancies in one request, no pages; an unknown board is a 404.
  */
 import type { HttpClient } from "../http/client.ts";
 import {
@@ -20,15 +20,15 @@ import type { ParseResult } from "./types.ts";
 const DOMAIN = "breezy.hr";
 
 /**
- * Піддомени самої Breezy, а не компаній: скрипти й стилі вбудованої дошки
- * (`assets-cdn`), застосунок рекрутера (`app`) і сайт (`www`). `jobs` - дошка
- * самої Breezy, тож вона компанія, як будь-яка інша.
+ * Subdomains of Breezy itself, not of companies: the embedded board's scripts and
+ * styles (`assets-cdn`), the recruiter app (`app`) and the site (`www`). `jobs` is
+ * Breezy's own board, so it is a company like any other.
  */
 const SERVICE_LABELS = new Set(["www", "app", "assets-cdn"]);
 
 /**
- * Компанія з адреси дошки чи вакансії (`acme.breezy.hr/p/...` → `acme`) або
- * `null`, якщо це не дошка Breezy.
+ * The company from a board or vacancy address (`acme.breezy.hr/p/...` → `acme`),
+ * or `null` if it is not a Breezy board.
  */
 export function breezyCompany(sourceUrl: string): string | null {
   let host: string;
@@ -49,11 +49,11 @@ export function breezyCompany(sourceUrl: string): string | null {
 }
 
 /**
- * Вакансії з відповіді `/json`: масив вакансій.
+ * Vacancies from the `/json` response: an array of vacancies.
  *
- * `externalId` - поле `id` (він же на початку шляху `/p/{id}-{slug}`), назва -
- * `name`, посилання - `url`, локація - `location.name`, а для віддаленої
- * вакансії (`location.is_remote`) з приміткою «remote».
+ * `externalId` is the `id` field (the same as at the start of the `/p/{id}-{slug}`
+ * path), the title is `name`, the link is `url`, the location is
+ * `location.name`, with a "remote" note for a remote vacancy (`location.is_remote`).
  */
 export function parseBreezyPositions(answer: unknown): ParseResult {
   if (!Array.isArray(answer)) {
@@ -103,9 +103,9 @@ function placeOf(location: unknown): string | null {
 }
 
 /**
- * Вакансії кар'єрного джерела на Breezy HR: компанія з адреси, запит `/json`
- * через HTTP-клієнт і розбір. Адреса без дошки Breezy - `unreadable` без
- * жодного запиту.
+ * Vacancies of a career source on Breezy HR: the company from the address, a
+ * `/json` request through the HTTP client and parsing. An address without a
+ * Breezy board is `unreadable` without any request.
  */
 export async function readBreezy(
   sourceUrl: string,

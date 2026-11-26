@@ -7,7 +7,7 @@ import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { findBoardsByName } from "./by-name.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 let fakeWeb: FakeWeb;
@@ -32,8 +32,8 @@ function client(): HttpClient {
   });
 }
 
-// Збережені справжні дошки - src/server/http/testing/README.md. На решту
-// платформ фейковий сервер відповідає 404, як і справжні на чужу назву.
+// Saved real boards: src/server/http/testing/README.md. For the other
+// platforms the fake server answers 404, as the real ones do for a foreign name.
 describe("findBoardsByName", () => {
   it("finds the board that has the company name", async () => {
     expect(
@@ -49,7 +49,7 @@ describe("findBoardsByName", () => {
   });
 
   it("tries every name variant on every platform", async () => {
-    // `leverdemo` - назва разом, `team` - домен.
+    // `leverdemo` is the name joined, `team` the domain.
     expect(
       await findBoardsByName(
         { name: "Lever Demo", siteUrl: "https://team.example" },
@@ -72,8 +72,8 @@ describe("findBoardsByName", () => {
   });
 
   it("reads only the first page of a board and says there is more", async () => {
-    // Задача 6.16: пробне читання - перша сторінка. У збереженій сторінці
-    // Webellian є `rel="next"`, тож вакансій більше, ніж 10 прочитаних.
+    // Task 6.16: the trial read is the first page. The saved Webellian page has
+    // `rel="next"`, so there are more vacancies than the 10 read.
     expect(
       await findBoardsByName({ name: "Webellian", siteUrl: null }, client()),
     ).toEqual([

@@ -1,36 +1,38 @@
 /**
- * Спільний формат усіх парсерів: що вони повертають.
+ * The shared format of all parsers: what they return.
  *
- * Парсер лише читає, що є на платформі зараз. Дату виявлення, Read/Unread,
- * ключ вакансії й очищення URL робить життєвий цикл (задачі 3.13 і 3.05).
+ * A parser only reads what is on the platform right now. The detection date,
+ * Read/Unread, the vacancy key and URL cleanup are the lifecycle's job (tasks
+ * 3.13 and 3.05).
  */
 import type { HttpErrorReason } from "../http/client.ts";
 
-/** Вакансія так, як її дало джерело. */
+/** A vacancy as the source gave it. */
 export interface ParsedVacancy {
   /**
-   * ID на платформі - з нього складається ключ вакансії. `null`, якщо платформа
-   * його не дає (schema.org, задача 3.11): тоді ключ складається з адреси.
+   * The ID on the platform - the vacancy key is built from it. `null` if the
+   * platform does not give one (schema.org, task 3.11): then the key is built
+   * from the address.
    */
   externalId: string | null;
   title: string;
-  /** Посилання на оригінал; завжди http або https. */
+  /** The link to the original; always http or https. */
   url: string;
-  /** Локації може не бути - тоді в списку Jobs стоїть «—». */
+  /** There may be no location - then the Jobs list shows "—". */
   location: string | null;
 }
 
 export type ParserError =
-  /** Сторінки чи дошки немає: сайт відповів 404. */
+  /** The page or board does not exist: the site answered 404. */
   | { reason: "not-found" }
   /**
-   * Відповідь не того формату: зламана структура хоч одного запису або всі
-   * записи з вадою даних (README, «Спільний формат»).
+   * A response of the wrong format: a broken structure in even one record, or
+   * bad data in every record (README, "Shared format").
    */
   | { reason: "unreadable" }
-  /** Сайт відповів не 2xx і не 404 (наприклад 403 чи 500 після повторів). */
+  /** The site answered neither 2xx nor 404 (for example 403 or 500 after retries). */
   | { reason: "bad-status"; status: number }
-  /** Запит не вдався: причина - з `HttpError`. */
+  /** The request failed: the reason comes from `HttpError`. */
   | { reason: "fetch-failed"; cause: HttpErrorReason };
 
 export type ParseResult =
@@ -38,16 +40,16 @@ export type ParseResult =
       ok: true;
       vacancies: ParsedVacancy[];
       /**
-       * Скільки записів пропущено через ваду даних - порожню назву чи адресу
-       * не http(s) (src/server/parsers/README.md). Сигнал «парсер
-       * чи сайт треба глянути» - parse warning у деталях завдання (4.01).
+       * How many records were skipped because of bad data - an empty title or a
+       * non-http(s) address (src/server/parsers/README.md). A "look at the parser
+       * or the site" signal - a parse warning in the task details (4.01).
        */
       skipped: number;
       /**
-       * `true` - читання зупинилось на ліміті (`vacancies-to-check.ts`), і за
-       * ним можуть бути ще вакансії. Тоді список неповний, і життєвий цикл
-       * нічого не позначає зниклим (задача 6.16). Немає поля - список повний:
-       * так завжди в парсерів, що беруть усе одним запитом.
+       * `true` means reading stopped at the limit (`vacancies-to-check.ts`), and
+       * there may be more vacancies beyond it. Then the list is incomplete, and the
+       * lifecycle marks nothing as gone (task 6.16). No field means the list is
+       * complete: always the case for parsers that take everything in one request.
        */
       truncated?: true;
     }

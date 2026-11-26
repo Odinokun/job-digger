@@ -26,7 +26,7 @@ describe("startFindNewPages", () => {
     const user = await seedSystemUser(testDb);
     const acme = await companyToDiscover(testDb, "Acme");
     const initech = await companyToDiscover(testDb, "Initech");
-    // Компанія з джерелом, що відстежується, - на вкладці Tracked.
+    // A company with a tracked source - on the Tracked tab.
     await greenhouseSource(testDb, "discord");
 
     const result = await startFindNewPages(testDb, { userId: user.id, now });
@@ -84,11 +84,11 @@ describe("startFindNewPages", () => {
   });
 
   it("starts only once for simultaneous clicks", async () => {
-    // Без advisory lock кожен клік бачить, що пошуку ще немає, і ставить свій.
+    // Without the advisory lock every click sees no search yet and queues its own.
     const user = await seedSystemUser(testDb);
     await companyToDiscover(testDb, "Acme");
-    // Прогріти пул: інакше перший клік іде вже відкритим зʼєднанням і
-    // завершується, поки решта ще підключаються, - і гонки немає.
+    // Warm up the pool: otherwise the first click goes through an already open
+    // connection and finishes while the rest are still connecting - and there is no race.
     await Promise.all(
       Array.from({ length: 6 }, () =>
         testDb.execute(sql`select pg_sleep(0.05)`),
@@ -117,7 +117,7 @@ describe("isFindingNewPages", () => {
   });
 
   it("stays true while the first checks of added boards are queued", async () => {
-    // Їх ставить пошук (`queue/discover-task.ts`): фонові й без запуску.
+    // The search queues them (`queue/discover-task.ts`): in the background and without a run.
     const user = await seedSystemUser(testDb);
     const sourceId = await greenhouseSource(testDb, "discord");
     await task(testDb, { sourceId, priority: "background" });

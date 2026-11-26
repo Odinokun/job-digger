@@ -7,7 +7,7 @@ import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { readWorkable } from "./workable.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 let fakeWeb: FakeWeb;
@@ -49,7 +49,7 @@ describe("readWorkable", () => {
   });
 
   it("reads the same account from a job link with capitals", async () => {
-    // API розрізняє регістр (`GoReel` - 404), а акаунти пишуться малими.
+    // The API is case-sensitive (`GoReel` is a 404), and accounts are lower case.
     const result = await readWorkable(
       "https://apply.workable.com/GoReel/j/CABF5A6E3A/",
       client(),
@@ -65,7 +65,7 @@ describe("readWorkable", () => {
   });
 
   it("does not request anything for an address without an account", async () => {
-    // Клієнт без фейкового сервера: запит упав би з помилкою мережі.
+    // A client without the fake server: the request would fail with a network error.
     const offline = createHttpClient({
       fakeOrigin: "http://127.0.0.1:9",
       limiter: noLimits,

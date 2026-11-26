@@ -1,8 +1,8 @@
 /**
- * Розбір CSV компаній для Import (задача 6.06).
+ * Parsing the company CSV for Import (task 6.06).
  *
- * Свій розбір за RFC 4180 замість бібліотеки: формат наш і вузький (одна
- * таблиця, текстові поля), і на нього вистачає кількох десятків рядків.
+ * Our own RFC 4180 parsing instead of a library: the format is ours and narrow
+ * (one table, text fields), and a few dozen lines are enough for it.
  */
 import { CSV_COLUMNS, FORMULA_STARTS, type CsvRow } from "./format.ts";
 
@@ -10,20 +10,20 @@ export type ParseCsvResult =
   | {
       ok: true;
       rows: CsvRow[];
-      /** Рядки з іншою кількістю полів, ніж у заголовку, - помилкові. */
+      /** Rows with a different number of fields than the header are errors. */
       malformed: number;
     }
-  /** Заголовок не наш - файл відхиляється цілком, без часткового імпорту. */
+  /** The header is not ours - the whole file is rejected, with no partial import. */
   | { ok: false; problem: "header" };
 
-/** Без `career_label` - файл старого, триколонкового формату. */
+/** Without `career_label` - a file in the old three-column format. */
 const OPTIONAL_COLUMNS = new Set<string>(["career_label"]);
 
 export function parseCompaniesCsv(text: string): ParseCsvResult {
-  // BOM - необовʼязковий: його ставить наш експорт, а інші програми - ні.
+  // The BOM is optional: our export adds it, other programs do not.
   const body = text.startsWith("﻿") ? text.slice(1) : text;
   const firstLine = body.split(/\r\n|\n|\r/, 1)[0] ?? "";
-  // Розділювач - за заголовком: Excel з українською локаллю пише `;`.
+  // The delimiter comes from the header: Excel with a Ukrainian locale writes `;`.
   const separator =
     firstLine.includes(";") && !firstLine.includes(",") ? ";" : ",";
   const [header, ...records] = readRecords(body, separator);
@@ -37,7 +37,7 @@ export function parseCompaniesCsv(text: string): ParseCsvResult {
   let malformed = 0;
 
   for (const record of records) {
-    // Порожній рядок - не помилка, а просто порожнеча (часто в кінці файлу).
+    // An empty row is not an error but just emptiness (often at the end of a file).
     if (record.length === 1 && record[0] === "") continue;
 
     if (record.length !== columns.length) {
@@ -61,8 +61,8 @@ export function parseCompaniesCsv(text: string): ParseCsvResult {
 }
 
 /**
- * Колонки заголовка за назвами або `null`, якщо він не наш: кожна назва -
- * з формату, без повторів, і є всі обовʼязкові. Порядок довільний.
+ * The header columns by name, or `null` if the header is not ours: every name is
+ * from the format, without repeats, and all required ones are there. Any order.
  */
 function headerColumns(header: string[]): Array<keyof CsvRow> | null {
   const names = header.map((name) => name.trim());
@@ -82,8 +82,8 @@ function headerColumns(header: string[]): Array<keyof CsvRow> | null {
 }
 
 /**
- * Знімає одинарну лапку, яку експорт ставить перед символом формули
- * (`escapeCsvCell`). Інша лапка на початку - частина значення.
+ * Removes the single quote export puts before a formula character
+ * (`escapeCsvCell`). Any other quote at the start is part of the value.
  */
 function unescapeFormula(value: string): string {
   return value.startsWith("'") && FORMULA_STARTS.has(value.charAt(1))
@@ -91,7 +91,7 @@ function unescapeFormula(value: string): string {
     : value;
 }
 
-/** Записи файлу за RFC 4180: поля в лапках можуть містити розділювач, `""` і переноси. */
+/** File records by RFC 4180: quoted fields may contain the delimiter, `""` and line breaks. */
 function readRecords(text: string, separator: string): string[][] {
   const records: string[][] = [];
   let record: string[] = [];
@@ -132,7 +132,7 @@ function readRecords(text: string, separator: string): string[][] {
     } else if (char === separator) {
       endField();
     } else if (char === "\r" || char === "\n") {
-      // CRLF - один перенос, а не два.
+      // CRLF is one line break, not two.
       if (char === "\r" && text[index + 1] === "\n") index += 1;
       endRecord();
     } else {
@@ -141,7 +141,7 @@ function readRecords(text: string, separator: string): string[][] {
     index += 1;
   }
 
-  // Останній рядок без переносу в кінці файлу.
+  // The last row without a line break at the end of the file.
   if (field !== "" || record.length > 0) {
     endRecord();
   }

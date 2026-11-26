@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { parseWorkableWidget, workableAccount } from "./workable.ts";
 
-/** Справжня відповідь віджета Workable, акаунт GoReel (src/server/http/testing). */
+/** A real Workable widget response, the GoReel account (src/server/http/testing). */
 const goreel: unknown = JSON.parse(
   readFileSync(
     new URL(
@@ -37,13 +37,13 @@ describe("workableAccount", () => {
   });
 
   it("is null where the address says nothing about the account", () => {
-    // Коротке посилання на вакансію - без акаунта.
+    // A short vacancy link has no account.
     expect(
       workableAccount("https://apply.workable.com/j/CABF5A6E3A"),
     ).toBeNull();
     expect(workableAccount("https://apply.workable.com/api/v1/x")).toBeNull();
     expect(workableAccount("https://apply.workable.com/")).toBeNull();
-    // Сайт і застосунок самої Workable.
+    // Workable's own site and app.
     expect(workableAccount("https://www.workable.com/careers")).toBeNull();
     expect(workableAccount("https://workable.com/")).toBeNull();
     expect(workableAccount("https://acme.example/careers")).toBeNull();
@@ -62,7 +62,7 @@ describe("parseWorkableWidget", () => {
       externalId: "CABF5A6E3A",
       title: "Senior Automation QA Engineer (Python)",
       url: "https://apply.workable.com/j/CABF5A6E3A",
-      // `telecommuting: true` - віддалена.
+      // `telecommuting: true` means remote.
       location: "Bratislava, Slovakia, remote",
     });
   });

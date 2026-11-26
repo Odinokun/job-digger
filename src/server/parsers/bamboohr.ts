@@ -1,11 +1,12 @@
 /**
- * Парсер BambooHR: вакансії з публічного JSON кар'єрної сторінки
- * `https://{company}.bamboohr.com/careers/list` (задача 6.26).
+ * The BambooHR parser: vacancies from the public JSON of the career page
+ * `https://{company}.bamboohr.com/careers/list` (task 6.26).
  *
- * Документований API BambooHR потребує ключа компанії. Цей JSON бере сама
- * кар'єрна сторінка й вбудований віджет; формат перевірено справжніми запитами
- * 20.11.2026: без ключа, `{ meta: { totalCount }, result: [...] }`, усі вакансії
- * одним запитом. Невідома компанія - не 404, а редирект на сайт BambooHR.
+ * The documented BambooHR API needs a company key. This JSON is what the career
+ * page itself and the embedded widget use; the format was checked with real
+ * requests on 20.11.2026: no key, `{ meta: { totalCount }, result: [...] }`, all
+ * vacancies in one request. An unknown company is not a 404 but a redirect to
+ * the BambooHR site.
  */
 import type { HttpClient } from "../http/client.ts";
 import {
@@ -19,12 +20,12 @@ import type { ParsedVacancy, ParseResult } from "./types.ts";
 
 const DOMAIN = "bamboohr.com";
 
-/** Піддомени самої BambooHR, а не компаній. */
+/** Subdomains of BambooHR itself, not of companies. */
 const SERVICE_LABELS = new Set(["www", "api", "app", "help", "marketplace"]);
 
 /**
- * Компанія з адреси кар'єрної сторінки чи вакансії
- * (`altenar.bamboohr.com/careers/88` → `altenar`) або `null`.
+ * The company from a career page or vacancy address
+ * (`altenar.bamboohr.com/careers/88` → `altenar`), or `null`.
  */
 export function bamboohrCompany(sourceUrl: string): string | null {
   let host: string;
@@ -45,13 +46,13 @@ export function bamboohrCompany(sourceUrl: string): string | null {
 }
 
 /**
- * Вакансії з відповіді `/careers/list`: масив `result`.
+ * Vacancies from the `/careers/list` response: the `result` array.
  *
- * `externalId` - `id`, назва - `jobOpeningName`. Посилання в JSON немає -
- * сторінка вакансії `/careers/{id}` (відповідає 200, перевірено). Локація -
- * `location` (місто, регіон), а якщо воно порожнє - `atsLocation`. Поле
- * `locationType` («0», «1») не задокументоване, тож «remote» з нього не
- * вигадуємо.
+ * `externalId` is `id`, the title is `jobOpeningName`. The JSON has no link -
+ * the vacancy page is `/careers/{id}` (answers 200, checked). The location is
+ * `location` (city, region), and if it is empty, `atsLocation`. The
+ * `locationType` field ("0", "1") is undocumented, so we do not make up a
+ * "remote" from it.
  */
 export function parseBambooHrList(
   answer: unknown,
@@ -109,10 +110,10 @@ function placeOf(location: unknown): string | null {
 }
 
 /**
- * Вакансії кар'єрного джерела на BambooHR: компанія з адреси, запит
- * `/careers/list` і розбір. Невідому компанію BambooHR переадресовує на свій
- * сайт - це `not-found`, а не `unreadable`. Адреса без компанії - `unreadable`
- * без жодного запиту.
+ * Vacancies of a career source on BambooHR: the company from the address, a
+ * `/careers/list` request and parsing. BambooHR redirects an unknown company to
+ * its own site - that is `not-found`, not `unreadable`. An address without a
+ * company is `unreadable` without any request.
  */
 export async function readBambooHr(
   sourceUrl: string,

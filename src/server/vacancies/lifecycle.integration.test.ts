@@ -13,7 +13,7 @@ const FIRST_CHECK = new Date("2026-11-01T10:00:00Z");
 const SECOND_CHECK = new Date("2026-11-02T10:00:00Z");
 const THIRD_CHECK = new Date("2026-11-03T10:00:00Z");
 
-/** Компанія з одним джерелом Greenhouse - повертає id джерела. */
+/** A company with one Greenhouse source - returns the source id. */
 async function greenhouseSource(board = "discord"): Promise<string> {
   const user = await seedSystemUser(testDb);
   const [company] = await testDb
@@ -151,8 +151,8 @@ describe("syncSourceVacancies", () => {
   });
 
   it("closes nothing after a truncated list, only adds and updates", async () => {
-    // Список обірвано лімітом чи першою сторінкою: вакансії за ним не
-    // зникли, їх просто не читали (задача 6.16).
+    // The list was cut off by the limit or the first page: the vacancies beyond it
+    // did not disappear, they were just not read (task 6.16).
     const sourceId = await greenhouseSource();
     await sync(
       sourceId,
@@ -230,8 +230,8 @@ describe("syncSourceVacancies", () => {
   });
 
   it("deletes a closed vacancy taken out of Favorites on the next check", async () => {
-    // Remove from Favorites закриту вакансію не видаляє - лишає її для Undo
-    // (задача vacancy-undo-toast). Прибирає її наступна перевірка.
+    // Remove from Favorites does not delete a closed vacancy - it keeps it for Undo
+    // (task vacancy-undo-toast). The next check removes it.
     const sourceId = await greenhouseSource();
     await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
     await testDb
@@ -364,8 +364,8 @@ describe("syncSourceVacancies", () => {
         .set({ isFavorite: true })
         .where(eq(vacancies.sourceId, sourceId));
 
-      // Перевірка стартує, поки Favorite ще не закомічений: вона бачить
-      // звичайну вакансію і впирається в блокування рядка.
+      // The check starts while the Favorite is not committed yet: it sees an
+      // ordinary vacancy and runs into the row lock.
       check = sync(sourceId, ok(), SECOND_CHECK);
       await untilSomeoneWaitsForLock();
     });
@@ -388,7 +388,7 @@ describe("syncSourceVacancies", () => {
 });
 
 describe("syncSourceVacancies counts", () => {
-  // Нові й видалені вакансії - числа рядка History.
+  // New and removed vacancies - the numbers of the History row.
   it("counts every vacancy of the first check as new", async () => {
     const sourceId = await greenhouseSource();
 
@@ -430,8 +430,8 @@ describe("syncSourceVacancies counts", () => {
   });
 
   it("does not count a closed vacancy taken out of Favorites as removed again", async () => {
-    // Вона вже порахована, коли закрилась; видалення на наступній перевірці -
-    // лише прибирання (задача vacancy-undo-toast).
+    // It was already counted when it closed; deleting it on the next check is just
+    // cleanup (task vacancy-undo-toast).
     const sourceId = await greenhouseSource();
     await sync(sourceId, ok(parsed("101")), FIRST_CHECK);
     await testDb

@@ -1,5 +1,5 @@
 /**
- * Захоплення завдання з черги. Правила - README.md поруч, «Захоплення».
+ * Claiming a task from the queue. The rules are in the README.md next to this file, "Claiming".
  */
 import { asc, count, eq, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -8,20 +8,20 @@ import { checkTasks } from "../db/schema.ts";
 import type { ReadDepth } from "../parsers/vacancies-to-check.ts";
 
 /**
- * Ключ advisory lock, яким серіалізуються захоплення. Число довільне - головне,
- * щоб ним більше ніщо в застосунку не користувалося.
+ * The advisory lock key that serializes claims. The number is arbitrary - what
+ * matters is that nothing else in the app uses it.
  */
 const CLAIM_LOCK_KEY = 4_020_001;
 
 export interface ClaimInput {
   now: Date;
-  /** Скільки завдань може виконуватися одночасно - спільно для всіх процесів. */
+  /** How many tasks may run at the same time - shared by all processes. */
   maxRunning: number;
 }
 
 /**
- * Захоплене завдання. `lockedAt` - ще й знак власності: результат приймається,
- * лише поки він збігається з тим, що в базі (`finishTask`).
+ * A claimed task. `lockedAt` is also the sign of ownership: the result is
+ * accepted only while it matches the one in the database (`finishTask`).
  */
 export type ClaimedTask = {
   id: string;
@@ -32,10 +32,10 @@ export type ClaimedTask = {
   | {
       kind: "check";
       sourceId: string;
-      /** Скільки читати (задача 6.16): Check all - перша сторінка тощо. */
+      /** How much to read (task 6.16): Check all reads the first page, and so on. */
       readDepth: ReadDepth;
     }
-  /** Find new pages для компанії (задача 5.10). */
+  /** Find new pages for a company (task 5.10). */
   | { kind: "discover"; companyId: string }
 );
 
@@ -44,9 +44,9 @@ export async function claimTask(
   { now, maxRunning }: ClaimInput,
 ): Promise<ClaimedTask | null> {
   return db.transaction(async (tx) => {
-    // «Скільки вже виконується» і захоплення мають бути одним кроком для всіх
-    // процесів, інакше кілька одночасних claim побачать вільне місце і
-    // перевищать ліміт. Блокування знімається саме в кінці транзакції.
+    // "How many are already running" and the claim have to be one step for all
+    // processes, otherwise several simultaneous claims see a free slot and
+    // exceed the limit. The lock is released at the end of the transaction.
     await tx.execute(sql`select pg_advisory_xact_lock(${CLAIM_LOCK_KEY})`);
 
     const [{ running }] = await tx
@@ -55,8 +55,8 @@ export async function claimTask(
       .where(eq(checkTasks.status, "running"));
     if (running >= maxRunning) return null;
 
-    // `skip locked`: рядок, який зараз тримає інша транзакція (наприклад,
-    // повернення завислих), не чекаємо, а беремо наступний.
+    // `skip locked`: a row another transaction holds right now (for example,
+    // returning stuck tasks) is not waited for - we take the next one.
     const [next] = await tx
       .select({ id: checkTasks.id })
       .from(checkTasks)
@@ -85,8 +85,8 @@ export async function claimTask(
       });
 
     const { kind, sourceId, companyId, readDepth, ...rest } = claimed;
-    // Ціль відповідає виду - це тримає CHECK `check_tasks_target_matches_kind`,
-    // але компілятор про нього не знає.
+    // The target matches the kind - the `check_tasks_target_matches_kind` CHECK
+    // holds this, but the compiler does not know about it.
     if (kind === "check" && sourceId !== null) {
       return { ...rest, lockedAt: now, kind, sourceId, readDepth };
     }

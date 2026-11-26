@@ -1,7 +1,7 @@
 /**
- * Check now для однієї компанії: читає всі її джерела,
- * що відстежуються, і застосовує життєвий цикл вакансій. Поки без черги - її
- * робить етап 4; в History ця перевірка не записується.
+ * Check now for one company: reads all of its tracked sources and applies the
+ * vacancy lifecycle. Synchronous, without the queue (task 6.13 kept it so); this
+ * check is not recorded in History.
  */
 import { and, eq, isNull } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -13,7 +13,7 @@ import { checkSource } from "./check-source.ts";
 export interface CheckCompanyInput {
   userId: string;
   companyId: string;
-  /** Момент перевірки - спільний для всіх джерел компанії. */
+  /** The check moment - shared by all of the company's sources. */
   checkedAt: Date;
 }
 
@@ -34,9 +34,9 @@ export async function checkCompany(
     return { ok: false, reason: "not-found" };
   }
 
-  // Під час загальної перевірки компанія і так перевіряється - дублікатів
-  // не створюємо (src/server/checks/README.md). Кнопка в цей час
-  // вимкнена, а це - захист від запиту, що прийшов уже після старту.
+  // During a general check the company is being checked anyway - we do not create
+  // duplicates (src/server/checks/README.md). The button is disabled at that time,
+  // and this protects against a request that arrived after the check started.
   const [activeRun] = await db
     .select({ id: checkRuns.id })
     .from(checkRuns)
@@ -61,8 +61,8 @@ export async function checkCompany(
       ),
     );
 
-  // Джерела читаються одночасно: ввічливість до сайтів тримає сам HTTP-клієнт
-  // (два запити на хост, пауза між стартами), а не порядок тут.
+  // Sources are read at the same time: the HTTP client itself keeps politeness
+  // towards sites (two requests per host, a pause between starts), not the order here.
   await Promise.all(
     sources.map((source) => checkSource(db, client, source, checkedAt)),
   );

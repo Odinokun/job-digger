@@ -1,14 +1,14 @@
 /**
- * Власна кар'єрна сторінка компанії, прочитана за рецептом (задача 6.21).
+ * A company's own career page, read by a recipe (task 6.21).
  *
- * Сторінка не має формату платформи, тож вакансії на ній - посилання, що
- * повторюються: однакова форма адреси (`kinggroup.io/vacancies/design/<slug>`).
- * `findLinkGroups` пропонує такі групи людині, вона підтверджує одну, і її
- * префікс стає рецептом; далі `parseOwnPage` читає сторінку за ним. Рецепт -
- * форма адреси, а не CSS-класи: конструктори на кшталт Framer міняють класи
- * після кожної публікації сайту, адреси вакансій - ні.
+ * The page has no platform format, so its vacancies are repeating links with the
+ * same address form (`kinggroup.io/vacancies/design/<slug>`). `findLinkGroups`
+ * offers such groups to a person, who confirms one, and its prefix becomes the
+ * recipe; from then on `parseOwnPage` reads the page by it. The recipe is an
+ * address form, not CSS classes: builders like Framer change classes after
+ * every site publish, vacancy addresses they do not.
  *
- * Правила й рішення - README.md поруч, розділ «Власна сторінка».
+ * Rules and decisions: the README next to this file, section "Own page".
  */
 import * as cheerio from "cheerio";
 import type { AnyNode, Element } from "domhandler";
@@ -17,32 +17,32 @@ import type { HttpClient } from "../http/client.ts";
 import { fetchText } from "./shared.ts";
 import type { ParsedVacancy, ParseResult } from "./types.ts";
 
-/** Вакансія з власної сторінки так, як її бачить людина в діалозі підтвердження. */
+/** A vacancy from an own page as a person sees it in the confirmation dialog. */
 export interface FoundLink {
   title: string;
   url: string;
 }
 
-/** Група посилань з однаковим префіксом адреси - кандидат у рецепт. */
+/** A group of links with the same address prefix - a recipe candidate. */
 export interface LinkGroup {
-  /** Хост і шлях до останнього `/`: `kinggroup.io/vacancies/design/`. */
+  /** The host and the path up to the last `/`: `kinggroup.io/vacancies/design/`. */
   prefix: string;
   vacancies: FoundLink[];
 }
 
-/** Скільки груп показує діалог підтвердження (рішення автора 20.11.2026). */
+/** How many groups the confirmation dialog shows (the author's decision of 20.11.2026). */
 export const MAX_LINK_GROUPS = 3;
 
 /**
- * Слова кар'єрних адрес: група з ними в шляху ймовірніше - вакансії, а не
- * послуги чи блог.
+ * Words of career addresses: a group with them in the path is more likely to be
+ * vacancies than services or a blog.
  */
 const CAREER_WORDS =
   /career|job|vacanc|position|opening|role|hiring|ваканс|кар.?єр|робот/i;
 
 /**
- * Текст кнопок, а не назв: «View & Apply» у delasport, «See more» у
- * codebridge. Назвою вакансії такий текст не буває.
+ * Button texts, not titles: "View & Apply" at delasport, "See more" at
+ * codebridge. Such text is never a vacancy title.
  */
 const ACTION_TEXTS = new Set([
   "apply",
@@ -63,26 +63,27 @@ const ACTION_TEXTS = new Set([
   "подати заявку",
 ]);
 
-/** Клас елемента з назвою: `vacancies__title`, `career-item__position`. */
+/** The class of the element with the title: `vacancies__title`, `career-item__position`. */
 const TITLE_CLASS = /title|position|name|role-name|job-name/i;
 
-/** Посилання сторінки, що можуть бути вакансіями. */
+/** Page links that may be vacancies. */
 interface PageLink {
   url: string;
   prefix: string;
-  /** Скільки сегментів у шляху: вакансія зазвичай глибша за сторінку списку. */
+  /** How many segments the path has: a vacancy is usually deeper than the list page. */
   depth: number;
   element: Element;
 }
 
 /**
- * Групи посилань, що можуть бути вакансіями, - найімовірніша перша, не більше
- * `MAX_LINK_GROUPS`. Порожній масив - на сторінці немає посилань свого сайту.
+ * Groups of links that may be vacancies - the most likely first, at most
+ * `MAX_LINK_GROUPS`. An empty array means the page has no links to its own site.
  *
- * Найімовірніша - глибша за саму сторінку (`/vacancies/tech` → вакансії
- * `/vacancies/design/<slug>`, а категорії `/vacancies/hr` - того самого рівня)
- * і з кар'єрним словом у шляху; далі - більша. Групи без жодної з цих ознак
- * (меню сайту, послуги) показуються, лише якщо інших немає.
+ * The most likely is deeper than the page itself (`/vacancies/tech` → vacancies
+ * `/vacancies/design/<slug>`, while the `/vacancies/hr` categories are on the
+ * same level) and has a career word in the path; after that, the larger one.
+ * Groups with neither sign (the site menu, services) are shown only if there
+ * are no others.
  */
 export function findLinkGroups(html: string, pageUrl: string): LinkGroup[] {
   const $ = cheerio.load(html);
@@ -118,9 +119,9 @@ export function findLinkGroups(html: string, pageUrl: string): LinkGroup[] {
 }
 
 /**
- * Вакансії сторінки за рецептом: посилання з префіксом `prefix` і ще одним
- * сегментом шляху. Порожній масив - на сторінці таких посилань немає (сайт
- * переробили); `readOwnPage` вважає це збоєм, а не тим, що вакансії закрито.
+ * The page's vacancies by recipe: links with the `prefix` prefix and one more
+ * path segment. An empty array means the page has no such links (the site was
+ * redone); `readOwnPage` treats this as a failure, not as closed vacancies.
  */
 export function parseOwnPage(
   html: string,
@@ -130,7 +131,7 @@ export function parseOwnPage(
   const $ = cheerio.load(html);
 
   return vacanciesOf($, pageLinks($, pageUrl), prefix).map((found) => ({
-    // ID у власної сторінки немає: ключ складається з адреси (`key.ts`).
+    // An own page has no ID: the key is built from the address (`key.ts`).
     externalId: null,
     title: found.title,
     url: found.url,
@@ -139,11 +140,11 @@ export function parseOwnPage(
 }
 
 /**
- * Читає власну сторінку за рецептом. Сторінка без жодної вакансії за рецептом
- * - `unreadable`, а не порожній список: інакше переробка сайту «закрила» б
- * усі вакансії компанії (рішення автора 20.11.2026). Пагінації немає: на
- * жодній із 13 сторінок аналізу її не було в HTML, а Load more довантажує
- * JavaScript.
+ * Reads an own page by recipe. A page without a single vacancy by the recipe is
+ * `unreadable`, not an empty list: otherwise a site redesign would "close" all
+ * the company's vacancies (the author's decision of 20.11.2026). There is no
+ * pagination: none of the 13 pages analysed had it in the HTML, and Load more
+ * is loaded by JavaScript.
  */
 export async function readOwnPage(
   sourceUrl: string,
@@ -161,9 +162,9 @@ export async function readOwnPage(
 }
 
 /**
- * Посилання на сторінки того самого хоста, крім меню й підвалу сайту, якорів,
- * пошти й самої сторінки. Відносні адреси розв'язуються від `<base href>`,
- * якщо він є, інакше від адреси сторінки.
+ * Links to pages of the same host, except the site menu and footer, anchors,
+ * mail and the page itself. Relative addresses resolve against `<base href>` if
+ * there is one, otherwise against the page address.
  */
 function pageLinks($: cheerio.CheerioAPI, pageUrl: string): PageLink[] {
   const page = new URL(pageUrl);
@@ -197,7 +198,7 @@ function pageLinks($: cheerio.CheerioAPI, pageUrl: string): PageLink[] {
   return links;
 }
 
-/** Вакансії групи `prefix` у порядку сторінки, кожна адреса - один раз. */
+/** Vacancies of the `prefix` group in page order, each address once. */
 function vacanciesOf(
   $: cheerio.CheerioAPI,
   links: PageLink[],
@@ -220,9 +221,9 @@ function vacanciesOf(
 }
 
 /**
- * Картка вакансії - найбільший предок посилання, в якому всі посилання ведуть
- * на ту саму вакансію. У Framer це саме посилання, у delasport - блок із `h3`
- * і кнопкою «View & Apply», у ncube - блок із назвою і порожнім посиланням.
+ * A vacancy card is the largest ancestor of a link in which all links lead to
+ * the same vacancy. In Framer it is the link itself, at delasport a block with an
+ * `h3` and a "View & Apply" button, at ncube a block with a title and an empty link.
  */
 function cardOf(
   $: cheerio.CheerioAPI,
@@ -250,12 +251,13 @@ function cardOf(
 }
 
 /**
- * Назва вакансії в картці, від надійнішого до запасного: заголовок; елемент із
- * класом назви (`vacancies__title` у ncube, `career-item__position` у
- * a-listware); власний текст посилання (headway: назва - саме посилання, а
- * відділ - довший рядок під ним); перший рядок тексту картки (codebridge: клас
- * `career-postiton` з помилкою, назва - перший рядок, а опис нижче довший).
- * Текст кнопок («View & Apply») назвою не буває. `null` - тексту немає.
+ * The vacancy title in a card, from the more reliable to the fallback: a heading;
+ * an element with a title class (`vacancies__title` at ncube,
+ * `career-item__position` at a-listware); the link's own text (headway: the title
+ * is the link itself, and the department a longer line below it); the first line
+ * of the card text (codebridge: the class `career-postiton` with a typo, the
+ * title is the first line and the longer description below). Button text
+ * ("View & Apply") is never a title. `null` means there is no text.
  */
 function titleOf(
   $: cheerio.CheerioAPI,
@@ -281,12 +283,12 @@ function titleOf(
   );
 }
 
-/** Рядок, якщо він може бути назвою, - не порожній і не текст кнопки. */
+/** The line, if it can be a title - not empty and not button text. */
 function meaningful(line: string): string | null {
   return line === "" || ACTION_TEXTS.has(line.toLowerCase()) ? null : line;
 }
 
-/** Перший непорожній текст серед елементів, з однією пробільною розбивкою. */
+/** The first non-empty text among the elements, with whitespace collapsed. */
 function firstText(
   $: cheerio.CheerioAPI,
   elements: cheerio.Cheerio<AnyNode>,
@@ -299,7 +301,7 @@ function firstText(
   return null;
 }
 
-/** Окремі рядки тексту картки - текстові вузли, без скриптів і стилів. */
+/** The separate lines of the card text - text nodes, without scripts and styles. */
 function textLines(
   $: cheerio.CheerioAPI,
   card: cheerio.Cheerio<AnyNode>,
@@ -322,7 +324,7 @@ function textLines(
   return lines;
 }
 
-/** Остання частина адреси як назва: `senior-react-developer` → «senior react developer». */
+/** The last part of the address as a title: `senior-react-developer` → "senior react developer". */
 function titleFromAddress(url: string): string {
   const segments = pathSegments(new URL(url).pathname);
 

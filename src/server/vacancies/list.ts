@@ -1,5 +1,5 @@
 /**
- * Списки вакансій для сторінки Jobs.
+ * Vacancy lists for the Jobs page.
  */
 import { and, desc, eq, isNull, sql, type SQL } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -15,9 +15,9 @@ import { careerSources, companies, vacancies } from "../db/schema.ts";
 import { DB_TIME_PATTERN, dbTimeText } from "../db/time.ts";
 
 /**
- * Поля рядка списку Jobs (`VacancyListItem`). Спільні для списку й для рядка,
- * який повертає дія над вакансією (`marks.ts`): інакше два місця розходилися б.
- * Назва компанії потребує join «вакансія → джерело → компанія».
+ * The fields of a Jobs list row (`VacancyListItem`). Shared by the list and by the
+ * row an action on a vacancy returns (`marks.ts`): otherwise the two places would
+ * drift apart. The company name needs the "vacancy → source → company" join.
  */
 export const VACANCY_ROW = {
   id: vacancies.id,
@@ -32,12 +32,12 @@ export const VACANCY_ROW = {
   closedAt: vacancies.closedAt,
 };
 
-/** Скільки вакансій показуємо одразу. Далі - Load more тією самою порцією. */
+/** How many vacancies are shown at once. After that, Load more adds the same batch size. */
 export const DEFAULT_LIMIT = 50;
 
 /**
- * Порція списку й курсор наступної. `nextCursor` є лише тоді, коли далі справді
- * щось є.
+ * A batch of the list and the cursor of the next one. `nextCursor` exists only when
+ * there really is something more.
  */
 export type VacancyListPage = {
   items: VacancyListItem[];
@@ -45,9 +45,9 @@ export type VacancyListPage = {
 };
 
 /**
- * За чим упорядкована вкладка. Favorites - за датою додавання в обране, свіжі
- * зверху; обране, додане до появи цієї дати, стоїть за датою виявлення. Решта
- * вкладок - за датою виявлення.
+ * What the tab is ordered by. Favorites - by the date added to favorites, fresh
+ * ones on top; favorites added before that date existed stand by their discovery
+ * date. The other tabs - by the discovery date.
  */
 function sortKey(tab: JobsTab): SQL {
   return tab === "favorites"
@@ -56,8 +56,8 @@ function sortKey(tab: JobsTab): SQL {
 }
 
 /**
- * Умова вкладки. Активна вакансія - без позначки Closed; Closed буває лише у
- * Favorites, бо звичайна зникла вакансія видаляється (README, «Життєвий цикл»).
+ * The tab condition. An active vacancy has no Closed mark; Closed happens only in
+ * Favorites, because an ordinary gone vacancy is deleted (README, "Lifecycle").
  */
 export function tabCondition(tab: JobsTab): SQL | undefined {
   switch (tab) {
@@ -73,8 +73,7 @@ export function tabCondition(tab: JobsTab): SQL | undefined {
 }
 
 /**
- * Порція вакансій однієї вкладки для одного користувача, від найновішої дати
- * (`sortKey`).
+ * A batch of vacancies of one tab for one user, newest date first (`sortKey`).
  */
 export async function listVacancies(
   db: NodePgDatabase,
@@ -88,8 +87,8 @@ export async function listVacancies(
     tab: JobsTab;
     limit?: number;
     /**
-     * Курсор останнього показаного рядка. Приходить із клієнта, тож непридатний
-     * означає «почни з початку», а не помилку - як у списку компаній.
+     * The cursor of the last shown row. It comes from the client, so an unusable
+     * one means "start from the beginning", not an error - as in the company list.
      */
     after?: Cursor | null;
   },
@@ -100,28 +99,28 @@ export async function listVacancies(
   const key = sortKey(tab);
 
   const rows = await db
-    // Ключ курсора - ключ порядку з мікросекундами: курсор, зібраний з JS
-    // `Date`, приводив би рядок на межі порції вдруге.
+    // The cursor key is the sort key with microseconds: a cursor built from a JS
+    // `Date` would bring the row at the batch boundary a second time.
     .select({ ...VACANCY_ROW, cursorKey: dbTimeText(key) })
     .from(vacancies)
-    // Користувач - лише через компанію: у вакансії власного `user_id` немає.
+    // The user only through the company: a vacancy has no `user_id` of its own.
     .innerJoin(careerSources, eq(vacancies.sourceId, careerSources.id))
     .innerJoin(companies, eq(careerSources.companyId, companies.id))
     .where(
       and(
         eq(companies.userId, userId),
         tabCondition(tab),
-        // Порівняння пари - рівно «наступний рядок за тим самим порядком»,
-        // як у списку компаній, лише в бік старіших.
+        // Comparing the pair is exactly "the next row in the same order", as in the
+        // company list, only towards older ones.
         cursor
           ? sql`(${key}, ${vacancies.id}) < (${cursor.key}::timestamptz, ${cursor.id}::uuid)`
           : undefined,
       ),
     )
-    // `id` робить порядок однозначним при однаковій даті: одна перевірка дає
-    // всім вакансіям джерела той самий момент виявлення.
+    // `id` makes the order unambiguous for equal dates: one check gives all
+    // vacancies of a source the same discovery moment.
     .orderBy(desc(key), desc(vacancies.id))
-    // Один рядок понад порцію показує, чи є що читати далі.
+    // One row beyond the batch shows whether there is more to read.
     .limit(limit + 1);
 
   const hasMore = rows.length > limit;
@@ -129,7 +128,7 @@ export async function listVacancies(
   const last = visible.at(-1);
 
   return {
-    // Ключ курсора - службове поле запиту, у рядок списку він не йде.
+    // The cursor key is an internal field of the query; it does not go into the list row.
     items: visible.map((row) => {
       const item: VacancyListItem & { cursorKey?: string } = { ...row };
       delete item.cursorKey;
@@ -140,8 +139,8 @@ export async function listVacancies(
 }
 
 /**
- * Чи є в користувача хоч одна вакансія. Від цього залежить текст порожньої
- * вкладки: «вакансій ще немає» з кнопкою Add company чи «усе прочитано».
+ * Whether the user has at least one vacancy. The text of an empty tab depends on
+ * it: "no vacancies yet" with an Add company button, or "everything is read".
  */
 export async function hasAnyVacancy(
   db: NodePgDatabase,
@@ -159,9 +158,9 @@ export async function hasAnyVacancy(
 }
 
 /**
- * Скільки рядків у кожній вкладці Jobs - числа в назвах вкладок. Умови ті самі,
- * що в `listVacancies` (`tabCondition`), тож число завжди дорівнює довжині
- * списку вкладки. Усі чотири - одним проходом по вакансіях користувача.
+ * How many rows each Jobs tab has - the numbers in the tab names. The conditions are
+ * the same as in `listVacancies` (`tabCondition`), so the number always equals the
+ * length of the tab's list. All four in one pass over the user's vacancies.
  */
 export async function countVacanciesByTab(
   db: NodePgDatabase,

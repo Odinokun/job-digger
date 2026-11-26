@@ -15,7 +15,7 @@ import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { readLever } from "./lever.ts";
 import { pagesToRead } from "./vacancies-to-check.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 let fakeWeb: FakeWeb;
@@ -41,9 +41,9 @@ function clientFor(origin: string) {
 }
 
 /**
- * Окремий сервер для випадків, яких немає в збережених відповідях. Фейковий
- * вебсервер ігнорує рядок запиту, а сторінки Lever розрізняє саме він
- * (`skip`, `limit`), тож сторінки віддає цей сервер.
+ * A separate server for cases the saved responses do not have. The fake web
+ * server ignores the query string, and that is exactly what tells Lever pages
+ * apart (`skip`, `limit`), so this server serves the pages.
  */
 async function withServer(
   respond: (request: IncomingMessage, response: ServerResponse) => void,
@@ -60,7 +60,7 @@ async function withServer(
   }
 }
 
-/** Сайт Lever із `total` оголошеннями, що віддає їх порціями за `skip`/`limit`. */
+/** A Lever site with `total` postings that serves them in chunks by `skip`/`limit`. */
 function pagedSite(total: number, requested: string[]) {
   return (request: IncomingMessage, response: ServerResponse) => {
     const url = new URL(request.url ?? "/", "http://fake");
@@ -95,8 +95,8 @@ describe("readLever", () => {
   });
 
   it("reports a site that does not exist", async () => {
-    // Справжній Lever на невідомий сайт відповідає 404 (перевірено 18.11.2026),
-    // фейковий вебсервер без збереженої відповіді - теж.
+    // The real Lever answers 404 for an unknown site (checked 18.11.2026), and so
+    // does the fake web server without a saved response.
     const result = await readLever(
       "https://jobs.lever.co/no-such-site",
       clientFor(fakeWeb.origin),
@@ -108,7 +108,7 @@ describe("readLever", () => {
   it("does not request anything for an address that is not a Lever board", async () => {
     const result = await readLever(
       "https://bosch.com/careers",
-      // Порт 1 ніхто не слухає: якби запит пішов, це був би fetch-failed.
+      // Nobody listens on port 1: if a request went out, it would be fetch-failed.
       clientFor("http://127.0.0.1:1"),
     );
 
@@ -150,7 +150,7 @@ describe("readLever", () => {
   });
 
   it("stops at the page limit and still counts as a success", async () => {
-    // Досягнення ліміту сторінок - нормальне завершення (задача 3.12).
+    // Reaching the page limit is a normal finish (task 3.12).
     const requested: string[] = [];
 
     await withServer(pagedSite(250, requested), async (origin) => {
@@ -161,7 +161,7 @@ describe("readLever", () => {
       );
 
       expect(result.ok && result.vacancies).toHaveLength(200);
-      // Список не дочитано - життєвий цикл не має нічого закривати (6.16).
+      // The list was not read to the end - the lifecycle must close nothing (6.16).
       expect(result.ok && result.truncated).toBe(true);
       expect(requested).toHaveLength(2);
     });
@@ -180,8 +180,8 @@ describe("readLever", () => {
   });
 
   it("fails the whole check when a later page fails", async () => {
-    // Половина списку виглядала б як «решта вакансій зникла» і потягнула б
-    // їхнє видалення - тож збій будь-якої сторінки - збій усього джерела.
+    // Half a list would look like "the other vacancies are gone" and lead to
+    // their deletion - so a failure of any page is a failure of the whole source.
     const requested: string[] = [];
     const firstPage = pagedSite(250, requested);
 

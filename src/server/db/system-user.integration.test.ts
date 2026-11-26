@@ -38,8 +38,8 @@ describe("getSystemUser", () => {
   });
 
   it("explains how to fix an unseeded database instead of failing deeper", async () => {
-    // Сторінки лише читають користувача, тому порожня база має сказати,
-    // що саме запустити, а не впасти десь у запиті нижче.
+    // Pages only read the user, so an empty database has to say what exactly to
+    // run rather than fail somewhere in a query further down.
     await expect(getSystemUser(testDb)).rejects.toThrow(/db:seed/);
   });
 });

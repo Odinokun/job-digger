@@ -51,7 +51,7 @@ async function countForDialog(
  * them, not only those loaded in the list). Mark all as read also takes the
  * boundary - the database time - and marks only those recorded up to it:
  * vacancies found while the dialog is open stay Unread
- * (src/server/vacancies/README.md, "Одночасні зміни"). Mark all as unread has no
+ * (src/server/vacancies/README.md, "Concurrent changes"). Mark all as unread has no
  * boundary: a check never adds anything to the Read tab.
  *
  * An `AlertDialog`, as for deleting a company: the window demands a decision.

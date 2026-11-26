@@ -69,7 +69,7 @@ describe("finishTask", () => {
   });
 
   it("records a failure with its error and counts it as checked", async () => {
-    // Sources checked у History включає невдалі.
+    // Sources checked in History includes failed ones.
     const sourceId = await greenhouseSource(testDb, "discord");
     const runId = await activeRun(testDb, { sourcesTotal: 1 });
     await task(testDb, { sourceId, runId });
@@ -93,7 +93,7 @@ describe("finishTask", () => {
   });
 
   it("finishes a task outside any run without touching runs", async () => {
-    // Check now і Retry не змінюють рядок History.
+    // Check now and Retry do not change the History row.
     const sourceId = await greenhouseSource(testDb, "discord");
     const runId = await activeRun(testDb);
     await task(testDb, { sourceId });
@@ -112,7 +112,7 @@ describe("finishTask", () => {
   });
 
   it("leaves the counters of a finished run alone", async () => {
-    // Рядок History фіксує результат на момент завершення.
+    // The History row records the result as of the finish.
     const sourceId = await greenhouseSource(testDb, "discord");
     const runId = await activeRun(testDb, { sourcesChecked: 5 });
     await task(testDb, { sourceId, runId });
@@ -135,8 +135,8 @@ describe("finishTask", () => {
   });
 
   it("rejects a late result once the task was claimed again", async () => {
-    // Обробник завис, завдання повернулось у чергу й дісталося іншому -
-    // результат першого більше не належить завданню.
+    // The worker got stuck, the task went back to the queue and was given to
+    // another one - the first one's result no longer belongs to the task.
     const sourceId = await greenhouseSource(testDb, "discord");
     const runId = await activeRun(testDb);
     await task(testDb, { sourceId, runId });

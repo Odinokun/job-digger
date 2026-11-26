@@ -1,14 +1,14 @@
 /**
- * Ключ вакансії в межах джерела (src/server/vacancies/README.md):
- * ID на платформі, а якщо його немає - очищена адреса.
+ * The vacancy key within a source (src/server/vacancies/README.md): the ID on the
+ * platform, and if there is none, the cleaned address.
  */
 
 /**
- * Мітки відстеження: кажуть, звідки прийшов відвідувач, а не яка це вакансія.
- * `utm_*` і `gh_src` - очевидні; `gh_jid` дублює ID зі шляху Greenhouse
- * (`.../jobs/5426468004?gh_jid=5426468004`), `fbclid` і `gclid` - рекламні
- * мітки Facebook і Google. Решта параметрів лишається: `?id=42` розрізняє
- * вакансії.
+ * Tracking parameters: they say where the visitor came from, not which vacancy
+ * this is. `utm_*` and `gh_src` are obvious; `gh_jid` duplicates the ID from the
+ * Greenhouse path (`.../jobs/5426468004?gh_jid=5426468004`), `fbclid` and `gclid`
+ * are Facebook and Google ad tags. Other parameters stay: `?id=42` tells vacancies
+ * apart.
  */
 const TRACKING_PARAMS = new Set(["gh_src", "gh_jid", "fbclid", "gclid"]);
 
@@ -17,10 +17,10 @@ function isTrackingParam(name: string): boolean {
 }
 
 /**
- * Адреса вакансії у формі, яку можна порівнювати: без міток відстеження, без
- * якоря й слеша в кінці шляху, з хостом у нижньому регістрі (`URL` робить це
- * сам) і параметрами в одному порядку. Регістр шляху лишається - на багатьох
- * сайтах він важить.
+ * The vacancy address in a form fit for comparison: without tracking parameters,
+ * without the anchor and the trailing slash of the path, with the host in lower
+ * case (`URL` does that itself) and the parameters in one order. The case of the
+ * path stays - on many sites it matters.
  */
 export function cleanVacancyUrl(input: string): string {
   const url = new URL(input);
@@ -36,12 +36,12 @@ export function cleanVacancyUrl(input: string): string {
 }
 
 /**
- * Ключ вакансії в межах джерела: `id:<ID на платформі>`, а без ID -
- * `url:<очищена адреса>`. З ID адреса на ключ не впливає: вона може змінитися,
- * а вакансія лишиться тією самою (src/server/vacancies/README.md).
+ * The vacancy key within a source: `id:<ID on the platform>`, and without an ID
+ * `url:<cleaned address>`. With an ID the address does not affect the key: it may
+ * change while the vacancy stays the same (src/server/vacancies/README.md).
  *
- * Приймає лише два поля, а не тип парсера: у парсера schema.org (3.11) ID може
- * не бути.
+ * It takes only two fields, not the parser type: a schema.org parser (3.11) may
+ * have no ID.
  */
 export function vacancyKey({
   externalId,

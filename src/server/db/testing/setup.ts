@@ -1,7 +1,7 @@
 /**
- * Виконується перед кожним файлом інтеграційних тестів: чистий стан перед кожним
- * тестом і закриття пулу зʼєднань після файлу, щоб прогін не завис на відкритих
- * зʼєднаннях.
+ * Runs before every integration test file: a clean state before every test and
+ * closing the connection pool after the file, so the run does not hang on open
+ * connections.
  */
 import { afterAll, beforeEach } from "vitest";
 

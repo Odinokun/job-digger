@@ -1,7 +1,7 @@
 /**
- * Find new pages: повторний пошук карʼєрних сторінок для всіх компаній вкладки
- * Not tracked (задача 5.10). Тут лише постановка в
- * чергу - кожну компанію шукає цикл черги (`queue/discover-task.ts`).
+ * Find new pages: a repeated career page search for every company of the Not
+ * tracked tab (task 5.10). Only the queuing is here - the queue loop searches for
+ * each company (`queue/discover-task.ts`).
  */
 import { and, eq, inArray, isNull, notExists, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -9,14 +9,14 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { careerSources, checkTasks, companies } from "../db/schema.ts";
 
 /**
- * Ключ advisory lock, яким серіалізуються запуски Find new pages одного
- * користувача. Перше число - сама дія, друге - користувач.
+ * The advisory lock key that serializes Find new pages runs of one user. The first
+ * number is the action itself, the second the user.
  */
 const FIND_NEW_PAGES_LOCK_KEY = 5_100_001;
 
 export interface StartFindNewPagesInput {
   userId: string;
-  /** Час постановки в чергу. */
+  /** The time of queuing. */
   now: Date;
 }
 
@@ -25,14 +25,13 @@ export type StartFindNewPagesResult =
   | { ok: false; reason: "already-running" | "nothing-to-search" };
 
 /**
- * Ставить у чергу пошук для кожної компанії Not tracked - фоновий, як Check
- * all, і без запуску: у History Find new pages не пишеться (рішення автора
- * 19.11.2026).
+ * Queues a search for every Not tracked company - in the background, like Check
+ * all, and without a run: Find new pages is not recorded in History.
  *
- * Без рядка запуску одну активну дію на користувача не втримає унікальний
- * індекс, як у Check all, тож перевірка «чи триває» і вставка йдуть під
- * advisory lock користувача: другий одночасний клік дочекається першого і
- * побачить його завдання.
+ * Without a run row, a unique index cannot hold one active action per user as in
+ * Check all, so the "is it running" check and the insert go under the user's
+ * advisory lock: a second simultaneous click waits for the first and sees its
+ * tasks.
  */
 export async function startFindNewPages(
   db: NodePgDatabase,
@@ -47,7 +46,7 @@ export async function startFindNewPages(
       return { ok: false, reason: "already-running" };
     }
 
-    // Вкладка Not tracked - компанії без жодного джерела, що відстежується.
+    // The Not tracked tab holds companies without a single tracked source.
     const notTracked = await tx
       .select({ id: companies.id })
       .from(companies)
@@ -86,10 +85,11 @@ export async function startFindNewPages(
 }
 
 /**
- * Чи триває Find new pages користувача: є незавершені завдання пошуку або
- * перші перевірки дошок, які пошук додав. Другі - фонові завдання `check` без
- * запуску: Retry ручний, а Check all має запуск. Поки вони йдуть, інтерфейс
- * опитує стан і по завершенню перечитує список і лічильник Jobs.
+ * Whether the user's Find new pages is running: there are unfinished search tasks
+ * or first checks of the boards the search added. The latter are background
+ * `check` tasks without a run: Retry is manual, and Check all has a run. While they
+ * run, the UI polls the state and, when they finish, re-reads the list and the
+ * Jobs counter.
  */
 export async function isFindingNewPages(
   db: NodePgDatabase,

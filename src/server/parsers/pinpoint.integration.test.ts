@@ -7,7 +7,7 @@ import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { readPinpoint } from "./pinpoint.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 let fakeWeb: FakeWeb;
@@ -34,7 +34,7 @@ function client(origin = fakeWeb.origin) {
 
 describe("readPinpoint", () => {
   it("reads the postings of a real careers page from its address", async () => {
-    // Адреса, яку автор дав: кар'єрна сторінка з якорем на блок вакансій.
+    // The address the author gave: a career page with an anchor on the vacancy block.
     const result = await readPinpoint(
       "https://gig.pinpointhq.com/#js-careers-jobs-block",
       client(),

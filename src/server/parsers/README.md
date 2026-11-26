@@ -1,659 +1,649 @@
-# src/server/parsers - парсери вакансій
+# src/server/parsers - vacancy parsers
 
-Читають вакансії з кар'єрних джерел: API платформ (ATS) і власні сторінки за
-рецептом. Розмітка schema.org JobPosting відкладена ([задача 3.11](../../../tasks/3.11-schema-org-jobposting-parser.md)). Усі запити - через єдиний HTTP-клієнт ([`src/server/http`](../http/README.md)).
+They read vacancies from career sources: platform APIs (ATSs) and own pages with a
+recipe. The schema.org JobPosting markup is postponed ([task 3.11](../../../tasks/3.11-schema-org-jobposting-parser.md)). Every request goes through the single HTTP client ([`src/server/http`](../http/README.md)).
 
-Браузерного читання (Playwright) немає: усе вище читається звичайними HTTP-запитами,
-а браузер на Vercel міг би не вміститися в час і ресурси однієї серверної функції. Його варто додавати,
-лише коли трапиться важливий сайт, якому він справді потрібен, і разом із ним - Load
-more та динамічне підвантаження.
+There is no browser reading (Playwright): everything above is read with plain HTTP
+requests, and on Vercel a browser might not fit into the time and resources of one server
+function. It is worth adding only when an important site turns up that really needs it,
+and with it Load more and dynamic loading.
 
-## Файли
+## Files
 
-| Файл                 | Роль                                             |
+| File                 | Role                                             |
 | -------------------- | ------------------------------------------------ |
-| `types.ts`           | Спільний формат: `ParsedVacancy`, `ParseResult`, `ParserError` |
-| `greenhouse.ts`      | Greenhouse: `readGreenhouse(sourceUrl, client)` і його частини |
-| `greenhouse.test.ts` | Юніт-тести парсера Greenhouse                     |
-| `greenhouse.integration.test.ts` | `readGreenhouse` через фейковий вебсервер |
-| `shared.ts`          | Спільне для парсерів: `collectVacancies` (правило кривих записів), `fetchJson` і `postJson` (запит → статус → JSON), `fetchText` (те саме для HTML, плюс адреса після редиректів), `UNREADABLE`, `isRecord`, `isWebUrl` |
-| `shared.test.ts`     | Юніт-тести `collectVacancies`                     |
+| `types.ts`           | The shared format: `ParsedVacancy`, `ParseResult`, `ParserError` |
+| `greenhouse.ts`      | Greenhouse: `readGreenhouse(sourceUrl, client)` and its parts |
+| `greenhouse.test.ts` | Unit tests of the Greenhouse parser              |
+| `greenhouse.integration.test.ts` | `readGreenhouse` through the fake web server |
+| `shared.ts`          | Shared by the parsers: `collectVacancies` (the broken record rule), `fetchJson` and `postJson` (request → status → JSON), `fetchText` (the same for HTML, plus the address after redirects), `UNREADABLE`, `isRecord`, `isWebUrl` |
+| `shared.test.ts`     | Unit tests of `collectVacancies`                 |
 | `lever.ts`           | Lever: `readLever(sourceUrl, client)`, `leverSite`, `parseLeverPostings` |
-| `lever.test.ts`      | Юніт-тести парсера Lever                          |
-| `lever.integration.test.ts` | `readLever` через фейковий вебсервер і сервер зі сторінками |
+| `lever.test.ts`      | Unit tests of the Lever parser                   |
+| `lever.integration.test.ts` | `readLever` through the fake web server and a server with pages |
 | `ashby.ts`           | Ashby: `readAshby(sourceUrl, client)`, `ashbyBoard`, `parseAshbyJobs` |
-| `ashby.test.ts`      | Юніт-тести парсера Ashby                          |
-| `ashby.integration.test.ts` | `readAshby` через фейковий вебсервер, зокрема відповідь понад 5 МБ |
+| `ashby.test.ts`      | Unit tests of the Ashby parser                   |
+| `ashby.integration.test.ts` | `readAshby` through the fake web server, including a response over 5 MB |
 | `workday.ts`         | Workday: `readWorkday(sourceUrl, client)`, `workdaySite`, `parseWorkdayJobs` |
-| `workday.test.ts`    | Юніт-тести парсера Workday                        |
-| `workday.integration.test.ts` | `readWorkday` через фейковий вебсервер і сервер зі сторінками |
+| `workday.test.ts`    | Unit tests of the Workday parser                 |
+| `workday.integration.test.ts` | `readWorkday` through the fake web server and a server with pages |
 | `peopleforce.ts`     | PeopleForce: `readPeopleForce(sourceUrl, client)`, `peopleforceSite`, `isPeopleForcePage`, `parsePeopleForcePage` |
-| `peopleforce.test.ts` | Юніт-тести парсера PeopleForce                   |
-| `peopleforce.integration.test.ts` | `readPeopleForce` через фейковий вебсервер і сервер зі сторінками |
+| `peopleforce.test.ts` | Unit tests of the PeopleForce parser            |
+| `peopleforce.integration.test.ts` | `readPeopleForce` through the fake web server and a server with pages |
 | `breezy.ts`          | Breezy HR: `readBreezy(sourceUrl, client)`, `breezyCompany`, `parseBreezyPositions` |
-| `breezy.test.ts`     | Юніт-тести парсера Breezy HR                      |
-| `breezy.integration.test.ts` | `readBreezy` через фейковий вебсервер |
+| `breezy.test.ts`     | Unit tests of the Breezy HR parser               |
+| `breezy.integration.test.ts` | `readBreezy` through the fake web server |
 | `cleverstaff.ts`     | CleverStaff: `readCleverStaff(sourceUrl, client)`, `cleverstaffSource`, `cleverstaffBoardUrl`, `parseCleverStaffVacancies` |
-| `cleverstaff.test.ts` | Юніт-тести парсера CleverStaff                  |
-| `cleverstaff.integration.test.ts` | `readCleverStaff` через фейковий вебсервер: дошка й посилання на вакансію |
+| `cleverstaff.test.ts` | Unit tests of the CleverStaff parser            |
+| `cleverstaff.integration.test.ts` | `readCleverStaff` through the fake web server: a board and a vacancy link |
 | `hurma.ts`           | Hurma: `readHurma(sourceUrl, client)`, `hurmaCompany`, `hurmaBoardUrl`, `parseHurmaVacancies`, `hurmaHasNextPage` |
-| `hurma.test.ts`      | Юніт-тести парсера Hurma                          |
-| `hurma.integration.test.ts` | `readHurma` через фейковий вебсервер і сервер зі сторінками та перевіркою заголовка |
+| `hurma.test.ts`      | Unit tests of the Hurma parser                   |
+| `hurma.integration.test.ts` | `readHurma` through the fake web server and a server with pages and a header check |
 | `personio.ts`        | Personio: `readPersonio(sourceUrl, client)`, `personioBoard`, `parsePersonioFeed` |
-| `personio.test.ts`   | Юніт-тести парсера Personio                       |
-| `personio.integration.test.ts` | `readPersonio` через фейковий вебсервер |
-| `softgarden.ts`      | softgarden: `readSoftgarden(sourceUrl, client)`, `softgardenSource`, `softgardenBoardUrl`, `parseSoftgardenBoard` (стара дошка, HTML), `parseSoftgardenFeed` (кар'єрний сайт, JSON) |
-| `softgarden.test.ts` | Юніт-тести парсера softgarden                     |
-| `softgarden.integration.test.ts` | `readSoftgarden` через фейковий вебсервер і сервер з відповіддю 400 |
+| `personio.test.ts`   | Unit tests of the Personio parser                |
+| `personio.integration.test.ts` | `readPersonio` through the fake web server |
+| `softgarden.ts`      | softgarden: `readSoftgarden(sourceUrl, client)`, `softgardenSource`, `softgardenBoardUrl`, `parseSoftgardenBoard` (the old board, HTML), `parseSoftgardenFeed` (the career site, JSON) |
+| `softgarden.test.ts` | Unit tests of the softgarden parser              |
+| `softgarden.integration.test.ts` | `readSoftgarden` through the fake web server and a server with a 400 response |
 | `bamboohr.ts`        | BambooHR: `readBambooHr(sourceUrl, client)`, `bamboohrCompany`, `parseBambooHrList` |
-| `bamboohr.test.ts`   | Юніт-тести парсера BambooHR                       |
-| `bamboohr.integration.test.ts` | `readBambooHr` через фейковий вебсервер і сервер, що переадресовує невідому компанію на сайт BambooHR |
+| `bamboohr.test.ts`   | Unit tests of the BambooHR parser                |
+| `bamboohr.integration.test.ts` | `readBambooHr` through the fake web server and a server that redirects an unknown company to the BambooHR site |
 | `pinpoint.ts`        | Pinpoint: `readPinpoint(sourceUrl, client)`, `pinpointCompany`, `parsePinpointPostings` |
-| `pinpoint.test.ts`   | Юніт-тести парсера Pinpoint                       |
-| `pinpoint.integration.test.ts` | `readPinpoint` через фейковий вебсервер: адреса з якорем, 404 |
+| `pinpoint.test.ts`   | Unit tests of the Pinpoint parser                |
+| `pinpoint.integration.test.ts` | `readPinpoint` through the fake web server: an address with an anchor, 404 |
 | `talentadore.ts`     | TalentAdore: `readTalentAdore(sourceUrl, client)`, `talentadoreBoard`, `talentadoreBoardUrl`, `parseTalentAdorePositions` |
-| `talentadore.test.ts` | Юніт-тести парсера TalentAdore                  |
-| `talentadore.integration.test.ts` | `readTalentAdore` через фейковий вебсервер: адреса віджета, 404 |
+| `talentadore.test.ts` | Unit tests of the TalentAdore parser            |
+| `talentadore.integration.test.ts` | `readTalentAdore` through the fake web server: the widget address, 404 |
 | `workable.ts`        | Workable: `readWorkable(sourceUrl, client)`, `workableAccount`, `parseWorkableWidget` |
-| `workable.test.ts`   | Юніт-тести парсера Workable                       |
-| `workable.integration.test.ts` | `readWorkable` через фейковий вебсервер: акаунт з адреси вакансії, регістр, 404 |
-| `vacancies-to-check.ts` | `VACANCIES_TO_CHECK` - спільний ліміт вакансій для парсерів, що читають сторінками; `pagesToRead` - скільки це сторінок при глибині `ReadDepth`; `parseVacanciesToCheck` |
-| `vacancies-to-check.test.ts` | Розбір змінної і скільки сторінок читати |
-| `own-page.ts`        | Власна сторінка за рецептом (задача 6.21): `findLinkGroups` (кандидати в рецепт), `parseOwnPage` і `readOwnPage` (читання за префіксом) |
-| `own-page.test.ts`   | Юніт-тести груп і назв на справжніх сторінках kinggroup, delasport, ncube, a-listware |
-| `own-page.integration.test.ts` | `readOwnPage` і `readSource` для `own_page` через фейковий вебсервер |
-| `read-source.ts`     | `readSource(source, client)` - парсер за платформою джерела, а для `own_page` - за рецептом джерела; `null`, якщо парсера ще немає |
+| `workable.test.ts`   | Unit tests of the Workable parser                |
+| `workable.integration.test.ts` | `readWorkable` through the fake web server: the account from a vacancy address, case, 404 |
+| `vacancies-to-check.ts` | `VACANCIES_TO_CHECK` - the shared vacancy limit for parsers that read in pages; `pagesToRead` - how many pages that is at a `ReadDepth`; `parseVacanciesToCheck` |
+| `vacancies-to-check.test.ts` | Parsing the variable and how many pages to read |
+| `own-page.ts`        | An own page with a recipe (task 6.21): `findLinkGroups` (recipe candidates), `parseOwnPage` and `readOwnPage` (reading by prefix) |
+| `own-page.test.ts`   | Unit tests of groups and titles on the real pages of kinggroup, delasport, ncube, a-listware |
+| `own-page.integration.test.ts` | `readOwnPage` and `readSource` for `own_page` through the fake web server |
+| `read-source.ts`     | `readSource(source, client)` - the parser for the source's platform, and for `own_page` by the source's recipe; `null` if there is no parser yet |
 
-## Спільний формат
+## Shared format
 
-Парсер повертає `{ ok: true, vacancies, skipped }` або `{ ok: false, error }` (`types.ts`).
+A parser returns `{ ok: true, vacancies, skipped }` or `{ ok: false, error }` (`types.ts`).
 
-- **Вакансія** - `externalId` (ID на платформі, з нього складається ключ; `null`, якщо
-  платформа ID не дає - тоді ключ з адреси), `title`,
-  `url` (лише http/https) і `location` (може бути `null` - тоді в списку «—»).
-- **Помилки:** `not-found` (сторінки чи дошки немає, 404), `unreadable` (відповідь не
-  того формату або адреса не та), `bad-status` (сайт відповів інакше, ніж 2xx чи 404,
-  - зі статусом), `fetch-failed` (збій запиту, з причиною `HttpError`).
-- **Криві записи - два види** (`collectVacancies` у `shared.ts`):
-  - **зламана структура** - запис не обʼєкт, id не того типу чи порожній, назва чи
-    адреса не рядок. Це сигнал зміни формату: уся відповідь невдала, бо якби такі
-    записи пропускалися, пропущеними виявились би всі, і порожній список видалив би
-    всі вакансії джерела. Невдала перевірка вакансій не чіпає;
-  - **вада даних** - порожня назва чи адреса не http(s). Вакансія пропускається й
-    рахується в `skipped` (parse warning у деталях завдання, задача 4.01). Пропущені
-    всі записи непорожнього списку - теж невдала відповідь.
+- **A vacancy** has `externalId` (the ID on the platform, the key is built from it; `null`
+  if the platform gives no ID - then the key comes from the address), `title`, `url` (http
+  or https only) and `location` (may be `null` - then the list shows "—").
+- **Errors:** `not-found` (the page or board does not exist, 404), `unreadable` (the
+  response is in the wrong format or the address is not the right one), `bad-status` (the
+  site answered with something other than 2xx or 404 - with the status), `fetch-failed` (a
+  request failure, with the `HttpError` reason).
+- **Broken records come in two kinds** (`collectVacancies` in `shared.ts`):
+  - **a broken structure** - the record is not an object, the id has the wrong type or is
+    empty, the title or the address is not a string. This signals a format change: the
+    whole response fails, because if such records were skipped, all of them would turn out
+    skipped, and an empty list would delete every vacancy of the source. A failed check
+    does not touch vacancies;
+  - **bad data** - an empty title or an address that is not http(s). The vacancy is skipped
+    and counted in `skipped` (a parse warning in the task details, task 4.01). If every
+    record of a non-empty list is skipped, the response fails too.
 
-  До 3.08 будь-який кривий запис валив усю відповідь (рішення 3.06). Справжні дані
-  показали ціну: одна вакансія OpenAI з порожньою назвою блокувала всі 839. Правило
-  змінене за рішенням автора 18.11.2026.
-- Парсер лише читає, що є на платформі зараз. Дата виявлення, Read/Unread, ключ і
-  очищення URL - життєвий цикл (задачі 3.13 і 3.05).
+  Until 3.08 any broken record failed the whole response (decision 3.06). Real data showed
+  the cost: one OpenAI vacancy with an empty title blocked all 839.
+- A parser only reads what is on the platform now. The discovery date, Read/Unread, the key
+  and URL cleanup belong to the lifecycle (tasks 3.13 and 3.05).
 
-## Ліміт вакансій і глибина
+## Vacancy limit and depth
 
-Парсери, що читають список сторінками (Lever, Workday, PeopleForce, Hurma), читають не
-більше `VACANCIES_TO_CHECK` вакансій (`vacancies-to-check.ts`, змінна з тим самим
-іменем у `.env.example`, за замовчуванням 500). Сторінки рахуються з розміру
-сторінки платформи (`pagesToRead`): PeopleForce - 50, Workday - 25, Lever і Hurma - 5.
-До задачі 6.16 ліміт був у сторінках (`PAGES_TO_CHECK = 5`), і той самий ліміт давав
-то 50 вакансій, то 500.
+Parsers that read the list in pages (Lever, Workday, PeopleForce, Hurma) read at most
+`VACANCIES_TO_CHECK` vacancies (`vacancies-to-check.ts`, the variable of the same name in
+`.env.example`, 500 by default). Pages are counted from the platform's page size
+(`pagesToRead`): PeopleForce - 50, Workday - 25, Lever and Hurma - 5. Until task 6.16 the
+limit was in pages (`PAGES_TO_CHECK = 5`), and the same limit gave 50 vacancies in one
+place and 500 in another.
 
-**Глибина** (`depth`): `full` - до ліміту, `first-page` - лише перша сторінка. Хто
-скільки читає - [`src/server/checks`](../checks/README.md#глибина-читання).
+**Depth** (`depth`): `full` - up to the limit, `first-page` - only the first page. Who reads
+how much: [`src/server/checks`](../checks/README.md#read-depth).
 
-**Неповний список.** Якщо читання зупинилось на ліміті чи першій сторінці, а не
-тому, що список скінчився, результат має `truncated: true`. Тоді життєвий цикл
-нічого не позначає зниклим (`src/server/vacancies`): вакансії за межею не зникли,
-їх просто не читали. Досягнення ліміту - як і раніше, успішна перевірка. Парсери, що
-беруть усе одним запитом, `truncated` не ставлять ніколи.
+**An incomplete list.** If reading stopped at the limit or the first page rather than
+because the list ended, the result has `truncated: true`. Then the lifecycle marks nothing
+as gone (`src/server/vacancies`): the vacancies beyond the boundary did not disappear, they
+were just not read. Reaching the limit is still a successful check. Parsers that take
+everything in one request never set `truncated`.
 
-Тести, яким потрібна конкретна кількість сторінок, передають `maxPages` явно:
-Vitest завантажує `.env` (`vitest.config.ts`), і значення автора не має впливати на
-результат.
+Tests that need a specific number of pages pass `maxPages` explicitly: Vitest loads `.env`
+(`vitest.config.ts`), and the author's value must not affect the result.
 
-## Як додати платформу
+## How to add a platform
 
-Перелік місць, яких торкається нова платформа. Зібраний за тим, як підключали
-PeopleForce. Окрема задача на кожну платформу, TDD, як у етапі 3.
+The list of places a new platform touches, collected from how PeopleForce was added. A
+separate task for each platform, TDD, as in stage 3.
 
-**Підготовка**
+**Preparation**
 
-- [ ] Звірити API з офіційною документацією й дати посилання. Немає публічного
-      API - читати публічну сторінку, як PeopleForce, і записати, що формат
-      перевірено справжніми сторінками, а не документацією.
-- [ ] Кількома справжніми запитами з User-Agent застосунку перевірити, чого
-      документація не каже: відповідь на невідому дошку, розмір відповіді,
-      сторінки, порядок вакансій.
-- [ ] Зберегти невелику справжню відповідь у `src/server/http/testing/responses/<хост>/`
-      і рядок про неї в [README фейкового сервера](../http/testing/README.md).
+- [ ] Check the API against the official documentation and link it. No public API - read
+      the public page, as with PeopleForce, and note that the format was checked against
+      real pages, not documentation.
+- [ ] With a few real requests carrying the app's User-Agent, check what the documentation
+      does not say: the response for an unknown board, the response size, pages, the
+      order of vacancies.
+- [ ] Save a small real response into `src/server/http/testing/responses/<host>/` and a row
+      about it in the [fake server README](../http/testing/README.md).
 
-**Платформа**
+**Platform**
 
-- [ ] `src/lib/companies/platform.ts` - значення в `CAREER_PLATFORMS` і домен у
-      `PLATFORM_DOMAINS`. Таблиця доменів у [README `src/lib/companies`](../../lib/companies/README.md).
-- [ ] Прибрати платформу з `src/lib/companies/known-ats.ts`: там лише ATS без
-      парсера, і рядок, що лишився, підписував би джерело назвою з того списку.
-- [ ] Міграція: enum `career_platform` будується з `CAREER_PLATFORMS`, тож
-      `npm run db:generate` ([порядок роботи з міграціями](../db/README.md)).
-- [ ] `src/lib/companies/suggest.ts` - якщо назва компанії в адресі живе в
-      субдомені, а не в першому сегменті шляху (`SUBDOMAIN_SLUG_PLATFORMS`).
-- [ ] Назва платформи в `messages/en.json` і `messages/uk.json`
-      (`platforms.*`) і в `src/app/companies/page.tsx`.
+- [ ] `src/lib/companies/platform.ts` - the value in `CAREER_PLATFORMS` and the domain in
+      `PLATFORM_DOMAINS`. The domain table is in the [`src/lib/companies` README](../../lib/companies/README.md).
+- [ ] Remove the platform from `src/lib/companies/known-ats.ts`: it holds only ATSs without a
+      parser, and a leftover row would label the source with the name from that list.
+- [ ] A migration: the `career_platform` enum is built from `CAREER_PLATFORMS`, so
+      `npm run db:generate` ([how migrations work](../db/README.md)).
+- [ ] `src/lib/companies/suggest.ts` - if the company name in the address lives in the
+      subdomain rather than the first path segment (`SUBDOMAIN_SLUG_PLATFORMS`).
+- [ ] The platform name in `messages/en.json` and `messages/uk.json` (`platforms.*`) and in
+      `src/app/companies/page.tsx`.
 
-**Парсер**
+**Parser**
 
-- [ ] `<платформа>.ts` - `read<Платформа>(sourceUrl, client)`, функція, що дістає
-      дошку з будь-якого посилання, і розбір відповіді. Формат результату й
-      правило кривих записів - «Спільний формат» вище.
-- [ ] Юніт-тест розбору на збереженій відповіді й інтеграційний через фейковий
-      вебсервер.
-- [ ] Рядок у `READERS` у `read-source.ts`.
-- [ ] Читає сторінками - `depth` і `pagesToRead`, `truncated`, якщо зупинився на ліміті («Ліміт вакансій і глибина» вище).
-- [ ] Розділ про платформу в цьому README і рядки у таблиці «Файли».
+- [ ] `<platform>.ts` - `read<Platform>(sourceUrl, client)`, a function that gets the board
+      from any link, and the response parsing. The result format and the broken record
+      rule: "Shared format" above.
+- [ ] A unit test of the parsing on the saved response and an integration test through the
+      fake web server.
+- [ ] A row in `READERS` in `read-source.ts`.
+- [ ] Reads in pages - `depth` and `pagesToRead`, `truncated` if it stopped at the limit
+      ("Vacancy limit and depth" above).
+- [ ] A section about the platform in this README and rows in the "Files" table.
 
-**Пошук сторінок** ([`src/server/discovery`](../discovery/README.md))
+**Page search** ([`src/server/discovery`](../discovery/README.md))
 
-- [ ] `board-url.ts` - єдина адреса дошки з функції парсера.
-- [ ] `by-name.ts` - якщо адресу дошки можна вгадати за назвою компанії. Кожна
-      платформа тут - ще один запит на кожен варіант назви кожної компанії.
-- [ ] `ownership.ts` - хост платформи в `PLATFORM_DOMAINS` і, якщо можна, як
-      зі сторінки дошки прочитати сайт компанії.
+- [ ] `board-url.ts` - the single board address from the parser's function.
+- [ ] `by-name.ts` - if the board address can be guessed from the company name. Every
+      platform here is one more request for every name variant of every company.
+- [ ] `ownership.ts` - the platform host in `PLATFORM_DOMAINS` and, if possible, how to read
+      the company site from the board page.
 
-**Наприкінці**
+**At the end**
 
-- [ ] Ручна перевірка на справжній мережі: дві-три справжні дошки й неіснуюча.
-- [ ] Find new pages для Not tracked, щоб компанії на новій платформі перейшли в
-      Tracked.
+- [ ] A manual check on the real network: two or three real boards and one that does not
+      exist.
+- [ ] Find new pages for Not tracked, so that companies on the new platform move to Tracked.
 
 ## Greenhouse
 
-API - `https://boards-api.greenhouse.io/v1/boards/{board_token}/jobs`, без
-авторизації ([документація](https://docs.greenhouse.io/job-board.html)).
+The API is `https://boards-api.greenhouse.io/v1/boards/{board_token}/jobs`, without
+authorization ([documentation](https://docs.greenhouse.io/job-board.html)).
 
-`greenhouseBoardToken` дістає назву дошки з адреси джерела в тому вигляді, як вона
-лежить у `career_sources.url` (абсолютна, як ввів користувач): сама дошка
-(`job-boards.greenhouse.io/discord`, `boards.greenhouse.io/discord`), посилання на
-вакансію (`.../discord/jobs/123`), вбудована дошка (`/embed/job_board?for=discord`).
-Не дошка Greenhouse - `null`. Хост ЄС (`job-boards.eu.greenhouse.io`) не
-підтримується: підтвердженого API для нього немає.
+`greenhouseBoardToken` gets the board name from the source address as it is stored in
+`career_sources.url` (absolute, as the user typed it): the board itself
+(`job-boards.greenhouse.io/discord`, `boards.greenhouse.io/discord`), a vacancy link
+(`.../discord/jobs/123`), an embedded board (`/embed/job_board?for=discord`). Not a
+Greenhouse board - `null`. The EU host (`job-boards.eu.greenhouse.io`) is not supported:
+there is no confirmed API for it.
 
-`parseGreenhouseJobs` бере з кожної вакансії `id` (ID оголошення, той самий, що в
-посиланні; `internal_job_id` - ID посади, і в оголошень-«prospect» він `null`),
-`title`, `absolute_url` і `location.name`. Тест читає справжню відповідь дошки
-Discord зі збережених відповідей фейкового вебсервера.
+`parseGreenhouseJobs` takes from each vacancy `id` (the posting ID, the same as in the link;
+`internal_job_id` is the position ID, and it is `null` for "prospect" postings), `title`,
+`absolute_url` and `location.name`. The test reads the real response of the Discord board
+from the fake web server's saved responses.
 
-`readGreenhouse(sourceUrl, client)` складає все разом: назва дошки → запит через
-HTTP-клієнт → розбір. Адреса без дошки Greenhouse - `unreadable` без запиту.
-Інтеграційні тести ходять на фейковий вебсервер зі збереженою відповіддю Discord,
-а для відповідей, яких там немає (не JSON, 403, мовчання), - на свій сервер.
-Перевірено й на справжній мережі (вручну, 18.11.2026): Discord - 26 вакансій,
-Figma - 144, неіснуюча дошка - `not-found`.
+`readGreenhouse(sourceUrl, client)` puts it all together: board name → request through the
+HTTP client → parsing. An address without a Greenhouse board is `unreadable` without a
+request. Integration tests go to the fake web server with the saved Discord response, and
+for responses it does not have (not JSON, 403, silence) to their own server. Also checked on
+the real network (by hand, 18.11.2026): Discord - 26 vacancies, Figma - 144, a board that
+does not exist - `not-found`.
 
 ## Lever
 
-API - `https://api.lever.co/v0/postings/{site}?mode=json` (дошки `jobs.lever.co`) і
-`https://api.eu.lever.co/...` (дошки `jobs.eu.lever.co`), без авторизації
-([документація](https://github.com/lever/postings-api)). Сайт - перший сегмент шляху
-дошки; `leverSite` розуміє й посилання на оголошення та форму відгуку.
+The API is `https://api.lever.co/v0/postings/{site}?mode=json` (boards on `jobs.lever.co`)
+and `https://api.eu.lever.co/...` (boards on `jobs.eu.lever.co`), without authorization
+([documentation](https://github.com/lever/postings-api)). The site is the first path segment
+of the board; `leverSite` also understands links to a posting and to an application form.
 
-**Сторінками, а не одним запитом.** Без `limit` Lever віддає все одразу разом з
-описами: Palantir (306 вакансій) - 5,9 МБ, більше за `MAX_BYTES` клієнта (5 МБ), і
-джерело не читалося б зовсім. Тому `readLever` просить по 100 (`skip`/`limit`),
-близько 2 МБ за раз, до ліміту вакансій («Ліміт вакансій і глибина» вище). Неповна
-сторінка - остання; повна - ще один запит, що прийде порожнім. Збій будь-якої сторінки - збій усього джерела.
+**In pages, not in one request.** Without `limit` Lever returns everything at once together
+with descriptions: Palantir (306 vacancies) is 5.9 MB, more than the client's `MAX_BYTES`
+(5 MB), and the source would not be read at all. So `readLever` asks for 100 at a time
+(`skip`/`limit`), about 2 MB each, up to the vacancy limit ("Vacancy limit and depth"
+above). An incomplete page is the last one; a full one means one more request, which comes
+back empty. A failure of any page is a failure of the whole source.
 
-**Lever сортує не за датою** (перевірено на Palantir і демо-сайті), тож на сайті з
-понад 500 вакансіями ті, що за межею ліміту, не читаються. Зниклими вони не
-стають - список позначено `truncated` (задача 6.16).
+**Lever does not sort by date** (checked on Palantir and the demo site), so on a site with
+more than 500 vacancies the ones beyond the limit are not read. They do not become gone -
+the list is marked `truncated` (task 6.16).
 
-`parseLeverPostings`: `externalId` - `id` (UUID, він же в `hostedUrl`), назва -
-`text`, посилання - `hostedUrl`, локація - усі `categories.allLocations` через кому,
-а без них - `categories.location`. Невідомий сайт - 404 з
-`{"ok":false,"error":"Document not found"}`, тобто `not-found` (документація цього
-не описує, перевірено 18.11.2026).
+`parseLeverPostings`: `externalId` is `id` (a UUID, also in `hostedUrl`), the title is
+`text`, the link is `hostedUrl`, the location is all `categories.allLocations` joined with
+commas, and without them `categories.location`. An unknown site is a 404 with
+`{"ok":false,"error":"Document not found"}`, that is `not-found` (the documentation does not
+describe this, checked 18.11.2026).
 
-Перевірено на справжній мережі (вручну, 18.11.2026): Palantir - 306 вакансій за 4
-сторінки, демо-сайт - 10, неіснуючий сайт - `not-found`.
+Checked on the real network (by hand, 18.11.2026): Palantir - 306 vacancies in 4 pages, the
+demo site - 10, a site that does not exist - `not-found`.
 
 ## Ashby
 
-API - `https://api.ashbyhq.com/posting-api/job-board/{name}`, без авторизації
-([документація](https://developers.ashbyhq.com/docs/public-job-posting-api)). Назва
-дошки - перший сегмент шляху `jobs.ashbyhq.com/{name}`; регістр неважливий
-(перевірено: `Ashby` і `ashby` віддають те саме).
+The API is `https://api.ashbyhq.com/posting-api/job-board/{name}`, without authorization
+([documentation](https://developers.ashbyhq.com/docs/public-job-posting-api)). The board
+name is the first path segment of `jobs.ashbyhq.com/{name}`; case does not matter (checked:
+`Ashby` and `ashby` return the same).
 
-**Один запит з більшим лімітом розміру.** Сторінок API не має, а описи вакансій
-віддає завжди: OpenAI (839 вакансій) - 14 МБ, сама Ashby (77) - 4,4 МБ при
-спільному ліміті клієнта 5 МБ. Тому `readAshby` просить для свого запиту 30 МБ
-(`ASHBY_MAX_BYTES`, `client.get(url, { maxBytes })`); довільні сайти лишаються з
-5 МБ (рішення автора 18.11.2026).
+**One request with a bigger size limit.** The API has no pages and always returns vacancy
+descriptions: OpenAI (839 vacancies) is 14 MB, Ashby itself (77) is 4.4 MB, with the
+client's shared limit of 5 MB. So `readAshby` asks for 30 MB for its request
+(`ASHBY_MAX_BYTES`, `client.get(url, { maxBytes })`); arbitrary sites keep 5 MB.
 
-`parseAshbyJobs`: `externalId` - `id` (UUID, він же в `jobUrl`; документація поле
-не описує, але API його віддає), назва - `title`, посилання - `jobUrl`, локація -
-`location` і після неї `secondaryLocations` через кому. Вакансія з `isListed: false`
-доступна лише за прямим посиланням, на дошці її не видно - її пропускаємо, і в
-`skipped` вона не рахується. Невідома дошка - 404 `Not Found` (документація не
-описує, перевірено 18.11.2026).
+`parseAshbyJobs`: `externalId` is `id` (a UUID, also in `jobUrl`; the documentation does not
+describe the field, but the API returns it), the title is `title`, the link is `jobUrl`, the
+location is `location` followed by `secondaryLocations`, joined with commas. A vacancy with
+`isListed: false` is available only by a direct link and is not visible on the board - we
+skip it, and it is not counted in `skipped`. An unknown board is a 404 `Not Found` (the
+documentation does not describe this, checked 18.11.2026).
 
-Перевірено на справжній мережі (вручну, 18.11.2026): Linear - 33 вакансії, Ashby -
-77, OpenAI - 838 і одна пропущена (порожня назва), неіснуюча дошка - `not-found`.
+Checked on the real network (by hand, 18.11.2026): Linear - 33 vacancies, Ashby - 77, OpenAI
+- 838 and one skipped (an empty title), a board that does not exist - `not-found`.
 
 ## Workday
 
-**Публічної документації API немає.** Парсер ходить туди ж, куди й сам career site
-Workday у браузері: `POST https://{host}/wday/cxs/{tenant}/{site}/jobs` з тілом
-`{"appliedFacets":{},"limit":20,"offset":0,"searchText":""}`, без авторизації. Усе
-нижче перевірено справжніми запитами 18.11.2026 (NVIDIA, Salesforce, Workday) і
-може змінитися без попередження - тому зламана структура тут, як і всюди, валить
-усю відповідь, а не тихо дає нуль вакансій.
+**There is no public API documentation.** The parser goes where the Workday career site
+itself goes in the browser: `POST https://{host}/wday/cxs/{tenant}/{site}/jobs` with the body
+`{"appliedFacets":{},"limit":20,"offset":0,"searchText":""}`, without authorization.
+Everything below was checked with real requests on 18.11.2026 (NVIDIA, Salesforce, Workday)
+and may change without notice - so a broken structure here, as everywhere, fails the whole
+response instead of quietly giving zero vacancies.
 
-- **Лише POST.** GET на ту саму адресу - 400. Тому в HTTP-клієнта є `post`
-  ([`src/server/http`](../http/README.md#модуль-запитів)).
-- **Адреса.** `workdaySite` розуміє обидва формати career site: `{tenant}.wd5.myworkdayjobs.com/{site}`
-  і `wd5.myworkdaysite.com/recruiting/{tenant}/{site}`; сегмент мови (`/en-US/`) і
-  посилання на вакансію теж. Той самий tenant відповідає на обох доменах.
-- **Сторінки по 20.** Більше Workday не приймає: `limit: 50` - 400. Ліміт -
-  `VACANCIES_TO_CHECK`, за замовчуванням 500 вакансій, тобто 25 сторінок
-  (у NVIDIA їх понад 2000).
-  Перша сторінка, схоже, починається з найновіших («Posted Today»), але порядок не
-  строгий і ніде не описаний.
-- **Кінець списку - за `total` першої сторінки** або за неповною сторінкою. На
-  наступних сторінках `total` дорівнює 0, а з `offset` від 2000 Workday знову віддає
-  першу сторінку - «питати, доки не прийде порожня» тут зациклилось би.
-- **ID - `externalPath`** (`/job/Poland-Warsaw/Engineer_JR2028965-1`). Окремого ID
-  у списку немає, а номер заявки з `bulletFields` не унікальний: в однієї заявки
-  буває кілька оголошень (`_JR2028965-1` при `bulletFields: ["JR2028965"]`). Ціна:
-  у шляху є назва вакансії, тож перейменована вакансія стане новою Unread, а стара
-  зникне. Справжній ID (`jobPostingInfo.id`) дає лише окремий запит на кожну
-  вакансію - 100 запитів з паузою 2 с замість 5.
-- **Посилання** - адреса career site плюс `externalPath`
-  (`nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/...`), відкривається.
-- **Локація** - `locationsText` як є. Для вакансії з кількома локаціями це
-  «2 Locations»: самі локації знову лише в окремому запиті на вакансію.
-- **Помилки:** невідомий сайт компанії - 404 `not found: Job_Posting_Site_ID`,
-  тобто `not-found`; невідомий tenant - 422, тобто `bad-status` 422 (що саме
-  означає 422, Workday не пояснює, тож у `not-found` не перетворюємо).
+- **POST only.** A GET to the same address is 400. Hence the HTTP client has `post`
+  ([`src/server/http`](../http/README.md#request-module)).
+- **The address.** `workdaySite` understands both career site formats:
+  `{tenant}.wd5.myworkdayjobs.com/{site}` and
+  `wd5.myworkdaysite.com/recruiting/{tenant}/{site}`; the language segment (`/en-US/`) and
+  vacancy links too. The same tenant answers on both domains.
+- **Pages of 20.** Workday does not accept more: `limit: 50` is 400. The limit is
+  `VACANCIES_TO_CHECK`, 500 vacancies by default, that is 25 pages (NVIDIA has over 2000).
+  The first page seems to start with the newest ("Posted Today"), but the order is not
+  strict and not described anywhere.
+- **The end of the list comes from the first page's `total`** or from an incomplete page. On
+  the following pages `total` is 0, and from `offset` 2000 Workday returns the first page
+  again - "ask until an empty one comes" would loop here.
+- **The ID is `externalPath`** (`/job/Poland-Warsaw/Engineer_JR2028965-1`). The list has no
+  separate ID, and the requisition number from `bulletFields` is not unique: one
+  requisition can have several postings (`_JR2028965-1` with `bulletFields:
+  ["JR2028965"]`). The cost: the path contains the vacancy title, so a renamed vacancy
+  becomes a new Unread, and the old one disappears. The real ID (`jobPostingInfo.id`) comes
+  only from a separate request per vacancy - 100 requests with a 2 s pause instead of 5.
+- **The link** is the career site address plus `externalPath`
+  (`nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/...`), and it opens.
+- **The location** is `locationsText` as is. For a vacancy with several locations this is
+  "2 Locations": the locations themselves are again only in a separate request per vacancy.
+- **Errors:** an unknown company site is a 404 `not found: Job_Posting_Site_ID`, that is
+  `not-found`; an unknown tenant is 422, that is `bad-status` 422 (Workday does not explain
+  what exactly 422 means, so we do not turn it into `not-found`).
 
-Перевірено на справжній мережі (вручну, 18.11.2026): NVIDIA на обох доменах і сам
-Workday - по 100 вакансій за 5 сторінок (близько 9 с через паузу 2 с між запитами),
-усі ID різні; невідомий сайт - `not-found`, невідомий tenant - `bad-status` 422.
+Checked on the real network (by hand, 18.11.2026): NVIDIA on both domains and Workday itself
+- 100 vacancies each in 5 pages (about 9 s because of the 2 s pause between requests), all
+IDs different; an unknown site - `not-found`, an unknown tenant - `bad-status` 422.
 
 ## PeopleForce
 
-**HTML, а не API.** Careers API PeopleForce вимагає ключ компанії
-([документація](https://developer.peopleforce.io/careers/v1/getting-started)), тож
-парсер читає публічну сторінку `https://{company}.peopleforce.io/careers` - так, як
-її бачить відвідувач. Розмітку розбирає Cheerio. Формат перевірено справжніми
-сторінками 18.11.2026 (PeopleForce, Webellian, V2Cloud), документації в нього немає.
+**HTML, not an API.** The PeopleForce Careers API needs a company key
+([documentation](https://developer.peopleforce.io/careers/v1/getting-started)), so the
+parser reads the public page `https://{company}.peopleforce.io/careers` - the way a visitor
+sees it. Cheerio parses the markup. The format was checked against real pages on 18.11.2026
+(PeopleForce, Webellian, V2Cloud); it has no documentation.
 
-- **Адреса.** `peopleforceSite` бере субдомен компанії; сам `peopleforce.io` і `www` -
-  сайт платформи, не компанії. Посилання на вакансію теж годиться.
-- **PeopleForce на домені компанії** (задача 5.13): `peopleforce.softconstruct.com`
-  за хостом не впізнати. Таку сторінку впізнає `isPeopleForcePage` - за списком
-  `#results` разом із підписом «Powered by PeopleForce» (`.credit` з посиланням на
-  `peopleforce.io`). Джерело тоді зберігається з платформою `peopleforce`, і
-  `readPeopleForce` читає `/careers?page=N` від origin його адреси: хост не на
-  `peopleforce.io` уже нічого не доводить, платформу визначило збережене джерело.
-  `peopleforceSite` лишається строгим - він вирішує, чи посилання зі сторінки веде
-  на дошку, а там хост і є єдиною ознакою.
-- **Картка вакансії** - посилання в `h4` всередині `#results`: шлях
-  `/careers/v/{ID}-{slug}`, `externalId` - числовий ID (slug зі зміною назви
-  зміниться, ID - ні). Локація - текст поруч з іконкою `fa-map-marker-alt`; є не в
-  усіх компаній (у Webellian на картках немає нічого, крім назви), тоді `null`.
-- **Нуль довіряємо лише разом з лічильником.** Це HTML, і змінена верстка легко дала
-  б «нуль вакансій» - видалення всіх. Над картками PeopleForce пише «Displaying
-  X - Y of N in total»: текст перекладається («Відображено ... з ...»), числа в
-  `<strong>` - ні. Карток має бути рівно Y - X + 1. Немає ні лічильника, ні карток -
-  вакансій справді немає («There are currently no vacancies.»). Будь-яке інше
-  поєднання, як і сторінка без `#results`, - `unreadable`.
-- **Сторінки по 10** (`PEOPLEFORCE_PAGE_SIZE`), `?page=N`, до ліміту вакансій (за
-  замовчуванням 500, тобто 50 сторінок). Наступна - лише поки Y у лічильнику менше
-  за N: номер за межею списку PeopleForce не відхиляє, а віддає останню сторінку
-  ще раз. Посилання «далі» для цього не годиться - у старішій розмітці
-  (SoftConstruct, задача 5.13) у нього немає `rel="next"`, і парсер прочитав би 10
-  вакансій з 215 як увесь список.
-- **Помилки:** невідома компанія - 404; компанія без сторінки кар'єри - 302 на
-  `/404`, а та - 404. Обидва випадки - `not-found`.
+- **The address.** `peopleforceSite` takes the company subdomain; `peopleforce.io` itself and
+  `www` are the platform's site, not a company. A vacancy link works too.
+- **PeopleForce on the company's domain** (task 5.13): `peopleforce.softconstruct.com`
+  cannot be recognised by the host. `isPeopleForcePage` recognises such a page - by the
+  `#results` list together with the "Powered by PeopleForce" credit (`.credit` with a link to
+  `peopleforce.io`). The source is then saved with the `peopleforce` platform, and
+  `readPeopleForce` reads `/careers?page=N` from the origin of its address: a host not on
+  `peopleforce.io` proves nothing any more, the saved source has decided the platform.
+  `peopleforceSite` stays strict - it decides whether a link from a page leads to a board,
+  and there the host is the only sign.
+- **A vacancy card** is a link in an `h4` inside `#results`: the path is
+  `/careers/v/{ID}-{slug}`, and `externalId` is the numeric ID (the slug changes with the
+  title, the ID does not). The location is the text next to the `fa-map-marker-alt` icon;
+  not every company has it (Webellian's cards have nothing but the title), then `null`.
+- **We trust a zero only together with the counter.** This is HTML, and changed markup could
+  easily give "zero vacancies" - deleting all of them. Above the cards PeopleForce writes
+  "Displaying X - Y of N in total": the text is translated ("Відображено ... з ..."), the
+  numbers in `<strong>` are not. There must be exactly Y - X + 1 cards. No counter and no
+  cards means there really are no vacancies ("There are currently no vacancies."). Any other
+  combination, like a page without `#results`, is `unreadable`.
+- **Pages of 10** (`PEOPLEFORCE_PAGE_SIZE`), `?page=N`, up to the vacancy limit (500 by
+  default, that is 50 pages). The next page only while Y in the counter is less than N:
+  PeopleForce does not reject a number beyond the list but returns the last page again. The
+  "next" link does not work for this - in older markup (SoftConstruct, task 5.13) it has no
+  `rel="next"`, and the parser would read 10 vacancies out of 215 as the whole list.
+- **Errors:** an unknown company is a 404; a company without a careers page is a 302 to
+  `/404`, which is a 404. Both are `not-found`.
 
-Перевірено на справжній мережі (вручну, 18.11.2026): PeopleForce - 6 вакансій,
-Webellian - 23 за 3 сторінки, V2Cloud - 3; компанія без сторінки кар'єри (`macpaw`) і
-неіснуюча - `not-found`.
+Checked on the real network (by hand, 18.11.2026): PeopleForce - 6 vacancies, Webellian - 23
+in 3 pages, V2Cloud - 3; a company without a careers page (`macpaw`) and one that does not
+exist - `not-found`.
 
 ## Breezy HR
 
-**Публічний JSON без документації.** Дошка `https://{company}.breezy.hr` віддає
-свої вакансії на `https://{company}.breezy.hr/json`, без ключа. Офіційно цей
-JSON ніде не описаний - про нього пишуть лише сторонні скрапери, тож усе нижче
-перевірено справжніми запитами 19.11.2026 (дошки самої Breezy - `breezy` і `jobs`)
-і може змінитися без попередження.
+**Public JSON without documentation.** The board `https://{company}.breezy.hr` serves its
+vacancies at `https://{company}.breezy.hr/json`, without a key. Officially this JSON is not
+described anywhere - only third-party scrapers write about it, so everything below was
+checked with real requests on 19.11.2026 (Breezy's own boards, `breezy` and `jobs`) and may
+change without notice.
 
-- **Адреса.** `breezyCompany` бере субдомен компанії, зокрема з посилання на
-  вакансію (`/p/{id}-{slug}`). Субдомени самої Breezy - не компанії: `assets-cdn`
-  (на ньому скрипти вбудованої дошки, тож посилання на нього трапляються на сайтах
-  компаній), `app`, `www`.
-- **Один запит, без сторінок:** масив усіх вакансій.
-- **Поля:** `externalId` - `id` (він же на початку шляху вакансії), назва - `name`,
-  посилання - `url`, локація - `location.name`, а для віддаленої вакансії
-  (`location.is_remote: true`) - з приміткою «remote» (`United States, remote`).
-- **Помилки:** невідома дошка - 404 (HTML-сторінка «not found»), тобто `not-found`.
-  Сторонні скрапери пишуть, що компанія може вимкнути публічний JSON; як тоді
-  відповідає дошка, перевірити не було на чому.
-- **Сайт компанії** на сторінці дошки - пункт шапки `li.link.company`: за ним
-  перевіряється належність дошки, знайденої за назвою (`src/server/discovery/ownership.ts`).
+- **The address.** `breezyCompany` takes the company subdomain, including from a vacancy link
+  (`/p/{id}-{slug}`). Breezy's own subdomains are not companies: `assets-cdn` (it hosts the
+  embedded board's scripts, so links to it turn up on company sites), `app`, `www`.
+- **One request, no pages:** an array of all vacancies.
+- **Fields:** `externalId` is `id` (also at the start of the vacancy path), the title is
+  `name`, the link is `url`, the location is `location.name`, and for a remote vacancy
+  (`location.is_remote: true`) with a "remote" note (`United States, remote`).
+- **Errors:** an unknown board is a 404 (an HTML "not found" page), that is `not-found`.
+  Third-party scrapers write that a company can turn the public JSON off; how the board
+  answers then, there was nothing to check on.
+- **The company site** on the board page is the header item `li.link.company`: the ownership
+  of a board found by name is checked by it (`src/server/discovery/ownership.ts`).
 
-Перевірено на справжній мережі (вручну, 19.11.2026): `breezy` - 3 вакансії, `jobs` -
-одна віддалена, неіснуюча дошка - `not-found`.
+Checked on the real network (by hand, 19.11.2026): `breezy` - 3 vacancies, `jobs` - one
+remote, a board that does not exist - `not-found`.
 
 ## CleverStaff
 
-**Дошка - SPA на хості самої платформи:** `https://cleverstaff.net/i/{alias}-vacancies`,
-вакансія - `https://cleverstaff.net/i/vacancy-{localId}`. Дані сторінка бере з
-публічного API без ключа. Перевірено справжніми запитами 19.11.2026 (8allocate,
--A-HR-, MEV).
+**The board is an SPA on the platform's own host:** `https://cleverstaff.net/i/{alias}-vacancies`,
+a vacancy is `https://cleverstaff.net/i/vacancy-{localId}`. The page takes its data from a
+public API without a key. Checked with real requests on 19.11.2026 (8allocate, -A-HR-, MEV).
 
-- **Не задокументований `getAllOpenVacancy`, а не задокументований `getVacancies`.**
-  [Документація](https://neo.cleverstaff.net/api.html) описує
-  `GET /hr/public/getVacancies?alias=`, але на дошку без вакансій (MEV) він
-  відповідає `notFound`, так само як на неіснуючу - і перевірка вирішила б, що
-  дошки немає. Сама сторінка дошки ходить на `GET /hr/public/getAllOpenVacancy?alias=&lang=en`
-  (видно з її JavaScript), і той для порожньої дошки дає `status: "ok"` без поля
-  `objects`. Ціна - API без документації, може змінитися без попередження.
-- **Помилки приходять зі статусом 200:** `{"status":"error","code":"notFound"}` -
-  `not-found`, інший `code` (наприклад, `accountBlocked`) - `unreadable`.
-- **Аліас чутливий до регістру** і буває з дефісами (`-A-HR-`).
-- **Посилання на вакансію** аліаса компанії не містить: парсер спершу питає
-  `GET /hr/public/getVacancy?host=&id={localId}` (поле `object.alias`), потім читає
-  дошку. Закрита вакансія - `vacancyIsNotPublic`, тобто `not-found`.
-- **Поля:** `externalId` - `localId`, назва - `position`, посилання складається з
-  `localId`, локація - `displayFullName` усіх `regions` через «; » (або `region`),
-  для `workCondition: "remote"` - з приміткою «remote». Статуси на публічній
-  дошці - `inwork`, `open`, `replacement`, усі відкриті, тож не фільтруються.
-- Один запит на всю дошку, сторінок немає. Відповідь з описами вакансій:
-  33 вакансії - 514 КБ.
+- **The undocumented `getAllOpenVacancy`, not the documented `getVacancies`.** The
+  [documentation](https://neo.cleverstaff.net/api.html) describes `GET
+  /hr/public/getVacancies?alias=`, but for a board without vacancies (MEV) it answers
+  `notFound`, the same as for one that does not exist - and the check would decide there is
+  no board. The board page itself calls `GET /hr/public/getAllOpenVacancy?alias=&lang=en`
+  (visible in its JavaScript), and that one gives `status: "ok"` without an `objects` field
+  for an empty board. The cost: an undocumented API that may change without notice.
+- **Errors come with status 200:** `{"status":"error","code":"notFound"}` is `not-found`,
+  any other `code` (for example `accountBlocked`) is `unreadable`.
+- **The alias is case-sensitive** and may have hyphens (`-A-HR-`).
+- **A vacancy link** does not contain the company alias: the parser first asks `GET
+  /hr/public/getVacancy?host=&id={localId}` (the `object.alias` field), then reads the board.
+  A closed vacancy is `vacancyIsNotPublic`, that is `not-found`.
+- **Fields:** `externalId` is `localId`, the title is `position`, the link is built from
+  `localId`, the location is the `displayFullName` of all `regions` joined with "; " (or
+  `region`), with a "remote" note for `workCondition: "remote"`. The statuses on a public
+  board are `inwork`, `open`, `replacement`, all open, so they are not filtered.
+- One request for the whole board, no pages. The response includes vacancy descriptions: 33
+  vacancies are 514 KB.
 
-Перевірено на справжній мережі (вручну, 19.11.2026): -A-HR- - 33 вакансії з
-локаціями, посилання на вакансію 8allocate - 8, MEV - 0, неіснуюча дошка - `not-found`.
+Checked on the real network (by hand, 19.11.2026): -A-HR- - 33 vacancies with locations, an
+8allocate vacancy link - 8, MEV - 0, a board that does not exist - `not-found`.
 
 ## Hurma
 
-**API публічної сторінки, без документації.** Сторінка вакансій компанії -
-`https://{company}.hurma.work/public-vacancies`, SPA: у HTML вакансій немає.
-Дані вона бере з `GET /api/v1/public-vacancies` (видно з її JavaScript). Довідка
-Hurma ([Job opening page](https://support.hurma.work/en/collections/34-job-opening-page))
-ні адреси сторінки, ні API не описує, тож усе нижче перевірено справжніми
-запитами 19.11.2026 (Spribe, Talents Boutique, Dataforest, mono, Nova Ukraine) і
-може змінитися без попередження.
+**The public page's API, without documentation.** A company's vacancies page is
+`https://{company}.hurma.work/public-vacancies`, an SPA: the HTML has no vacancies. It takes
+its data from `GET /api/v1/public-vacancies` (visible in its JavaScript). Hurma's help
+([Job opening page](https://support.hurma.work/en/collections/34-job-opening-page))
+describes neither the page address nor the API, so everything below was checked with real
+requests on 19.11.2026 (Spribe, Talents Boutique, Dataforest, mono, Nova Ukraine) and may
+change without notice.
 
-- **Заголовок `X-Requested-With: XMLHttpRequest` обовʼязковий:** без нього API
-  відповідає 403 з будь-яким User-Agent, зокрема браузерним. Це позначка Laravel
-  «запит від JavaScript сторінки», а не захист від ботів; robots.txt порожній.
-  Рішення автора 19.11.2026 - слати його, UA лишається чесним. Клієнт для цього
-  має `headers` у налаштуваннях запиту ([`src/server/http`](../http/README.md#модуль-запитів)).
-- **Адреса.** `hurmaCompany` бере субдомен компанії, зокрема з посилання на
-  вакансію (`/public-vacancies/{id}`). Субдомени самої Hurma - не компанії:
-  `www`, `academy` (навчання), `support` (довідка). `demo` - демо-компанія Hurma,
-  вона читається як будь-яка інша.
-- **Сторінки по 100** (`per_page=100&page=N`; більше API не приймає - 422 «per
-  page must be 100 maximum», за замовчуванням 20), до ліміту вакансій -
-  за замовчуванням 500, тобто 5 сторінок. Наступна - лише якщо є `links.next` (відповідь у
-  форматі пагінації Laravel). Сторінка за межею списку - порожня, а не остання.
-- **Поля:** окремого ID немає - `externalId` це число в кінці `public_url`
-  (`/public-vacancies/243`); адреса без нього - зламана структура. Назва -
-  `name`, посилання - `public_url` (відкривається, 200), локація - `residence`
-  (місця через «|» стають «, ») і за ним `work_format` («Remote», «In the
-  office/On site»). У багатьох вакансій обидва поля порожні - тоді `null`.
-- **Порядок** не за датою і ніде не описаний: у Talents Boutique - за назвою, у
-  Dataforest - ні те, ні те.
-- **Помилки:** невідома компанія - 404 «default backend - 404» від балансувальника,
-  тобто `not-found`.
-- **Сайту компанії** сторінка не показує (лише назву й логотип), тож належність
-  дошки, знайденої за назвою, не перевіряється.
+- **The `X-Requested-With: XMLHttpRequest` header is required:** without it the API answers
+  403 with any User-Agent, including a browser one. This is Laravel's "request from the
+  page's JavaScript" marker, not bot protection; robots.txt is empty. We send it, and the UA
+  stays honest. The client has `headers` in the request options for this
+  ([`src/server/http`](../http/README.md#request-module)).
+- **The address.** `hurmaCompany` takes the company subdomain, including from a vacancy link
+  (`/public-vacancies/{id}`). Hurma's own subdomains are not companies: `www`, `academy`
+  (training), `support` (help). `demo` is Hurma's demo company, and it is read like any
+  other.
+- **Pages of 100** (`per_page=100&page=N`; the API does not accept more - 422 "per page must
+  be 100 maximum", 20 by default), up to the vacancy limit - 500 by default, that is 5 pages.
+  The next page only if there is `links.next` (the response is in Laravel's pagination
+  format). A page beyond the list is empty, not the last one.
+- **Fields:** there is no separate ID - `externalId` is the number at the end of `public_url`
+  (`/public-vacancies/243`); an address without it is a broken structure. The title is
+  `name`, the link is `public_url` (it opens, 200), the location is `residence` (places
+  separated by "|" become ", ") followed by `work_format` ("Remote", "In the office/On
+  site"). Many vacancies have both fields empty - then `null`.
+- **The order** is not by date and is not described anywhere: at Talents Boutique it is by
+  title, at Dataforest neither.
+- **Errors:** an unknown company is a 404 "default backend - 404" from the load balancer,
+  that is `not-found`.
+- **The page does not show the company site** (only the name and the logo), so the ownership
+  of a board found by name is not checked.
 
-Перевірено на справжній мережі (вручну, 19.11.2026): Spribe - 6 вакансій,
-посилання на вакансію Talents Boutique - 40 за одну сторінку, mono - 1 з
-локацією «Київ, Україна», неіснуюча компанія - `not-found`; за назвою Monobank і
-Spribe знаходять свої дошки Hurma. Дошки без вакансій знайти не вдалося, тож
-відповідь на неї перевірено лише тестом (порожній `data`).
+Checked on the real network (by hand, 19.11.2026): Spribe - 6 vacancies, a Talents Boutique
+vacancy link - 40 in one page, mono - 1 with the location "Київ, Україна", a company that
+does not exist - `not-found`; by name, Monobank and Spribe find their Hurma boards. A board
+without vacancies could not be found, so the response for one was checked only with a test
+(an empty `data`).
 
 ## Personio
 
-**Задокументований XML-фід:** `https://{company}.jobs.personio.de/xml`, без ключа
-([документація](https://developer.personio.de/docs/retrieving-open-job-positions)).
-Корінь `<workzag-jobs>`, вакансія - `<position>`, посилання на вакансію -
-`https://{company}.jobs.personio.de/job/{id}` (з прикладу інтеграції там само).
-XML розбирає Cheerio в режимі `xml: true` - та сама бібліотека, що для HTML.
+**A documented XML feed:** `https://{company}.jobs.personio.de/xml`, without a key
+([documentation](https://developer.personio.de/docs/retrieving-open-job-positions)). The
+root is `<workzag-jobs>`, a vacancy is `<position>`, the vacancy link is
+`https://{company}.jobs.personio.de/job/{id}` (from the integration example there). Cheerio
+parses the XML in `xml: true` mode - the same library as for HTML.
 
-Чого документація не каже, перевірено справжніми запитами 19.11.2026 (Astrafy,
+What the documentation does not say was checked with real requests on 19.11.2026 (Astrafy,
 Telio Group, IITS, DCI, PJM):
 
-- **Адреса.** `personioBoard` розуміє дошку, фід і посилання на вакансію.
-  `{company}.jobs.personio.com` віддає той самий фід, тож дошка лишається на тому
-  домені, що в посиланні. `www` - не компанія, а `personio.com` - сайт постачальника.
-- **Один запит, без сторінок:** усі вакансії разом з описами. DCI (25 вакансій) -
-  140 КБ; до спільного ліміту 5 МБ далеко, але дошку з сотнями вакансій
-  перевірити не було на чому.
-- **`?language=` не потрібен:** без нього фід повний, а з `language=de` у Astrafy
-  зникли блоки описів, яких немає німецькою. Назви вакансій ті самі.
-- **Поля:** `externalId` - `id` (лише цифри, інакше зламана структура), назва -
-  `name` (саме дочірній `<name>` позиції: у блоків опису теж є `<name>`), локація -
-  `office` і за ним `additionalOffices/office` через кому, без повторів.
-  `additionalOffices` у таблиці документації немає, але фід його віддає.
-- **Помилки:** невідома дошка - 404, тобто `not-found`. Закрита вакансія за
-  `/job/{id}` - теж 404. Чи може компанія вимкнути фід, документація не каже.
-- **Сайт компанії** на сторінці дошки - логотип у шапці (`a.logo-wrapper`): за ним
-  перевіряється належність дошки, знайденої за назвою (`src/server/discovery/ownership.ts`).
+- **The address.** `personioBoard` understands the board, the feed and a vacancy link.
+  `{company}.jobs.personio.com` serves the same feed, so the board stays on the domain from
+  the link. `www` is not a company, and `personio.com` is the vendor's site.
+- **One request, no pages:** all vacancies together with descriptions. DCI (25 vacancies) is
+  140 KB; that is far from the shared 5 MB limit, but there was no board with hundreds of
+  vacancies to check on.
+- **`?language=` is not needed:** without it the feed is complete, while with `language=de`
+  Astrafy lost the description blocks that have no German version. The vacancy titles are
+  the same.
+- **Fields:** `externalId` is `id` (digits only, otherwise a broken structure), the title is
+  `name` (the position's own child `<name>`: description blocks have a `<name>` too), the
+  location is `office` followed by `additionalOffices/office`, joined with commas, without
+  repeats. `additionalOffices` is not in the documentation's table, but the feed returns it.
+- **Errors:** an unknown board is a 404, that is `not-found`. A closed vacancy at `/job/{id}`
+  is a 404 too. Whether a company can turn the feed off, the documentation does not say.
+- **The company site** on the board page is the logo in the header (`a.logo-wrapper`): the
+  ownership of a board found by name is checked by it (`src/server/discovery/ownership.ts`).
 
-Перевірено на справжній мережі (вручну, 19.11.2026): DCI - 25 вакансій, посилання
-на вакансію Telio Group на `.com` - 11, IITS з `?language=de` у посиланні - 8,
-неіснуюча дошка - `not-found`; за назвою Astrafy знаходить свою дошку (4
-вакансії), належність дошки Telio Group до `tel.io` підтверджена логотипом.
+Checked on the real network (by hand, 19.11.2026): DCI - 25 vacancies, a Telio Group vacancy
+link on `.com` - 11, IITS with `?language=de` in the link - 8, a board that does not exist -
+`not-found`; by name, Astrafy finds its board (4 vacancies), and the logo confirms that the
+Telio Group board belongs to `tel.io`.
 
 ## softgarden
 
-**Два продукти, обидва без документації.** Документований API
+**Two products, both without documentation.** The documented API
 ([dev.softgarden.de](https://dev.softgarden.de/frontend-v3/jobs-eines-kanals/),
-`api.softgarden.io`) потребує client ID від softgarden, тож для нас закритий.
-Публічно читаються дві різні дошки, і `softgardenSource` розрізняє їх за хостом.
-Усе нижче перевірено справжніми запитами 19.11.2026 і може змінитися без
-попередження. Рішення автора 19.11.2026: обидві в одній платформі `softgarden`.
+`api.softgarden.io`) needs a client ID from softgarden, so it is closed to us. Two different
+boards can be read publicly, and `softgardenSource` tells them apart by host. Everything
+below was checked with real requests on 19.11.2026 and may change without notice. Both live
+in one `softgarden` platform.
 
-**Стара дошка `https://{company}.softgarden.io/{lang}/vacancies`** (DPS, Alcedis,
-Sikla, Nuvisan, Kraftanlagen, JD Sports, Plath) - серверний HTML (Apache Wicket),
-читається Cheerio.
+**The old board `https://{company}.softgarden.io/{lang}/vacancies`** (DPS, Alcedis, Sikla,
+Nuvisan, Kraftanlagen, JD Sports, Plath) is server-rendered HTML (Apache Wicket), read with
+Cheerio.
 
-- **Усі вакансії однією сторінкою.** Сторінки по 10-20 малює JavaScript
-  (`jobs_per_page` у скрипті), у HTML - усі картки: Kraftanlagen - 85.
-  Корінь дошки - 302 на `/en/vacancies`; парсер одразу просить `/en/vacancies`
-  (назви вакансій мовою не перекладаються).
-- **Картка** - `.matchElement#job_id_{id}`; шапка таблиці теж `.matchElement`, але
-  з `.matchHeadline`. Назва й посилання - `.title a` (`../job/{id}/{slug}?jobDbPVId=...`;
-  рядок запиту відкидається), локації - `.location-view-item` через кому.
-- **Нулю довіряємо через дані мапи.** Лічильник «Your search returned {0}
-  positions» підставляє JavaScript, у HTML числа немає. Зате скрипт сторінки
-  кладе кожну вакансію з геолокацією в `SG.allJobLocations` з `postingId`: кожен
-  такий ID має бути серед карток, інакше `unreadable`. На всіх 7 дошках множини
-  збіглися повністю. Сторінка без `SG.allJobLocations` - теж `unreadable`.
-  **Дошки без вакансій не знайшлося**, тож нуль перевірено лише тестом: якщо
-  справжня порожня дошка виглядає інакше, вона дасть `unreadable`, а не нуль.
-- **Невідома компанія** - 404. Сайту компанії сторінка не показує (зовнішніх
-  посилань немає), тож належність не перевіряється.
+- **All vacancies on one page.** JavaScript draws pages of 10-20 (`jobs_per_page` in the
+  script), while the HTML holds every card: Kraftanlagen - 85. The board root is a 302 to
+  `/en/vacancies`; the parser asks for `/en/vacancies` straight away (vacancy titles are not
+  translated by language).
+- **A card** is `.matchElement#job_id_{id}`; the table header is a `.matchElement` too, but
+  with `.matchHeadline`. The title and the link are `.title a`
+  (`../job/{id}/{slug}?jobDbPVId=...`; the query string is dropped), the locations are the
+  `.location-view-item` elements joined with commas.
+- **We trust a zero through the map data.** JavaScript fills in the "Your search returned
+  {0} positions" counter, so the HTML has no number. But the page's script puts every vacancy
+  with a geolocation into `SG.allJobLocations` with a `postingId`: every such ID must be
+  among the cards, otherwise `unreadable`. On all 7 boards the sets matched completely. A page
+  without `SG.allJobLocations` is `unreadable` too. **No board without vacancies was found**,
+  so a zero was checked only with a test: if a real empty board looks different, it will
+  give `unreadable`, not zero.
+- **An unknown company** is a 404. The page does not show the company site (there are no
+  external links), so ownership is not checked.
 
-**Кар'єрний сайт `https://{company}.career.softgarden.de`** (softgarden, SpiNNcloud,
-BEE Partment, Crown) - фід schema.org `DataFeed` на `/jobs.feed.json` (на нього
-посилається сама сторінка).
+**The career site `https://{company}.career.softgarden.de`** (softgarden, SpiNNcloud, BEE
+Partment, Crown) is a schema.org `DataFeed` feed at `/jobs.feed.json` (the page itself links
+to it).
 
-- **Один запит:** усі вакансії з описами; Crown (111) - 716 КБ.
-- **Фід цілий, коли `numberOfItems` дорівнює кількості `dataFeedElement`.**
-- **Поля:** `externalId` - `identifier.value` (він же в `/jobs/{id}/...`), назва -
-  `title`, посилання - `url` як є (у Crown веде на інший субдомен,
-  `crown.career.softgarden.de`), локація - місто (або регіон) і країна кожного
-  `jobLocation` (буває обʼєкт, за схемою - і масив), кілька місць - через «; ».
-  Порожні частини адреси softgarden заповнює `-`, вони відкидаються.
-- **Невідомий сайт - 400** `{"errorMessage":"No such client for domain ..."}`, а
-  не 404. У запиту без параметрів інших 400 не буває, тож це `not-found`.
-- **Сайт компанії** - логотип у шапці (`HeaderLogo__BrandLink-...`, клас від
-  styled-components): за ним перевіряється належність (`src/server/discovery/ownership.ts`).
+- **One request:** all vacancies with descriptions; Crown (111) is 716 KB.
+- **The feed is complete when `numberOfItems` equals the number of `dataFeedElement`.**
+- **Fields:** `externalId` is `identifier.value` (also in `/jobs/{id}/...`), the title is
+  `title`, the link is `url` as is (at Crown it leads to another subdomain,
+  `crown.career.softgarden.de`), the location is the city (or region) and country of every
+  `jobLocation` (an object, and by the schema possibly an array), several places joined with
+  "; ". softgarden fills empty address parts with `-`, and those are dropped.
+- **An unknown site is a 400** `{"errorMessage":"No such client for domain ..."}`, not a 404.
+  A request without parameters gets no other 400, so this is `not-found`.
+- **The company site** is the logo in the header (`HeaderLogo__BrandLink-...`, a
+  styled-components class): ownership is checked by it (`src/server/discovery/ownership.ts`).
 
-Перевірено на справжній мережі (вручну, 19.11.2026): Kraftanlagen з кореня дошки -
-85 вакансій, Sikla з `/de/vacancies` - 29, Crown - 111, BEE Partment - 30, неіснуючі
-дошка й сайт - `not-found`; за назвою Nuvisan знаходить свою стару дошку (8
-вакансій), належність BEE Partment до `beepartment.com` підтверджена логотипом.
-
+Checked on the real network (by hand, 19.11.2026): Kraftanlagen from the board root - 85
+vacancies, Sikla from `/de/vacancies` - 29, Crown - 111, BEE Partment - 30, a board and a
+site that do not exist - `not-found`; by name, Nuvisan finds its old board (8 vacancies),
+and the logo confirms that BEE Partment belongs to `beepartment.com`.
 
 ## Workable
 
-Задача 6.25. **Документованого публічного API немає:** API Workable
-([workable.readme.io](https://workable.readme.io/)) потребує ключа акаунта.
-Читаємо JSON вбудованого віджета вакансій
-`https://apply.workable.com/api/v1/widget/accounts/{account}`. Формат перевірено
-справжніми запитами 20.11.2026 з User-Agent застосунку:
+Task 6.25. **There is no documented public API:** the Workable API
+([workable.readme.io](https://workable.readme.io/)) needs an account key. We read the JSON of
+the embedded vacancy widget, `https://apply.workable.com/api/v1/widget/accounts/{account}`.
+The format was checked with real requests on 20.11.2026 with the app's User-Agent:
 
-- без ключа; об'єкт `{ name, description, jobs }`, усі вакансії одним запитом. Чи
-  обрізає віджет довгий список, не перевірено: у GoReel лише 3 вакансії;
-- невідомий акаунт - 404;
-- **регістр важить:** `goreel` - 200, `GoReel` - 404. Адреси акаунтів пишуться
-  малими, тож `workableAccount` приводить акаунт до нижнього регістру - інакше
-  посилання `apply.workable.com/GoReel/` не читалося б.
+- no key; an object `{ name, description, jobs }`, all vacancies in one request. Whether the
+  widget cuts a long list was not checked: GoReel has only 3 vacancies;
+- an unknown account is a 404;
+- **case matters:** `goreel` is 200, `GoReel` is 404. Account addresses are written in lower
+  case, so `workableAccount` lower-cases the account - otherwise the link
+  `apply.workable.com/GoReel/` could not be read.
 
-**Адреси.** Акаунт - перший сегмент шляху `apply.workable.com/{account}/…` або
-піддомен старого формату `{account}.workable.com`. Коротке посилання на вакансію
-`apply.workable.com/j/{shortcode}` акаунта не містить - знахідки з нього немає.
+**Addresses.** The account is the first path segment of `apply.workable.com/{account}/…` or
+the subdomain of the old format, `{account}.workable.com`. The short vacancy link
+`apply.workable.com/j/{shortcode}` does not contain the account - it gives no finding.
 
-**Вакансія:** ключ - `shortcode`, посилання - `url` (`apply.workable.com/j/{shortcode}`),
-локація - `city, country` з приміткою «remote» для `telecommuting: true`. Поле
-`locations` (кілька міст із `hidden: true`) не беремо: на сторінці Workable його не
-видно.
+**A vacancy:** the key is `shortcode`, the link is `url` (`apply.workable.com/j/{shortcode}`),
+the location is `city, country` with a "remote" note for `telecommuting: true`. The
+`locations` field (several cities with `hidden: true`) is not used: the Workable page does
+not show it.
 
-**Правила.** [Умови Workable](https://www.workable.com/terms) - договір із
-клієнтами-роботодавцями; про відвідувачів публічної кар'єрної сторінки й
-автоматичне читання там нічого (перевірено 20.11.2026). `robots.txt`
-`apply.workable.com` нічого не забороняє.
-
+**Rules.** [Workable's terms](https://www.workable.com/terms) are a contract with its
+employer customers; they say nothing about visitors of a public career page or automated
+reading (checked 20.11.2026). The `robots.txt` of `apply.workable.com` forbids nothing.
 
 ## BambooHR
 
-Задача 6.26. **Документований API** BambooHR потребує ключа компанії. Читаємо JSON,
-який бере сама кар'єрна сторінка й вбудований віджет:
-`https://{company}.bamboohr.com/careers/list`. Перевірено справжніми запитами
-20.11.2026 з User-Agent застосунку:
+Task 6.26. **The documented API** of BambooHR needs a company key. We read the JSON that the
+career page itself and the embedded widget use: `https://{company}.bamboohr.com/careers/list`.
+Checked with real requests on 20.11.2026 with the app's User-Agent:
 
-- без ключа; `{ meta: { totalCount }, result: [...] }`, усі вакансії одним запитом
-  (`totalCount` дорівнює довжині `result`);
-- **невідома компанія - не 404:** BambooHR переадресовує на `www.bamboohr.com` і
-  віддає HTML зі статусом 200. Тому `readBambooHr` порівнює хост після редиректів і
-  вважає чужий хост `not-found`;
-- посилання на вакансію в JSON немає; сторінка `/careers/{id}` відповідає 200 - її й
-  беремо.
+- no key; `{ meta: { totalCount }, result: [...] }`, all vacancies in one request
+  (`totalCount` equals the length of `result`);
+- **an unknown company is not a 404:** BambooHR redirects to `www.bamboohr.com` and serves
+  HTML with status 200. So `readBambooHr` compares the host after redirects and treats a
+  foreign host as `not-found`;
+- the JSON has no vacancy link; the page `/careers/{id}` answers 200 - that is what we use.
 
-**Вакансія:** ключ - `id`, назва - `jobOpeningName`, локація - `location` (місто,
-регіон), а якщо воно порожнє - `atsLocation` (в однієї вакансії Altenar там лише
-країна). `locationType` буває «0» і «1», але не задокументоване - «remote» з нього не
-вигадуємо.
+**A vacancy:** the key is `id`, the title is `jobOpeningName`, the location is `location`
+(city, region), and if that is empty, `atsLocation` (one Altenar vacancy has only the
+country there). `locationType` is "0" or "1", but it is undocumented - we do not invent
+"remote" from it.
 
-**Правила.** [Умови BambooHR](https://www.bamboohr.com/legal/terms-of-service) - договір
-із клієнтами, що підписуються на сервіс. Серед обмежень є «any robot, spider, other
-automated device… to monitor or copy any content from the Service»; чи стосується він
-відвідувача публічної кар'єрної сторінки - неоднозначно. `robots.txt` компанійних
-піддоменів нічого не забороняє. Автор вирішив робити (20.11.2026).
-
+**Rules.** [BambooHR's terms](https://www.bamboohr.com/legal/terms-of-service) are a
+contract with customers who subscribe to the service. Among the restrictions is "any robot,
+spider, other automated device… to monitor or copy any content from the Service"; whether it
+applies to a visitor of a public career page is ambiguous. The `robots.txt` of company
+subdomains forbids nothing. The author decided to go ahead.
 
 ## Pinpoint
 
-Задача 6.27. Документації публічного JSON ми не знайшли. Читаємо
-`https://{company}.pinpointhq.com/postings.json`; є ще `/jobs.rss`, але JSON
-повніший. Перевірено справжніми запитами 20.11.2026 з User-Agent застосунку:
+Task 6.27. We found no documentation of the public JSON. We read
+`https://{company}.pinpointhq.com/postings.json`; there is also `/jobs.rss`, but the JSON is
+more complete. Checked with real requests on 20.11.2026 with the app's User-Agent:
 
-- без ключа; `{ data: [...] }`, усі вакансії одним запитом разом із повними
-  описами (у GiG - 100 КБ на 16 вакансій, далеко від ліміту 5 МБ);
-- невідома компанія і службові піддомени (`www`, `app`) - 404.
+- no key; `{ data: [...] }`, all vacancies in one request together with full descriptions
+  (GiG: 100 KB for 16 vacancies, far from the 5 MB limit);
+- an unknown company and the service subdomains (`www`, `app`) are a 404.
 
-**Вакансія:** ключ - `id`, назва - `title`, посилання - `url`. Локація - місто й
-регіон без повторів («Madrid, Madrid» → «Madrid»; у даних трапляються пробіли в
-кінці) і «remote» для `workplace_type: "remote"`. Одна позиція в кількох містах -
-кілька записів із різними `id`: це різні вакансії й на сторінці Pinpoint, тож і в
-нас.
+**A vacancy:** the key is `id`, the title is `title`, the link is `url`. The location is the
+city and region without repeats ("Madrid, Madrid" → "Madrid"; the data has trailing spaces
+here and there) and "remote" for `workplace_type: "remote"`. One position in several cities
+is several records with different `id`s: they are different vacancies on the Pinpoint page
+too, so they are for us as well.
 
-**Правила.** Умов користування Pinpoint знайти не вдалося (`/terms` - 404, на
-`/legal` посилань на них немає). `robots.txt` кар'єрних сторінок закриває лише
-`/mydata`, `/admin`, `/companies`. Автор вирішив робити (20.11.2026).
-
+**Rules.** Pinpoint's terms of use could not be found (`/terms` is a 404, and `/legal` has no
+links to them). The `robots.txt` of career pages closes only `/mydata`, `/admin`,
+`/companies`. The author decided to go ahead.
 
 ## TalentAdore
 
-Задача 6.28. Вакансії TalentAdore показує віджет, вбудований у кар'єрну сторінку
-компанії: скрипт `ats.talentadore.com/static/ta-json-careers.js` і елемент з адресою
-даних у `data-url` - `https://ats.talentadore.com/positions/{token}/json?v=2&…`.
-Документації немає; перевірено справжніми запитами 20.11.2026 з User-Agent
-застосунку:
+Task 6.28. TalentAdore shows vacancies in a widget embedded in the company's career page: the
+script `ats.talentadore.com/static/ta-json-careers.js` and an element with the data address
+in `data-url` - `https://ats.talentadore.com/positions/{token}/json?v=2&…`. There is no
+documentation; checked with real requests on 20.11.2026 with the app's User-Agent:
 
-- без ключа; `{ version, company, generated_at, jobs }`, усі вакансії одним
-  запитом. Параметри рядка запиту віджета ми не передаємо: у ELK вони порожні, і
-  без них список той самий. Якщо віджет якоїсь компанії звужує список фільтрами
-  (`tags`, `businessUnits`), ми прочитаємо більше, ніж він показує;
-- невідомий токен - 404 з `{}`;
-- **сторінки зі списком для людей немає** (`/positions/{token}` - 404), тож адреса
-  джерела - сам JSON. Токен компанії - лише в цій адресі: посилання на вакансію
-  `/apply/{slug}/{token}` несе токен вакансії. Тому Find pages читає ще й `data-url`
-  (`ats-links.ts`), а пошуку за назвою для TalentAdore немає - токен не вгадати, і
-  підказка назви в Add company з такої адреси назви не дає.
+- no key; `{ version, company, generated_at, jobs }`, all vacancies in one request. We do not
+  pass the widget's query parameters: at ELK they are empty, and without them the list is the
+  same. If some company's widget narrows the list with filters (`tags`, `businessUnits`), we
+  will read more than it shows;
+- an unknown token is a 404 with `{}`;
+- **there is no list page for people** (`/positions/{token}` is a 404), so the source address
+  is the JSON itself. The company token is only in this address: a vacancy link
+  `/apply/{slug}/{token}` carries the vacancy's token. So Find pages also reads `data-url`
+  (`ats-links.ts`), and there is no search by name for TalentAdore - the token cannot be
+  guessed, and the name suggestion in Add company gives no name from such an address.
 
-**Вакансія:** ключ - `id`, назва - `name`, посилання - `link`, локація - `city,
-country`, а без них - поле `location` (там адреса офісу).
+**A vacancy:** the key is `id`, the title is `name`, the link is `link`, the location is
+`city, country`, and without them the `location` field (the office address is there).
 
-**Правила.** [Умови TalentAdore](https://www.talentadore.com/legal/terms-and-conditions)
-про автоматичне читання нічого не кажуть; `robots.txt` закриває `/api/`, `/authorize/`,
-а не `/positions/`. Автор вирішив робити (20.11.2026).
+**Rules.** [TalentAdore's terms](https://www.talentadore.com/legal/terms-and-conditions) say
+nothing about automated reading; `robots.txt` closes `/api/` and `/authorize/`, not
+`/positions/`. The author decided to go ahead.
 
-## Власна сторінка
+## Own page
 
-Задача 6.21, рішення автора 20.11.2026. Сторінка компанії, яку не розпізнала жодна
-платформа (`unsupported`), читається, коли людина підтвердить, які посилання на ній -
-вакансії: кнопка Read as list у картці компанії. Рецепт - префікс адрес вакансій,
-`career_sources.vacancy_link_prefix`; платформа джерела стає `own_page`.
+Task 6.21. A company page that no platform recognised (`unsupported`) is read once a person
+confirms which links on it are vacancies: the Read as list button on the company card. The
+recipe is the prefix of the vacancy addresses, `career_sources.vacancy_link_prefix`; the
+source's platform becomes `own_page`.
 
-**Чому форма адреси, а не CSS-класи.** Конструктори сайтів міняють класи після
-кожної публікації (Framer - `framer-1wbyw24`), а адреси вакансій лишаються. Рецепт
-`kinggroup.io/vacancies/design/` - це «посилання з цим хостом і шляхом плюс ще один
-сегмент».
+**Why the address shape and not CSS classes.** Site builders change classes after every
+publish (Framer - `framer-1wbyw24`), while vacancy addresses stay. The recipe
+`kinggroup.io/vacancies/design/` means "links with this host and path plus one more
+segment".
 
-**Пошук груп** (`findLinkGroups`): посилання того самого хоста, крім `nav`, `header`,
-`footer`, якорів, пошти й самої сторінки, групуються за префіксом. Перша -
-найімовірніша:
+**Finding groups** (`findLinkGroups`): links to the same host, except `nav`, `header`,
+`footer`, anchors, mail and the page itself, are grouped by prefix. The first is the most
+likely:
 
-1. **глибша за сторінку** - вакансії `/vacancies/design/<slug>` зі сторінки
-   `/vacancies/tech`, а категорії `/vacancies/hr` того самого рівня;
-2. **з кар'єрним словом** у шляху (`career`, `job`, `vacanc`, `ваканс`…);
-3. **більша**.
+1. **deeper than the page** - vacancies at `/vacancies/design/<slug>` from the page
+   `/vacancies/tech`, while categories like `/vacancies/hr` are on the same level;
+2. **with a career word** in the path (`career`, `job`, `vacanc`, `ваканс`…);
+3. **bigger**.
 
-Групи без жодної з перших двох ознак (меню, послуги) показуються, лише якщо інших
-немає. Діалог показує до трьох (`MAX_LINK_GROUPS`).
+Groups with neither of the first two signs (menus, services) are shown only if there are no
+others. The dialog shows up to three (`MAX_LINK_GROUPS`).
 
-**Назва вакансії** береться з «картки» - найбільшого предка посилання, у якому всі
-посилання ведуть на ту саму вакансію. По черзі:
+**The vacancy title** comes from the "card" - the largest ancestor of the link in which every
+link leads to the same vacancy. In order:
 
-| Джерело назви | Де трапилось |
+| Title source | Where it occurred |
 | --- | --- |
-| Заголовок `h1-h6` | kinggroup (Framer: `h2` у посиланні), delasport (`h3` поруч із «View & Apply») |
-| Елемент із класом назви (`title`, `position`, `name`) | ncube (`vacancies__title`, посилання порожнє), a-listware (`career-item__position` серед напрямку й локації) |
-| Власний текст посилання в один рядок | headway (Teamtailor: назва - посилання, відділ нижче довший) |
-| Перший рядок картки | codebridge (клас `career-postiton` з помилкою, опис нижче довший) |
-| Кінець адреси | порожня картка: `senior-react-developer` → «senior react developer» |
+| An `h1-h6` heading | kinggroup (Framer: an `h2` in the link), delasport (an `h3` next to "View & Apply") |
+| An element with a title class (`title`, `position`, `name`) | ncube (`vacancies__title`, the link is empty), a-listware (`career-item__position` among the department and the location) |
+| The link's own text on one line | headway (Teamtailor: the title is the link, the department below is longer) |
+| The first line of the card | codebridge (the class `career-postiton` with a typo, the description below is longer) |
+| The end of the address | an empty card: `senior-react-developer` → "senior react developer" |
 
-Текст кнопок («View & Apply», «See more», «Детальніше») назвою не буває. Локація не
-береться (рішення автора): у кожного сайту вона в іншому місці, і вгадана була б то
-напрямком, то кнопкою.
+Button text ("View & Apply", "See more", "Детальніше") is never a title. The location is not
+taken: every site keeps it in a different place, and a guess would sometimes be the
+department and sometimes a button.
 
-**Перевірено на 13 справжніх сторінках** з аналізу 20.11.2026 (kinggroup, a-listware,
-xenoss, eleks, intellias, ncube, codebridge, delasport, bspark, avenga, headway,
-boosters, growe): найімовірніша група й назви правильні на всіх. У тести взято
-чотири, що покривають різні джерела назви.
+**Checked on 13 real pages** from the analysis of 20.11.2026 (kinggroup, a-listware, xenoss,
+eleks, intellias, ncube, codebridge, delasport, bspark, avenga, headway, boosters, growe): the
+most likely group and the titles are right on all of them. The tests take four that cover
+different title sources.
 
-**Читання** (`readOwnPage`): одна сторінка, `externalId: null` - ключ вакансії
-складається з адреси. **Нуль вакансій за рецептом - `unreadable`**, а не порожній
-список: інакше переробка сайту «закрила» б усі вакансії компанії. Пагінації немає: на
-жодній із 13 сторінок її не було в HTML, а Load more довантажує JavaScript - тож
-читається те, що видно, і саме тому автор дає адреси вже з фільтрами.
+**Reading** (`readOwnPage`): one page, `externalId: null` - the vacancy key is built from the
+address. **Zero vacancies by the recipe is `unreadable`**, not an empty list: otherwise a
+site redesign would "close" every vacancy of the company. There is no pagination: none of the
+13 pages had it in the HTML, and Load more is loaded by JavaScript - so what is visible is
+what gets read, which is why the author gives addresses with filters already applied.
 
-Відносні посилання розв'язуються від адреси після редиректів (або `<base href>`) і
-під час пошуку груп, і під час читання, тож префікси збігаються.
-
+Relative links are resolved against the address after redirects (or `<base href>`) both when
+finding groups and when reading, so the prefixes match.

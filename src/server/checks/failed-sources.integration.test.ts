@@ -14,7 +14,7 @@ import { seedSystemUser } from "../db/system-user.ts";
 
 const start = new Date("2026-11-19T10:00:00Z");
 
-/** Завершений запуск системного користувача. */
+/** A finished run of the system user. */
 function finishedRun(startedAt = start) {
   return activeRun(testDb, {
     startedAt,
@@ -76,7 +76,7 @@ describe("listFailedSources", () => {
   });
 
   it("drops a source that a retry checked successfully", async () => {
-    // Джерело, успішно перевірене після Retry, зникає з drawer.
+    // A source checked successfully after Retry leaves the drawer.
     const broken = await greenhouseSource(testDb, "ghost");
     const runId = await finishedRun();
     await task(testDb, {
@@ -141,7 +141,7 @@ describe("listFailedSources", () => {
   });
 
   it("forgets a source deleted after the check", async () => {
-    // Видалене джерело у drawer не показується (задача 2.06).
+    // A deleted source is not shown in the drawer (task 2.06).
     const broken = await greenhouseSource(testDb, "ghost");
     const runId = await finishedRun();
     await task(testDb, {
@@ -156,7 +156,7 @@ describe("listFailedSources", () => {
   });
 
   it("does not offer retry while a general check is running", async () => {
-    // Retry доступний лише після завершення загальної перевірки.
+    // Retry is available only after the general check has finished.
     const broken = await greenhouseSource(testDb, "ghost");
     const runId = await finishedRun();
     await task(testDb, {
@@ -191,7 +191,7 @@ describe("listFailedSources", () => {
   });
 });
 
-/** Перевірка завершилась, джерела з `boards` упали - повертає їхні id. */
+/** The check finished, the sources from `boards` failed - returns their ids. */
 async function failedCheck(...boards: string[]): Promise<string[]> {
   const ids = [];
   for (const board of boards) {
@@ -218,7 +218,7 @@ const retryAt = minutesAfter(start, 30);
 
 describe("retryFailedSources", () => {
   it("queues a manual task outside any run for the chosen source", async () => {
-    // Retry не змінює рядок History і бере чергу раніше за фонові.
+    // Retry does not change the History row and takes the queue ahead of background tasks.
     const [ghost] = await failedCheck("ghost", "phantom");
     const user = await seedSystemUser(testDb);
 
@@ -244,8 +244,8 @@ describe("retryFailedSources", () => {
   });
 
   it("reads as much as the check that failed", async () => {
-    // Задача 6.16: Retry після ручного Check all - перша сторінка, після
-    // повного читання - повністю.
+    // Task 6.16: Retry after a manual Check all reads the first page, after a full
+    // read - in full.
     const [quick, full] = await failedCheck("quick", "full");
     await testDb
       .update(checkTasks)
@@ -296,7 +296,7 @@ describe("retryFailedSources", () => {
   });
 
   it("refuses sources that are not in the failed list", async () => {
-    // Id приходить із клієнта: перевірити так чуже чи успішне джерело не можна.
+    // The id comes from the client: another user's or a successful source cannot be checked this way.
     await failedCheck("ghost");
     const healthy = await greenhouseSource(testDb, "discord");
     const user = await seedSystemUser(testDb);

@@ -7,7 +7,7 @@ import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { platformsByPage } from "./page-platform.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 let fakeWeb: FakeWeb;
@@ -32,7 +32,7 @@ function client(origin = fakeWeb.origin): HttpClient {
   });
 }
 
-// Сайти й сторінки - src/server/http/testing/README.md.
+// Sites and pages: src/server/http/testing/README.md.
 describe("platformsByPage", () => {
   it("recognises PeopleForce on a company's own domain by its page", async () => {
     expect(
@@ -58,7 +58,7 @@ describe("platformsByPage", () => {
   });
 
   it("does not request a page whose address already names its platform", async () => {
-    // Порт 1 ніхто не слухає: запит дав би fetch-failed, але його не буде.
+    // Nobody listens on port 1: the request would give fetch-failed, but it never happens.
     expect(
       await platformsByPage(
         ["https://jobs.lever.co/acme", "not an address at all"],

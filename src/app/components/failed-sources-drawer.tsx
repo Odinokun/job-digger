@@ -25,7 +25,7 @@ interface FailedSourcesDrawerProps {
 /**
  * The Failed Sources Drawer (src/server/checks/README.md): the failed sources of
  * the last general check with Retry and Retry all failed. The list rules are in
- * `server/checks/README.md`, "Невдалі джерела".
+ * `server/checks/README.md`, "Failed sources".
  *
  * While some Retry is queued, the list is re-read every 2 s. When a Retry ends,
  * the page is re-read from the server (`router.refresh`): found vacancies change

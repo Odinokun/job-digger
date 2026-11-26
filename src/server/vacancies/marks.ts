@@ -1,9 +1,10 @@
 /**
- * Позначки користувача на вакансії: Read і Favorite.
+ * The user's marks on a vacancy: Read and Favorite.
  *
- * Кожна дія змінює лише своє поле - назву, адресу й дати пише тільки перевірка
- * (README, «Одночасні зміни»). Вакансія шукається за користувачем через
- * компанію: id приходить із клієнта, і чужу змінити не вийде.
+ * Each action changes only its own field - only a check writes the title, the
+ * address and the dates (README, "Concurrent changes"). The vacancy is looked up
+ * by user through the company: the id comes from the client, and someone else's
+ * cannot be changed.
  */
 import { and, eq, inArray, isNull, lte, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -19,7 +20,7 @@ interface VacancyRef {
   vacancyId: string;
 }
 
-/** Джерела користувача - підзапит, яким дії обмежують свої зміни. */
+/** The user's sources - the subquery actions limit their changes with. */
 function ownSources(db: NodePgDatabase, userId: string) {
   return db
     .select({ id: careerSources.id })
@@ -28,7 +29,7 @@ function ownSources(db: NodePgDatabase, userId: string) {
     .where(eq(companies.userId, userId));
 }
 
-/** Рядок списку Jobs для однієї вакансії або `null`, якщо її немає чи вона чужа. */
+/** The Jobs list row for one vacancy, or `null` if it does not exist or belongs to someone else. */
 export async function findVacancy(
   db: NodePgDatabase,
   { userId, vacancyId }: VacancyRef,
@@ -46,9 +47,9 @@ export async function findVacancy(
 }
 
 /**
- * Mark as read / Mark as unread. Повертає оновлений рядок або `null`, якщо
- * вакансії вже немає (перевірка видалила її, поки користувач дивився список) -
- * дія над зниклою вакансією нічого не робить, без помилки (README.md поруч).
+ * Mark as read / Mark as unread. Returns the updated row, or `null` if the vacancy
+ * is gone (a check deleted it while the user was looking at the list) - an action
+ * on a gone vacancy does nothing, without an error (the README.md next to this file).
  */
 export async function setVacancyRead(
   db: NodePgDatabase,
@@ -70,17 +71,17 @@ export async function setVacancyRead(
 }
 
 /**
- * Favorite / Remove from Favorites. Повертає оновлений рядок або `null`, якщо
- * вакансії немає.
+ * Favorite / Remove from Favorites. Returns the updated row, or `null` if the
+ * vacancy does not exist.
  *
- * Закрита вакансія, прибрана з Favorites, не видаляється одразу: вона зникає з
- * усіх вкладок, а видаляє її наступна перевірка джерела - та й так прибирає
- * зниклу з сайту вакансію поза Favorites (`lifecycle.ts`). До того її може
- * повернути Undo (задача vacancy-undo-toast).
+ * A closed vacancy removed from Favorites is not deleted at once: it leaves every
+ * tab, and the next check of the source deletes it - that check removes a vacancy
+ * gone from the site outside Favorites anyway (`lifecycle.ts`). Until then Undo can
+ * bring it back (task vacancy-undo-toast).
  *
- * `favoritedAt` - дата додавання, яку повертає Undo після Remove from
- * Favorites, зокрема `null` старого обраного без дати; без неї - момент першої
- * зірочки.
+ * `favoritedAt` is the date added that Undo restores after Remove from Favorites,
+ * including the `null` of an old favorite without a date; without it - the moment
+ * of the first star.
  */
 export async function setVacancyFavorite(
   db: NodePgDatabase,
@@ -98,8 +99,8 @@ export async function setVacancyFavorite(
     inArray(vacancies.sourceId, ownSources(db, userId)),
   );
 
-  // Дата додавання - момент першої зірочки: повторне «додати» (подвійне
-  // натискання, друга вкладка браузера) її не оновлює.
+  // The date added is the moment of the first star: adding again (a double click, a
+  // second browser tab) does not update it.
   await db
     .update(vacancies)
     .set({
@@ -116,12 +117,13 @@ export async function setVacancyFavorite(
 }
 
 /**
- * Mark all as read, крок 1: скільки вакансій у вкладці Unread (усіх, не лише
- * завантаженої порції) і межа дії `asOf` - поточний час бази з мікросекундами.
+ * Mark all as read, step 1: how many vacancies the Unread tab has (all of them, not
+ * only the loaded batch) and the action's boundary `asOf` - the current database
+ * time with microseconds.
  *
- * Межа - `created_at`, момент запису рядка, а не дата виявлення: та - момент
- * старту перевірки, і перевірка, що йде, поки відкритий діалог, записала б
- * нові вакансії «заднім числом» (README, «Одночасні зміни»).
+ * The boundary is `created_at`, the moment the row was written, not the discovery
+ * date: that is the moment the check started, and a check running while the dialog
+ * is open would write new vacancies "backdated" (README, "Concurrent changes").
  */
 export async function countUnread(
   db: NodePgDatabase,
@@ -144,10 +146,10 @@ export async function countUnread(
 }
 
 /**
- * Mark all as read, крок 2: позначає прочитаними вакансії вкладки Unread,
- * записані не пізніше межі з `countUnread`, і повертає, скільки позначено.
- * Записані пізніше - знайдені, поки був відкритий діалог, - лишаються Unread.
- * Межа приходить із клієнта: не час бази - нічого не робимо.
+ * Mark all as read, step 2: marks as read the vacancies of the Unread tab recorded
+ * up to the boundary from `countUnread`, and returns how many were marked. Ones
+ * recorded later - found while the dialog was open - stay Unread. The boundary comes
+ * from the client: if it is not a database time, nothing is done.
  */
 export async function markAllRead(
   db: NodePgDatabase,
@@ -171,8 +173,8 @@ export async function markAllRead(
 }
 
 /**
- * Mark all as unread, крок 1: скільки вакансій у вкладці Read - число для
- * діалогу підтвердження (задача 6.18).
+ * Mark all as unread, step 1: how many vacancies the Read tab has - the number for
+ * the confirmation dialog (task 6.18).
  */
 export async function countRead(
   db: NodePgDatabase,
@@ -192,13 +194,13 @@ export async function countRead(
 }
 
 /**
- * Mark all as unread, крок 2: повертає в Unread усі вакансії вкладки Read і
- * каже, скільки повернуто (задача 6.18).
+ * Mark all as unread, step 2: puts every vacancy of the Read tab back into Unread
+ * and says how many were put back (task 6.18).
  *
- * Межі, як у `markAllRead`, немає: у вкладку Read потрапляє лише те, що людина
- * прочитала сама, перевірка туди нічого не додає. Вакансія, прочитана в іншій
- * вкладці, поки відкритий діалог, теж повернеться - а саме цього людина й
- * хотіла. Число в діалозі тоді на одиницю менше, ніж повернуто.
+ * There is no boundary, unlike `markAllRead`: only what the user read themselves
+ * gets into the Read tab, and a check adds nothing there. A vacancy read in another
+ * tab while the dialog is open comes back too - which is exactly what the user
+ * wanted. The number in the dialog is then one less than the number put back.
  */
 export async function markAllUnread(
   db: NodePgDatabase,
@@ -219,10 +221,10 @@ export async function markAllUnread(
 }
 
 /**
- * Mark all as read / Mark all as unread для компанії:
- * змінює `is_read` усіх активних (не Closed) вакансій її джерел і повертає,
- * скільки змінено. Діалогу й межі немає: дію легко скасувати протилежною.
- * Чужа компанія або id не у формі UUID - нічого не змінюється.
+ * Mark all as read / Mark all as unread for a company: changes `is_read` of all
+ * active (not Closed) vacancies of its sources and returns how many were changed.
+ * No dialog and no boundary: the opposite action undoes it easily. Another user's
+ * company or an id that is not a UUID - nothing changes.
  */
 export async function setCompanyVacanciesRead(
   db: NodePgDatabase,

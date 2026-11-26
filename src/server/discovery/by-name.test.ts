@@ -22,7 +22,7 @@ describe("nameSlugs", () => {
   });
 
   it("skips what has no Latin letters", () => {
-    // У назвах дошок кирилиці не буває: «Монобанк» дає лише домен.
+    // Board names never contain Cyrillic: "Монобанк" gives only the domain.
     expect(
       nameSlugs({ name: "Монобанк", siteUrl: "https://monobank.ua" }),
     ).toEqual(["monobank"]);

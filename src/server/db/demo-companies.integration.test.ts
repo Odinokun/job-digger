@@ -41,8 +41,8 @@ describe("seedDemoCompanies", () => {
 
     expect(inserted).toEqual({ companies: 0, sources: 0 });
     expect(await countCompanies()).toBe(DEMO_COMPANIES.length);
-    // На career_sources unique-індексу немає свідомо, тому ідемпотентність
-    // джерел тримається на правилі «вже існуючу компанію не торкаємось».
+    // career_sources has no unique index on purpose, so source idempotence rests
+    // on the rule "an existing company is not touched".
     expect(await countSources()).toBe(DEMO_SOURCE_COUNT);
   });
 
@@ -82,7 +82,7 @@ describe("seedDemoCompanies", () => {
       "lever",
       "unsupported",
     ]);
-    // Сторінку, яку нічим прочитати, зберігаємо без відстеження.
+    // A page nothing can read is saved without tracking.
     const unsupported = sources.find(
       (source) => source.platform === "unsupported",
     );
@@ -121,7 +121,7 @@ describe("seedDemoCompanies", () => {
       .where(eq(careerSources.companyId, palantir.id));
 
     expect(source.consecutiveFailures).toBeGreaterThan(0);
-    // «Last ok: N days ago» потрібна дата в минулому, а не null.
+    // "Last ok: N days ago" needs a date in the past, not null.
     expect(source.lastSuccessAt?.getTime()).toBeLessThan(Date.now());
   });
 
@@ -133,8 +133,8 @@ describe("seedDemoCompanies", () => {
 
     for (const row of rows) {
       expect(row.url).toMatch(/^https:\/\//);
-      // Нормалізована форма - без протоколу й без www: ту саму функцію
-      // використовує і ручне додавання компанії.
+      // The normalized form has no protocol and no www: adding a company by hand
+      // uses the same function.
       expect(row.normalizedUrl).not.toMatch(/^https:\/\//);
       expect(row.normalizedUrl).not.toMatch(/^www\./);
     }

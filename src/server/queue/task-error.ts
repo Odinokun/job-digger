@@ -1,18 +1,18 @@
 /**
- * Помилка невдалого завдання - те, що лежить у `check_tasks.error` і що
- * показує Failed Sources Drawer.
+ * The error of a failed task - what goes into `check_tasks.error` and what the
+ * Failed Sources Drawer shows.
  */
 import type { ParserError } from "../parsers/types.ts";
 
 export type CheckTaskError =
-  /** Сайт або парсер: причина так, як її повернув парсер. */
+  /** The site or the parser: the reason as the parser returned it. */
   | ParserError
-  /** Обробник щоразу зависав на завданні, і спроби скінчилися (`recover.ts`). */
+  /** The worker got stuck on the task every time, and the attempts ran out (`recover.ts`). */
   | { reason: "stalled" }
   /**
-   * Запуск закрився, бо довго стояв без руху, а завдання так і не дійшло до
-   * перевірки (`finalize.ts`).
+   * The run was closed because it stood without movement for a long time, and the
+   * task never reached its check (`finalize.ts`).
    */
   | { reason: "abandoned" }
-  /** Перевірка кинула виняток - помилка в нашому коді, а не на сайті (`run-task.ts`). */
+  /** The check threw an exception - a bug in our code, not on the site (`run-task.ts`). */
   | { reason: "crashed" };

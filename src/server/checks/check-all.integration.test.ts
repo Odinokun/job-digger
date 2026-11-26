@@ -23,7 +23,7 @@ interface SourceSeed {
   platform?: CareerPlatform;
 }
 
-/** Компанія користувача з джерелами - повертає id джерел. */
+/** A company of the user with sources - returns the source ids. */
 async function companyWith(
   userId: string,
   ...sources: SourceSeed[]
@@ -54,7 +54,7 @@ async function companyWith(
 
 describe("startCheckAll", () => {
   it("creates a run with one background task per tracked source", async () => {
-    // Одне джерело = одне завдання (CLAUDE.md, «Архітектура»).
+    // One source = one task (CLAUDE.md, "Architecture").
     const user = await seedSystemUser(testDb);
     const first = await companyWith(
       user.id,
@@ -111,7 +111,7 @@ describe("startCheckAll", () => {
   });
 
   it("reads in full in an auto check only the sources not read in full for a day", async () => {
-    // Задача 6.16: повне читання в автоперевірці - раз на добу на джерело.
+    // Task 6.16: a full read in an auto-check happens once a day per source.
     const user = await seedSystemUser(testDb);
     const [fresh, stale, never] = await companyWith(
       user.id,
@@ -143,7 +143,7 @@ describe("startCheckAll", () => {
   });
 
   it("leaves out untracked sources and companies of other users", async () => {
-    // Not tracked ніколи не бере участі в Check all.
+    // Not tracked never takes part in Check all.
     const user = await seedSystemUser(testDb);
     const [tracked] = await companyWith(
       user.id,
@@ -205,7 +205,7 @@ describe("startCheckAll", () => {
   });
 
   it("starts nothing when there is nothing to check", async () => {
-    // Порожній запуск дав би в History рядок без жодного джерела.
+    // An empty run would give History a row without a single source.
     const user = await seedSystemUser(testDb);
     await companyWith(user.id, { board: "acme", isTracked: false });
 
@@ -246,9 +246,9 @@ describe("startCheckAll", () => {
   });
 
   it("is not blocked forever by a run that stopped moving", async () => {
-    // Перевірку перервали сон компʼютера чи вбитий сервер: без закриття
-    // завислого запуску Check all і автоперевірки були б заблоковані назавжди
-    // (src/server/checks/README.md).
+    // The check was interrupted by the computer sleeping or the server being
+    // killed: without closing the stuck run, Check all and auto-checks would be
+    // blocked forever (src/server/checks/README.md).
     const user = await seedSystemUser(testDb);
     await companyWith(user.id, { board: "discord" });
     await startCheckAll(testDb, {

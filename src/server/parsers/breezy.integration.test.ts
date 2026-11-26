@@ -7,10 +7,10 @@ import type { HostLimiter } from "../http/host-limiter.ts";
 import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { readBreezy } from "./breezy.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** The request schedule is not tested here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
-/** Фейковий вебсервер зі справжніми збереженими відповідями. */
+/** The fake web server with real saved responses. */
 let fakeWeb: FakeWeb;
 
 beforeAll(async () => {
@@ -24,7 +24,7 @@ afterAll(async () => {
   await fakeWeb.close();
 });
 
-/** Клієнт, що ходить на заданий сервер замість справжніх сайтів. */
+/** A client that goes to the given server instead of real sites. */
 function clientFor(origin: string) {
   return createHttpClient({
     fakeOrigin: origin,
@@ -56,7 +56,7 @@ describe("readBreezy", () => {
   it("does not request anything for an address that is not a Breezy board", async () => {
     const result = await readBreezy(
       "https://assets-cdn.breezy.hr/x.js",
-      // Порт 1 ніхто не слухає: якби запит пішов, це був би fetch-failed.
+      // Nobody listens on port 1: if a request went out, it would be fetch-failed.
       clientFor("http://127.0.0.1:1"),
     );
 

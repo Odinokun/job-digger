@@ -1,41 +1,41 @@
 /**
- * Належність знахідки компанії (src/server/discovery/README.md,
- * пункт 4): дошку, знайдену лише за назвою, прив'язуємо до компанії, тільки
- * якщо сама дошка веде на сайт компанії.
+ * Whether a finding belongs to the company (src/server/discovery/README.md,
+ * item 4): a board found only by name is tied to the company only if the board
+ * itself leads to the company site.
  */
 import * as cheerio from "cheerio";
 
-/** Що сторінка дошки каже про свою компанію. */
+/** What the board page says about its company. */
 export type BoardOwnership =
-  /** Дошка веде на сайт компанії - знахідка надійна. */
+  /** The board leads to the company site - the finding is reliable. */
   | { kind: "confirmed" }
-  /** Дошка називає своїм інший сайт - схоже, інша компанія з такою назвою. */
+  /** The board names another site as its own - likely another company with the same name. */
   | { kind: "other"; site: string }
-  /** Ні того, ні іншого не видно. */
+  /** Neither is visible. */
   | { kind: "unknown" };
 
 /**
- * Явні сигнали «сайт цієї компанії» на сторінці дошки. Лише за ними дошку
- * можна віднести до іншої компанії: будь-яке зовнішнє посилання (LinkedIn,
- * політика конфіденційності) такого не означає.
+ * Explicit "this company's site" signals on a board page. Only by them can a
+ * board be attributed to another company: an arbitrary external link (LinkedIn,
+ * a privacy policy) means no such thing.
  *
- * - Lever: логотип у шапці і «{Company} Home Page» у футері;
- * - Breezy HR: пункт шапки `link company` («Company website»);
- * - Personio: логотип у шапці (`a.logo-wrapper`);
- * - softgarden, кар'єрний сайт: логотип у шапці (`HeaderLogo__BrandLink-...` -
- *   клас від styled-components, стабільний лише початок). Стара дошка
- *   softgarden зовнішніх посилань не має;
- * - Ashby: поле `publicWebsite` у даних сторінки (`ASHBY_WEBSITE`).
+ * - Lever: the logo in the header and "{Company} Home Page" in the footer;
+ * - Breezy HR: the header item `link company` ("Company website");
+ * - Personio: the logo in the header (`a.logo-wrapper`);
+ * - softgarden, career site: the logo in the header (`HeaderLogo__BrandLink-...`,
+ *   a styled-components class whose start alone is stable). The old softgarden
+ *   board has no external links;
+ * - Ashby: the `publicWebsite` field in the page data (`ASHBY_WEBSITE`).
  */
 const WEBSITE_LINKS =
   "a.main-header-logo[href], .main-footer-text a[href], li.link.company a[href], a.logo-wrapper[href], a[class^='HeaderLogo__BrandLink'][href]";
 
-/** Ashby малює дошку JavaScript-ом, а сайт організації кладе в JSON сторінки. */
+/** Ashby renders the board with JavaScript and puts the organisation's site in the page JSON. */
 const ASHBY_WEBSITE = /"publicWebsite"\s*:\s*"(https?:[^"]+)"/g;
 
 /**
- * Хости самих платформ: посилання на них - про платформу, а не про компанію
- * (логотип Lever без сайту компанії веде на саму дошку).
+ * The platforms' own hosts: links to them are about the platform, not the
+ * company (a Lever logo without a company site leads to the board itself).
  */
 const PLATFORM_DOMAINS = [
   "lever.co",
@@ -59,12 +59,13 @@ const PLATFORM_DOMAINS = [
 ];
 
 /**
- * Чия це дошка, з погляду компанії із сайтом `companySiteUrl`.
+ * Whose board this is, from the point of view of the company with the site
+ * `companySiteUrl`.
  *
- * Підтверджує будь-яке посилання на сайт компанії: якщо дошка хоч десь веде
- * туди, звʼязок двосторонній - назва збіглась, і дошка сама показує на сайт.
- * Той самий сайт - той самий хост без `www.` або піддомен в будь-який бік
- * (`careers.palantir.com` і `palantir.com`).
+ * Any link to the company site confirms it: if the board leads there anywhere,
+ * the link goes both ways - the name matched, and the board itself points at the
+ * site. The same site means the same host without `www.` or a subdomain either
+ * way (`careers.palantir.com` and `palantir.com`).
  */
 export function boardOwnership(
   html: string,
@@ -97,7 +98,7 @@ export function boardOwnership(
     : { kind: "other", site: other };
 }
 
-/** Хост абсолютної http(s)-адреси без `www.` або `null`. */
+/** The host of an absolute http(s) address without `www.`, or `null`. */
 function hostOf(address: string): string | null {
   try {
     const url = new URL(address);

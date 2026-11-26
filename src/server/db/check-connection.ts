@@ -1,6 +1,6 @@
 /**
- * Перевірка підключення до бази: `npm run db:check`.
- * Службовий скрипт для розробки, у застосунок не імпортується.
+ * Checks the database connection: `npm run db:check`.
+ * A helper script for development, never imported into the app.
  */
 import { sql } from "drizzle-orm";
 

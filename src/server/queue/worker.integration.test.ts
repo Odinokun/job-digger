@@ -19,7 +19,7 @@ import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { activeRun, greenhouseSource, task } from "./test-fixtures.ts";
 import { createQueueWorker, type QueueWorker } from "./worker.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** Request scheduling is not checked here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, work) => work() };
 
 let fakeWeb: FakeWeb;

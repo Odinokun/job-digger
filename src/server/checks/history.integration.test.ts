@@ -11,7 +11,7 @@ function minutesAfter(from: Date, minutes: number): Date {
   return new Date(from.getTime() + minutes * 60_000);
 }
 
-/** `count` завершених перевірок, кожна на годину пізніша за попередню. */
+/** `count` finished checks, each an hour later than the previous one. */
 async function finishedRuns(userId: string, count: number) {
   return testDb
     .insert(checkRuns)
@@ -80,7 +80,7 @@ describe("listCheckRuns", () => {
   });
 
   it("reads twenty at a time and continues after the cursor", async () => {
-    // Спочатку 20 записів, Load more додає наступні 20.
+    // First 20 records, Load more adds the next 20.
     const user = await seedSystemUser(testDb);
     const runs = await finishedRuns(user.id, 25);
     const newestFirst = runs.map((run) => run.id).reverse();

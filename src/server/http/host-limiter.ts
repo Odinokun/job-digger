@@ -1,11 +1,11 @@
 /**
- * Ввічливість до сайтів: не більше `maxConcurrent` запитів одночасно до одного
- * хоста і щонайменше `gapMs` між стартами запитів до нього. Запити до різних
- * хостів одне одного не чекають (src/server/http/README.md).
+ * Politeness towards websites: at most `maxConcurrent` requests at once to one
+ * host and at least `gapMs` between the starts of requests to it. Requests to
+ * different hosts don't wait for each other (src/server/http/README.md).
  *
- * «Сайт» - це хост. Усі компанії на одній ATS ділять її хост
- * (`boards-api.greenhouse.io`), тож до платформи йде не більше запиту на `gapMs`
- * з урахуванням паралельності - tasks/3.02-polite-http-client.md.
+ * A "site" is a host. All companies on one ATS share its host
+ * (`boards-api.greenhouse.io`), so the platform gets at most one request per
+ * `gapMs`, allowing for concurrency - tasks/3.02-polite-http-client.md.
  */
 
 export interface HostLimiterOptions {
@@ -16,15 +16,15 @@ export interface HostLimiterOptions {
 }
 
 export interface HostLimiter {
-  /** Виконує задачу, коли хост готовий її прийняти, і повертає її результат. */
+  /** Runs the task when the host is ready to take it and returns its result. */
   run<T>(host: string, task: () => Promise<T>): Promise<T>;
 }
 
 interface HostState {
   active: number;
-  /** Час останнього старту; `-Infinity` - ще не було жодного. */
+  /** The time of the last start; `-Infinity` means there has been none yet. */
   lastStart: number;
-  /** Ті, хто чекає вільного місця: будяться, коли якась задача завершилась. */
+  /** Those waiting for a free slot: woken when some task finishes. */
   waiters: Array<() => void>;
 }
 
@@ -50,12 +50,12 @@ export function createHostLimiter(options: HostLimiterOptions): HostLimiter {
       const wait = state.lastStart + options.gapMs - options.now();
       if (wait > 0) {
         await options.sleep(wait);
-        // Поки спали, місце або паузу міг зайняти інший - перевіряємо знову.
+        // While we slept, someone else may have taken the slot or the gap - check again.
         continue;
       }
 
-      // Між перевіркою й захопленням немає `await`, тож двоє не займуть
-      // одне місце.
+      // There is no `await` between the check and the claim, so two callers
+      // cannot take the same slot.
       state.active += 1;
       state.lastStart = options.now();
       return;
@@ -64,7 +64,7 @@ export function createHostLimiter(options: HostLimiterOptions): HostLimiter {
 
   function release(state: HostState): void {
     state.active -= 1;
-    // Будимо всіх: кожен сам перевірить, чи настала його черга.
+    // Wake everyone: each checks for itself whether its turn has come.
     for (const wake of state.waiters.splice(0)) {
       wake();
     }

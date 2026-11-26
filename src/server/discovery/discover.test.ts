@@ -21,7 +21,7 @@ describe("isReliableFinding", () => {
   });
 
   it("relies on a board found by name only when it links to the company site", () => {
-    // Рішення автора 19.11.2026 (tasks/5.05-page-ownership-check.md).
+    // The author's decision of 19.11.2026 (tasks/5.05-page-ownership-check.md).
     expect(isReliableFinding(finding("name", { kind: "confirmed" }))).toBe(
       true,
     );

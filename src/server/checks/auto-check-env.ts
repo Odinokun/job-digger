@@ -1,12 +1,12 @@
 /**
- * `AUTO_CHECK=off` повністю вимикає автоматичні перевірки, зокрема перевірку
- * на старті (src/server/checks/README.md). Ручні перевірки працюють.
- * Потрібно на час розробки і в E2E: там розклад запускав би загальну
- * перевірку посеред сценарію.
+ * `AUTO_CHECK=off` turns automatic checks off completely, including the check at
+ * startup (src/server/checks/README.md). Manual checks keep working. It is needed
+ * during development and in E2E: there the schedule would start a general check
+ * in the middle of a scenario.
  *
- * Хибне значення - помилка на старті, як і в `PARALLEL_SOURCE_CHECKS`: хто
- * написав `AUTO_CHECK=false`, явно хотів вимкнути, і тихо лишити перевірки
- * ввімкненими було б гірше.
+ * An invalid value is an error at startup, as with `PARALLEL_SOURCE_CHECKS`:
+ * whoever wrote `AUTO_CHECK=false` clearly wanted to turn it off, and quietly
+ * keeping the checks on would be worse.
  */
 export function parseAutoCheckEnabled(raw: string | undefined): boolean {
   const value = raw?.trim() ?? "";
