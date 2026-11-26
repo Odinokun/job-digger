@@ -39,10 +39,20 @@ const PAGES = [
   "/settings",
 ];
 
+/**
+ * Правила поза WCAG (у axe - best practice), які ми все одно тримаємо:
+ * `heading-order` - заголовки без стрибків через рівень, його рахує й
+ * Lighthouse (задача 6.29). Окремим прогоном: так перевірка WCAG лишається
+ * рівно тим набором, що задають теги.
+ */
+const EXTRA_RULES = ["heading-order"];
+
 async function expectNoViolations(page: Page, name: string): Promise<void> {
-  const { violations } = await new AxeBuilder({ page })
-    .withTags(WCAG_AA_TAGS)
-    .analyze();
+  const [wcag, extra] = [
+    await new AxeBuilder({ page }).withTags(WCAG_AA_TAGS).analyze(),
+    await new AxeBuilder({ page }).withRules(EXTRA_RULES).analyze(),
+  ];
+  const violations = [...wcag.violations, ...extra.violations];
 
   // Лише суть кожного порушення: правило і де саме, без повного звіту axe.
   // Soft, щоб один прогін показав усі сторінки, а не першу з порушенням.

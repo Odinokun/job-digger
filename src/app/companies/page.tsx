@@ -12,6 +12,13 @@ import { getSystemUser } from "@/server/db/system-user";
 import { CompaniesBoard } from "./companies-board";
 import { CompaniesTabs } from "./companies-tabs";
 
+const TAB_LABELS = {
+  tracked: "tracked",
+  "not-tracked": "notTracked",
+  attention: "attention",
+  all: "all",
+} as const;
+
 const EMPTY_LABELS = {
   tracked: "emptyTracked",
   "not-tracked": "emptyNotTracked",
@@ -93,6 +100,7 @@ export default async function CompaniesPage({
           ? t(EMPTY_LABELS[tab])
           : t("emptySearch", { query: query.trim() })
       }
+      listHeading={t(TAB_LABELS[tab])}
       loadMoreLabel={t("loadMore")}
       noSourcesLabel={t("noSources")}
       platformLabels={platformLabels}

@@ -26,6 +26,8 @@ interface CompaniesListProps {
   /** Нова компанія, картка якої сама починає першу перевірку. */
   firstCheckId: string | null;
   emptyLabel: string;
+  /** Прихований для очей заголовок над списком - назва вкладки. */
+  heading: string;
   loadMoreLabel: string;
   noSourcesLabel: string;
   platformLabels: Record<CompanySource["platform"], string>;
@@ -50,6 +52,7 @@ export function CompaniesList({
   onRecipeApplied,
   firstCheckId,
   emptyLabel,
+  heading,
   loadMoreLabel,
   noSourcesLabel,
   platformLabels,
@@ -61,6 +64,11 @@ export function CompaniesList({
 
   return (
     <>
+      {/* Назви карток - `h3`: `Card.Title` HeroUI інший тег не рендерить. Без
+          `h2` між ними й `h1` сторінки заголовки стрибали б через рівень
+          (axe і Lighthouse `heading-order`), а в роторі VoiceOver список не
+          мав би назви. Тому `h2` є, але лише для читача екрана. */}
+      <h2 className="sr-only">{heading}</h2>
       {/* Одна колонка на будь-якій ширині (рішення автора 21.11.2026, аудит
           інтерфейсу B2): список компаній читається згори донизу, як Jobs, а
           картки поруч розтягувались до найвищої або лишали прогалини. `min-w-0`

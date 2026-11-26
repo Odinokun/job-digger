@@ -36,6 +36,8 @@ interface CompaniesBoardProps {
   initialItems: CompanyListItem[];
   initialCursor: Cursor | null;
   emptyLabel: string;
+  /** Назва вкладки - прихований заголовок списку, див. `companies-list.tsx`. */
+  listHeading: string;
   loadMoreLabel: string;
   noSourcesLabel: string;
   platformLabels: Record<CompanySource["platform"], string>;
@@ -75,6 +77,7 @@ export function CompaniesBoard({
   initialItems,
   initialCursor,
   emptyLabel,
+  listHeading,
   loadMoreLabel,
   noSourcesLabel,
   platformLabels,
@@ -283,6 +286,7 @@ export function CompaniesBoard({
         onRecipeApplied={recipeApplied}
         firstCheckId={firstCheckId}
         emptyLabel={emptyLabel}
+        heading={listHeading}
         loadMoreLabel={loadMoreLabel}
         noSourcesLabel={noSourcesLabel}
         platformLabels={platformLabels}
