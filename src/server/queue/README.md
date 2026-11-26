@@ -1,157 +1,159 @@
-# src/server/queue - черга перевірок
+# src/server/queue - the check queue
 
-Черга живе в PostgreSQL, у таблицях `check_runs` і `check_tasks`
-([рішення щодо схеми](../db/README.md)), а не в памʼяті Next.js: так завдання
-переживають перезапуск сервера, а код однаковий локально й на Vercel
-([`CLAUDE.md`](../../../CLAUDE.md#architecture)). Що саме
-виконує захоплене завдання і хто викликає ці функції в циклі - задача 4.03.
+The queue lives in PostgreSQL, in the `check_runs` and `check_tasks` tables
+([schema decisions](../db/README.md)), not in the memory of Next.js: so tasks survive
+a server restart, and the code is the same locally and on Vercel
+([`CLAUDE.md`](../../../CLAUDE.md#architecture)). What a claimed task actually runs and
+who calls these functions in a loop is task 4.03.
 
-Кожна функція приймає базу й момент `now` ззовні: так тести керують часом, а
-обробник задає один момент на крок.
+Every function takes the database and the moment `now` from outside: so tests control
+time, and the worker sets one moment per step.
 
-## Файли
+## Files
 
-| Файл                           | Роль                                                         |
+| File                           | Role                                                         |
 | ------------------------------ | ------------------------------------------------------------ |
-| `claim.ts`                     | `claimTask(db, { now, maxRunning })` - захопити наступне завдання |
-| `claim.integration.test.ts`    | Порядок, ліміт і одночасні захоплення на справжній базі      |
-| `finish.ts`                    | `finishTask(db, claimed, { now, outcome })` - результат завдання |
-| `finish.integration.test.ts`   | Лічильники запуску і відкинуті пізні результати              |
-| `finalize.ts`                  | `finalizeRuns(db, { now })` - закрити завершені й завислі запуски |
-| `finalize.integration.test.ts` | Обидва правила завершення і що вони не чіпають               |
-| `parallel-checks.ts`           | `parseParallelChecks` - ENV `PARALLEL_SOURCE_CHECKS`, ліміт одночасних джерел |
-| `parallel-checks.test.ts`      | Значення за замовчуванням, діапазон 1-10, хибні значення      |
-| `recover.ts`                   | `recoverStaleTasks(db, { now })` - повернути завислі в чергу  |
-| `recover.integration.test.ts`  | Завислі, свіжі й ті, в яких скінчилися спроби                |
-| `run-task.ts`                  | `runTask(db, client, claimed)` - перевірити джерело й записати результат |
-| `run-task.integration.test.ts` | Успіх, збій сайту, платформа без парсера, виняток, видалене джерело, передача пошуку |
-| `discover-task.ts` | `runDiscoverTask` - завдання Find new pages для однієї компанії |
-| `discover-task.integration.test.ts` | Додана дошка й перша перевірка, кожен статус, чужа і власна сторінка, видалена компанія |
-| `worker.ts`                    | `createQueueWorker(options)` - цикл обробника зі `start` і `stop` |
-| `worker.integration.test.ts`   | Запуск від завдань до закриття; після `stop` нічого не захоплюється |
-| `start.ts`                     | `startQueueWorker()` - один цикл на процес сервера, ліміт з ENV |
-| `task-error.ts`                | `CheckTaskError` - що лежить у `check_tasks.error`           |
-| `test-fixtures.ts`             | Джерело, компанія для пошуку, запуск і завдання для інтеграційних тестів черги |
+| `claim.ts`                     | `claimTask(db, { now, maxRunning })` - claim the next task   |
+| `claim.integration.test.ts`    | Order, the limit and simultaneous claims on a real database  |
+| `finish.ts`                    | `finishTask(db, claimed, { now, outcome })` - the task result |
+| `finish.integration.test.ts`   | Run counters and discarded late results                      |
+| `finalize.ts`                  | `finalizeRuns(db, { now })` - close finished and stuck runs  |
+| `finalize.integration.test.ts` | Both finishing rules and what they leave alone               |
+| `parallel-checks.ts`           | `parseParallelChecks` - the `PARALLEL_SOURCE_CHECKS` ENV, the limit of simultaneous sources |
+| `parallel-checks.test.ts`      | The default, the 1-10 range, invalid values                  |
+| `recover.ts`                   | `recoverStaleTasks(db, { now })` - put stuck tasks back in the queue |
+| `recover.integration.test.ts`  | Stuck, fresh and out-of-attempts tasks                       |
+| `run-task.ts`                  | `runTask(db, client, claimed)` - check a source and record the result |
+| `run-task.integration.test.ts` | Success, a site failure, a platform without a parser, an exception, a deleted source, handing off a search |
+| `discover-task.ts` | `runDiscoverTask` - the Find new pages task for one company |
+| `discover-task.integration.test.ts` | An added board and its first check, every status, another company's and the company's own page, a deleted company |
+| `worker.ts`                    | `createQueueWorker(options)` - the worker loop with `start` and `stop` |
+| `worker.integration.test.ts`   | A run from tasks to closing; nothing is claimed after `stop` |
+| `start.ts`                     | `startQueueWorker()` - one loop per server process, the limit from ENV |
+| `task-error.ts`                | `CheckTaskError` - what goes into `check_tasks.error`        |
+| `test-fixtures.ts`             | A source, a company for search, a run and tasks for the queue's integration tests |
 
-## Цикл обробника
+## Worker loop
 
-`createQueueWorker` - фоновий цикл, однаковий для будь-якого місця запуску. Крок
-циклу: повернути завислі (`recoverStaleTasks`), закрити запуски (`finalizeRuns`),
-захопити завдання на вільні місця. Наступний крок - через `POLL_MS` (2 с) **після**
-завершення попереднього, тож кроки не накладаються.
+`createQueueWorker` is a background loop, the same wherever it runs. A step of the
+loop: put stuck tasks back (`recoverStaleTasks`), close runs (`finalizeRuns`), claim
+tasks for the free slots. The next step comes `POLL_MS` (2 s) **after** the previous one
+finishes, so steps never overlap.
 
-- Звільнене місце заповнюється одразу, коли завдання завершилося, а не на
-  наступному кроці. Запуск закривається на найближчому кроці - до 2 с після
-  останнього завдання.
-- Скільки виконується в цьому процесі - не більше `maxRunning`, а скільки разом у
-  всіх процесах - тримає захоплення в базі.
-- Збій кроку (наприклад, база недоступна) іде в лог і не зупиняє цикл.
-- Таймер не тримає процес живим (`unref`): сервер зупиняється, не чекаючи черги.
-  Перерване так завдання поверне `recoverStaleTasks`.
-- `stop()` чекає всю розпочату роботу - кроки, дозаповнення й завдання. Інакше
-  захоплення, що саме йде, запустило б завдання вже після зупинки, а в тестах воно
-  писало б у базу після очищення.
+- A freed slot is filled as soon as a task finishes, not on the next step. A run closes
+  on the nearest step - within 2 s after its last task.
+- How many tasks run in this process is capped by `maxRunning`, and how many run across
+  all processes together is held by the claim in the database.
+- A failed step (for example, the database being unavailable) goes to the log and does
+  not stop the loop.
+- The timer does not keep the process alive (`unref`): the server stops without waiting
+  for the queue. A task interrupted this way is brought back by `recoverStaleTasks`.
+- `stop()` waits for all the work started - steps, refills and tasks. Otherwise a claim
+  in progress would start a task after the stop, and in tests it would write to the
+  database after it was cleared.
 
-## Захоплення
+## Claiming
 
-- **Порядок:** спершу `manual`, потім `background`; усередині - старші. Порядок
-  пріоритетів задає сам enum ([README бази](../db/README.md)).
-- **Одне завдання - одному обробнику.** Наступне завдання вибирається
-  `select ... for update skip locked`: рядок, який тримає інша транзакція, не
-  чекається, а пропускається
-  ([docs/18/sql-select](https://www.postgresql.org/docs/18/sql-select.html), «The
-  Locking Clause»).
-- **Ліміт одночасних завдань спільний для всіх процесів**, тож перевіряється в
-  базі, а не в памʼяті. «Скільки вже `running`» і захоплення - одна транзакція під
-  `pg_advisory_xact_lock`: без нього кілька одночасних захоплень бачать вільне
-  місце й разом перевищують ліміт - тест на це без блокування падав щоразу.
-  Блокування знімається саме в кінці транзакції
+- **Order:** `manual` first, then `background`; within each, the older first. The enum
+  itself sets the priority order ([database README](../db/README.md)).
+- **One task - one worker.** The next task is chosen with `select ... for update skip
+  locked`: a row held by another transaction is skipped, not waited for
+  ([docs/18/sql-select](https://www.postgresql.org/docs/18/sql-select.html), "The
+  Locking Clause").
+- **The limit of simultaneous tasks is shared by all processes**, so it is checked in
+  the database, not in memory. "How many are already `running`" and the claim are one
+  transaction under `pg_advisory_xact_lock`: without it several simultaneous claims see
+  a free slot and together exceed the limit - the test for this failed every time
+  without the lock. The lock is released at the end of the transaction
   ([docs/18/functions-admin](https://www.postgresql.org/docs/18/functions-admin.html#FUNCTIONS-ADVISORY-LOCKS)).
-  Захоплення через це йдуть по одному, але кожне - кілька мілісекунд, а
-  обробників у нас одиниці.
-- Захоплене завдання отримує `running`, `locked_at = now` і `attempts + 1`.
-  `locked_at` повертається обробнику як знак власності завдання.
+  Claims therefore go one at a time, but each takes a few milliseconds, and we have a
+  handful of workers.
+- A claimed task gets `running`, `locked_at = now` and `attempts + 1`. `locked_at` goes
+  back to the worker as the sign that it owns the task.
 
-## Виконання завдання
+## Running a task
 
-- `runTask` перевіряє джерело спільним `checkSource`
-  ([`checks/README.md`](../checks/README.md)) і передає підсумок у `finishTask`.
-- **Момент перевірки - момент захоплення** (`locked_at`): від нього рахуються дата
-  виявлення нових вакансій і стан джерела. `finished_at` - годинник у момент
-  завершення.
-- **Платформа без парсера** - завдання успішне з нулями, а стан джерела не
-  змінюється: так само, як Check now пропускає таке джерело мовчки.
-- **Виняток під час перевірки** - помилка в нашому коді, бо збої сайту парсери
-  повертають значенням. Завдання одразу стає `failed` з причиною `crashed`, а виняток
-  іде в лог. Без цього воно висіло б у `running`, доки його не поверне
-  `recoverStaleTasks`, і так тричі.
-- Джерело видалили після захоплення - нічого не перевіряється, результат `false`.
+- `runTask` checks the source with the shared `checkSource`
+  ([`checks/README.md`](../checks/README.md)) and passes the outcome to `finishTask`.
+- **The check moment is the claim moment** (`locked_at`): the discovery date of new
+  vacancies and the source state are counted from it. `finished_at` is the clock at the
+  moment of finishing.
+- **A platform without a parser** - the task succeeds with zeros, and the source state
+  does not change: the same way Check now silently skips such a source.
+- **An exception during a check** is a bug in our code, because parsers return site
+  failures as values. The task becomes `failed` at once with the reason `crashed`, and
+  the exception goes to the log. Without this it would hang in `running` until
+  `recoverStaleTasks` brought it back, three times over.
+- If the source was deleted after the claim, nothing is checked and the result is
+  `false`.
 
-## Пошук сторінок
+## Page search
 
-Завдання `discover` (Find new pages, задача 5.10) захоплюється, повертається й
-обмежується спільним лімітом так само, як перевірка, - різниться лише виконання.
-`runTask` передає його `runDiscoverTask`:
+A `discover` task (Find new pages, task 5.10) is claimed, brought back and capped by the
+shared limit the same way as a check - only running it differs. `runTask` hands it to
+`runDiscoverTask`:
 
-- пошук - той самий, що Find pages (`discoverCompany`), а що додати і який статус
-  поставити, вирішує `decideNewPages` ([`discovery/README.md`](../discovery/README.md));
-- додані джерела, статус і перша перевірка доданих дошок пишуться однією
-  транзакцією. Перша перевірка - фонові завдання `check` без запуску: це не ручна
-  дія і не загальна перевірка, тож у History не потрапляє;
-- виняток (зокрема відмова на вставці, якщо сторінку тим часом забрала інша
-  компанія) - завдання `crashed`, а компанія отримує Check failed;
-- видалена після захоплення компанія забрала завдання каскадом - результат `false`.
+- the search is the same as Find pages (`discoverCompany`), and `decideNewPages` decides
+  what to add and which status to set ([`discovery/README.md`](../discovery/README.md));
+- the added sources, the status and the first check of the added boards are written in
+  one transaction. The first check is background `check` tasks without a run: it is
+  neither a manual action nor a general check, so it does not reach History;
+- an exception (including a refused insert, if another company took the page in the
+  meantime) makes the task `crashed`, and the company gets Check failed;
+- a company deleted after the claim took the task with it by cascade - the result is
+  `false`.
 
-## Результат
+## Result
 
-- `finishTask` ставить `succeeded` чи `failed`, `finished_at`, помилку парсера або
-  кількість пропущених записів (parse warning) і в тій самій транзакції додає
-  результат до лічильників запуску: `sources_checked + 1`, невдале - ще й
-  `sources_failed + 1`, успішне - нові й видалені вакансії. Скільки вакансій
-  нових і видалених, обробник дізнається від життєвого циклу (задача 4.03).
-- **Пізній результат відкидається** (`false`): завдання оновлюється, лише поки воно
-  `running` з тим самим `locked_at`, що видало захоплення. Обробник, у якого
-  завдання забрали як зависле і віддали іншому, нічого не перезапише. Те саме,
-  якщо джерело видалили: рядка завдання вже немає.
-- **Завершений запуск не змінюється** - рядок History фіксує результат на момент
-  завершення. Завдання без запуску (Check now, Retry) лічильників не чіпають.
+- `finishTask` sets `succeeded` or `failed`, `finished_at`, the parser error or the number
+  of skipped records (parse warning), and in the same transaction adds the result to the
+  run counters: `sources_checked + 1`, for a failed one also `sources_failed + 1`, for a
+  successful one the new and removed vacancies. The worker learns how many vacancies are
+  new and removed from the lifecycle (task 4.03).
+- **A late result is discarded** (`false`): the task is updated only while it is
+  `running` with the same `locked_at` the claim handed out. A worker whose task was taken
+  away as stuck and given to another overwrites nothing. The same if the source was
+  deleted: the task row is gone.
+- **A finished run does not change** - the History row records the result as of the
+  finish. Tasks without a run (Check now, Retry) do not touch the counters.
 
-## Завислі завдання
+## Stuck tasks
 
-- Завдання, яке довше за `STALE_AFTER_MS` (10 хв) лишається `running`, вважається
-  завислим: процес упав, сервер вбили, компʼютер заснув. Воно повертається в чергу -
-  `queued`, `locked_at = null` - і його візьме наступне захоплення.
-- 10 хвилин - із запасом на довге джерело (до `VACANCIES_TO_CHECK` вакансій, у PeopleForce це 50 сторінок, кожна з
-  тайм-аутом і повторами), але менше за 15 хвилин без руху, після яких закривається
-  запуск. Якщо справжня перевірка все ж триває довше, нічого не ламається: завдання
-  виконається вдруге, а результат першого обробника `finishTask` відкине.
-- **Спроб - `MAX_ATTEMPTS` (3).** Завдання, яке зависло на останній, стає `failed` з
-  причиною `stalled` і рахується в запуску як невдале. Інакше джерело, що щоразу валить
-  обробник, крутилося б у черзі вічно. Це не повтори запитів до сайту - їх робить
-  HTTP-клієнт ([`http/README.md`](../http/README.md)), і «до 2 повторних спроб» із
-  плану стосується саме їх.
+- A task that stays `running` longer than `STALE_AFTER_MS` (10 min) counts as stuck: the
+  process crashed, the server was killed, the computer went to sleep. It goes back to the
+  queue - `queued`, `locked_at = null` - and the next claim takes it.
+- 10 minutes leave room for a long source (up to `VACANCIES_TO_CHECK` vacancies, which for
+  PeopleForce is 50 pages, each with a timeout and retries), but are less than the 15
+  minutes without movement after which a run is closed. If a real check takes longer
+  anyway, nothing breaks: the task runs a second time, and `finishTask` discards the
+  first worker's result.
+- **`MAX_ATTEMPTS` (3) attempts.** A task stuck on the last one becomes `failed` with the
+  reason `stalled` and counts as failed in the run. Otherwise a source that crashes the
+  worker every time would circle in the queue forever. These are not request retries to
+  the site - the HTTP client does those ([`http/README.md`](../http/README.md)), and the
+  limit of two retries applies to them.
 
-## Завершення запуску
+## Finishing a run
 
-`finalizeRuns` закриває загальну перевірку за одним із двох правил.
+`finalizeRuns` closes a general check by one of two rules.
 
-- **Незавершених завдань не лишилося** (жодного `queued` чи `running`) - запуск
-  закінчився в момент, коли завершилося його останнє завдання. Якщо завдань немає
-  зовсім, бо їхні джерела видалили, - у момент `now`.
-- **Запуск стоїть без руху `IDLE_RUN_MS` (15 хв).** Рух - старт запуску, захоплення
-  або завершення будь-якого його завдання. Такий запуск перервали сон компʼютера чи
-  вбитий сервер, і без цього правила він блокував би Check all і автоперевірки
-  назавжди.
-  Запуск закривається моментом останнього руху, щоб Duration у History показувала
-  роботу, а не сон. Лічильники лишаються «з тими числами, які вже є», а незавершені
-  завдання стають `failed` з причиною `abandoned`: так вони потрапляють у Failed
-  Sources Drawer і їх можна повторити через Retry, а черга не довиконує їх після
-  того, як рядок History уже зафіксований. Обробник, що ще тримає таке завдання,
-  свого результату не запише - завдання вже не `running`.
-- 15 хвилин більше за `STALE_AFTER_MS` (10 хв): зависле завдання встигає повернутися
-  в чергу, перш ніж запуск вирішить, що руху немає.
-- **Відома межа - кілька користувачів.** Ліміт одночасних завдань спільний, а черга
-  йде за віком, тож запуск, що стоїть за 300 завданнями іншого користувача, теж
-  «без руху». Для локальної версії з одним користувачем це неможливо, а онлайн
-  (етап 7) правило доведеться переглянути.
-- Завдання поза запусками (Check now, Retry) цих правил не стосуються.
+- **No unfinished tasks are left** (no `queued` or `running`) - the run ended at the
+  moment its last task finished. If there are no tasks at all because their sources were
+  deleted, at the moment `now`.
+- **The run has not moved for `IDLE_RUN_MS` (15 min).** Movement is the start of the run,
+  or the claim or finish of any of its tasks. Such a run was interrupted by the computer
+  sleeping or the server being killed, and without this rule it would block Check all and
+  auto-checks forever. The run is closed at the moment of its last movement, so that
+  Duration in History shows the work, not the sleep. The counters stay "with whatever
+  numbers there are", and the unfinished tasks become `failed` with the reason
+  `abandoned`: that way they reach the Failed Sources Drawer and can be retried with
+  Retry, and the queue does not finish them after the History row is already recorded. A
+  worker still holding such a task will not record its result - the task is no longer
+  `running`.
+- 15 minutes are more than `STALE_AFTER_MS` (10 min): a stuck task has time to go back to
+  the queue before the run decides that nothing is moving.
+- **A known limit - several users.** The limit of simultaneous tasks is shared, and the
+  queue goes by age, so a run waiting behind another user's 300 tasks also has "no
+  movement". For the local version with one user this cannot happen; online (stage 7) the
+  rule will have to be revisited.
+- Tasks outside runs (Check now, Retry) are not subject to these rules.

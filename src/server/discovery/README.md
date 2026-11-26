@@ -1,161 +1,161 @@
-# src/server/discovery - пошук кар'єрних сторінок
+# src/server/discovery - finding career pages
 
-Знаходить кар'єрні джерела компанії за адресою її сайту для Find pages і Find new pages.
-Усі запити - через єдиний HTTP-клієнт ([`src/server/http`](../http/README.md)).
+Finds a company's career sources from its site address, for Find pages and Find new pages.
+Every request goes through the single HTTP client ([`src/server/http`](../http/README.md)).
 
-- Пошук іде при додаванні адреси будь-якого типу, навіть готової кар'єрної сторінки:
-  у компанії може бути ще одна дошка.
-- Регулярні перевірки вакансій пошук не повторюють. Нові сторінки для компаній без
-  джерела шукає лише Find new pages.
-- **Зовнішнього пошукового API немає:** надійних безкоштовних варіантів не лишилось
-  (Google Custom Search API закритий для нових клієнтів і вимикається 1 січня 2027).
-  Якщо нічого не знайдено, кар'єрну адресу вставляють руками в тому самому діалозі.
-  Якщо багато компаній осяде в Not found, до цього варто повернутися.
+- The search runs whenever an address of any kind is added, even a ready career page:
+  the company may have one more board.
+- Regular vacancy checks do not repeat the search. Only Find new pages looks for new
+  pages of companies without a source.
+- **There is no external search API:** no reliable free options are left (the Google
+  Custom Search API is closed to new customers and shuts down on 1 January 2027). If
+  nothing is found, the career address is pasted by hand in the same dialog. If many
+  companies end up in Not found, this is worth revisiting.
 
-## Файли
+## Files
 
-| Файл                | Роль                                                          |
+| File                | Role                                                          |
 | ------------------- | ------------------------------------------------------------- |
-| `discover.ts` | `discoverSources` - пошук для Find pages (`discoverCompany` - те саме разом із тим, чи відповів сайт компанії): три способи, пробне читання кожної знахідки (лише перша сторінка, `more` - «є ще», задача 6.16), одна знахідка на дошку, належність знахідок за назвою; `isReliableFinding` - чи можна покладатися на знахідку без людини |
-| `discover.test.ts` | Юніт-тести `isReliableFinding` |
-| `new-pages.ts` | `decideNewPages` - Find new pages для однієї компанії: які знахідки додати без людини і який статус поставити (задача 5.10) |
-| `new-pages.test.ts` | Юніт-тести `decideNewPages` |
-| `discover.integration.test.ts` | `discoverSources` і `discoverCompany` через фейковий вебсервер, зокрема підтверджена й чужа дошка за назвою і сайт, що не відповів |
-| `ownership.ts` | `boardOwnership` - чи веде сторінка дошки на сайт компанії (підтверджено), на інший сайт чи невідомо |
-| `ownership.test.ts` | Юніт-тести `boardOwnership` на розмітці справжніх дошок |
-| `board-url.ts`      | `boardUrlOf` - посилання на ATS (дошка, вакансія, форма відгуку, вбудована дошка) → адреса дошки й платформа, зокрема відома ATS без парсера; `boardKey` - за чим склеювати знахідки |
-| `board-url.test.ts` | Юніт-тести `boardUrlOf` для кожної платформи                   |
-| `ats-links.ts` | `atsLinksOnPage` - дошки ATS, на які веде сторінка: посилання, iframe і скрипт вбудовування, по одній на дошку в порядку появи; `findSiteAtsLinks` - те саме для головної сторінки сайту через HTTP-клієнт |
-| `ats-links.test.ts` | Юніт-тести `atsLinksOnPage` |
-| `ats-links.integration.test.ts` | `findSiteAtsLinks` через фейковий вебсервер: синтетичний сайт `acme.example` і сайт, якого немає |
-| `career-pages.ts` | `careerPagesOnPage` - кар'єрні сторінки свого сайту за текстом посилання, шляхом або піддоменом; `careerPagesInSitemap` - те саме з адрес sitemap, лише за шляхом; `findSiteCareerPages` - кар'єрні сторінки сайту й дошки ATS на них, зокрема PeopleForce на домені компанії |
-| `career-pages.test.ts` | Юніт-тести пошуку кар'єрних сторінок |
-| `career-pages.integration.test.ts` | `findSiteCareerPages` через фейковий вебсервер (синтетичні `globex`, `initech`, `umbrella`, `acme`, `kramerica`, `vandelay`) і свій сервер із редиректами |
-| `by-name.ts` | `nameSlugs` - варіанти назви дошки з назви компанії й домену; `findBoardsByName` - дошки під цими назвами на Greenhouse, Lever, Ashby, PeopleForce, Breezy HR, Hurma, Personio, softgarden, Workable, BambooHR і Pinpoint |
-| `by-name.test.ts` | Юніт-тести `nameSlugs` |
-| `by-name.integration.test.ts` | `findBoardsByName` через збережені справжні дошки фейкового вебсервера |
+| `discover.ts` | `discoverSources` - the search for Find pages (`discoverCompany` - the same, together with whether the company site answered): three methods, a trial read of every finding (only the first page, `more` means "there is more", task 6.16), one finding per board, ownership of findings by name; `isReliableFinding` - whether a finding can be relied on without a person |
+| `discover.test.ts` | Unit tests of `isReliableFinding` |
+| `new-pages.ts` | `decideNewPages` - Find new pages for one company: which findings to add without a person and which status to set (task 5.10) |
+| `new-pages.test.ts` | Unit tests of `decideNewPages` |
+| `discover.integration.test.ts` | `discoverSources` and `discoverCompany` through the fake web server, including a confirmed and a foreign board by name and a site that did not answer |
+| `ownership.ts` | `boardOwnership` - whether a board page leads to the company site (confirmed), to another site, or unknown |
+| `ownership.test.ts` | Unit tests of `boardOwnership` on the markup of real boards |
+| `board-url.ts`      | `boardUrlOf` - a link to an ATS (a board, a vacancy, an application form, an embedded board) → the board address and the platform, including a known ATS without a parser; `boardKey` - what findings are merged by |
+| `board-url.test.ts` | Unit tests of `boardUrlOf` for every platform                 |
+| `ats-links.ts` | `atsLinksOnPage` - the ATS boards a page leads to: links, iframes and embed scripts, one per board in order of appearance; `findSiteAtsLinks` - the same for a site's home page through the HTTP client |
+| `ats-links.test.ts` | Unit tests of `atsLinksOnPage` |
+| `ats-links.integration.test.ts` | `findSiteAtsLinks` through the fake web server: the synthetic `acme.example` site and a site that does not exist |
+| `career-pages.ts` | `careerPagesOnPage` - career pages of the site itself by link text, path or subdomain; `careerPagesInSitemap` - the same from sitemap addresses, by path only; `findSiteCareerPages` - the site's career pages and the ATS boards on them, including PeopleForce on the company's domain |
+| `career-pages.test.ts` | Unit tests of finding career pages |
+| `career-pages.integration.test.ts` | `findSiteCareerPages` through the fake web server (the synthetic `globex`, `initech`, `umbrella`, `acme`, `kramerica`, `vandelay`) and an own server with redirects |
+| `by-name.ts` | `nameSlugs` - board name variants from the company name and domain; `findBoardsByName` - boards under these names on Greenhouse, Lever, Ashby, PeopleForce, Breezy HR, Hurma, Personio, softgarden, Workable, BambooHR and Pinpoint |
+| `by-name.test.ts` | Unit tests of `nameSlugs` |
+| `by-name.integration.test.ts` | `findBoardsByName` through the saved real boards of the fake web server |
 
-## Адреса дошки
+## Board address
 
-Знахідка - завжди дошка, а не вакансія: сайт компанії часто веде одразу на
-окреме оголошення чи форму відгуку, а дві вакансії однієї дошки мають дати одну
-знахідку. Що вважати дошкою, визначають функції парсерів (`greenhouseBoardToken`,
-`leverSite`, `ashbyBoard`, `workdaySite`, `peopleforceSite`), тож знайдене джерело
-читається тим самим кодом, що й додане руками. Форма адреси одна на платформу:
+A finding is always a board, never a vacancy: a company site often links straight to
+a single posting or an application form, and two vacancies of one board must give one
+finding. The parsers' functions (`greenhouseBoardToken`, `leverSite`, `ashbyBoard`,
+`workdaySite`, `peopleforceSite`) decide what counts as a board, so a found source is
+read by the same code as one added by hand. There is one address form per platform:
 
-| Платформа   | Адреса дошки                                   |
+| Platform    | Board address                                  |
 | ----------- | ---------------------------------------------- |
 | Greenhouse  | `https://job-boards.greenhouse.io/{token}`     |
-| Lever       | `https://jobs.lever.co/{site}` (ЄС - `jobs.eu.lever.co`) |
+| Lever       | `https://jobs.lever.co/{site}` (EU - `jobs.eu.lever.co`) |
 | Ashby       | `https://jobs.ashbyhq.com/{board}`             |
-| Workday     | адреса career site без мови й хвоста вакансії  |
+| Workday     | the career site address without the language and the vacancy tail |
 | PeopleForce | `https://{company}.peopleforce.io/careers`     |
 | Breezy HR   | `https://{company}.breezy.hr`                  |
 | Hurma       | `https://{company}.hurma.work/public-vacancies` |
-| Personio    | `https://{company}.jobs.personio.de` (або `.com` - як у посиланні) |
-| softgarden  | стара дошка `https://{company}.softgarden.io/en/vacancies`, кар'єрний сайт `https://{company}.career.softgarden.de` |
+| Personio    | `https://{company}.jobs.personio.de` (or `.com` - as in the link) |
+| softgarden  | the old board `https://{company}.softgarden.io/en/vacancies`, the career site `https://{company}.career.softgarden.de` |
 | BambooHR    | `https://{company}.bamboohr.com/careers`         |
 | Pinpoint    | `https://{company}.pinpointhq.com/`              |
-| TalentAdore | `https://ats.talentadore.com/positions/{token}/json` - сторінки для людей немає; адреса береться з `data-url` віджета на сторінці компанії |
-| Workable    | `https://apply.workable.com/{account}/`; коротке посилання на вакансію `/j/{shortcode}` акаунта не містить - знахідки немає |
-| CleverStaff | `https://cleverstaff.net/i/{alias}-vacancies`; посилання на вакансію `/i/vacancy-{id}` лишається як є - аліас компанії дізнається парсер окремим запитом |
+| TalentAdore | `https://ats.talentadore.com/positions/{token}/json` - there is no page for people; the address comes from the widget's `data-url` on the company page |
+| Workable    | `https://apply.workable.com/{account}/`; the short vacancy link `/j/{shortcode}` does not contain the account - no finding |
+| CleverStaff | `https://cleverstaff.net/i/{alias}-vacancies`; a vacancy link `/i/vacancy-{id}` stays as it is - the parser learns the company alias with a separate request |
 
-## Відомі ATS без парсера
+## Known ATSs without a parser
 
-Посилання на платформу, під яку парсера ще немає, але домен якої відомий
-(`knownAtsName`, [`src/lib/companies/known-ats.ts`](../../lib/companies/known-ats.ts)),
-теж знахідка (задача 5.15): платформа `unsupported`, пробне читання -
-«not supported yet», а список знахідок і картка компанії показують назву
-платформи. Find new pages зберігає таку адресу джерелом, і компанія отримує
-Unsupported. Без цього пошук мовчки пропускав би посилання на BambooHR, і
-компанія отримувала б Not found, хоча кар'єрна сторінка є.
+A link to a platform that has no parser yet but whose domain is known (`knownAtsName`,
+[`src/lib/companies/known-ats.ts`](../../lib/companies/known-ats.ts)) is also a
+finding (task 5.15): the platform is `unsupported`, the trial read says "not supported
+yet", and the findings list and the company card show the platform name. Find new pages
+saves such an address as a source, and the company gets Unsupported. Without this the
+search would silently skip a link to BambooHR, and the company would get Not found
+although it has a career page.
 
-Форми дошки такої платформи ми не знаємо, тож адреса знахідки - саме посилання
-без рядка запиту й якоря, а знахідка - одна на платформу (`boardKey`): дві
-вакансії однієї дошки BambooHR інакше дали б дві знахідки. Сторінка, що веде на
-таку платформу, - не власна кар'єрна сторінка, як і для дошок із парсером.
+We do not know the board form of such a platform, so the finding's address is the link
+itself without the query string and the anchor, and there is one finding per platform
+(`boardKey`): two vacancies of one BambooHR board would otherwise give two findings. A
+page that leads to such a platform is not an own career page, the same as for boards
+with a parser.
 
-## Посилання з сайту на ATS
+## Links from the site to an ATS
 
-Найнадійніший спосіб пошуку (задача 5.02): головна сторінка компанії
-завантажується, і з неї беруться адреси дошок - зі звичайних посилань, iframe
-(Ashby) і скриптів вбудовування (Greenhouse). Відносні адреси розвʼязуються від
-адреси після редиректів (`fetchText` повертає й її).
+The most reliable method (task 5.02): the company's home page is loaded, and board
+addresses are taken from it - from ordinary links, iframes (Ashby) and embed scripts
+(Greenhouse). Relative addresses are resolved against the address after redirects
+(`fetchText` returns that too).
 
-Сторінка читається без JavaScript. Тому сайт, що малює посилання на кар'єру
-скриптом (на 19.11.2026 так у Linear, Discord, Palantir), тут не дає нічого - це
-не помилка, а «цим способом не знайдено». Перевірено на справжній мережі: Notion
-(сторінка careers → Ashby) і Webellian (головна → PeopleForce) знаходяться.
+The page is read without JavaScript. So a site that draws its career link with a script
+(as of 19.11.2026 that is Linear, Discord, Palantir) gives nothing here - not an error,
+just "not found this way". Checked on the real network: Notion (the careers page →
+Ashby) and Webellian (the home page → PeopleForce) are found.
 
-## Кар'єрні сторінки на сайті
+## Career pages on the site
 
-Другий спосіб (задача 5.03). Порядок - від дешевшого для чужого сайту:
+The second method (task 5.03). The order goes from cheapest for the other site:
 
-1. посилання з уже прочитаної головної - за текстом (увесь текст посилання -
-   кар'єрна фраза: Careers, Jobs, Karriere, Вакансії ...), за сегментом шляху
-   (`/careers`, `/karriere` ...) або за піддоменом (`careers.`, `jobs.`);
-2. без них - типові адреси `/careers` і `/jobs`;
-3. без тих - `/sitemap.xml`, лише його `<url><loc>` (вкладені sitemap не читаються).
+1. links from the home page already read - by text (the whole link text is a career
+   phrase: Careers, Jobs, Karriere, Вакансії ...), by a path segment (`/careers`,
+   `/karriere` ...) or by subdomain (`careers.`, `jobs.`);
+2. without those - the common addresses `/careers` and `/jobs`;
+3. without those - `/sitemap.xml`, only its `<url><loc>` (nested sitemaps are not read).
 
-Знайдені сторінки (до трьох) читаються. Посилання з них на ATS стають дошками:
-так знаходиться Notion, у якої посилання на Ashby є лише на `/careers`. Сторінка
-без ATS - власна сторінка компанії, і чи вона читається, вирішує пробне читання
-(5.06).
+The pages found (up to three) are read. Links from them to an ATS become boards: that
+is how Notion is found, whose link to Ashby is only on `/careers`. A page without an ATS
+is the company's own page, and the trial read (5.06) decides whether it can be read.
 
-**PeopleForce на домені компанії** (задача 5.13) за посиланням не впізнати: хост
-свій, `peopleforce.softconstruct.com`. Тому кар'єрна сторінка ще перевіряється на
-розмітку PeopleForce (`isPeopleForcePage`, [README парсерів](../parsers/README.md#peopleforce)):
+**PeopleForce on the company's domain** (task 5.13) cannot be recognised by the link:
+the host is the company's own, `peopleforce.softconstruct.com`. So a career page is also
+checked for PeopleForce markup (`isPeopleForcePage`,
+[parsers README](../parsers/README.md#peopleforce)):
 
-- сама сторінка в такій розмітці - дошка `{origin}/careers`;
-- сторінка без ATS, що веде на кар'єрну сторінку **іншого хоста того самого
-  сайту**, - крок далі: та сторінка читається (до трьох), і якщо вона PeopleForce,
-  дошкою стає вона, а не власна сторінка. Так у SoftConstruct: `softconstruct.com/careers`
-  → `peopleforce.softconstruct.com/careers`, 215 вакансій.
+- the page itself in that markup is the board `{origin}/careers`;
+- a page without an ATS that leads to a career page **on another host of the same
+  site** is one step further: that page is read (up to three), and if it is
+  PeopleForce, it becomes the board instead of an own page. That is the case at
+  SoftConstruct: `softconstruct.com/careers` → `peopleforce.softconstruct.com/careers`,
+  215 vacancies.
 
-Інші ATS на власному домені так не впізнаються - лише коли трапиться справжнє
-джерело (рішення автора 21.11.2026).
+Other ATSs on a company's own domain are not recognised this way - only when a real
+source turns up.
 
-Чого навчила справжня мережа (19.11.2026):
+What the real network taught us (19.11.2026):
 
-- **Текст - цілою фразою, а не «містить слово».** Інакше «Career guides» у
-  Grammarly ставав кар'єрною сторінкою.
-- **Редирект має лишатися на кар'єрі.** Кар'єрне посилання Palantir веде на
-  сторінку помилки, яка відповідає 200. Сторінка, що після редиректу втратила
-  кар'єрне слово в адресі, відкидається - так само й `/careers`, що редиректить
-  на головну.
-- **Редирект на інший сайт лишається.** У Grammarly `/careers` і `/jobs` ведуть на
-  `superhuman.com/company/careers`: компанія сама туди веде, а належність
-  перевіряє 5.05. Дві адреси з одним кінцем дають одну знахідку.
+- **Text as a whole phrase, not "contains the word".** Otherwise "Career guides" at
+  Grammarly became a career page.
+- **A redirect has to stay on careers.** Palantir's career link leads to an error page
+  that answers 200. A page that lost the career word in its address after a redirect is
+  dropped - and so is a `/careers` that redirects to the home page.
+- **A redirect to another site stays.** At Grammarly `/careers` and `/jobs` lead to
+  `superhuman.com/company/careers`: the company itself sends people there, and 5.05
+  checks the ownership. Two addresses with one end give one finding.
 
-Сайти, що малюють кар'єру JavaScript-ом (Linear, Discord), дають власну сторінку
-без дошки, а Spotify - нічого. Таких покриває пошук ATS за назвою (5.04).
+Sites that draw their careers with JavaScript (Linear, Discord) give an own page without
+a board, and Spotify gives nothing. The ATS search by name (5.04) covers those.
 
-## ATS за назвою
+## ATS by name
 
-Третій, найменш надійний спосіб (задача 5.04). Знахідка - лише «знайдено за
-назвою - перевір»: дошку `acme` могла завести інша Acme, тому автоматично такі
-знахідки не додаються ніколи.
+The third, least reliable method (task 5.04). A finding is only "found by name - check":
+the board `acme` may belong to a different Acme, so such findings are never added
+automatically.
 
-Варіанти назви дошки (`nameSlugs`): назва компанії разом і через дефіс, плюс
-перша мітка домену, без `www` і `careers`. «Bosch UA» на `bosch.de/ua` дає
-`boschua`, `bosch-ua`, `bosch`. Діакритика знімається, а назва без латиниці
-варіантів не дає.
+Board name variants (`nameSlugs`): the company name joined and hyphenated, plus the
+first label of the domain, without `www` and `careers`. "Bosch UA" on `bosch.de/ua`
+gives `boschua`, `bosch-ua`, `bosch`. Diacritics are removed, and a name without Latin
+letters gives no variants.
 
-Кожен варіант пробується на Greenhouse, Lever, Ashby, PeopleForce, Breezy HR,
-Workable, BambooHR, Pinpoint, Hurma, Personio (лише `.de`: `.com` віддає ті самі дошки) і softgarden (лише
-стара дошка `softgarden.io`: адреси кар'єрних сайтів рідко дорівнюють назві -
-`engineering-crown`, `jobs-gfo-online`). Перевірка «чи є дошка» - читання дошки
-тим самим парсером, що й у перевірці: на неіснуючу дошку платформи відповідають 404
-(перевірено 19.11.2026, Workable - 20.11.2026), а BambooHR - редиректом на свій сайт,
-який парсер теж вважає «дошки немає».
-Сторінка Hurma сайту компанії не показує (лише назву й логотип), тож дошка Hurma,
-знайдена за назвою, завжди лишається «знайдено за назвою - перевір».
-CleverStaff за назвою не пробується: аліас чутливий до регістру (`MEV` існує,
-`mev` - ні), а варіанти назви завжди в нижньому регістрі. Заодно відомо,
-скільки на дошці вакансій. Workday не вгадується: в його адресі є номер кластера
-й назва сайту.
+Each variant is tried on Greenhouse, Lever, Ashby, PeopleForce, Breezy HR, Workable,
+BambooHR, Pinpoint, Hurma, Personio (only `.de`: `.com` serves the same boards) and
+softgarden (only the old `softgarden.io` board: career site addresses rarely equal the
+name - `engineering-crown`, `jobs-gfo-online`). The check "is there a board" is reading
+the board with the same parser as in a check: platforms answer 404 for a board that does
+not exist (checked 19.11.2026, Workable 20.11.2026), and BambooHR answers with a redirect
+to its own site, which the parser also takes as "no board". A Hurma page does not show
+the company site (only the name and the logo), so a Hurma board found by name always
+stays "found by name - check". CleverStaff is not tried by name: the alias is
+case-sensitive (`MEV` exists, `mev` does not), and name variants are always lowercase.
+As a side effect, the number of vacancies on the board is known. Workday is not guessed:
+its address contains a cluster number and a site name.
 
-На справжній мережі (19.11.2026): Linear → Ashby, Discord → Greenhouse, Spotify і
-Palantir → Lever, Monobank і Spribe → Hurma (з 3.26). Bosch UA за назвою нічого не має. Lever читається
-сторінками з паузою ввічливості, тож велика дошка займає ~14 с (Spotify - 91
-вакансія, Palantir - 306).
+On the real network (19.11.2026): Linear → Ashby, Discord → Greenhouse, Spotify and
+Palantir → Lever, Monobank and Spribe → Hurma (since 3.26). Bosch UA has nothing by name.
+Lever is read in pages with a politeness pause, so a big board takes ~14 s (Spotify - 91
+vacancies, Palantir - 306).
