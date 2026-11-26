@@ -263,6 +263,17 @@ CI=1 npm run test:e2e
 
 Якщо репозиторій колись стане публічним або акаунт - Pro, вимушування вмикається опцією «Require status checks to pass before merging»: або [classic branch protection](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches), або [ruleset](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets) з тим самим обмеженням (rulesets гнучкіші: на одну гілку їх може діяти кілька, класичне правило - лише одне). Обов'язковими варто робити саме job `Lint and types` і `Tests`: сторонні чеки (наприклад сканер секретів GitGuardian) можуть червоніти через історію гілки, яка при squash merge у `main` не потрапляє.
 
+## Доступність
+
+Ціль - [WCAG 2.2](https://www.w3.org/TR/WCAG22/) рівня AA: усі критерії рівнів A і AA ([що означають рівні](https://www.w3.org/WAI/WCAG22/Understanding/conformance)). Як це перевіряється:
+
+- **Автоматично на кожному PR** - `e2e/accessibility.spec.ts`: [axe](https://playwright.dev/docs/accessibility-testing) (`@axe-core/playwright`) сканує всі сторінки й модалку Add company у світлій і темній темах за тегами WCAG 2.x A/AA. Порушення валить E2E.
+- **Руками** - клавіатура (порядок Tab, видимий фокус, повернення фокусу з модалок і меню), reflow на 320 px і масштаб 200%, сценарії з VoiceOver. Автоматика ловить лише частину проблем, тому ручна перевірка лишається.
+
+Відоме обмеження: на Companies після `h1` ідуть `h3` - назви карток компаній. Їх рендерить HeroUI `Card.Title`, і інший тег він не дозволяє. axe вважає порядок заголовків best practice, а не критерієм WCAG.
+
+Правила для коду й рішення щодо кольорів - [src/app/README.md](src/app/README.md#доступність), історія аудиту - [tasks/accessibility-audit.md](tasks/accessibility-audit.md).
+
 ## Локалізація
 
 Інтерфейс англійською й українською. Переклади - у [`messages/en.json`](messages/en.json) і [`messages/uk.json`](messages/uk.json), набір ключів у них однаковий і це перевіряє тест [`src/i18n/messages.test.ts`](src/i18n/messages.test.ts). Коди мов - підтеги за BCP 47: `uk` - українська мова (не країна, країна була б `UA`).
