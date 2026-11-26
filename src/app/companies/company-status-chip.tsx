@@ -14,16 +14,15 @@ import {
 } from "@/lib/companies/company-status";
 
 /**
- * Статус компанії на вкладці Tracked: OK, Has errors або Checking,
- * разом із непрочитаними сторінками. Кольоровий бейдж
- * один на картку (аудит інтерфейсу, A6; хто його отримує - `cardStatusBadge`),
- * решта - приглушеним текстом. Бейджі статусів у темі Ink суцільні
- * (src/app/README.md, «Тема Ink»). До першої перевірки й без непрочитаних
- * сторінок - нічого.
+ * The company status on the Tracked tab: OK, Has errors or Checking, together
+ * with the unread pages. One coloured badge per card (UI audit, A6; which one -
+ * `cardStatusBadge`), the rest in muted text. Status badges are solid in the Ink
+ * theme (src/app/README.md, "Ink theme"). Before the first check and without
+ * unread pages - nothing.
  *
- * Checking під час загальної перевірки береться з опитування: вона бере всі
- * компанії Tracked, а рядки списку живуть у клієнтському стані й самі не
- * оновлюються.
+ * Checking during a general check comes from polling: the check takes every
+ * Tracked company, and the list rows live in client state and do not update
+ * themselves.
  */
 export function CompanyStatusChip({ sources }: { sources: CompanySource[] }) {
   const t = useTranslations("CompaniesPage");
@@ -64,9 +63,9 @@ export function CompanyStatusChip({ sources }: { sources: CompanySource[] }) {
 }
 
 /**
- * Скільки сторінок компанії ми не читаємо (задача 6.11). Бейдж уваги, а не Has
- * errors: Unsupported - постійний стан, Retry його не лагодить. Суцільний, як
- * решта бейджів статусу (src/app/README.md, «Тема Ink»).
+ * How many of the company's pages we do not read (task 6.11). An attention
+ * badge, not Has errors: Unsupported is a permanent state that Retry does not
+ * fix. Solid, like the other status badges (src/app/README.md, "Ink theme").
  */
 export function NotReadChip({ sources }: { sources: CompanySource[] }) {
   const t = useTranslations("CompaniesPage");

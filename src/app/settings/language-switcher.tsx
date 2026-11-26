@@ -10,8 +10,8 @@ import { isSupportedLocale, locales, type Locale } from "@/i18n/config";
 import { setLocaleAction } from "./actions";
 
 /**
- * Назви мов - кожна своєю мовою: людина, яка не читає поточну мову
- * інтерфейсу, має знайти свою. Тому вони не перекладаються.
+ * Language names - each in its own language: a person who cannot read the
+ * current UI language has to find theirs. So they are not translated.
  */
 const LANGUAGE_NAMES: Record<Locale, string> = {
   en: "English",
@@ -19,14 +19,14 @@ const LANGUAGE_NAMES: Record<Locale, string> = {
 };
 
 interface LanguageSwitcherProps {
-  /** Мова, якою відрендерено сторінку. */
+  /** The language the page was rendered in. */
   current: Locale;
 }
 
 /**
- * Вибір мови інтерфейсу. Мова - у cookie, як і тема (`i18n/config.ts`), а
- * переклади рендерить сервер, тож після запису cookie сторінка перечитується
- * через `router.refresh()`.
+ * The UI language choice. The language lives in a cookie, like the theme
+ * (`i18n/config.ts`), and the server renders the translations, so after the
+ * cookie is written the page is re-read with `router.refresh()`.
  */
 export function LanguageSwitcher({ current }: LanguageSwitcherProps) {
   const t = useTranslations("SettingsPage.language");

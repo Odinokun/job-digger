@@ -17,21 +17,20 @@ import { checkCompanyNowAction } from "./actions";
 interface CheckNowButtonProps {
   companyId: string;
   tab: CompaniesTab;
-  /** Перевірка завершилася: рядок компанії після неї або `null`, якщо її вже немає. */
+  /** The check has finished: the company row after it, or `null` if the company is gone. */
   onChecked: (companyId: string, checked: CompanyListItem | null) => void;
   /**
-   * Почати перевірку одразу, без натискання: перша перевірка щойно доданої
-   * компанії (задача 5.09). Один раз за життя кнопки.
+   * Start the check at once, without a click: the first check of a freshly
+   * added company (task 5.09). Once in the button's lifetime.
    */
   startsOnMount?: boolean;
 }
 
 /**
- * Check now у картці компанії: перевіряє всі її
- * джерела. Поки черги немає, дія чекає, доки прочитаються всі джерела, тож
- * кнопка весь цей час у стані `isPending` зі спінером. Сам `isPending` у HeroUI
- * лише вимикає кнопку, тож спінер малюємо самі (документація Button, приклад
- * Loading).
+ * Check now on a company card: checks all of its sources. The action waits until
+ * every source is read, so the button stays in the `isPending` state with a
+ * spinner all that time. HeroUI `isPending` only disables the button, so we draw
+ * the spinner ourselves (Button docs, the Loading example).
  */
 export function CheckNowButton({
   companyId,
@@ -43,7 +42,7 @@ export function CheckNowButton({
   const showActionFailed = useActionFailedToast();
   const [isPending, startCheck] = useTransition();
   const { status } = useCheckStatus();
-  // Під час загальної перевірки компанія і так перевіряється
+  // During a general check the company is being checked anyway
   // (src/server/checks/README.md).
   const isGeneralCheckRunning = (status?.run ?? null) !== null;
 
@@ -64,8 +63,8 @@ export function CheckNowButton({
     });
   }
 
-  // Ref, а не залежності ефекту: Strict Mode у розробці ставить ефект двічі, і
-  // без нього перша перевірка пішла б двома запитами.
+  // A ref, not effect dependencies: Strict Mode in development runs the effect
+  // twice, and without it the first check would go out as two requests.
   const started = useRef(false);
   const latestCheck = useRef(check);
   useEffect(() => {
@@ -99,8 +98,8 @@ export function CheckNowButton({
     return button;
   }
 
-  // Вимкнена кнопка не отримує наведення, тож підказку тримає обгортка
-  // (документація HeroUI, Tooltip.Trigger).
+  // A disabled button gets no hover, so a wrapper holds the tooltip
+  // (HeroUI docs, Tooltip.Trigger).
   return (
     <Tooltip delay={TOOLTIP_DELAY_MS}>
       <Tooltip.Trigger>{button}</Tooltip.Trigger>

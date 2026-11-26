@@ -10,21 +10,20 @@ import { useActionFailedToast } from "@/app/components/use-action-failed-toast";
 import { startFindNewPagesAction } from "./actions";
 
 interface FindNewPagesButtonProps {
-  /** Вкладка Not tracked порожня - шукати нічого. */
+  /** The Not tracked tab is empty - nothing to search for. */
   isDisabled: boolean;
 }
 
 /**
- * Find new pages на вкладці Not tracked (задача 5.10). Дія лише ставить пошук
- * у чергу; поки він іде, кнопка крутить спінер - запуску з прогресом у шапці в
- * нього немає (рішення автора 19.11.2026). Коли пошук закінчився, список
- * перечитує `CompaniesBoard`.
+ * Find new pages on the Not tracked tab (task 5.10). The action only queues the
+ * search; while it runs, the button spins - it has no run with progress in the
+ * header. When the search ends, `CompaniesBoard` re-reads the list.
  */
 export function FindNewPagesButton({ isDisabled }: FindNewPagesButtonProps) {
   const t = useTranslations("CompaniesPage");
   const showActionFailed = useActionFailedToast();
   const { status, track } = useCheckStatus();
-  // Повторно запустити, поки триває попередній, не можна (розділ 4.3).
+  // It cannot be started again while the previous one is running.
   const isFinding = status?.findingNewPages ?? false;
   const [isPending, startFinding] = useTransition();
 
@@ -38,7 +37,7 @@ export function FindNewPagesButton({ isDisabled }: FindNewPagesButtonProps) {
           const result = await startFindNewPagesAction();
 
           if (result.ok) {
-            // Стан із відповіді запускає опитування.
+            // The state from the response starts polling.
             track(result.status);
           } else if (result.reason === "already-running") {
             toast.warning(t("findNewPagesRunning"));

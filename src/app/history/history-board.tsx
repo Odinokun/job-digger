@@ -11,15 +11,15 @@ import type { Cursor } from "@/lib/pagination/cursor";
 import { loadMoreHistoryAction } from "./actions";
 
 interface HistoryBoardProps {
-  /** Перша порція: її рендерить сервер, тож таблицю видно без JavaScript. */
+  /** The first batch: the server renders it, so the table is visible without JavaScript. */
   initialItems: CheckRunRow[];
   initialCursor: Cursor | null;
 }
 
 /**
- * Таблиця History з Load more. Звичайна `<table>`, а
- * не Table з HeroUI: та - сітка React Aria з виділенням і навігацією
- * клавіатурою між клітинками, а тут лише читання пʼяти чисел.
+ * The History table with Load more. A plain `<table>`, not HeroUI's Table: that
+ * one is a React Aria grid with selection and keyboard navigation between cells,
+ * while here five numbers are only read.
  */
 export function HistoryBoard({
   initialItems,
@@ -71,11 +71,11 @@ export function HistoryBoard({
         </thead>
         <tbody className="divide-y">
           {items.map((run) => (
-            // Рядок під мишею підсвічується, як рядок вакансії: колонки
-            // рознесені, і без підсвітки рядок важко простежити (аудит, B6).
+            // The row under the mouse is highlighted, like a vacancy row: the
+            // columns are far apart, and without it the row is hard to follow (audit, B6).
             <tr key={run.id} className="transition-colors hover:bg-surface">
-              {/* Абсолютна дата за локаллю й поясом із конфігурації
-                  next-intl (src/i18n/request.ts). */}
+              {/* An absolute date in the locale and time zone from the next-intl
+                  config (src/i18n/request.ts). */}
               <td className="py-2 pr-4">
                 {format.dateTime(run.startedAt, {
                   dateStyle: "medium",
@@ -102,7 +102,7 @@ export function HistoryBoard({
       {cursor === null ? null : (
         <div className="mt-6 flex justify-center">
           <Button variant="secondary" isPending={isPending} onPress={loadMore}>
-            {/* `isPending` у HeroUI лише вимикає кнопку - спінер малюємо самі. */}
+            {/* HeroUI `isPending` only disables the button - we draw the spinner ourselves. */}
             {({ isPending: isLoading }) => (
               <>
                 {isLoading ? <Spinner color="current" size="sm" /> : null}
