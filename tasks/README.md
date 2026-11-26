@@ -161,7 +161,7 @@ PR: #57
 | [Пошук компанії на сторінці Companies](companies-search.md)                                      | done      |
 | [Один помаранчевий у кожній темі](one-orange.md)                                                 | done      |
 | [Ліцензія і перевірка історії](public-license-history.md)                                        | done      |
-| [Прибрати план docs/](remove-docs-plan.md)                                                       | backlog   |
+| [Прибрати план docs/](remove-docs-plan.md)                                                       | todo      |
 | [CLAUDE.md і .claude/ англійською](claude-md-english.md)                                         | backlog   |
 | [Переклад src/app](translate-app.md)                                                             | backlog   |
 | [Переклад src/server](translate-server.md)                                                       | backlog   |
