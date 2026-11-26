@@ -10,64 +10,64 @@ import type { Finding } from "@/server/discovery/discover";
 import type { UrlRefusalReason } from "@/lib/companies/url";
 
 /**
- * Стани форм сторінки Companies і їхні початкові значення.
+ * The form states of the Companies page and their initial values.
  *
- * Окремо від `actions.ts`, бо той файл починається з `"use server"`, а такий
- * файл може експортувати **лише async-функції**: будь-який інший експорт -
- * помилка «A "use server" file can only export async functions, found object»
- * (https://nextjs.org/docs/messages/invalid-use-server-value). Типи стираються
- * при збірці й проходять, а константа початкового стану - ні.
+ * Kept apart from `actions.ts` because that file starts with `"use server"`, and
+ * such a file may export **only async functions**: any other export is the
+ * error "A "use server" file can only export async functions, found object"
+ * (https://nextjs.org/docs/messages/invalid-use-server-value). Types are erased
+ * at build time and pass, but an initial-state constant does not.
  *
- * Цей файл імпортують і клієнтські модалки. `AddCompanyResult` приходить сюди
- * з `src/server`, але лише як тип: `import type` стирається, тому серверний код
- * у клієнтський бандл не потрапляє.
+ * The client modals import this file too. `AddCompanyResult` comes here from
+ * `src/server`, but only as a type: `import type` is erased, so server code does
+ * not reach the client bundle.
  */
 
 /**
- * Стан форми Add company між надсиланнями.
+ * The Add company form state between submissions.
  *
- * Успіх не віддає рядок компанії, лише факт: повернене з action серіалізується
- * і йде на клієнт, тому віддаємо те, що потрібно інтерфейсу, а не запис із бази
- * (документація Next, «Constrain return values»).
+ * Success returns only the fact, not the company row: whatever an action returns
+ * is serialized and sent to the client, so we return what the UI needs, not a
+ * database record (Next docs, "Constrain return values").
  */
 export type AddCompanyFormState =
   | { status: "idle" }
   /**
-   * Додано. `company` - рядок для поточної вкладки або `null`, якщо компанія
-   * потрапила в іншу: без карʼєрної сторінки вона йде в Not tracked.
+   * Added. `company` is the row for the current tab, or `null` if the company
+   * landed in another one: without a career page it goes to Not tracked.
    *
-   * Рядок повертається, щоб список вставив його в себе, не перечитуючи
-   * дозавантажені порції.
+   * The row is returned so the list can insert it without re-reading the loaded
+   * batches.
    */
   | {
       status: "added";
       company: CompanyListItem | null;
       /**
-       * Компанія, яку треба одразу перевірити, або `null`, якщо джерел, що
-       * відстежуються, у неї немає - тоді вона в Not tracked (задача 5.09).
+       * The company to check right away, or `null` if it has no tracked
+       * sources - then it is in Not tracked (task 5.09).
        */
       firstCheck: string | null;
     }
   | { status: "failed"; result: Extract<AddCompanyResult, { ok: false }> }
   /**
-   * Збій, якого форма не передбачала: база не піднята, запит упав.
+   * A failure the form did not foresee: the database is down, a query failed.
    *
-   * Окремо від `failed`: там причина належить полю форми й користувач може її
-   * виправити, а тут виправляти нічого - лишається повторити дію.
+   * Separate from `failed`: there the reason belongs to a form field and the user
+   * can fix it, here there is nothing to fix - only to try again.
    */
   | { status: "failed-unexpectedly" };
 
 /**
- * Знахідка в списку Find pages разом із тим, чи вже є це джерело в іншої
- * компанії користувача (задача 5.08). Пошук сам бази не знає, тож це
- * доповнює дія.
+ * A finding in the Find pages list, together with whether another company of
+ * the user already has this source (task 5.08). The search itself does not know
+ * the database, so the action adds this.
  */
 export type FoundPage = Finding & { trackedIn: CompanyWithSource | null };
 
 /**
- * Відповідь Find pages: знахідки або чому пошук не почався.
+ * The Find pages response: findings, or why the search did not start.
  *
- * `address-required` - порожні і сайт, і назва: шукати нема за чим.
+ * `address-required` - both the site and the name are empty: nothing to search by.
  */
 export type FindPagesResult =
   | { ok: true; findings: FoundPage[] }
@@ -80,23 +80,23 @@ export const ADD_COMPANY_INITIAL_STATE: AddCompanyFormState = {
 };
 
 /**
- * Стан модалки Edit між надсиланнями.
+ * The Edit modal state between submissions.
  *
- * `not-found` сюди доходить, якщо компанію видалили в іншій вкладці, поки
- * модалка була відкрита.
+ * `not-found` arrives here if the company was deleted in another tab while the
+ * modal was open.
  *
- * Відмова їде сюди цілою, як і в Add company: у `source-url` є ще й причина,
- * через яку адресу не прийняли, і звужений `problem` її втрачав би.
+ * The refusal arrives whole, as in Add company: `source-url` also carries the
+ * reason the address was refused, and a narrowed `problem` would lose it.
  */
 export type EditCompanyFormState =
   | { status: "idle" }
   /**
-   * Збережено. `company` - той самий рядок, яким його тепер показує список,
-   * або `null`, якщо компанія вкладці більше не належить: без карʼєрних
-   * сторінок вона переїжджає в Not tracked.
+   * Saved. `company` is the same row the list now shows, or `null` if the
+   * company no longer belongs to the tab: without career pages it moves to Not
+   * tracked.
    *
-   * Рядок повертається сюди, щоб список замінив у себе саме його й не
-   * перечитував дозавантажені порції.
+   * The row is returned so the list replaces exactly that row and does not
+   * re-read the loaded batches.
    */
   | { status: "saved"; company: CompanyListItem | null }
   | { status: "failed"; result: Extract<UpdateCompanyResult, { ok: false }> }
@@ -107,14 +107,14 @@ export const EDIT_COMPANY_INITIAL_STATE: EditCompanyFormState = {
 };
 
 /**
- * Стан діалогу підтвердження видалення.
+ * The state of the delete confirmation dialog.
  *
- * Успіх не віддає нічого, крім факту: рядка компанії більше немає, а її id
- * список і так знає - саме його рядок він прибирає зі себе.
+ * Success returns nothing but the fact: the company row is gone, and the list
+ * already knows its id - that is the row it removes.
  *
- * `not-found` сюди доходить, якщо компанію видалили в іншій вкладці, поки
- * діалог був відкритий. Для списку це той самий результат - компанії немає, -
- * тому рядок прибирається й тут, просто текст інший.
+ * `not-found` arrives here if the company was deleted in another tab while the
+ * dialog was open. For the list the result is the same - the company is gone -
+ * so the row is removed here too, only the text differs.
  */
 export type DeleteCompanyFormState =
   | { status: "idle" }
@@ -127,47 +127,49 @@ export const DELETE_COMPANY_INITIAL_STATE: DeleteCompanyFormState = {
 };
 
 /**
- * Чим закінчилася пропозиція «додати цю адресу карʼєрною сторінкою знайденої
- * компанії» в модалці Add company.
+ * How the offer "add this address as a career page of the company found" in
+ * the Add company modal ended.
  *
- * `company` - рядок компанії, якій дісталося джерело, або `null`, якщо вона
- * цій вкладці не належить: список замінює в себе саме його.
+ * `company` is the row of the company that got the source, or `null` if it does
+ * not belong to this tab: the list replaces exactly that row.
  */
 export type AddCareerSourceFormState =
   /**
-   * `companyId` потрібен окремо від рядка: коли компанія цій вкладці не
-   * належить, `company` приходить як `null`, а прибрати зі списку треба саме
-   * її рядок.
+   * `companyId` is needed apart from the row: when the company does not belong
+   * to this tab, `company` comes as `null`, and it is exactly its row that has to
+   * be removed from the list.
    */
   | { status: "added"; companyId: string; company: CompanyListItem | null }
   | { status: "failed"; result: Extract<AddCareerSourceResult, { ok: false }> }
   | { status: "failed-unexpectedly" };
 
 /**
- * Наступна порція списку компаній або факт збою.
+ * The next batch of the company list, or the fact of a failure.
  *
- * Помилку не розрізняємо: показати її нічим, крім того самого сповіщення.
+ * The error is not distinguished: there is nothing to show but the same notification.
  */
 export type LoadMoreCompaniesResult =
   | { ok: true; items: CompanyListItem[]; nextCursor: Cursor | null }
   | { ok: false };
 
 /**
- * Рядок компанії після Check now або факт збою. `company: null` - компанії вже
- * немає у вкладці (її видалили в іншій вкладці браузера), і список її прибирає.
- * Невдалі джерела - не збій: перевірка відбулася, а їхній стан у самому рядку.
+ * The company row after Check now, or the fact of a failure. `company: null` -
+ * the company is no longer in the tab (it was deleted in another browser tab),
+ * and the list removes it. Failed sources are not a failure: the check happened,
+ * and their state is in the row itself.
  */
 export type CheckCompanyNowResult =
   | { ok: true; company: CompanyListItem | null }
-  /** `check-running` - іде загальна перевірка; без причини - неочікуваний збій. */
+  /** `check-running` - a general check is running; no reason - an unexpected failure. */
   | { ok: false; reason?: "check-running" };
 
 /**
- * Результат Check all: скільки джерел поставлено в чергу і стан перевірки
- * одразу після старту (з ним індикатор видно без чекання на опитування) або
- * чому перевірка не стартувала. `unexpected` - збій, який показується спільним toast.
+ * The result of Check all: how many sources were queued and the check state
+ * right after the start (with it the indicator shows without waiting for a
+ * poll), or why the check did not start. `unexpected` is a failure shown with
+ * the shared toast.
  */
-/** Відповідь Find new pages: як у Check all, але без запуску (задача 5.10). */
+/** The Find new pages response: as for Check all, but without a run (task 5.10). */
 export type StartFindNewPagesResult =
   | { ok: true; total: number; status: CheckStatus }
   | {

@@ -20,29 +20,28 @@ import {
 } from "@/lib/checks/status-poller";
 
 interface CheckStatusContextValue {
-  /** Останній відомий стан; `null` - перше опитування ще не відповіло. */
+  /** The last known state; `null` - the first poll has not answered yet. */
   status: CheckStatus | null;
-  /** Стан, відомий без опитування (відповідь Check all). */
+  /** A state known without polling (the Check all response). */
   track: (status: CheckStatus) => void;
 }
 
 const CheckStatusContext = createContext<CheckStatusContextValue | null>(null);
 
 interface CheckStatusProviderProps {
-  /** Непрочитані, з якими сервер щойно відрендерив сторінку. */
+  /** The unread count the server has just rendered the page with. */
   initialUnread: number;
   children: ReactNode;
 }
 
 /**
- * Стан загальної перевірки для всього застосунку: опитує `/api/check-status`
- * (`lib/checks/status-poller.ts`) і роздає стан компонентам через
+ * The general check state for the whole app: polls `/api/check-status`
+ * (`lib/checks/status-poller.ts`) and hands the state to components through
  * `useCheckStatus`.
  *
- * Коли змінилася кількість непрочитаних або закінчилась перевірка чи Find new
- * pages, сторінка
- * перечитується з сервера (`router.refresh`): лічильник у меню й назва вкладки
- * рендеряться там. Клієнтський стан при цьому лишається
+ * When the unread count changes or a check or Find new pages ends, the page is
+ * re-read from the server (`router.refresh`): the menu counter and the tab title
+ * are rendered there. Client state stays as it is
  * (node_modules/next/dist/docs/01-app/03-api-reference/04-functions/use-router.md).
  */
 export function CheckStatusProvider({
@@ -53,21 +52,21 @@ export function CheckStatusProvider({
   const t = useTranslations("Errors");
   const [status, setStatus] = useState<CheckStatus | null>(null);
   const poller = useRef<StatusPoller | null>(null);
-  // Що вже показує сторінка: число з останнього рендера сервера чи опитування.
+  // What the page already shows: the number from the last server render or poll.
   const shownUnread = useRef(initialUnread);
   const wasRunning = useRef(false);
 
-  // Свіжі `router` і `t` - через ref: їхня ідентичність може мінятися після
-  // кожної Server Action, а опитувач має жити весь час, поки відкрита сторінка.
-  // Інакше кожна дія перезапускала б його з позачерговим опитуванням.
+  // The latest `router` and `t` go through a ref: their identity can change
+  // after every Server Action, while the poller has to live as long as the page
+  // is open. Otherwise every action would restart it with an extra poll.
   const latest = useRef({ router, t });
 
   useEffect(() => {
     latest.current = { router, t };
   });
 
-  // Лише коли сервер справді відрендерив нове число: на кожному рендері це
-  // скидало б щойно опитане значення до старого й смикало `refresh` знову.
+  // Only when the server really rendered a new number: on every render this
+  // would reset the value just polled to the old one and call `refresh` again.
   useEffect(() => {
     shownUnread.current = initialUnread;
   }, [initialUnread]);
@@ -85,8 +84,8 @@ export function CheckStatusProvider({
       },
       onStatus: (next) => {
         setStatus(next);
-        // Закінчилась загальна перевірка чи Find new pages - лічильники
-        // вкладок і меню рендерить сервер.
+        // A general check or Find new pages has ended - the server renders the
+        // tab and menu counters.
         const finished = wasRunning.current && !isBusy(next);
         wasRunning.current = isBusy(next);
         if (next.unread !== shownUnread.current || finished) {
@@ -102,8 +101,8 @@ export function CheckStatusProvider({
     poller.current = current;
     current.start();
 
-    // Поза перевіркою прихована вкладка не опитується: коли її знову
-    // показали, питаємо одразу (https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilitychange_event).
+    // A hidden tab is not polled outside a check: when it is shown again, ask at
+    // once (https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilitychange_event).
     const onVisibilityChange = () => {
       if (document.visibilityState === "visible") current.resume();
     };

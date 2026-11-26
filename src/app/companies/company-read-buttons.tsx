@@ -16,14 +16,15 @@ interface CompanyReadButtonsProps {
 }
 
 /**
- * Mark all as read і Mark all as unread у картці компанії: змінюють статус усіх активних вакансій компанії. Діалогу
- * підтвердження немає - дію легко скасувати протилежною.
+ * Mark all as read and Mark all as unread on a company card: they change the
+ * status of every active vacancy of the company. There is no confirmation
+ * dialog - the opposite action undoes it easily.
  *
- * На сторінці Companies після дії нічого видимо не змінюється, тому результат
- * показує сповіщення з кількістю. Іконки - пара конвертів, як у поштових
- * клієнтах: відкритий - позначити прочитаним, закритий - непрочитаним (аудит
- * інтерфейсу, C1: подвійна галочка поруч із конвертом читалась як загадка).
- * Кнопки лише з іконкою - `IconButton`, з підказкою при наведенні.
+ * Nothing visible changes on the Companies page after the action, so a
+ * notification with the count shows the result. The icons are a pair of
+ * envelopes, as in mail clients: an open one marks as read, a closed one as
+ * unread (UI audit, C1: a double tick next to an envelope read as a riddle).
+ * Icon-only buttons are `IconButton`, with a tooltip on hover.
  */
 export function CompanyReadButtons({
   companyId,

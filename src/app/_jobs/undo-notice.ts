@@ -7,33 +7,33 @@ import { useCallback } from "react";
 import { keepRecentUndos } from "@/lib/vacancies/undo";
 
 /**
- * Скільки висить сповіщення Undo (рішення автора 24.11.2026). Поки курсор чи
- * фокус над сповіщеннями, таймер стоїть: це робить сам регіон тостів React
- * Aria (`pauseAll` у `react-aria/dist/private/toast/useToastRegion.mjs`).
+ * How long the Undo notification stays. While the pointer or focus is on the
+ * notifications, the timer stops: the React Aria toast region does that itself
+ * (`pauseAll` in `react-aria/dist/private/toast/useToastRegion.mjs`).
  */
 const UNDO_TIMEOUT_MS = 8000;
 
 /**
- * Ключі відкритих сповіщень Undo, від найстарішого. Спільні для всієї
- * сторінки, як і сама черга `toast`: інакше кожна вкладка Jobs рахувала б свої
- * три.
+ * The keys of the open Undo notifications, oldest first. Shared by the whole
+ * page, like the `toast` queue itself: otherwise every Jobs tab would count its
+ * own three.
  */
 let openUndos: string[] = [];
 
 export interface UndoNotice {
-  /** Яку дію можна скасувати: Mark as read чи Remove from Favorites. */
+  /** Which action can be undone: Mark as read or Remove from Favorites. */
   action: "markedRead" | "removedFromFavorites";
-  /** Назва вакансії - щоб було видно, що саме повернеться. */
+  /** The vacancy title - so it is clear what comes back. */
   title: string;
   onUndo: () => void;
 }
 
 /**
- * Сповіщення з кнопкою Undo після дії над вакансією (задача
- * vacancy-undo-toast): 8 секунд, не більше трьох одночасно - четверте закриває
- * найстаріше. HeroUI `maxVisibleToasts` старих не закриває, а лише ховає в
- * стосі, тому зайві закриваємо самі (`keepRecentUndos`). Інші сповіщення
- * (помилки, «N new vacancies») в цей рахунок не входять.
+ * A notification with an Undo button after an action on a vacancy (task
+ * vacancy-undo-toast): 8 seconds, at most three at once - a fourth closes the
+ * oldest. HeroUI `maxVisibleToasts` does not close old ones but only hides them
+ * in the stack, so we close the extra ones ourselves (`keepRecentUndos`). Other
+ * notifications (errors, "N new vacancies") do not count towards this.
  */
 export function useUndoNotice(): (notice: UndoNotice) => void {
   const t = useTranslations("JobsPage");

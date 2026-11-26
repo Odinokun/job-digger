@@ -30,23 +30,23 @@ import { CompanySearch } from "./company-search";
 interface CompaniesBoardProps {
   tab: CompaniesTab;
   title: string;
-  /** Вкладки з лічильниками - серверний компонент, тому приходять готовими. */
+  /** The tabs with counters - a server component, so they arrive ready-made. */
   tabs: ReactNode;
-  /** Перша порція: її рендерить сервер, тому список видно без JavaScript. */
+  /** The first batch: the server renders it, so the list is visible without JavaScript. */
   initialItems: CompanyListItem[];
   initialCursor: Cursor | null;
   emptyLabel: string;
-  /** Назва вкладки - прихований заголовок списку, див. `companies-list.tsx`. */
+  /** The tab name - the hidden heading of the list, see `companies-list.tsx`. */
   listHeading: string;
   loadMoreLabel: string;
   noSourcesLabel: string;
   platformLabels: Record<CompanySource["platform"], string>;
   statusLabels: Record<DiscoveryStatus, string>;
-  /** Чи є на Tracked хоч одна компанія - інакше Check all вимкнена. */
+  /** Whether Tracked has at least one company - otherwise Check all is disabled. */
   hasTracked: boolean;
-  /** Чи є на Not tracked хоч одна компанія - інакше Find new pages вимкнена. */
+  /** Whether Not tracked has at least one company - otherwise Find new pages is disabled. */
   hasNotTracked: boolean;
-  /** Пошук за назвою на вкладці All; на інших вкладках - порожній рядок. */
+  /** The name search on the All tab; an empty string on the other tabs. */
   query: string;
   searchLabels: {
     open: string;
@@ -57,18 +57,18 @@ interface CompaniesBoardProps {
 }
 
 /**
- * Сторінка Companies як одне ціле: кнопка Add, вкладки і список.
+ * The Companies page as a whole: the Add button, the tabs and the list.
  *
- * Показані рядки живуть тут, а не в самому списку, бо міняють їх і Add, і
- * Edit, і Load more - усі три поруч. Якби стан лежав у списку, кнопка Add зі
- * сторінки не мала б як до нього дотягнутися, і додана компанія зʼявлялася б
- * аж після перезавантаження.
+ * The shown rows live here, not in the list itself, because Add, Edit and Load
+ * more all change them, side by side. If the state lived in the list, the Add
+ * button on the page would have no way to reach it, and an added company would
+ * appear only after a reload.
  *
- * Перечитування сторінки список не чіпає: він зібраний із власного стану. Тому
- * кожна дія повертає рядок, якого торкнулася, а `revalidatePath` лишається
- * заради лічильників вкладок - вони рендеряться на сервері.
+ * A page refresh does not touch the list: it is built from its own state. So
+ * every action returns the row it touched, and `revalidatePath` stays for the
+ * tab counters, which are rendered on the server.
  *
- * Стан не перетікає між вкладками: `key` на цьому компоненті - сама вкладка.
+ * State does not leak between tabs: the `key` on this component is the tab.
  */
 export function CompaniesBoard({
   tab,
@@ -90,9 +90,9 @@ export function CompaniesBoard({
   const [items, setItems] = useState(initialItems);
   const [cursor, setCursor] = useState(initialCursor);
 
-  // Новий пошук - новий список із першої порції. Не через `key`, як вкладка:
-  // перемонтування забрало б фокус із поля пошуку посеред друкування.
-  // Стан скидається під час рендера, коли змінився пропс
+  // A new search means a new list from the first batch. Not through `key`, as
+  // with the tab: remounting would take focus off the search field mid-typing.
+  // The state is reset during render when the prop changes
   // (https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes).
   const [shownQuery, setShownQuery] = useState(query);
   if (query !== shownQuery) {
@@ -101,7 +101,7 @@ export function CompaniesBoard({
     setCursor(initialCursor);
   }
   const [isPending, startTransition] = useTransition();
-  // Нова компанія, чия картка має сама почати першу перевірку (задача 5.09).
+  // A new company whose card should start the first check by itself (task 5.09).
   const [firstCheckId, setFirstCheckId] = useState<string | null>(null);
   const showActionFailed = useActionFailedToast();
   const { status } = useCheckStatus();
@@ -109,10 +109,10 @@ export function CompaniesBoard({
   const wasCheckRunning = useRef(false);
   const shownCount = items.length;
 
-  // Загальна перевірка чи Find new pages закінчились - статуси, «Last
-  // checked» і сам склад вкладок змінились, а рядки живуть у стані й самі не
-  // оновлюються. Перечитуємо стільки, скільки показано, щоб не загубити
-  // дозавантажені порції.
+  // A general check or Find new pages has ended - statuses, "Last checked" and
+  // the contents of the tabs have changed, while the rows live in state and do
+  // not update themselves. Re-read as many as are shown, so as not to lose the
+  // loaded batches.
   useEffect(() => {
     if (wasCheckRunning.current && !isCheckRunning) {
       void reloadCompaniesAction(tab, shownCount, query).then((result) => {
@@ -125,19 +125,19 @@ export function CompaniesBoard({
   }, [isCheckRunning, tab, shownCount, query]);
 
   /**
-   * Рядок, якого торкнулася дія, заміщає свій попередній.
+   * The row an action touched replaces its previous version.
    *
-   * Саме рядок, а не весь список: перечитування скинуло б дозавантажені
-   * порції, і користувач, який дійшов до двохсотої компанії, повернувся б до
-   * перших пʼятдесяти. `null` означає, що компанія цій вкладці не належить -
-   * рядок прибираємо (або не додаємо).
+   * Only the row, not the whole list: a re-read would drop the loaded batches,
+   * and a user who scrolled to the two-hundredth company would be back at the
+   * first fifty. `null` means the company does not belong to this tab - the row
+   * is removed (or not added).
    *
-   * Назва задає місце в алфавіті, тому показане пересортовується тим самим
-   * порядком, що й запит. Компанія, чия назва стоїть далі за всі завантажені,
-   * лишається в кінці списку - до наступного читання з сервера, яке поставить
-   * її на місце. Під час пошуку рядок, назва якого під пошук не підходить
-   * (додана компанія чи перейменована в Edit), теж прибирається - як його не
-   * показав би й сервер.
+   * The name sets the alphabetical position, so what is shown is re-sorted in
+   * the same order as the query. A company whose name comes after everything
+   * loaded stays at the end of the list until the next read from the server puts
+   * it in place. During a search, a row whose name does not match the search (a
+   * company added or renamed in Edit) is removed too - the server would not have
+   * shown it either.
    */
   const applyRow = useCallback(
     (companyId: string, row: CompanyListItem | null) => {
@@ -153,9 +153,9 @@ export function CompaniesBoard({
   );
 
   /**
-   * Видалену компанію прибираємо зі списку: той самий `applyRow` без рядка.
-   * Окремий колбек, а не `applyRow` напряму, бо діалог видалення не має чого
-   * повертати - рядка більше немає.
+   * A deleted company is removed from the list: the same `applyRow` without a
+   * row. A separate callback rather than `applyRow` directly, because the delete
+   * dialog has nothing to return - the row is gone.
    */
   const removeRow = useCallback(
     (companyId: string) => {
@@ -165,12 +165,13 @@ export function CompaniesBoard({
   );
 
   /**
-   * Нова компанія: рядок у список і перша перевірка, якщо є що перевіряти
-   * (src/app/README.md, «Додавання компанії»).
+   * A new company: the row goes into the list, and the first check runs if there
+   * is anything to check (src/app/README.md, "Adding a company").
    *
-   * Видна картка перевіряє себе сама - кнопкою Check now, зі спінером, як після
-   * натискання. Не видна (компанію додали з вкладки Not tracked) - перевірка
-   * йде без кнопки; лічильник Jobs оновить відповідь дії.
+   * A visible card checks itself - with the Check now button and its spinner, as
+   * after a click. If it is not visible (the company was added from the Not
+   * tracked tab), the check runs without a button; the action's response updates
+   * the Jobs counter.
    */
   const addRow = useCallback(
     (added: CompanyListItem | null, firstCheck: string | null) => {
@@ -182,9 +183,9 @@ export function CompaniesBoard({
         return;
       }
 
-      // Картка, що лишилась у списку, сама стартує першу перевірку (на All
-      // відстежувана компанія теж у списку, якщо підходить під пошук), інакше
-      // перевірку запускаємо звідси.
+      // A card that stayed in the list starts the first check by itself (on All a
+      // tracked company is in the list too, if it matches the search); otherwise
+      // the check starts from here.
       const isShown =
         added !== null &&
         (tab === "tracked" || tab === "all") &&
@@ -205,12 +206,11 @@ export function CompaniesBoard({
   );
 
   /**
-   * Read as list записав рецепт: рядок компанії замінюється свіжим, а якщо
-   * компанія з вкладки пішла (Needs attention, Not tracked → Tracked), картка
-   * зникає. `addRow` тут не годиться: він для нової компанії, якої ще немає в
-   * списку, і на `null` нічого не прибирає - картка лишалася з написом про
-   * непрочитану сторінку до перезавантаження. Перша перевірка - як після Add
-   * company.
+   * Read as list saved a recipe: the company row is replaced with a fresh one,
+   * and if the company left the tab (Needs attention, Not tracked → Tracked),
+   * the card disappears. `addRow` does not fit here: it is for a new company not
+   * yet in the list, and removes nothing on `null` - the card stayed with the
+   * unread-page note until a reload. The first check runs as after Add company.
    */
   const recipeApplied = useCallback(
     (company: CompanyListItem | null, companyId: string) => {
@@ -245,16 +245,16 @@ export function CompaniesBoard({
           {title}
         </h1>
         <div className="flex flex-wrap items-center gap-2">
-          {/* Check all - на Tracked і Needs attention: Not tracked у
-              загальній перевірці не бере участі ніколи, а на Needs attention перевірка й покаже, чи
-              джерело, що падало, ожило. */}
+          {/* Check all on Tracked and Needs attention: Not tracked never takes
+              part in a general check, and on Needs attention the check shows
+              whether a failing source has come back. */}
           {tab !== "not-tracked" ? (
             <CheckAllButton isDisabled={!hasTracked} />
           ) : (
-            // На Not tracked замість Check all - Find new pages (розділ 4.3).
+            // On Not tracked, Find new pages takes the place of Check all.
             <FindNewPagesButton isDisabled={!hasNotTracked} />
           )}
-          {/* Кнопка Add живе на сторінці Companies, поруч зі списком. */}
+          {/* The Add button lives on the Companies page, next to the list. */}
           <AddCompanyDialog
             tab={tab}
             onAdded={addRow}
@@ -266,7 +266,7 @@ export function CompaniesBoard({
 
       <div className="mt-4">{tabs}</div>
 
-      {/* Пошук - лише на вкладці All (рішення автора 24.11.2026). */}
+      {/* Search only on the All tab. */}
       {tab === "all" ? (
         <div className="mt-4 flex justify-end">
           <CompanySearch query={query} labels={searchLabels} />

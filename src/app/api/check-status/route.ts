@@ -7,13 +7,13 @@ import { getSystemUser } from "@/server/db/system-user";
 import { isSameOriginRequest } from "../same-origin";
 
 /**
- * Стан загальної перевірки для опитування з інтерфейсу
- * (src/server/checks/README.md). GET-маршрут, а не Server Action:
- * Server Actions клієнт Next надсилає по одній, і опитування раз на 3 с
- * ставало б у чергу з діями користувача
- * (node_modules/next/dist/docs/01-app/02-guides/server-actions.md, «Sequential
- * dispatch on the client»). Без Cache Components route handler не
- * кешується (node_modules/next/dist/docs/01-app/01-getting-started/15-route-handlers.md).
+ * The general check state for polling from the UI
+ * (src/server/checks/README.md). A GET route, not a Server Action: the Next
+ * client sends Server Actions one at a time, and polling every 3 s would queue
+ * up behind the user's actions
+ * (node_modules/next/dist/docs/01-app/02-guides/server-actions.md, "Sequential
+ * dispatch on the client"). Without Cache Components a route handler is not
+ * cached (node_modules/next/dist/docs/01-app/01-getting-started/15-route-handlers.md).
  */
 export async function GET(request: NextRequest): Promise<Response> {
   if (!isSameOriginRequest(request.headers)) {
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest): Promise<Response> {
   const user = await getSystemUser(db);
 
   return Response.json(await getCheckStatus(db, { userId: user.id }), {
-    // Стан змінюється щосекунди - браузер не повинен його зберігати.
+    // The state changes every second - the browser must not store it.
     headers: { "Cache-Control": "no-store" },
   });
 }

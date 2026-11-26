@@ -1,30 +1,30 @@
 import { DEFAULT_THEME, THEME_COOKIE_NAME } from "@/lib/theme";
 
 /**
- * Код, який виставляє тему до першого фарбування сторінки.
+ * Code that sets the theme before the page's first paint.
  *
- * **Атрибутом `data-theme` володіє саме він, а не React.** Якби його рендерив
- * layout із cookie, вийшов би конфлікт двох власників: Server Action, що пише
- * cookie, змушує Next перерендерити кореневий layout на клієнті, і той рендер
- * повертав би атрибут до серверного значення - знімаючи те, що щойно поставив
- * перемикач. На екрані це виглядало як блимання: тема вмикалася на долю
- * секунди й поверталася назад.
+ * **This script owns the `data-theme` attribute, not React.** If the layout
+ * rendered it from the cookie, there would be two owners in conflict: a Server
+ * Action that writes the cookie makes Next re-render the root layout on the
+ * client, and that render would put the attribute back to the server value -
+ * removing what the switch has just set. On screen this looked like a flash: the
+ * theme turned on for a split second and went back.
  *
- * Тому `<html>` віддається без `data-theme`, а цей скрипт ставить його сам -
- * і при завантаженні, і для всіх трьох режимів.
+ * So `<html>` is sent without `data-theme`, and this script sets it itself - on
+ * load and for all three modes.
  *
- * Скрипт рендериться **завжди**, а не за умовою. Інакше він зʼявлявся б у
- * дереві під час клієнтського рендера, а такі теги React не виконує й
- * попереджає про це в консолі («Encountered a script tag while rendering React
- * component»).
+ * The script is rendered **always**, not conditionally. Otherwise it would
+ * appear in the tree during a client render, and React does not execute such
+ * tags and warns about it in the console ("Encountered a script tag while
+ * rendering React component").
  *
- * Ціна рішення: без JavaScript тема завжди світла.
+ * The cost: without JavaScript the theme is always light.
  *
- * Чому взагалі скрипт, а не медіазапит у CSS: у `@heroui/styles@3.2.7` темні
- * токени оголошені селекторами `.dark, [data-theme="dark"], :host(.dark),
- * :host([data-theme="dark"])`, і `prefers-color-scheme` у файлі немає жодного
- * разу. Повторити весь набір змінних бібліотеки під медіазапитом неможливо
- * підтримувати.
+ * Why a script at all, and not a media query in CSS: in `@heroui/styles@3.2.7`
+ * the dark tokens are declared with the selectors `.dark, [data-theme="dark"],
+ * :host(.dark), :host([data-theme="dark"])`, and `prefers-color-scheme` does not
+ * appear in the file once. Repeating the library's whole set of variables under a
+ * media query would be impossible to maintain.
  */
 const APPLY_THEME = `
 (function () {
@@ -50,28 +50,28 @@ const APPLY_THEME = `
 
     apply();
 
-    // Системна тема може змінитися, поки сторінка відкрита: вечірній перехід
-    // macOS у темну не має чекати на перезавантаження. Cookie перечитується
-    // щоразу, тому після явного вибору слухач нічого не робить.
+    // The system theme can change while the page is open: macOS switching to
+    // dark in the evening should not wait for a reload. The cookie is re-read
+    // every time, so after an explicit choice the listener does nothing.
     query.addEventListener("change", apply);
   } catch (error) {
-    // Якщо cookie або matchMedia недоступні, лишається світла тема з :root -
-    // показати сторінку в ній краще, ніж зламати рендер заради оформлення.
+    // If the cookie or matchMedia is unavailable, the light theme from :root
+    // stays - showing the page in it is better than breaking the render over looks.
   }
 })();
 `;
 
 /**
- * Тег зі скриптом теми.
+ * The tag with the theme script.
  *
- * Серверний компонент: ні стану, ні обробників - лише розмітка, яку браузер
- * виконає сам.
+ * A server component: no state, no handlers - only markup the browser runs by
+ * itself.
  */
 export function ThemeScript() {
   return (
     <script
-      // Вміст - власна константа, зібрана з наших же значень, а не дані
-      // користувача: вставляти її так безпечно.
+      // The content is our own constant, built from our own values, not user
+      // data: inserting it this way is safe.
       dangerouslySetInnerHTML={{ __html: APPLY_THEME }}
     />
   );

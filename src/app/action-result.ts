@@ -1,22 +1,22 @@
 /**
- * Чим закінчилася спроба виконати роботу Server Action.
+ * How an attempt to do a Server Action's work ended.
  *
- * Окремо від результатів самої задачі (`AddCompanyResult` і подібних): ті
- * описують очікувані відмови вводу, які інтерфейс показує полями форми, а цей
- * тип - неочікуваний збій, на який користувач нічого виправити не може.
+ * Separate from the results of the task itself (`AddCompanyResult` and the
+ * like): those describe expected input refusals that the UI shows on form
+ * fields, while this type is an unexpected failure the user cannot fix.
  */
 export type ActionOutcome<T> =
   { ok: true; value: T } | { ok: false; error: "unexpected" };
 
 /**
- * Виконує роботу Server Action так, щоб неочікуваний збій став результатом.
+ * Runs a Server Action's work so that an unexpected failure becomes a result.
  *
- * Виняток із action до інтерфейсу доходить калікою: у продакшні Next ховає
- * повідомлення, лишаючи лише `digest`, тож форма не має чого показати
+ * An exception from an action reaches the UI crippled: in production Next hides
+ * the message and leaves only the `digest`, so the form has nothing to show
  * (`node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/error.md`).
- * Тому ловимо його тут: справжня помилка з усіма деталями лишається в лозі
- * сервера, а на клієнт їде лише код - деталі збою не мають значення для того,
- * хто натиснув кнопку, і не мають просочуватися в браузер.
+ * So we catch it here: the real error with every detail stays in the server log,
+ * and only a code goes to the client - the details of a failure mean nothing to
+ * whoever clicked the button and must not leak into the browser.
  */
 export async function runAction<T>(
   work: () => Promise<T> | T,
@@ -24,7 +24,7 @@ export async function runAction<T>(
   try {
     return { ok: true, value: await work() };
   } catch (failure) {
-    // Лог англійською - технічне повідомлення, не текст інтерфейсу.
+    // The log is in English - a technical message, not UI text.
     console.error("Server action failed", failure);
 
     return { ok: false, error: "unexpected" };

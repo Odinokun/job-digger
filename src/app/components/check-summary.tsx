@@ -9,20 +9,20 @@ import { useCheckStatus } from "./check-status-provider";
 import { FailedSourcesDrawer } from "./failed-sources-drawer";
 
 /**
- * Підсумок загальної перевірки (src/server/checks/README.md): спливає,
- * коли опитування приносить непоказаний підсумок, - одразу після кінця
- * перевірки або при наступному відкритті застосунку.
+ * The summary of a general check (src/server/checks/README.md): it pops up when
+ * polling brings a summary not yet shown - right after the check ends or the
+ * next time the app is opened.
  *
- * Успішний підсумок закривається сам через `SUCCESS_SUMMARY_TIMEOUT_MS`
- * (задача 6.19): 20 с вистачає прочитати числа, а наведена миша ставить таймер
- * на паузу - це робить сам HeroUI (`toast.js`: «Interacting with the stack
- * pauses every timer»). Підсумок із невдалими джерелами висить, доки його не
- * закриють: у ньому кнопка Show failed до Retry.
+ * A successful summary closes by itself after `SUCCESS_SUMMARY_TIMEOUT_MS` (task
+ * 6.19): 20 s is enough to read the numbers, and a hovering mouse pauses the
+ * timer - HeroUI does that itself (`toast.js`: "Interacting with the stack
+ * pauses every timer"). A summary with failed sources stays until it is closed:
+ * it holds the Show failed button that leads to Retry.
  *
- * Показано - позначається на сервері, тож при наступному завантаженні не
- * повториться. `shown` рятує від повтору в цій вкладці, поки позначка ще йде.
+ * Being shown is recorded on the server, so the next load does not repeat it.
+ * `shown` prevents a repeat in this tab while the mark is still on its way.
  */
-/** Скільки висить успішний підсумок перевірки (рішення автора 20.11.2026). */
+/** How long a successful check summary stays. */
 const SUCCESS_SUMMARY_TIMEOUT_MS = 20_000;
 
 export function CheckSummary() {
@@ -46,7 +46,7 @@ export function CheckSummary() {
       }),
       variant: summary.failed > 0 ? "warning" : "success",
       timeout: summary.failed > 0 ? 0 : SUCCESS_SUMMARY_TIMEOUT_MS,
-      // Невдалі джерела - у drawer з Retry.
+      // Failed sources - in the drawer with Retry.
       actionProps:
         summary.failed > 0
           ? {

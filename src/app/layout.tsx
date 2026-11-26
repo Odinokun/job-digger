@@ -16,12 +16,12 @@ import { CheckSummary } from "./components/check-summary";
 import { getUnreadCount } from "./components/header-counts";
 import { ThemeScript } from "./theme-script";
 
-// Тема «Ink»: Instrument Sans у тілі, Space Grotesk на заголовках і назвах
-// компаній, Fraunces на логотипі, IBM Plex Mono на адресах. Відхилені кандидати
-// з точними значеннями - у theme-candidates.md поруч.
+// The "Ink" theme: Instrument Sans for body text, Space Grotesk for headings and
+// company names, Fraunces for the logo, IBM Plex Mono for addresses. The rejected
+// candidates with exact values are in theme-candidates.md next to this file.
 //
-// Кирилиці в subsets немає свідомо - основна версія англійська, інші локалі за
-// потреби отримають власне сімейство окремим кроком.
+// There is no Cyrillic in subsets on purpose - the main version is English, and
+// other locales will get their own family in a separate step if needed.
 const appSans = Instrument_Sans({
   variable: "--font-app-sans",
   subsets: ["latin", "latin-ext"],
@@ -33,8 +33,8 @@ const appDisplay = Space_Grotesk({
   weight: ["500", "600", "700"],
 });
 
-// Логотип має власне сімейство: напис «Job Digger» - єдине місце, де серіф
-// доречний, а заголовки лишаються гротеском.
+// The logo has its own family: the "Job Digger" wordmark is the only place where
+// a serif fits, while headings stay grotesque.
 const appBrand = Fraunces({
   variable: "--font-app-brand",
   subsets: ["latin", "latin-ext"],
@@ -48,8 +48,8 @@ const appMono = IBM_Plex_Mono({
 });
 
 /**
- * Назва вкладки браузера з кількістю непрочитаних: «(12) Job Digger»
- * Без непрочитаних - просто назва застосунку.
+ * The browser tab title with the unread count: "(12) Job Digger".
+ * With nothing unread - just the app name.
  */
 export async function generateMetadata(): Promise<Metadata> {
   const unread = await getUnreadCount();
@@ -61,46 +61,46 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  // Мова запиту - з `src/i18n/request.ts`. У `lang` вона потрібна для
-  // читалок екрана й правильного перенесення слів.
+  // The request locale comes from `src/i18n/request.ts`. `lang` needs it for
+  // screen readers and for correct hyphenation.
   const [locale, unread] = await Promise.all([getLocale(), getUnreadCount()]);
 
   return (
     <html
       lang={locale}
-      // `data-theme` тут немає свідомо: атрибутом володіє `ThemeScript`, а не
-      // React. Якби його рендерив layout, кожен перерендер після Server Action
-      // повертав би атрибут до серверного значення й зтирав вибір - на екрані
-      // це виглядало як блимання теми.
+      // There is no `data-theme` here on purpose: `ThemeScript` owns the
+      // attribute, not React. If the layout rendered it, every re-render after a
+      // Server Action would put the attribute back to the server value and erase
+      // the choice - on screen this looked like the theme flashing.
       //
-      // Через це HTML на клієнті відрізняється від серверного, і React
-      // попереджав би про розбіжність: `suppressHydrationWarning` глушить це
-      // рівно на цьому елементі й на дітей не поширюється.
+      // Because of this the HTML on the client differs from the server's, and
+      // React would warn about the mismatch: `suppressHydrationWarning` silences
+      // that on exactly this element and does not apply to its children.
       suppressHydrationWarning
       className={`${appSans.variable} ${appDisplay.variable} ${appBrand.variable} ${appMono.variable}`}
     >
-      {/* Завжди, а не за умовою: тег, який зʼявляється в дереві під час
-          клієнтського рендера, React не виконує й пише про це в консоль. */}
+      {/* Always, not conditionally: React does not execute a tag that appears
+          in the tree during a client render, and logs about it in the console. */}
       <head>
         <ThemeScript />
       </head>
       <body className="bg-background text-foreground">
-        {/* Передає локаль і переклади в клієнтські компоненти; від серверного
-            батька він успадковує їх сам, тому пропи не потрібні. */}
+        {/* Passes the locale and translations to client components; it inherits
+            them from the server parent by itself, so no props are needed. */}
         <NextIntlClientProvider>
-          {/* Стан загальної перевірки потрібен і шапці, і сторінкам, тож
-              провайдер обгортає обох. */}
+          {/* Both the header and the pages need the general check state, so the
+              provider wraps both. */}
           <CheckStatusProvider initialUnread={unread}>
             <AppHeader />
-            {/* 64rem - стоковий токен max-w-5xl. Рішення автора 21.11.2026:
-                компанії в одну колонку, а рядки вакансій і таблиця History на
-                80rem розтягувались так, що дата й кнопки відривались від назви.
-                Хедер тримає ту саму ширину. */}
+            {/* 64rem is the stock max-w-5xl token. Companies go in one column,
+                and at 80rem the vacancy rows and the History table stretched so
+                far that the date and the buttons came loose from the title. The
+                header keeps the same width. */}
             <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
             <CheckSummary />
           </CheckStatusProvider>
-          {/* Регіон сповіщень. Без пропа `queue` він бере глобальну чергу -
-              ту саму, у яку пише `toast` із будь-якого компонента. */}
+          {/* The notification region. Without the `queue` prop it takes the
+              global queue - the same one `toast` writes to from any component. */}
           <Toast.Provider />
         </NextIntlClientProvider>
       </body>

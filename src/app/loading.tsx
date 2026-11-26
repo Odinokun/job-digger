@@ -1,18 +1,18 @@
 import { Skeleton } from "@heroui/react";
 import { getTranslations } from "next-intl/server";
 
-/** Скільки заготовок рядків показувати: рівно стільки вміщує перший екран. */
+/** How many placeholder rows to show: exactly as many as fit on the first screen. */
 const ROWS = 8;
 
 /**
- * Заготовка сторінки Jobs, поки сервер читає вакансії. Next показує її одразу при переході й підміняє сторінкою,
- * коли та готова (node_modules/next/dist/docs/01-app/03-api-reference/
- * 03-file-conventions/loading.md).
+ * The Jobs page placeholder while the server reads vacancies. Next shows it at
+ * once on navigation and swaps in the page when it is ready
+ * (node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/loading.md).
  *
- * Заголовок справжній, а не заготовка: він відомий наперед, і сторінка не
- * стрибає, коли приходить список. Рядки повторюють розмітку
- * [`vacancy-row.tsx`](./_jobs/vacancy-row.tsx): назва, компанія з локацією,
- * дата й дві кнопки.
+ * The heading is real, not a placeholder: it is known in advance, and the page
+ * does not jump when the list arrives. The rows repeat the markup of
+ * [`vacancy-row.tsx`](./_jobs/vacancy-row.tsx): the title, the company with the
+ * location, the date and two buttons.
  */
 export default async function JobsLoading() {
   const t = await getTranslations("JobsPage");

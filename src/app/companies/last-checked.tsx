@@ -2,15 +2,15 @@
 
 import { useFormatter, useNow, useTranslations } from "next-intl";
 
-/** Як часто перераховувати «5 min ago»: точніше за хвилину тексту не треба. */
+/** How often to recompute "5 min ago": the text needs no precision finer than a minute. */
 const UPDATE_INTERVAL_MS = 60_000;
 
 /**
- * «Last checked: 5 min ago» у картці компанії.
+ * "Last checked: 5 min ago" on a company card.
  *
- * `useNow` бере спільне «зараз» із конфігурації next-intl (`src/i18n/request.ts`),
- * тож серверний і клієнтський рендер збігаються, а далі оновлюється раз на
- * хвилину, щоб підпис не застигав на відкритій сторінці
+ * `useNow` takes the shared "now" from the next-intl config (`src/i18n/request.ts`),
+ * so the server and client renders match, and then updates once a minute so the
+ * caption does not freeze on an open page
  * (https://next-intl.dev/docs/usage/dates-times#relative-times-update).
  */
 export function LastChecked({
@@ -19,8 +19,8 @@ export function LastChecked({
 }: {
   at: Date;
   /**
-   * Підпис: «Last checked» картки або «Last ok» біля невдалого джерела - той
-   * самий відносний час.
+   * The caption: "Last checked" on the card or "Last ok" next to a failed
+   * source - the same relative time.
    */
   message?: "lastChecked" | "lastOk";
 }) {
@@ -28,9 +28,9 @@ export function LastChecked({
   const format = useFormatter();
   const now = useNow({ updateInterval: UPDATE_INTERVAL_MS });
 
-  // Щойно перевірена компанія може мати `at` трохи пізніше за `now`, яке
-  // оновлюється раз на хвилину, - тоді вийшло б «in 2 sec». Майбутнього тут
-  // не буває, тож час перевірки обмежується теперішнім.
+  // A company just checked may have an `at` slightly later than `now`, which
+  // updates once a minute - that would read "in 2 sec". There is no future here,
+  // so the check time is capped at the present.
   const shown = at > now ? now : at;
 
   return (

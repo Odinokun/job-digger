@@ -10,7 +10,7 @@ import { THEME_PREFERENCES, type ThemePreference } from "@/lib/theme";
 import { setThemeAction } from "./actions";
 
 interface ThemeSwitcherProps {
-  /** Що лежить у cookie: його прочитав сервер у `layout.tsx`. */
+  /** What the cookie holds: the server read it in `layout.tsx`. */
   current: ThemePreference;
 }
 
@@ -21,23 +21,23 @@ const ICONS = {
 } as const;
 
 /**
- * Вибір оформлення: Light, Dark або System.
+ * The theme choice: Light, Dark or System.
  *
- * Перемикання робить дві різні речі. Вигляд міняє **клієнт** - ставить
- * `data-theme` на `<html>` одразу, тому тема перемикається без перезавантаження
- * й не чекає на мережу. Запамʼятовує вибір **сервер** - `setThemeAction` пише
- * cookie, щоб він пережив перезавантаження.
+ * Switching does two different things. The **client** changes the look - it
+ * sets `data-theme` on `<html>` at once, so the theme switches without a reload
+ * and does not wait for the network. The **server** remembers the choice -
+ * `setThemeAction` writes the cookie so that it survives a reload.
  *
- * Покладатися на перерендер кореневого layout тут не можна: атрибут стоїть на
- * `<html>`, і те, що `revalidate` його перепише, не гарантовано.
+ * Relying on a re-render of the root layout is not an option here: the attribute
+ * is on `<html>`, and there is no guarantee that `revalidate` rewrites it.
  *
- * `disallowEmptySelection` обовʼязковий: без нього HeroUI дозволяє зняти вибір
- * і лишити жодної кнопки натиснутою, а «ніякого оформлення» не буває.
+ * `disallowEmptySelection` is required: without it HeroUI lets the selection be
+ * cleared, leaving no button pressed, and there is no such thing as "no theme".
  */
 export function ThemeSwitcher({ current }: ThemeSwitcherProps) {
   const t = useTranslations("SettingsPage.appearance");
-  // Вибір контрольований: показане значення має помінятися одразу, а не після
-  // того, як сервер підтвердить запис cookie.
+  // The choice is controlled: the shown value has to change at once, not after
+  // the server confirms the cookie write.
   const [selected, setSelected] = useState<ThemePreference>(current);
   const [, startSaving] = useTransition();
 
@@ -58,8 +58,8 @@ export function ThemeSwitcher({ current }: ThemeSwitcherProps) {
         onSelectionChange={(keys) => {
           const [first] = [...keys];
 
-          // Ключі приходять як `Key`, тобто рядок або число: звужуємо до
-          // відомих значень, щоб не покластися на збіг типів.
+          // Keys arrive as `Key`, that is a string or a number: narrow them to the
+          // known values instead of relying on the types matching.
           if (
             typeof first === "string" &&
             THEME_PREFERENCES.includes(first as ThemePreference)
@@ -88,11 +88,11 @@ export function ThemeSwitcher({ current }: ThemeSwitcherProps) {
 }
 
 /**
- * Ставить тему на `<html>` - те саме, що робить inline-скрипт при завантаженні.
+ * Sets the theme on `<html>` - the same as the inline script does on load.
  *
- * Для System атрибут не прибирається, а відразу замінюється на обчислений:
- * темні токени HeroUI живуть під `[data-theme="dark"]`, тож без атрибута
- * сторінка стала б світлою навіть при темній системі.
+ * For System the attribute is not removed but replaced at once with the
+ * computed one: HeroUI's dark tokens live under `[data-theme="dark"]`, so
+ * without the attribute the page would turn light even on a dark system.
  */
 function applyTheme(preference: ThemePreference): void {
   const root = document.documentElement;
@@ -106,25 +106,25 @@ function applyTheme(preference: ThemePreference): void {
 }
 
 /**
- * Чи просить операційна система темну тему.
+ * Whether the operating system asks for the dark theme.
  *
- * Питати `matchMedia` просто так не можна: сторінка в цей момент могла сама
- * оголосити схему - у темній темі це робить `color-scheme: dark` самого
- * HeroUI, - а браузери звітують `prefers-color-scheme` з урахуванням
- * оголошеної схеми. Тоді перехід Dark → System при світлій системі лишав би
- * темну тему, і навпаки.
+ * `matchMedia` cannot simply be asked: at that moment the page may have declared
+ * a scheme itself - in the dark theme HeroUI's own `color-scheme: dark` does
+ * that - and browsers report `prefers-color-scheme` taking the declared scheme
+ * into account. Then switching Dark → System on a light system would keep the
+ * dark theme, and the other way round.
  *
- * Тому на час читання схема явно оголошується як «підтримуємо обидві»
- * (`light dark`), і відповідь знову описує систему, а не сторінку. Читання
- * обчисленого стилю між записом і запитом змушує браузер перерахувати стилі
- * до того, як ми спитаємо.
+ * So for the duration of the read the scheme is explicitly declared as "we
+ * support both" (`light dark`), and the answer describes the system again, not
+ * the page. Reading the computed style between the write and the query makes
+ * the browser recalculate styles before we ask.
  */
 function systemPrefersDark(): boolean {
   const root = document.documentElement;
   const previous = root.style.colorScheme;
 
   root.style.colorScheme = "light dark";
-  // Навмисне читання заради перерахунку стилів, результат не потрібен.
+  // A deliberate read to force a style recalculation; the result is not needed.
   void getComputedStyle(root).colorScheme;
 
   const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;

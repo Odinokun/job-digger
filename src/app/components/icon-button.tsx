@@ -4,26 +4,26 @@ import { Button, Tooltip, type ButtonProps } from "@heroui/react";
 import type { ReactNode } from "react";
 
 /**
- * Скільки чекати перед підказкою. Типова затримка React Aria - 1,5 с, і
- * підказку легко не дочекатися; документація HeroUI у прикладах ставить 0.
- * 300 мс - щоб підказки не мерехтіли, поки курсор лише проходить повз.
+ * How long to wait before the tooltip. React Aria's default delay is 1.5 s, and
+ * it is easy to give up waiting; the HeroUI docs examples use 0. 300 ms keeps
+ * tooltips from flickering while the pointer merely passes by.
  */
 export const TOOLTIP_DELAY_MS = 300;
 
 interface WithTooltipProps {
-  /** Текст підказки - назва дії. */
+  /** The tooltip text - the name of the action. */
   label: string;
-  /** Одна кнопка (компонент React Aria), над якою зʼявиться підказка. */
+  /** One button (a React Aria component) the tooltip appears over. */
   children: ReactNode;
 }
 
 /**
- * Підказка при наведенні й фокусі на кнопку. Правило застосунку: кожна кнопка
- * лише з іконкою має підказку - одного `aria-label` мало, бо зрячий користувач
- * його не бачить (src/app/README.md, «Кнопки лише з іконкою»).
+ * A tooltip on hover and focus of a button. App rule: every icon-only button has
+ * a tooltip - an `aria-label` alone is not enough, because a sighted user does
+ * not see it (src/app/README.md, "Icon-only buttons").
  *
- * Для звичайної кнопки-іконки - `IconButton`; цей компонент - для кнопок, які
- * HeroUI малює сам, як хрестик `CloseTrigger` у діалогах.
+ * For a regular icon button use `IconButton`; this component is for buttons
+ * HeroUI draws itself, like the `CloseTrigger` cross in dialogs.
  */
 export function WithTooltip({ label, children }: WithTooltipProps) {
   return (
@@ -40,15 +40,15 @@ type IconButtonProps = Omit<
   ButtonProps,
   "isIconOnly" | "aria-label" | "children"
 > & {
-  /** Назва дії: і `aria-label`, і текст підказки - розійтися вони не можуть. */
+  /** The action name: both the `aria-label` and the tooltip text - they cannot drift apart. */
   label: string;
-  /** Сама іконка. */
+  /** The icon itself. */
   children: ReactNode;
 };
 
 /**
- * Кнопка лише з іконкою: `isIconOnly`, доступна назва і підказка при
- * наведенні з тим самим текстом (документація HeroUI, Tooltip - Usage).
+ * An icon-only button: `isIconOnly`, an accessible name and a tooltip on hover
+ * with the same text (HeroUI docs, Tooltip - Usage).
  */
 export function IconButton({ label, children, ...props }: IconButtonProps) {
   return (

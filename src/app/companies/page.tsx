@@ -32,7 +32,7 @@ export default async function CompaniesPage({
   const t = await getTranslations("CompaniesPage");
   const params = await searchParams;
   const tab = parseCompaniesTab(params.tab);
-  // Пошук - лише на вкладці All; `q` в адресі іншої вкладки ігнорується.
+  // Search only on the All tab; `q` in the URL of another tab is ignored.
   const query = tab === "all" && typeof params.q === "string" ? params.q : "";
 
   const db = getDb();
@@ -42,8 +42,8 @@ export default async function CompaniesPage({
     countCompaniesByTab(db, user.id),
   ]);
 
-  // Записані явно, а не зібрані циклом: тоді нова платформа в схемі одразу
-  // ламає типи тут, замість тихо показати порожній підпис.
+  // Written out explicitly, not built in a loop: then a new platform in the
+  // schema breaks the types here at once instead of quietly showing an empty label.
   const platformLabels: Record<CompanySource["platform"], string> = {
     greenhouse: t("platforms.greenhouse"),
     lever: t("platforms.lever"),
@@ -74,7 +74,7 @@ export default async function CompaniesPage({
 
   return (
     <CompaniesBoard
-      // Ключ - вкладка: показані рядки однієї не мають перетікати в іншу.
+      // The key is the tab: the shown rows of one tab must not leak into another.
       key={tab}
       tab={tab}
       title={t("title")}
@@ -93,8 +93,8 @@ export default async function CompaniesPage({
       }
       initialItems={companies}
       initialCursor={nextCursor}
-      // Порожній результат пошуку пояснює, що саме не знайшлося, а не каже
-      // «компаній поки немає».
+      // An empty search result explains what was not found instead of saying
+      // "no companies yet".
       emptyLabel={
         query.trim() === ""
           ? t(EMPTY_LABELS[tab])

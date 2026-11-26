@@ -271,7 +271,7 @@ CI=1 npm run test:e2e
 - **Lighthouse** (26.11.2026, категорія Accessibility): на Companies 98 через `heading-order`, решта сторінок - без зауважень. Після прихованого `h2` над списком компаній це правило проходить і в axe-скануванні.
 - **Руками** - клавіатура (порядок Tab, видимий фокус, повернення фокусу з модалок і меню), reflow на 320 px і масштаб 200%, сценарії з VoiceOver. Автоматика ловить лише частину проблем, тому ручна перевірка лишається.
 
-Правила для коду й рішення щодо кольорів - [src/app/README.md](src/app/README.md#доступність), історія аудиту - [tasks/accessibility-audit.md](tasks/accessibility-audit.md).
+Правила для коду й рішення щодо кольорів - [src/app/README.md](src/app/README.md#accessibility), історія аудиту - [tasks/accessibility-audit.md](tasks/accessibility-audit.md).
 
 ## Локалізація
 
@@ -294,5 +294,5 @@ document.cookie = "locale=uk; path=/";
 ## Документація
 
 - [Задачі й етапи](tasks/README.md) - що зроблено, що в роботі, що далі.
-- [Екрани](src/app/README.md#що-на-екранах-і-чого-свідомо-немає) - що показує кожен розділ і чого в ньому свідомо немає.
+- [Екрани](src/app/README.md#screens-what-they-show-and-what-is-left-out) - що показує кожен розділ і чого в ньому свідомо немає.
 - [Правила розробки](CLAUDE.md) - процес, мова, тести, Git і задачі.

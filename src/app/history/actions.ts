@@ -11,8 +11,8 @@ export type LoadMoreHistoryResult =
   { ok: true; items: CheckRunRow[]; nextCursor: Cursor | null } | { ok: false };
 
 /**
- * Наступні 20 записів History. Курсор - недовірений ввід: його чистить
- * `listCheckRuns` через `parseCursor`, а користувач береться на сервері.
+ * The next 20 History records. The cursor is untrusted input: `listCheckRuns`
+ * cleans it through `parseCursor`, and the user is taken on the server.
  */
 export async function loadMoreHistoryAction(
   after: unknown,

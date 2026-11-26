@@ -14,15 +14,15 @@ import {
 import { setAutoCheckIntervalAction } from "./actions";
 
 interface AutoCheckIntervalPickerProps {
-  /** Що збережено в базі або значення за замовчуванням. */
+  /** What the database holds, or the default value. */
   current: AutoCheckInterval;
 }
 
 /**
- * Вибір інтервалу автоматичної перевірки: 3, 6, 12 або 24 години.
+ * The auto-check interval choice: 3, 6, 12 or 24 hours.
  *
- * Оптимістично, як і тема: вибір видно одразу, а якщо сервер не зберіг -
- * повертається попередній і показується toast.
+ * Optimistic, like the theme: the choice shows at once, and if the server did
+ * not save it, the previous one comes back and a toast appears.
  */
 export function AutoCheckIntervalPicker({
   current,
@@ -49,7 +49,7 @@ export function AutoCheckIntervalPicker({
     <div className="flex flex-col gap-2">
       <ToggleButtonGroup
         selectionMode="single"
-        // Без цього HeroUI дозволяє зняти вибір, а «без інтервалу» не буває.
+        // Without this HeroUI lets the selection be cleared, and there is no "no interval".
         disallowEmptySelection
         selectedKeys={new Set([String(selected)])}
         onSelectionChange={(keys) => {

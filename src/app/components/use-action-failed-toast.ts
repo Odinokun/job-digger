@@ -5,21 +5,21 @@ import { useTranslations } from "next-intl";
 import { useCallback } from "react";
 
 /**
- * Сповіщення про неочікуваний збій дії - спільне для всіх форм.
+ * The notification about an unexpected action failure - shared by all forms.
  *
- * Текст один на всі такі збої: користувачеві байдуже, впала база чи запит, бо
- * зробити він може те саме - повторити. Деталі лишаються в лозі сервера
- * (`runAction` у `src/app/action-result.ts`).
+ * One text for all such failures: the user does not care whether the database
+ * or a query failed, they can do the same thing either way - try again. The
+ * details stay in the server log (`runAction` in `src/app/action-result.ts`).
  *
- * Хук, а не проста функція, бо текст приходить із next-intl, а той читається
- * лише з контексту React.
+ * A hook, not a plain function, because the text comes from next-intl, which is
+ * read only from React context.
  */
 export function useActionFailedToast(): () => void {
   const t = useTranslations("Errors");
 
   return useCallback(() => {
-    // Черга в `toast` глобальна: `Toast.Provider` у layout без пропа `queue`
-    // бере саме її, тому показувати можна з будь-якого компонента.
+    // The `toast` queue is global: `Toast.Provider` in the layout without the
+    // `queue` prop takes exactly that one, so it can be shown from any component.
     toast.danger(t("actionFailed"));
   }, [t]);
 }

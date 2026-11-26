@@ -12,19 +12,20 @@ import type {
 
 interface VacancyActionsProps {
   vacancy: VacancyListItem;
-  /** Дія над рядком: застосовує її сторінка - одразу й оптимістично. */
+  /** An action on the row: the page applies it - at once and optimistically. */
   onMark: (patch: VacancyPatch) => void;
 }
 
 /**
- * Дії рядка Jobs: перемикачі Read і Favorite.
+ * The Jobs row actions: the Read and Favorite toggles.
  *
- * Кнопки лише з іконкою - `IconButton`, з підказкою при наведенні. Підпис каже, що станеться, а не який стан зараз:
- * «Mark as read» на непрочитаній. Стан і запит до сервера тримає
- * [`jobs-board.tsx`](./jobs-board.tsx): дія видна одразу й відкочується при
- * збої, тож окремого очікування в кнопці немає.
+ * Icon-only buttons are `IconButton`, with a tooltip on hover. The label says
+ * what will happen, not the current state: "Mark as read" on an unread one.
+ * [`jobs-board.tsx`](./jobs-board.tsx) holds the state and the server request:
+ * the action shows at once and rolls back on failure, so the button has no
+ * waiting state of its own.
  *
- * Відкриття оригіналу - саме посилання в назві, і воно Read не змінює.
+ * Opening the original is the link in the title itself, and it does not change Read.
  */
 export function VacancyActions({ vacancy, onMark }: VacancyActionsProps) {
   const t = useTranslations("JobsPage");
@@ -44,8 +45,9 @@ export function VacancyActions({ vacancy, onMark }: VacancyActionsProps) {
       <IconButton
         size="sm"
         variant="tertiary"
-        // Без `aria-pressed`: підпис уже змінюється разом зі станом, і читач
-        // екрана почув би стан двічі. Зрячому стан показує заповнена зірка.
+        // No `aria-pressed`: the label already changes with the state, and a
+        // screen reader would hear the state twice. A sighted user sees it from
+        // the filled star.
         label={vacancy.isFavorite ? t("unfavorite") : t("favorite")}
         onPress={() =>
           onMark({
@@ -54,7 +56,7 @@ export function VacancyActions({ vacancy, onMark }: VacancyActionsProps) {
           })
         }
       >
-        {/* Обрана - кольором уваги (src/app/README.md#тема-ink). */}
+        {/* A favorite is in the attention colour (src/app/README.md#ink-theme). */}
         {vacancy.isFavorite ? (
           <StarFill className="text-attention" />
         ) : (

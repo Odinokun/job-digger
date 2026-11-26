@@ -6,8 +6,8 @@ import { MobileNav } from "./mobile-nav";
 import { NavLink } from "./nav-link";
 import { getAttentionCount, getUnreadCount } from "./header-counts";
 
-// Порядок розділів фіксований (src/app/README.md, «Маршрути»).
-// Jobs живе в корені: він відкривається за замовчуванням.
+// The order of the sections is fixed (src/app/README.md, "Routes").
+// Jobs lives at the root: it is the default page.
 const sections = [
   { href: "/", key: "jobs" },
   { href: "/companies", key: "companies" },
@@ -21,8 +21,8 @@ export async function AppHeader() {
     getUnreadCount(),
     getAttentionCount(),
   ]);
-  // Число біля пункту меню - лише коли воно не нуль: непрочитані біля Jobs,
-  // компанії, що потребують уваги, біля Companies (задача 6.11).
+  // The number next to a menu item only when it is not zero: unread next to
+  // Jobs, companies needing attention next to Companies (task 6.11).
   const counts: Partial<Record<(typeof sections)[number]["key"], number>> = {
     jobs: unread > 0 ? unread : undefined,
     companies: attention > 0 ? attention : undefined,
@@ -32,9 +32,9 @@ export async function AppHeader() {
     href: section.href,
     label: t(section.key),
     count: counts[section.key],
-    // Число біля Companies - окреме посилання одразу на Needs attention. Сама
-    // назва веде, як завжди, на Tracked: інакше, поки є хоч одна сторінка, яку
-    // ми не читаємо, Companies відкривався б не там, де додають компанії.
+    // The number next to Companies is a separate link straight to Needs
+    // attention. The name itself leads to Tracked as usual: otherwise, as long as
+    // any page went unread, Companies would open away from where companies are added.
     countLink:
       section.key === "companies"
         ? {
@@ -46,18 +46,18 @@ export async function AppHeader() {
 
   return (
     <header className="border-b">
-      {/* Ширина збігається з `main` у layout.tsx: меню має стояти над вмістом,
-          а не над іншою колонкою. */}
+      {/* The width matches `main` in layout.tsx: the menu has to stand above the
+          content, not above another column. */}
       <div className="mx-auto flex max-w-5xl items-center gap-8 px-6">
-        {/* "Job Digger" - назва продукту, вона не перекладається. */}
+        {/* "Job Digger" is the product name and is not translated. */}
         <Link
           href="/"
           className="py-3 font-brand text-xl font-semibold whitespace-nowrap"
         >
           Job Digger
         </Link>
-        {/* Від ширини md - меню в шапці; на вужчому екрані воно не вміщується
-            і ховається за бургер (аудит інтерфейсу, A1). */}
+        {/* From the md width the menu is in the header; on a narrower screen it
+            does not fit and hides behind a burger (UI audit, A1). */}
         <nav
           aria-label={t("ariaLabel")}
           className="hidden items-center gap-6 md:flex"

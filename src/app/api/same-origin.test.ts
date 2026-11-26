@@ -8,8 +8,8 @@ function request(headers: Record<string, string>): Headers {
 
 describe("isSameOriginRequest", () => {
   it("accepts a fetch from our own page", () => {
-    // Браузер не шле Origin у GET з тієї самої сторінки, але шле
-    // Sec-Fetch-Site.
+    // The browser does not send Origin with a GET from the same page, but it does
+    // send Sec-Fetch-Site.
     expect(
       isSameOriginRequest(request({ "sec-fetch-site": "same-origin" })),
     ).toBe(true);
@@ -51,8 +51,8 @@ describe("isSameOriginRequest", () => {
   });
 
   it("accepts a request that is not from a browser at all", () => {
-    // curl чи скрипт на цій машині: без жодного з заголовків. Сервер і так
-    // слухає лише 127.0.0.1.
+    // curl or a script on this machine: neither header. The server listens only
+    // on 127.0.0.1 anyway.
     expect(isSameOriginRequest(request({}))).toBe(true);
   });
 });

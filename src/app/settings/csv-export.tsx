@@ -13,12 +13,12 @@ import {
 const OPTIONS = ["tracked", "notTracked", "careerUrls"] as const;
 
 /**
- * Export CSV з опціями (задача 6.05).
+ * Export CSV with options (task 6.05).
  *
- * Файл віддає `/api/companies-csv`: перехід на адресу з
- * `Content-Disposition: attachment` браузер не відкриває, а зберігає, і
- * сторінка лишається на місці. Без жодного списку експортувати нічого -
- * кнопка вимкнена.
+ * `/api/companies-csv` returns the file: the browser does not open an address
+ * with `Content-Disposition: attachment` but saves it, and the page stays where
+ * it is. With no list selected there is nothing to export - the button is
+ * disabled.
  */
 export function CsvExport() {
   const t = useTranslations("SettingsPage.export");

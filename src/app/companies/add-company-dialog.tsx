@@ -47,40 +47,41 @@ import { FoundPages } from "./found-pages";
 import { ADD_COMPANY_INITIAL_STATE } from "./form-state";
 import { URL_ERROR_KEYS } from "./url-errors";
 
-/** Порожня форма: і початковий стан, і те, до чого вона вертається після успіху. */
+/** An empty form: both the initial state and what it returns to after success. */
 const EMPTY_FIELDS = { url: "", name: "", careerUrl: "" };
 
-/** Поля, у які підказка не лізе, якщо користувач уже написав там своє. */
+/** Fields the suggestion leaves alone if the user has already typed something there. */
 const EMPTY_EDITS = { name: false, careerUrl: false };
 
-/** Жодної клієнтської відмови: і початковий стан, і скидання при правці. */
+/** No client-side refusals: both the initial state and the reset on edit. */
 const EMPTY_REFUSALS = { url: null, careerUrl: null };
 
 /**
- * Кнопка Add і модальне вікно додавання компанії.
+ * The Add button and the add-company modal.
  *
- * Додавання живе саме в модалці, а не на окремій сторінці - це вимога плану
- * (src/server/discovery/README.md). Назва й головний сайт вгадуються з
- * вставленої адреси без запиту в мережу, а Find pages шукає кар'єрні джерела на
- * сервері й показує знахідки з галочками (`found-pages.tsx`).
+ * Adding lives in a modal, not on a separate page
+ * (src/server/discovery/README.md). The name and the main site are guessed from
+ * the pasted address without a network request, and Find pages searches for
+ * career sources on the server and shows the findings with checkboxes
+ * (`found-pages.tsx`).
  *
- * Компонент клієнтський, бо модалці потрібен стан відкриття, а формі -
- * результат Server Action. Сам список компаній лишається серверним.
+ * A client component, because the modal needs its open state and the form needs
+ * the Server Action result. The company list itself stays on the server.
  */
 interface AddCompanyDialogProps {
-  /** Вкладка, яку зараз видно: від неї залежить, чи потрапить компанія в цей список. */
+  /** The tab currently shown: whether the company lands in this list depends on it. */
   tab: CompaniesTab;
   /**
-   * Доданий рядок або `null`, якщо компанія належить іншій вкладці.
-   * Список вставляє його в себе, тому дозавантажені порції лишаються.
+   * The added row, or `null` if the company belongs to another tab.
+   * The list inserts it into itself, so loaded batches stay.
    */
   onAdded: (added: CompanyListItem | null, firstCheck: string | null) => void;
   /**
-   * Компанія, якій дісталася вставлена адреса ще одним карʼєрним джерелом.
-   * Рядок уже є в списку, тому його заміщають, а не додають.
+   * The company that received the pasted address as one more career source.
+   * Its row is already in the list, so it is replaced, not added.
    */
   onSourceAdded: (companyId: string, saved: CompanyListItem | null) => void;
-  /** Назви платформ для списку знахідок - ті самі, що в картках компаній. */
+  /** Platform names for the findings list - the same as on the company cards. */
   platformLabels: Record<CareerPlatform, string>;
 }
 
@@ -92,8 +93,8 @@ export function AddCompanyDialog({
 }: AddCompanyDialogProps) {
   const t = useTranslations("CompaniesPage.addCompany");
   const tUrlError = useTranslations("CompaniesPage.urlErrors");
-  // Підпис джерела й текст про дублікат задаються у двох модалках, тому їхні
-  // тексти лежать рівнем вище, поряд із `urlErrors`.
+  // The source label and the duplicate text are set in two modals, so their
+  // texts live one level up, next to `urlErrors`.
   const tShared = useTranslations("CompaniesPage");
   const tCommon = useTranslations("Common");
   const showActionFailed = useActionFailedToast();
@@ -103,31 +104,31 @@ export function AddCompanyDialog({
     ADD_COMPANY_INITIAL_STATE,
   );
 
-  // Поля контрольовані, бо підказка з адреси пише в них: без стану тут нічого
-  // підставити не можна.
+  // The fields are controlled because the suggestion from the address writes
+  // into them: without state there is nothing to fill in.
   const [fields, setFields] = useState(EMPTY_FIELDS);
   const [editedByHand, setEditedByHand] = useState(EMPTY_EDITS);
   const [isSuggested, setSuggested] = useState(false);
 
-  // Пропозиція «додати цю адресу карʼєрною сторінкою знайденої компанії» -
-  // окрема дія, а не ще одне надсилання форми: компанію вона не додає, тому й
-  // стан у неї свій.
+  // The offer "add this address as a career page of the company found" is a
+  // separate action, not another form submission: it adds no company, so it has
+  // its own state.
   const [sourceState, setSourceState] =
     useState<AddCareerSourceFormState | null>(null);
   const [isAddingSource, startAddingSource] = useTransition();
-  // Підпис для адреси, яка стане ще одним джерелом знайденої компанії: там
-  // він потрібен так само, як у модалці Edit - трьох фільтрів однієї сторінки
-  // інакше не розрізнити.
+  // The label for the address that becomes one more source of the company found:
+  // it is needed there just as in the Edit modal - otherwise three filters of
+  // one page cannot be told apart.
   const [sourceLabel, setSourceLabel] = useState("");
-  // Чи надсилали форму після того, як вікно відкрили. `useActionState` живе
-  // стільки ж, скільки компонент, а модалка лише ховається - без цього
-  // прапорця наступне відкриття одразу показувало б відмову минулого разу
-  // («Already added as ...» ще до того, як користувач щось увів).
+  // Whether the form was submitted since the window opened. `useActionState`
+  // lives as long as the component, and the modal is only hidden - without this
+  // flag the next opening would show last time's refusal at once
+  // ("Already added as ..." before the user typed anything).
   const [isSubmitted, setSubmitted] = useState(false);
   const [, startSubmit] = useTransition();
-  // Відмови, які видно ще до Save. Та сама перевірка повториться на сервері -
-  // поля приходять із клієнта, - але `ftp://` нема чого везти туди й назад.
-  // Знахідки Find pages: `null` - пошуку для цієї адреси ще не було.
+  // Refusals visible before Save. The server repeats the same check - the
+  // fields come from the client - but there is no point sending `ftp://` there
+  // and back. Find pages findings: `null` means no search for this address yet.
   const [findings, setFindings] = useState<FoundPage[] | null>(null);
   const [selectedFound, setSelectedFound] = useState<string[]>([]);
   const [isFinding, startFinding] = useTransition();
@@ -137,19 +138,19 @@ export function AddCompanyDialog({
     careerUrl: UrlRefusalReason | null;
   }>(EMPTY_REFUSALS);
 
-  // Модалку закриває успіх, а не сама кнопка: доки компанія не збереглася,
-  // користувач має бачити свої дані й повідомлення про помилку.
-  // Закриття взяте окремою змінною, бо `useOverlayState` повертає новий обʼєкт
-  // на кожен рендер (сама `close` стабільна). Із цілим `overlay` у залежностях
-  // ефект перезапускався б постійно й на відкритті модалки одразу бачив би вже
-  // відпрацьований успіх: вікно закривалося б миттєво, а кнопка виглядала б
-  // мертвою.
+  // Success closes the modal, not the button itself: until the company is
+  // saved, the user has to see their data and the error message.
+  // `close` is taken into its own variable because `useOverlayState` returns a
+  // new object on every render (`close` itself is stable). With the whole
+  // `overlay` in the dependencies the effect would re-run constantly and, when
+  // the modal opened, see the success already handled: the window would close
+  // at once and the button would look dead.
   const closeDialog = overlay.close;
 
-  // Кожен результат - рівно один раз. Ефект перезапускається не лише з новим
-  // станом: `onAdded` міняє ідентичність разом із перекладачем після кожної
-  // Server Action. Повтор вставляв би рядок у тому вигляді, який він мав на
-  // Save, і затирав би результат першої перевірки (задача 5.09).
+  // Every result exactly once. The effect re-runs not only with a new state:
+  // `onAdded` changes identity together with the translator after every
+  // Server Action. A repeat would insert the row as it was at Save and
+  // overwrite the result of the first check (task 5.09).
   const handledState = useRef<AddCompanyFormState | null>(null);
 
   useEffect(() => {
@@ -160,9 +161,9 @@ export function AddCompanyDialog({
     }
   }, [state, closeDialog, onAdded]);
 
-  // Неочікуваний збій полю форми не належить: виправляти користувачеві нічого,
-  // тому про нього повідомляє сповіщення, а вікно лишається відкритим зі
-  // введеними даними.
+  // An unexpected failure does not belong to a form field: the user has nothing
+  // to fix, so a notification reports it, and the window stays open with the
+  // data entered.
   useEffect(() => {
     if (state.status === "failed-unexpectedly") {
       showActionFailed();
@@ -182,10 +183,10 @@ export function AddCompanyDialog({
     }
   }, [sourceState, showActionFailed]);
 
-  // Форма чиститься на відкритті, а не на успіху: поля контрольовані, тому
-  // інакше наступне відкриття показало б минулу компанію. Скидання стоїть у
-  // кнопці, а не в ефекті - ефект із `setState` дає каскадний рендер
-  // (`react-hooks/set-state-in-effect`).
+  // The form is cleared on opening, not on success: the fields are controlled,
+  // so otherwise the next opening would show the previous company. The reset
+  // sits in the button, not in an effect - an effect with `setState` causes a
+  // cascading render (`react-hooks/set-state-in-effect`).
   function openDialog() {
     setFields(EMPTY_FIELDS);
     setEditedByHand(EMPTY_EDITS);
@@ -203,18 +204,18 @@ export function AddCompanyDialog({
   function changeField(field: keyof typeof EMPTY_FIELDS, value: string) {
     setFields((previous) => ({ ...previous, [field]: value }));
 
-    // Текст відмови стосувався попереднього значення поля.
+    // The refusal text was about the field's previous value.
     if (field !== "name") {
       setRefusals((previous) => ({ ...previous, [field]: null }));
     }
 
     if (field === "url") {
-      // Знахідки стосувалися попередньої адреси.
+      // The findings were about the previous address.
       setFindings(null);
       setSelectedFound([]);
       setFindError(null);
 
-      // Поле очистили - далі буде інша адреса, і підказка має спрацювати знову.
+      // The field was cleared - another address comes next, and the suggestion has to work again.
       if (value.trim() === "") {
         setSuggested(false);
       }
@@ -226,11 +227,11 @@ export function AddCompanyDialog({
   }
 
   /**
-   * Підказка з адреси - один раз на вставлену адресу.
+   * The suggestion from the address - once per pasted address.
    *
-   * Повторювати її на кожному виході з поля не можна: користувач, який дописав
-   * до домену шлях (`bosch.com` - `bosch.com/careers`), побачив би, що підказка
-   * знову обрізала адресу до домену.
+   * It cannot repeat on every blur: a user who added a path to the domain
+   * (`bosch.com` - `bosch.com/careers`) would see the suggestion cut the
+   * address down to the domain again.
    */
   function suggestFromUrl(nextFocus: EventTarget | null) {
     if (isSuggested || fields.url.trim() === "") {
@@ -239,8 +240,8 @@ export function AddCompanyDialog({
 
     const suggestion = suggestCompanyFields(fields.url);
 
-    // Криву адресу підказка не розбирає - тоді поля лишаються як є, а про
-    // помилку скаже Server Action.
+    // The suggestion does not parse a bad address - the fields stay as they
+    // are, and the Server Action reports the error.
     if (
       suggestion.url === "" &&
       suggestion.name === "" &&
@@ -249,11 +250,12 @@ export function AddCompanyDialog({
       return;
     }
 
-    // Підказка приходить на виході з поля адреси - тобто тоді, коли фокус уже
-    // в наступному полі. Якщо це поле назви, користувач клікнув туди, щоб
-    // написати назву сам: вписана в цю мить підказка склеїлася б із його
-    // текстом («AcmeAcme Corp», задача 6.12). Виділити підказку, щоб друк її
-    // замінив, у цю мить не можна: фокус іще не в полі назви (перевірено).
+    // The suggestion arrives when focus leaves the address field - that is, when
+    // focus is already in the next field. If that is the name field, the user
+    // clicked there to type the name themselves: a suggestion written at that
+    // moment would be glued to their text ("AcmeAcme Corp", task 6.12). Selecting
+    // the suggestion so that typing replaces it is not possible at that moment:
+    // focus is not in the name field yet (checked).
     const isTypingName =
       nextFocus instanceof HTMLInputElement && nextFocus.name === "name";
     const suggestsName =
@@ -263,8 +265,9 @@ export function AddCompanyDialog({
 
     setSuggested(true);
     setFields((previous) => ({
-      // Адреса ATS головного сайту не дає, і поле стає порожнім свідомо: сама
-      // адреса переїхала в карʼєрне поле, а сайт компанії вписує користувач.
+      // An ATS address gives no main site, and the field is left empty on
+      // purpose: the address moved to the career field, and the user types the
+      // company site.
       url: suggestion.url,
       name: suggestsName ? suggestion.name : previous.name,
       careerUrl: suggestsCareerUrl ? suggestion.careerUrl : previous.careerUrl,
@@ -272,11 +275,11 @@ export function AddCompanyDialog({
   }
 
   /**
-   * Find pages: пошук кар'єрних джерел за сайтом і назвою на сервері.
+   * Find pages: a server-side search for career sources by site and name.
    *
-   * Назва береться з поля, а якщо воно ще порожнє - з підказки за адресою:
-   * натискання кнопки знімає фокус із поля адреси, і підказка в цю мить ще не
-   * встигла записатися в стан.
+   * The name comes from the field, or, while it is still empty, from the
+   * suggestion for the address: clicking the button takes focus off the address
+   * field, and at that moment the suggestion has not reached state yet.
    */
   function findPages() {
     const name = fields.name.trim() || suggestCompanyFields(fields.url).name;
@@ -311,10 +314,10 @@ export function AddCompanyDialog({
   }
 
   /**
-   * Зберігає вставлену адресу ще одним джерелом знайденої компанії.
+   * Saves the pasted address as one more source of the company found.
    *
-   * Адреса береться з поля карʼєрної сторінки: саме туди її поклала підказка,
-   * коли впізнала в ній не головний сайт (`suggestCompanyFields`).
+   * The address comes from the career page field: that is where the suggestion
+   * put it after recognising it is not the main site (`suggestCompanyFields`).
    */
   function addAsSource(companyId: string) {
     startAddingSource(async () => {
@@ -330,10 +333,10 @@ export function AddCompanyDialog({
   }
 
   /**
-   * Перевіряє адресу на виході з поля.
+   * Checks the address when focus leaves the field.
    *
-   * Порожнє поле помилкою не вважається: адреса компанії обовʼязкова, але про
-   * це скаже Save, а не вихід із поля, у яке ще нічого не встигли ввести.
+   * An empty field is not an error: the company address is required, but Save
+   * says so, not leaving a field where nothing was typed yet.
    */
   function checkAddress(field: "url" | "careerUrl") {
     const typed = fields[field].trim();
@@ -356,12 +359,12 @@ export function AddCompanyDialog({
   const sameDomain = failure?.problem === "same-domain" ? failure : null;
   const sameName = failure?.problem === "same-name" ? failure : null;
 
-  // Помилка поля йде в `FieldError` разом з `isInvalid`: проп
-  // `validationErrors` у встановленій версії живе на `Form`, а не на полі.
+  // A field error goes to `FieldError` together with `isInvalid`: in the
+  // installed version the `validationErrors` prop lives on `Form`, not on the field.
   const nameError =
     failure?.problem === "name-required" ? t("errors.nameRequired") : null;
 
-  // Клієнтська відмова свіжіша за стан минулого надсилання, тому йде першою.
+  // A client-side refusal is newer than the state of the last submission, so it comes first.
   const urlError = refusals.url
     ? tUrlError(URL_ERROR_KEYS[refusals.url])
     : failure?.problem === "company-url"
@@ -370,8 +373,8 @@ export function AddCompanyDialog({
         ? t("errors.alreadyAdded", { name: failure.company.name })
         : null;
 
-  // Find pages без сайту й назви: шукати нема за чим. Стосується пари полів,
-  // тому стоїть окремо, а не в `FieldError`.
+  // Find pages without a site and a name: there is nothing to search by. It is
+  // about a pair of fields, so it stands apart, not in a `FieldError`.
   const addressError = findError !== null ? t("errors.addressRequired") : null;
 
   const sourceFailure =
@@ -392,17 +395,17 @@ export function AddCompanyDialog({
               : null;
 
   /**
-   * Компанії, яким можна віддати вставлену адресу замість створення нової
-   * картки.
+   * Companies that can take the pasted address instead of creating a new
+   * card.
    *
-   * Два випадки: точний збіг із сайтом уже доданої компанії (картка 2.16) і
-   * збіг за назвою (картка 2.17) - одна компанія публікує вакансії на кількох
-   * платформах, і кожна наступна адреса має лягати в наявну картку.
+   * Two cases: an exact match with the site of an existing company (task 2.16)
+   * and a match by name (task 2.17) - one company publishes vacancies on several
+   * platforms, and every next address should go into the existing card.
    *
-   * Умова на поле карʼєрної сторінки спільна: якщо користувач вставив сам
-   * головний сайт, додавати як джерело нічого.
+   * The condition on the career page field is shared: if the user pasted only
+   * the main site, there is nothing to add as a source.
    *
-   * Потрібні тільки `id` і назва - цього досить і для кнопки, і для виклику.
+   * Only `id` and the name are needed - enough for the button and for the call.
    */
   const attachTargets: { id: string; name: string }[] =
     fields.careerUrl.trim() === ""
@@ -418,10 +421,10 @@ export function AddCompanyDialog({
       <Button onPress={openDialog}>{t("open")}</Button>
 
       <Modal.Backdrop isOpen={overlay.isOpen} onOpenChange={overlay.setOpen}>
-        {/* Довгий вміст скролиться всередині вікна: без цього
-                  `modal__dialog` обрізає його (`overflow-clip`), і в компанії
-                  з трьома джерелами блок додавання та кнопки опинялися за
-                  межею вікна - до них не було як дотягнутися. */}
+        {/* Long content scrolls inside the window: without this
+                  `modal__dialog` clips it (`overflow-clip`), and for a company
+                  with three sources the add block and the buttons ended up
+                  past the edge of the window, out of reach. */}
         <Modal.Container scroll="inside">
           <Modal.Dialog>
             <WithTooltip label={tCommon("close")}>
@@ -431,20 +434,20 @@ export function AddCompanyDialog({
               <Modal.Heading>{t("title")}</Modal.Heading>
             </Modal.Header>
 
-            {/* Форма надсилається вручну, а не через `action={submit}`:
-                React після дії робить формі `reset`, React Aria бачить цю
-                подію й повідомляє `onChange("")`, тому навіть контрольовані
-                поля втрачали введене - після відмови «вже додана» адреса
-                зникала разом із пропозицією додати її джерелом. Виклик у
-                `startTransition` обовʼязковий, інакше `isPending` з
-                `useActionState` не оновлюється (попередження React «An async
+            {/* The form is submitted by hand, not through `action={submit}`:
+                after the action React calls `reset` on the form, React Aria sees
+                that event and reports `onChange("")`, so even controlled fields
+                lost their input - after an "already added" refusal the address
+                vanished together with the offer to add it as a source. The call
+                inside `startTransition` is required, otherwise `isPending` from
+                `useActionState` does not update (React's warning "An async
                 function with useActionState was called outside of a
-                transition»). Прогресивного покращення це не знімає: модалку
-                все одно відкриває JavaScript. */}
-            {/* Форма - проміжний елемент між `Modal.Dialog` і `Modal.Body`,
-                тому вона мусить сама бути колонкою flex: інакше обмеження
-                висоти до тіла не доходить, і скрол усередині вікна не
-                працює - кнопки опиняються за нижнім краєм. */}
+                transition"). This takes no progressive enhancement away:
+                JavaScript opens the modal anyway. */}
+            {/* The form sits between `Modal.Dialog` and `Modal.Body`, so it has
+                to be a flex column itself: otherwise the height limit never
+                reaches the body, and scrolling inside the window does not
+                work - the buttons end up below the bottom edge. */}
             <form
               className="flex min-h-0 flex-1 flex-col gap-6"
               onSubmit={(event) => {
@@ -455,14 +458,14 @@ export function AddCompanyDialog({
                 startSubmit(() => submit(fieldsToSend));
               }}
             >
-              {/* Вкладка потрібна серверу, щоб сказати, чи показувати нову
-                  компанію в цьому списку. */}
+              {/* The server needs the tab to say whether the new company shows
+                  in this list. */}
               <input type="hidden" name="tab" value={tab} />
               <Modal.Body className="flex flex-col gap-4">
-                {/* Адреса стоїть першою: з неї заповнюються два поля нижче. */}
-                {/* Сайт обовʼязковий (задача company-site-required): посилання
-                    на ATS заповнює кар'єрну сторінку й назву, а сайт компанії
-                    користувач уводить сам. */}
+                {/* The address comes first: the two fields below are filled from it. */}
+                {/* The site is required (task company-site-required): an ATS link
+                    fills in the career page and the name, and the user types
+                    the company site. */}
                 <TextField
                   autoFocus
                   fullWidth
@@ -482,8 +485,8 @@ export function AddCompanyDialog({
                   <span className="text-hint text-muted">{t("urlHint")}</span>
                 </TextField>
 
-                {/* Пошук іде з сервера й читає чужі сайти з паузами
-                    ввічливості - це секунди, тому спінер у кнопці. */}
+                {/* The search runs on the server and reads other sites with
+                    politeness pauses - that takes seconds, hence the spinner. */}
                 <div className="flex flex-col items-start gap-3">
                   <Button
                     type="button"
@@ -563,8 +566,8 @@ export function AddCompanyDialog({
                         </li>
                       ))}
                     </ul>
-                    {/* Той самий прапорець, що й у addCompany: повторний Save
-                        проходить попередження, точний дублікат - ні. */}
+                    {/* The same flag as in addCompany: a repeated Save gets past
+                        the warning, an exact duplicate does not. */}
                     <input type="hidden" name="confirmed" value="true" />
                   </div>
                 ) : null}
@@ -577,9 +580,9 @@ export function AddCompanyDialog({
                         : t("addAsSourceChoose")}
                     </p>
 
-                    {/* Підпис спільний на всі кнопки: він описує саме цю
-                        адресу, а не компанію, якій вона дістанеться. Ним
-                        розрізняють платформи однієї компанії в списку джерел. */}
+                    {/* One label for all the buttons: it describes this address,
+                        not the company it goes to. It tells one company's
+                        platforms apart in the list of sources. */}
                     <TextField
                       fullWidth
                       value={sourceLabel}
@@ -589,12 +592,12 @@ export function AddCompanyDialog({
                       <Input />
                     </TextField>
 
-                    {/* Кнопка на кожну знайдену компанію: однойменних може бути
-                        кілька, і яка з них основна - знає тільки користувач.
+                    {/* One button per company found: there may be several with
+                        the same name, and only the user knows which one is meant.
 
-                        Кнопки кличуть окрему дію, тому `type="button"`: інакше
-                        вони надіслали б форму ще раз і знову впали б у те саме
-                        попередження. */}
+                        The buttons call a separate action, hence
+                        `type="button"`: otherwise they would submit the form
+                        again and hit the same warning. */}
                     <div className="flex flex-wrap gap-2">
                       {attachTargets.map((company) => (
                         <Button
@@ -611,9 +614,9 @@ export function AddCompanyDialog({
                   </div>
                 ) : null}
 
-                {/* Відмова про пару полів: яке з двох заповнити - вибір
-                    користувача, тому текст стоїть під ними обома, а не в
-                    одному `FieldError`. */}
+                {/* A refusal about the pair of fields: which of the two to fill
+                    is the user's choice, so the text stands under both, not in
+                    one `FieldError`. */}
                 {addressError ? (
                   <p className="text-sm text-danger">{addressError}</p>
                 ) : null}
@@ -623,8 +626,8 @@ export function AddCompanyDialog({
                 <Button slot="close" variant="secondary" type="button">
                   {t("cancel")}
                 </Button>
-                {/* Save неактивна, доки немає назви й сайту (аудит
-                    інтерфейсу, B4): порожній Save не казав, чого бракує. */}
+                {/* Save is disabled until there is a name and a site (UI audit,
+                    B4): an empty Save never said what was missing. */}
                 <Button
                   type="submit"
                   isPending={isPending}

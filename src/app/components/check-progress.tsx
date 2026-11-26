@@ -6,11 +6,11 @@ import { useTranslations } from "next-intl";
 import { useCheckStatus } from "./check-status-provider";
 
 /**
- * Індикатор загальної перевірки в шапці: «Checking 37/120»
- * (src/server/checks/README.md). Лічильник - перевірені джерела разом
- * із невдалими. Видно лише поки запуск активний; стан дає опитування
- * (`check-status-provider.tsx`), а після Check all - її відповідь, тож
- * індикатор зʼявляється одразу.
+ * The general check indicator in the header: "Checking 37/120"
+ * (src/server/checks/README.md). The counter is the checked sources including
+ * the failed ones. It shows only while a run is active; polling gives the state
+ * (`check-status-provider.tsx`), and after Check all its response does, so the
+ * indicator appears at once.
  */
 export function CheckProgress() {
   const t = useTranslations("Nav");
@@ -18,8 +18,8 @@ export function CheckProgress() {
   const run = status?.run;
 
   return (
-    // Живий регіон існує завжди, а текст у ньому зʼявляється: читалка екрана
-    // оголошує зміну лише в регіоні, який уже був на сторінці.
+    // The live region always exists and only its text appears: a screen reader
+    // announces a change only in a region that was already on the page.
     <div role="status" className="ml-auto text-sm text-muted">
       {run ? (
         <span className="flex items-center gap-2">

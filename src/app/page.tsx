@@ -23,9 +23,9 @@ export default async function JobsPage({ searchParams }: PageProps<"/">) {
     countVacanciesByTab(db, user.id),
   ]);
 
-  // Порожня вкладка пояснює причину: якщо вакансій
-  // немає зовсім - їх ще ніде шукати, і текст веде в Companies; інакше
-  // порожня саме ця вкладка.
+  // An empty tab explains why: if there are no vacancies at all, there is
+  // nowhere to look for them yet, and the text leads to Companies; otherwise it
+  // is just this tab that is empty.
   const emptyByTab: Record<JobsTab, string> = {
     unread: t("emptyUnread"),
     read: t("emptyRead"),
@@ -35,7 +35,7 @@ export default async function JobsPage({ searchParams }: PageProps<"/">) {
 
   return (
     <JobsBoard
-      // Ключ - вкладка: показані рядки однієї не мають перетікати в іншу.
+      // The key is the tab: the shown rows of one tab must not leak into another.
       key={tab}
       tab={tab}
       title={t("title")}

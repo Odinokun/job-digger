@@ -13,11 +13,11 @@ import {
 import { importCsvAction } from "./actions";
 
 /**
- * Import CSV з підсумком (задача 6.06).
+ * Import CSV with a summary (task 6.06).
  *
- * Звичайна форма з файлом: Server Action приймає `FormData` з `File`
- * напряму. Розмір перевіряється ще тут, до відправлення: більший файл Next
- * відкинув би сам, без зрозумілого повідомлення.
+ * A plain form with a file: the Server Action takes `FormData` with a `File`
+ * directly. The size is checked here already, before sending: Next would reject
+ * a bigger file by itself, without a clear message.
  */
 export function CsvImport() {
   const t = useTranslations("SettingsPage.import");
@@ -37,14 +37,15 @@ export function CsvImport() {
   return (
     <form
       action={submit}
-      // React скидає поля форми після дії, тож і вибраного файлу далі немає.
+      // React resets the form fields after the action, so the chosen file is gone too.
       onSubmit={() => setFileName(null)}
       className="flex flex-col items-start gap-3"
     >
-      {/* Системний вибір файлу («Choose File / No file chosen») мав інший
-          шрифт і вигляд, ніж усе навколо (аудит інтерфейсу, B5). Тож саме
-          поле приховане, а відкриває його кнопка застосунку; назва файлу -
-          поруч. Поле лишається у формі: Server Action бере файл з FormData. */}
+      {/* The system file picker ("Choose File / No file chosen") had a different
+          font and look from everything around it (UI audit, B5). So the field
+          itself is hidden, and an app button opens it; the file name is shown
+          next to it. The field stays in the form: the Server Action takes the
+          file from FormData. */}
       <input
         ref={fileInput}
         type="file"
@@ -71,8 +72,8 @@ export function CsvImport() {
           {fileName ?? t("noFile")}
         </span>
       </div>
-      {/* Основна кнопка: неактивна вона помітно блідіша, ніж вторинна з
-          рамкою, тож видно, що імпорт ще недоступний. */}
+      {/* A primary button: disabled, it is clearly paler than a secondary one
+          with a border, so it shows that import is not available yet. */}
       <Button
         type="submit"
         variant="primary"
@@ -87,8 +88,8 @@ export function CsvImport() {
         )}
       </Button>
       <p className="text-hint text-muted">{t("hint")}</p>
-      {/* Підсумок і відмови - живий регіон: результат приходить після
-          відправлення, і читач екрана має його почути. */}
+      {/* The summary and the refusals are a live region: the result arrives
+          after sending, and a screen reader has to announce it. */}
       <p role="status" className="text-sm">
         {tooLarge ? t("refused.too-large") : <ResultText result={result} />}
       </p>

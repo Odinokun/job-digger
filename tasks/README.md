@@ -179,7 +179,7 @@ PR: #57
 | [Ліцензія і перевірка історії](public-license-history.md)                                        | done      |
 | [Прибрати план docs/](remove-docs-plan.md)                                                       | done      |
 | [CLAUDE.md і .claude/ англійською](claude-md-english.md)                                         | done      |
-| [Переклад src/app](translate-app.md)                                                             | backlog   |
+| [Переклад src/app](translate-app.md)                                                             | done      |
 | [Переклад src/server](translate-server.md)                                                       | backlog   |
 | [Переклад src/lib, e2e і конфігів](translate-lib-e2e.md)                                         | backlog   |
 | [Кореневий README для стороннього читача](public-readme.md)                                      | backlog   |
