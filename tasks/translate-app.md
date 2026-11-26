@@ -9,3 +9,5 @@
 - [x] `src/app/README.md` англійською
 - [x] Посилання на нові якорі `src/app/README.md`
 - [x] Коментарі в коді `src/app`
+
+PR: #163
