@@ -13,8 +13,8 @@ describe("lastGeneralCheckStartedAt", () => {
   });
 
   it("is the latest start, whether that check finished or still runs", async () => {
-    // Ручний Check all перезапускає відлік так само, як автоматичний, а
-    // перевірка, що йде, теж рахується: інакше розклад запускав би ще одну.
+    // A manual Check all restarts the count the same way as an automatic one, and
+    // a check in progress counts too: otherwise the schedule would start another one.
     const user = await seedSystemUser(testDb);
     const latest = new Date("2026-11-20T09:00:00Z");
     await testDb.insert(checkRuns).values([

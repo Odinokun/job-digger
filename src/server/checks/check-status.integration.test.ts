@@ -78,8 +78,8 @@ function minutesAfter(from: Date, minutes: number): Date {
 
 describe("check summary", () => {
   it("offers the summary of a finished run that was not shown yet", async () => {
-    // Перевірка часто завершується при закритій вкладці - підсумок має
-    // дочекатися наступного відкриття (src/server/checks/README.md).
+    // A check often finishes while the tab is closed - the summary has to wait for
+    // the next opening (src/server/checks/README.md).
     const user = await seedSystemUser(testDb);
     const [run] = await testDb
       .insert(checkRuns)
@@ -141,8 +141,8 @@ describe("check summary", () => {
   });
 
   it("marks the shown summary and every older one as shown", async () => {
-    // Інакше після кількох автоперевірок за відсутності підсумки спливали б
-    // один за одним.
+    // Otherwise, after several auto-checks in the user's absence, the summaries
+    // would pop up one after another.
     const user = await seedSystemUser(testDb);
     const [older, latest] = await testDb
       .insert(checkRuns)

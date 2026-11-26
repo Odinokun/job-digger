@@ -1,6 +1,6 @@
 /**
- * Старт розкладу автоперевірки в процесі сервера Next - його викликає
- * `src/instrumentation.ts` один раз на старті сервера, поруч із циклом черги.
+ * Starting the auto-check schedule in the Next server process -
+ * `src/instrumentation.ts` calls it once at server startup, next to the queue loop.
  */
 import { getDb } from "../db/client.ts";
 import { parseAutoCheckEnabled } from "./auto-check-env.ts";
@@ -10,14 +10,14 @@ import {
 } from "./auto-check-scheduler.ts";
 import { runAutoChecks } from "./auto-check.ts";
 
-// Один розклад на процес - той самий хід, що в `queue/start.ts`: у dev-режимі
-// Next перезавантажує серверні модулі, і змінна модуля обнулялася б.
+// One schedule per process - the same approach as in `queue/start.ts`: in dev mode
+// Next reloads server modules, and a module variable would be reset.
 const globalForAutoChecks = globalThis as typeof globalThis & {
   jobDiggerAutoCheckScheduler?: AutoCheckScheduler;
 };
 
 export function startAutoChecks(): void {
-  // Хибне значення `AUTO_CHECK` зупиняє старт сервера, а не ховається.
+  // An invalid `AUTO_CHECK` value stops the server start instead of hiding.
   if (!parseAutoCheckEnabled(process.env.AUTO_CHECK)) return;
   if (globalForAutoChecks.jobDiggerAutoCheckScheduler) return;
 

@@ -1,6 +1,6 @@
 /**
- * Список History: завершені загальні перевірки від
- * найновішої, порціями з курсором.
+ * The History list: finished general checks, newest first, in batches with a
+ * cursor.
  */
 import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -10,7 +10,7 @@ import { parseCursor, type Cursor } from "../../lib/pagination/cursor.ts";
 import { checkRuns } from "../db/schema.ts";
 import { DB_TIME_PATTERN, dbTimeText } from "../db/time.ts";
 
-/** Порція History: 20 записів, Load more додає наступні 20. */
+/** A History batch: 20 records, Load more adds the next 20. */
 export const HISTORY_PAGE_SIZE = 20;
 
 export interface CheckRunPage {
@@ -27,7 +27,7 @@ export async function listCheckRuns(
   }: {
     userId: string;
     limit?: number;
-    /** Курсор із клієнта: непридатний означає «почни з початку». */
+    /** The cursor from the client: an unusable one means "start from the beginning". */
     after?: Cursor | null;
   },
 ): Promise<CheckRunPage> {
@@ -43,22 +43,22 @@ export async function listCheckRuns(
       newVacancies: checkRuns.newVacancies,
       removedVacancies: checkRuns.removedVacancies,
       durationMs: sql<number>`(extract(epoch from ${checkRuns.finishedAt} - ${checkRuns.startedAt}) * 1000)::float8`,
-      // Час запуску з мікросекундами: курсор із JS `Date` губив би їх, і
-      // рядок на межі порції приходив би вдруге (`db/time.ts`).
+      // The start time with microseconds: a cursor from a JS `Date` would lose
+      // them, and a row at the batch boundary would come a second time (`db/time.ts`).
       cursorKey: dbTimeText(checkRuns.startedAt),
     })
     .from(checkRuns)
     .where(
       and(
         eq(checkRuns.userId, userId),
-        // Перевірка, що ще йде, у History не потрапляє.
+        // A check still in progress does not get into History.
         isNotNull(checkRuns.finishedAt),
         cursor
           ? sql`(${checkRuns.startedAt}, ${checkRuns.id}) < (${cursor.key}::timestamptz, ${cursor.id}::uuid)`
           : undefined,
       ),
     )
-    // `id` робить порядок однозначним, якщо дві перевірки стартували разом.
+    // `id` makes the order unambiguous if two checks started at the same time.
     .orderBy(desc(checkRuns.startedAt), desc(checkRuns.id))
     .limit(limit + 1);
 
@@ -67,7 +67,7 @@ export async function listCheckRuns(
   const last = visible.at(-1);
 
   return {
-    // Ключ курсора - службове поле запиту, у рядок History він не йде.
+    // The cursor key is an internal field of the query; it does not go into the History row.
     items: visible.map((row) => ({
       id: row.id,
       startedAt: row.startedAt,

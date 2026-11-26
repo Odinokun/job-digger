@@ -1,7 +1,7 @@
 /**
- * Check all: загальна перевірка всіх компаній з вкладки Tracked
- * (src/server/checks/README.md). Тут лише постановка в чергу - самі
- * джерела перевіряє цикл черги (`queue/worker.ts`).
+ * Check all: a general check of every company on the Tracked tab
+ * (src/server/checks/README.md). Only the queuing is here - the queue loop checks
+ * the sources themselves (`queue/worker.ts`).
  */
 import { and, eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -17,11 +17,11 @@ import { type CheckAllDepthMode, taskReadDepth } from "./read-depth.ts";
 export interface StartCheckAllInput {
   userId: string;
   /**
-   * Скільки читати з кожного джерела (задача 6.16): ручний Check all - лише
-   * першу сторінку, автоперевірка - `auto` (`read-depth.ts`).
+   * How much to read from each source (task 6.16): a manual Check all reads only
+   * the first page, an auto-check uses `auto` (`read-depth.ts`).
    */
   depthMode: CheckAllDepthMode;
-  /** Час запуску - Date & time у History. */
+  /** The start time - Date & time in History. */
   now: Date;
 }
 
@@ -34,8 +34,8 @@ export async function startCheckAll(
   { userId, depthMode, now }: StartCheckAllInput,
 ): Promise<StartCheckAllResult> {
   return db.transaction(async (tx) => {
-    // Вкладка Tracked - компанії з хоча б одним джерелом, що відстежується,
-    // тож досить узяти самі такі джерела.
+    // The Tracked tab holds companies with at least one tracked source, so taking
+    // just those sources is enough.
     const sources = await tx
       .select({
         id: careerSources.id,
@@ -51,9 +51,9 @@ export async function startCheckAll(
       return { ok: false, reason: "nothing-to-check" };
     }
 
-    // Одну активну перевірку на користувача тримає частковий унікальний
-    // індекс. `do nothing` замість винятку: другий одночасний клік дочекається
-    // першої транзакції і просто нічого не вставить.
+    // A partial unique index holds one active check per user. `do nothing` instead
+    // of an exception: a second simultaneous click waits for the first transaction
+    // and simply inserts nothing.
     const [run] = await tx
       .insert(checkRuns)
       .values({ userId, startedAt: now, sourcesTotal: sources.length })

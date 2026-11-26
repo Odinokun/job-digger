@@ -14,7 +14,7 @@ function hoursBefore(hours: number): Date {
   return new Date(now.getTime() - hours * 3_600_000);
 }
 
-/** Користувач із однією відстежуваною компанією - Check all є що перевіряти. */
+/** A user with one tracked company - Check all has something to check. */
 async function userWithTrackedCompany(email?: string) {
   const user =
     email === undefined
@@ -34,7 +34,7 @@ async function userWithTrackedCompany(email?: string) {
   return user;
 }
 
-/** Завершена загальна перевірка, що стартувала `hours` тому. */
+/** A finished general check that started `hours` ago. */
 async function checkedHoursAgo(userId: string, hours: number) {
   await testDb.insert(checkRuns).values({
     userId,
@@ -79,7 +79,7 @@ describe("runAutoChecks", () => {
   });
 
   it("checks on startup when the last check is over an hour old", async () => {
-    // Інтервал 6 годин ще не минув, але на старті правило інше.
+    // The 6-hour interval has not passed yet, but the rule is different at startup.
     const user = await userWithTrackedCompany();
     await checkedHoursAgo(user.id, 2);
 
@@ -98,9 +98,9 @@ describe("runAutoChecks", () => {
   });
 
   it("skips while a general check is still running", async () => {
-    // Розділ 8: автоперевірка, час якої настав під час іншої, пропускається.
-    // Відлік іде від старту тієї, що йде, тож тут і часу ще немає - перевіряємо
-    // обидва правила старту.
+    // An auto-check that falls due during another one is skipped. The count goes
+    // from the start of the one in progress, so it is not even time yet here -
+    // we check both startup rules.
     const user = await userWithTrackedCompany();
     await testDb
       .insert(checkRuns)

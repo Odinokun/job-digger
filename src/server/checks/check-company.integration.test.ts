@@ -19,11 +19,11 @@ import { startFakeWeb, type FakeWeb } from "../http/testing/fake-web.ts";
 import { checkCompany } from "./check-company.ts";
 import { companySiteValues } from "../db/testing/company-values.ts";
 
-/** Розклад запитів тут не перевіряється - він має власні тести. */
+/** Request scheduling is not checked here - it has its own tests. */
 const noLimits: HostLimiter = { run: (_host, task) => task() };
 
 const CHECKED_AT = new Date("2026-11-18T10:00:00Z");
-/** Дошка Discord у збережених відповідях фейкового сервера - 26 вакансій. */
+/** The Discord board in the fake server's saved responses - 26 vacancies. */
 const DISCORD_BOARD_SIZE = 26;
 
 let fakeWeb: FakeWeb;
@@ -56,7 +56,7 @@ interface SourceSeed {
   lastSuccessAt?: Date;
 }
 
-/** Компанія системного користувача з джерелами - повертає id компанії й джерел. */
+/** A company of the system user with sources - returns the company and source ids. */
 async function companyWith(...sources: SourceSeed[]) {
   const user = await seedSystemUser(testDb);
   const [company] = await testDb
@@ -134,7 +134,7 @@ describe("checkCompany", () => {
   it("counts a failed source and keeps its vacancies", async () => {
     const lastSuccess = new Date("2026-11-10T10:00:00Z");
     const { userId, companyId, sourceIds } = await companyWith({
-      // Дошки немає серед збережених відповідей - фейковий сервер дає 404.
+      // The board is not among the saved responses - the fake server gives 404.
       url: "job-boards.greenhouse.io/missing",
       consecutiveFailures: 1,
       lastSuccessAt: lastSuccess,
@@ -190,8 +190,8 @@ describe("checkCompany", () => {
   });
 
   it("refuses while the user's general check is running", async () => {
-    // Компанія і так перевіряється в загальній перевірці - дублікатів завдань
-    // не створюємо (src/server/checks/README.md).
+    // The company is being checked in the general check anyway - we do not create
+    // duplicate tasks (src/server/checks/README.md).
     const { userId, companyId, sourceIds } = await companyWith({
       url: "job-boards.greenhouse.io/discord",
     });
@@ -224,7 +224,7 @@ describe("checkCompany", () => {
       url: "job-boards.greenhouse.io/discord",
     });
     const real = client();
-    // Користувач видаляє компанію, поки відповідь сайту ще в дорозі.
+    // The user deletes the company while the site's response is still on its way.
     const deletingClient: HttpClient = {
       async get(url) {
         await testDb.delete(companies).where(eq(companies.id, companyId));

@@ -15,8 +15,8 @@ describe("parseAutoCheckEnabled", () => {
   });
 
   it("refuses anything else instead of guessing", () => {
-    // `false`, `0`, `OFF` - людина явно хотіла вимкнути, і мовчки лишити
-    // перевірки ввімкненими було б гірше за помилку на старті.
+    // `false`, `0`, `OFF` - the person clearly wanted to turn it off, and quietly
+    // keeping the checks on would be worse than an error at startup.
     expect(() => parseAutoCheckEnabled("false")).toThrow(/AUTO_CHECK/);
     expect(() => parseAutoCheckEnabled("OFF")).toThrow(/AUTO_CHECK/);
     expect(() => parseAutoCheckEnabled("0")).toThrow(/AUTO_CHECK/);

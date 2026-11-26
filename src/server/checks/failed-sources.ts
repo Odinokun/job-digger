@@ -1,7 +1,7 @@
 /**
- * Failed Sources Drawer: невдалі джерела останньої загальної перевірки і Retry
- * для них (src/server/checks/README.md). Правила - README.md поруч,
- * «Невдалі джерела».
+ * The Failed Sources Drawer: the failed sources of the last general check and Retry
+ * for them (src/server/checks/README.md). The rules are in the README.md next to
+ * this file, "Failed sources".
  */
 import { and, eq, isNull, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -20,15 +20,15 @@ interface FailedRow extends Record<string, unknown> {
   url: string;
   label: string | null;
   run_error: CheckTaskError;
-  /** Статус найсвіжішого Retry після перевірки, якщо він був. */
+  /** The status of the freshest Retry after the check, if there was one. */
   retry_status: "queued" | "running" | "succeeded" | "failed" | null;
-  /** Помилка найсвіжішого невдалого Retry, якщо він був. */
+  /** The error of the freshest failed Retry, if there was one. */
   retry_error: CheckTaskError | null;
-  /** Скільки читало завдання, що впало, - Retry читає стільки ж (6.16). */
+  /** How much the failed task read - Retry reads the same (6.16). */
   read_depth: ReadDepth;
 }
 
-/** Невдале джерело разом із глибиною, яку повторить Retry. */
+/** A failed source together with the depth Retry will repeat. */
 interface FailedWithDepth {
   item: FailedSource;
   readDepth: ReadDepth;
@@ -40,7 +40,7 @@ export async function listFailedSources(
 ): Promise<FailedSourcesList> {
   const { items, canRetry } = await loadFailedSources(db, { userId });
 
-  // Глибина - внутрішня справа Retry, у drawer вона не їде.
+  // The depth is Retry's internal business; it does not go to the drawer.
   return { items: items.map(({ item }) => item), canRetry };
 }
 
@@ -95,7 +95,7 @@ async function loadFailedSources(
 
   const items: FailedWithDepth[] = [];
   for (const row of rows.rows) {
-    // Retry вдався - джерело зникає з drawer.
+    // Retry succeeded - the source leaves the drawer.
     if (row.retry_status === "succeeded") continue;
 
     const error = row.retry_error ?? row.run_error;
@@ -105,8 +105,8 @@ async function loadFailedSources(
         companyName: row.company_name,
         url: row.url,
         label: row.label,
-        // Без приведення: нова причина в `CheckTaskError` без пари в
-        // `FailureReason` ламає типи тут.
+        // No cast: a new reason in `CheckTaskError` without a counterpart in
+        // `FailureReason` breaks the types here.
         reason: error.reason,
         httpStatus: error.reason === "bad-status" ? error.status : null,
         isRetrying:
@@ -121,7 +121,7 @@ async function loadFailedSources(
 
 export interface RetryFailedSourcesInput {
   userId: string;
-  /** Конкретні джерела (Retry) або всі невдалі (Retry all failed). */
+  /** Specific sources (Retry) or all failed ones (Retry all failed). */
   sourceIds: string[] | "all";
   now: Date;
 }
@@ -130,9 +130,10 @@ export type RetryFailedSourcesResult =
   { ok: true; queued: number } | { ok: false; reason: "check-running" };
 
 /**
- * Ставить Retry у чергу: ручне завдання поза запуском, тож рядок History не
- * змінюється, а черга бере його раніше за фонові. Повторюються лише джерела зі
- * списку drawer, які ще не чекають на свій Retry: id приходять із клієнта.
+ * Queues a Retry: a manual task outside the run, so the History row does not
+ * change, and the queue takes it ahead of background tasks. Only sources from the
+ * drawer's list that are not already waiting for their Retry are retried: the ids
+ * come from the client.
  */
 export async function retryFailedSources(
   db: NodePgDatabase,

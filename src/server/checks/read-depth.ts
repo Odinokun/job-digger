@@ -1,17 +1,16 @@
 /**
- * Глибина читання завдань загальної перевірки (задача 6.16, рішення автора
- * 20.11.2026). Повна таблиця «хто скільки читає» - README поруч, «Глибина
- * читання».
+ * The read depth of general check tasks (task 6.16). The full table of "who reads
+ * how much" is in the README next to this file, "Read depth".
  */
 import type { ReadDepth } from "../parsers/vacancies-to-check.ts";
 
-/** Повне читання в автоперевірці - не частіше ніж раз на добу на джерело. */
+/** A full read in an auto-check - at most once a day per source. */
 export const FULL_READ_EVERY_MS = 24 * 60 * 60 * 1000;
 
 /**
- * - `first-page` - ручний Check all: лише перша сторінка кожного джерела;
- * - `auto` - автоперевірка: повністю, якщо джерело не читалось повністю
- *   добу й довше, інакше перша сторінка.
+ * - `first-page` - a manual Check all: only the first page of each source;
+ * - `auto` - an auto-check: in full if the source has not been read in full for a
+ *   day or longer, otherwise the first page.
  */
 export type CheckAllDepthMode = "first-page" | "auto";
 

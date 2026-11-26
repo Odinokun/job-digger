@@ -46,7 +46,7 @@ describe("createAutoCheckScheduler", () => {
 
     scheduler.start();
     await vi.advanceTimersByTimeAsync(20_000);
-    // `stop` чекає прохід, що йде, а той стоїть на фейковому таймері.
+    // `stop` waits for the pass in progress, which is stuck on the fake timer.
     const stopping = scheduler.stop();
     await vi.advanceTimersByTimeAsync(5_000);
     await stopping;
@@ -55,7 +55,7 @@ describe("createAutoCheckScheduler", () => {
   });
 
   it("keeps ticking after a failed pass", async () => {
-    // База могла бути недоступна - наступний тік спробує знову.
+    // The database might have been unavailable - the next tick tries again.
     const errors = vi.spyOn(console, "error").mockImplementation(() => {});
     let calls = 0;
     const scheduler = createAutoCheckScheduler({

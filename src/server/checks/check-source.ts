@@ -1,7 +1,7 @@
 /**
- * Перевірка одного карʼєрного джерела: прочитати парсером, застосувати
- * життєвий цикл вакансій і записати стан перевірки джерела. Спільна для Check
- * now (`check-company.ts`) і черги (`queue/run-task.ts`).
+ * Checking one career source: read it with a parser, apply the vacancy lifecycle
+ * and record the source's check state. Shared by Check now (`check-company.ts`)
+ * and the queue (`queue/run-task.ts`).
  */
 import { eq, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -18,28 +18,28 @@ export interface SourceToCheck {
   id: string;
   url: string;
   platform: CareerPlatform;
-  /** Рецепт власної сторінки (задача 6.21); в інших платформ - `null`. */
+  /** The own page's recipe (task 6.21); `null` for other platforms. */
   vacancyLinkPrefix: string | null;
 }
 
-/** Підсумок перевірки джерела - те, що черга записує в завдання і запуск. */
+/** The outcome of a source check - what the queue records into the task and the run. */
 export type SourceCheckOutcome =
   | {
       ok: true;
       newVacancies: number;
       removedVacancies: number;
-      /** Записи, пропущені парсером через ваду даних - parse warning. */
+      /** Records the parser skipped because of bad data - the parse warning. */
       skipped: number;
     }
   | { ok: false; error: ParserError };
 
 /**
- * Перевіряє джерело. `null` - для платформи ще немає парсера: таке джерело не
- * перевіряється взагалі, тож і стан перевірки в нього не змінюється.
+ * Checks the source. `null` - the platform has no parser yet: such a source is
+ * not checked at all, so its check state does not change either.
  *
- * `depth` - скільки читати (задача 6.16). Повним читанням (`last_full_read_at`)
- * рахується успішне читання з `full` або список, що скінчився сам, навіть із
- * першої сторінки: у Greenhouse перша сторінка і є весь список.
+ * `depth` is how much to read (task 6.16). A successful read with `full` counts as
+ * a full read (`last_full_read_at`), and so does a list that ended by itself even
+ * on the first page: for Greenhouse the first page is the whole list.
  */
 export async function checkSource(
   db: NodePgDatabase,

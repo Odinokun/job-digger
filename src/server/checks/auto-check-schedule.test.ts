@@ -14,8 +14,8 @@ function hoursAfter(from: Date, hours: number): Date {
 
 describe("nextAutoCheckAt", () => {
   it("counts the interval from the start of the last general check", () => {
-    // Від старту, а не від завершення: інакше довга перевірка зсувала б
-    // розклад (src/server/checks/README.md).
+    // From the start, not from the finish: otherwise a long check would shift the
+    // schedule (src/server/checks/README.md).
     expect(nextAutoCheckAt(lastStart, 6)).toEqual(hoursAfter(lastStart, 6));
   });
 
@@ -59,8 +59,8 @@ describe("isAutoCheckDue", () => {
   });
 
   it("follows a changed interval right away", () => {
-    // Користувач скоротив інтервал із 24 до 3 годин через 4 години після
-    // перевірки: чекати решту доби не треба.
+    // The user shortened the interval from 24 to 3 hours 4 hours after a check:
+    // there is no need to wait for the rest of the day.
     expect(
       isAutoCheckDue({
         lastStartedAt: lastStart,
@@ -71,8 +71,8 @@ describe("isAutoCheckDue", () => {
   });
 
   it("is not due when the last start lies in the future", () => {
-    // Годинник компʼютера перевели назад: краще почекати, ніж перевіряти
-    // щохвилини, доки час не дожене запис у базі.
+    // The computer clock was moved back: better to wait than to check every
+    // minute until the time catches up with the record in the database.
     expect(
       isAutoCheckDue({
         lastStartedAt: lastStart,
@@ -84,8 +84,8 @@ describe("isAutoCheckDue", () => {
 });
 
 describe("isStartupCheckDue", () => {
-  // src/server/checks/README.md: на старті застосунку
-  // загальна перевірка йде одразу, якщо остання була понад годину тому.
+  // src/server/checks/README.md: at app startup a general check runs at once if
+  // the last one was more than an hour ago.
   it("is due when the last general check is more than an hour old", () => {
     expect(
       isStartupCheckDue({
@@ -96,7 +96,7 @@ describe("isStartupCheckDue", () => {
   });
 
   it("waits when the last general check is an hour old or newer", () => {
-    // Тоді відлік просто продовжується за інтервалом.
+    // Then the count simply continues by the interval.
     expect(
       isStartupCheckDue({
         lastStartedAt: lastStart,
