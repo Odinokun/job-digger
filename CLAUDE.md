@@ -4,7 +4,7 @@ A personal app that finds company career pages, checks them for vacancies and sh
 
 **Requirements live in the code, the tests and the README next to the code.** This file does not repeat them: it collects the working rules and gives a map of the architecture. Product rules for each screen are in [src/app/README.md](src/app/README.md#screens-what-they-show-and-what-is-left-out).
 
-**Tasks live in [tasks/README.md](tasks/README.md)**: one table with every task and its status, plus a file per task with its description and steps. The stages are described in the same file, under [«Етапи»](tasks/README.md#етапи).
+**Tasks live in [tasks/README.md](tasks/README.md)**: one table with every task and its status, plus a file per task with its description and steps. The stages are described in the same file, under ["Stages"](tasks/README.md#stages).
 
 ## Stack
 
@@ -35,7 +35,7 @@ Next.js 16 differs from what models learned in training. The docs for the instal
 
 Drizzle is the other way round: the installed version is the stable 0.45.x, while orm.drizzle.team only documents v1 (RC) and keeps no archive for 0.x. Check the API against the types in `node_modules/drizzle-orm/`. Working with the database: [src/server/db/README.md](src/server/db/README.md).
 
-The project is ESM, and Node 26 runs the helper scripts directly, without a bundler. Details and what this means for imports: [README](README.md#стек) and [src/server/db/README.md](src/server/db/README.md).
+The project is ESM, and Node 26 runs the helper scripts directly, without a bundler. Details and what this means for imports: [README](README.md#stack) and [src/server/db/README.md](src/server/db/README.md).
 
 ## Repository layout
 
@@ -68,7 +68,7 @@ Screens: **Jobs** (Unread / Read / Favorites / All), **Companies** (Tracked / No
 - **Stop only for the author's decision:** a requirement reads two ways, a fork changes the result, a new task or dependency is needed, or an action needs a permission prompt. Then ask with `AskUserQuestion` (below) instead of guessing.
 - **A new concept** (tool, API, pattern) the author has not met yet is explained in the step or PR summary, with a link to the official documentation. Infrastructure steps (Docker, the database, the backend) get more detail.
 - The question that asks to approve a new task goes on its own line at the end of the message, not at the end of a sentence.
-- **Start of a session:** `gh pr list --state all --limit 5`. If a PR is merged and its local branch is still there, remove it (see "Git and tasks"). After every merge, remind the author to update the working instance ([README](README.md#робочий-екземпляр)).
+- **Start of a session:** `gh pr list --state all --limit 5`. If a PR is merged and its local branch is still there, remove it (see "Git and tasks"). After every merge, remind the author to update the working instance ([WORKING-INSTANCE.md](WORKING-INSTANCE.md#updating)).
 - **Choices as tabs, not as a list in the text.** When the decision is the author's and there are several options, Claude asks with `AskUserQuestion`: one tab per option, the first marked as recommended, each with what it means and what it costs. This covers forks in the code and small process questions alike: whether a task is needed, where a change goes, what to do with a branch. With a single option or an obvious answer, just do it and report.
 - The pace can change at any time ("explain less", "these steps can be merged").
 
@@ -83,10 +83,10 @@ Screens: **Jobs** (Unread / Read / Favorites / All), **Companies** (Tracked / No
 ## Language
 
 - **English:** documentation (READMEs, `CLAUDE.md`, `.claude/`), code comments, commits, PR titles and descriptions, names in code (variables, functions, files, tables and columns), test names, logs and technical error messages.
-- **Ukrainian:** the files in `tasks/`. They are the author's working notes.
-- The root `README.md` is still in Ukrainian: task `public-readme` translates it. Cyrillic left in code and READMEs elsewhere is data (company names, button texts and career words the parsers match, test inputs). New text is written in English straight away.
+- **Ukrainian:** the task files in `tasks/`. They are the author's working notes. The exception is `tasks/README.md`, the entry point for outside readers: it is in English, and a new row in its table gets an English title.
+- Cyrillic left in code and READMEs is data (company names, button texts and career words the parsers match, test inputs). New text is written in English straight away.
 - **UI texts** are in English and Ukrainian, as next-intl keys in two translation files. A test checks that both files have the same keys. Data from websites (vacancy and company names, locations) is never translated.
-- The language is not in the URL: next-intl runs without i18n routing and reads the locale from a cookie, because the language is a personal setting. Details in the [README](README.md#локалізація), code in `src/i18n/`.
+- The language is not in the URL: next-intl runs without i18n routing and reads the locale from a cookie, because the language is a personal setting. Details in the [README](README.md#localization), code in `src/i18n/`.
 
 ## Tests and TDD
 
@@ -98,7 +98,7 @@ Screens: **Jobs** (Unread / Read / Favorites / All), **Companies** (Tracked / No
 
 File names separate the levels: `*.test.ts` are unit tests (Vitest project `unit`), `*.integration.test.ts` use a real database (project `integration`). Run them with `npm test` (everything), `npm run test:unit`, `npm run test:integration`, `npm run test:watch`.
 
-E2E tests live apart from Vitest: folder `e2e/`, files `*.spec.ts`, config `playwright.config.ts`, run with `npm run test:e2e` (also `npm run test:e2e:ui` and `npm run test:e2e:pending`). `npm test` leaves them out because they start the app. Chromium only, and Playwright starts the server itself. Details in the [README](README.md#e2e-тести).
+E2E tests live apart from Vitest: folder `e2e/`, files `*.spec.ts`, config `playwright.config.ts`, run with `npm run test:e2e` (also `npm run test:e2e:ui` and `npm run test:e2e:pending`). `npm test` leaves them out because they start the app. Chromium only, and Playwright starts the server itself. Details in the [README](README.md#e2e-tests).
 
 Integration tests need the database running (`docker compose up -d`) and `TEST_DATABASE_URL`, a separate database rather than the development one. The test setup and the isolation decisions are in [src/server/db/testing/README.md](src/server/db/testing/README.md).
 
@@ -134,7 +134,7 @@ Details: [src/server/http/README.md](src/server/http/README.md) (SSRF, politenes
 
 - A new dependency, plugin, framework or layer of abstraction needs a reason: what already covers the need and what the trade-off is. Nothing is added silently.
 - Do not reproduce the behaviour of libraries, APIs and CLIs from memory: check the official documentation and link it. "I didn't check" is an acceptable answer, a made-up one is not.
-- **Dependency install scripts are approved explicitly.** A package that runs a script on install is reviewed first and then approved with `npm install-scripts approve`; the approval, with its version, lives in the `allowScripts` field of `package.json`. Commands and consequences: [README](README.md#install-скрипти-залежностей).
+- **Dependency install scripts are approved explicitly.** A package that runs a script on install is reviewed first and then approved with `npm install-scripts approve`; the approval, with its version, lives in the `allowScripts` field of `package.json`. Commands and consequences: [README](README.md#dependency-install-scripts).
 - **Formatting is automatic.** The `PostToolUse` hook (`.claude/hooks/format-file.sh`) runs Prettier and `eslint --fix` on every file Claude writes or edits in the project; ESLint errors it cannot fix block the step and show up at once. Files outside the project root are skipped. There is no need to run `npm run format` by hand. Prettier also sorts Tailwind classes (`prettier-plugin-tailwindcss`), so class order in `className` is not a review topic. The `tailwindStylesheet` option in `.prettierrc` points to `src/app/globals.css`; without it the plugin does not see the `@theme` tokens and moves those classes to the front.
 - **ESLint checks Tailwind classes** (`eslint-plugin-tailwindcss`, `recommended` config): a typo in a class is `no-custom-classname`, conflicting classes such as `p-2 p-3` are `no-contradicting-classname` (an error that blocks the step), and `enforces-shorthand` and `enforces-canonical-classname` suggest shorter forms. `classnames-order` is off, since ordering is Prettier's job. `cssConfigPath` in `eslint.config.mjs` points to `src/app/globals.css` and is required for Tailwind v4.
 - ESLint does not know HeroUI's own classes (`button--primary` and the like) and warns about them. That is fine: `className` holds Tailwind utilities, not the library's internal classes. If those ever have to be written by hand, add a `whitelist` to the rule.
