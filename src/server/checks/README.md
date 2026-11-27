@@ -119,7 +119,7 @@ The pieces:
 
 An open page notices an auto-check that has started within a minute: outside a check the
 UI polls once every 60 s while the tab is visible, and at once when the tab is shown
-again (task 6.29, [`lib/README.md`](../../lib/README.md#опитування-стану-перевірки)).
+again (task 6.29, [`lib/README.md`](../../lib/README.md#check-status-polling)).
 
 ## Check summary
 

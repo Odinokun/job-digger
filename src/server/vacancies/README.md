@@ -203,7 +203,7 @@ company: a vacancy has no `user_id` of its own.
 | `all`       | `closed_at is null`                      |
 
 **The cursor** is the same as in the company list
-([`lib/pagination`](../../lib/README.md#курсор-пагінації)), but the key is the tab's sort
+([`lib/pagination`](../../lib/README.md#pagination-cursor)), but the key is the tab's sort
 date **as text from the database**, ISO with microseconds (`to_char`). PostgreSQL stores
 time to the microsecond, and a JS `Date` only to the millisecond: a cursor built from a
 `Date` would lose rows at the batch boundary. A key of another shape is an unusable
