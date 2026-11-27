@@ -31,8 +31,11 @@ export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
 
   // From `sm` (640px) the date and the actions are always on the right: a long
   // title wraps inside the left block (`min-w-0`) instead of pushing them to a
-  // new line. Narrower, there is no room for two columns, and they go under the
-  // title. Aligned to the top: with a two-line title the actions face its start.
+  // new line. Aligned to the top: with a two-line title the actions face its
+  // start. Narrower, the row is a column, and the date and actions are always
+  // under the title, pressed to the right edge. A wrapping row put them next to a
+  // short title and under a long one, in a different place on every row (task
+  // vacancy-row-mobile).
   //
   // The row under the mouse lightens a little - the `bg-surface` card background
   // with a smooth transition (task 6.19). To keep the text in line with the page
@@ -40,7 +43,7 @@ export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
   // margin is at least 16px, and `hover:` in Tailwind v4 applies only where there
   // is a mouse.
   return (
-    <div className="-mx-4 flex flex-wrap items-start justify-between gap-x-6 gap-y-1 rounded-lg px-4 py-3 transition-colors hover:bg-surface sm:flex-nowrap">
+    <div className="-mx-4 flex flex-col gap-x-6 gap-y-1 rounded-lg px-4 py-3 transition-colors hover:bg-surface sm:flex-row sm:items-start sm:justify-between">
       {/* The "new" dot sits in its own narrow column before the title, inside
           the text column, not in the page margin (UI audit, B3): there it almost
           touched the edge of a phone screen. For a read vacancy the column is
@@ -88,7 +91,7 @@ export function VacancyRow({ vacancy, onMark }: VacancyRowProps) {
       {/* An absolute date in the user's locale: the relative format stays for
           "Last checked". The time zone is the one next-intl passes from the
           server, so server and client text match. */}
-      <div className="flex shrink-0 items-center gap-4">
+      <div className="flex shrink-0 items-center justify-end gap-4">
         <time
           dateTime={vacancy.firstDetectedAt.toISOString()}
           className="text-hint text-muted tabular-nums"

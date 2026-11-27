@@ -222,3 +222,4 @@ and READMEs (task [remove-docs-plan](remove-docs-plan.md)). Its last version is 
 | [Translate src/lib, e2e and configs](translate-lib-e2e.md)                                 | done      |
 | [Root README for an outside reader](public-readme.md)                                      | done      |
 | [Flaky e2e/csv.spec.ts](csv-e2e-flake.md)                                                  | done      |
+| [Vacancy row on a phone](vacancy-row-mobile.md)                                            | done      |

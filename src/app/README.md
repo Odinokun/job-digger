@@ -420,7 +420,10 @@ Every new UI change follows them.
    tooltip; below the status line, not next to it. The full address is visible only in
    Edit company.
 7. **Phone (390 px) - no horizontal scrolling**, the menu opens from a burger. Company
-   cards are one column at any width, the page container is `max-w-5xl`.
+   cards are one column at any width, the page container is `max-w-5xl`. In a vacancy
+   row the date and the actions are always under the title and aligned to the right
+   edge below `sm`, whatever the title's length; from `sm` they are on the right of it
+   (task vacancy-row-mobile, checked in `e2e/mobile.spec.ts`).
 8. **After any UI change** - screenshots in both themes at 1280 and 390 px before the PR.
 9. **Accessibility - WCAG 2.2 AA**, details in [Accessibility](#accessibility).
 

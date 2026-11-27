@@ -38,12 +38,17 @@ export default async function JobsLoading() {
 
       <ul className="mt-2 divide-y">
         {Array.from({ length: ROWS }, (_, row) => (
-          <li key={row} className="flex items-start justify-between gap-6 py-3">
+          <li
+            key={row}
+            className="flex flex-col gap-2 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
+          >
             <div className="flex flex-col gap-2">
-              <Skeleton className="h-4 w-72 rounded" />
+              <Skeleton className="h-4 w-72 max-w-full rounded" />
               <Skeleton className="h-3 w-48 rounded" />
             </div>
-            <Skeleton className="h-8 w-40 rounded" />
+            {/* On a phone the date and actions are under the title, on the right -
+                like in a real row (vacancy-row.tsx). */}
+            <Skeleton className="h-8 w-40 self-end rounded sm:self-auto" />
           </li>
         ))}
       </ul>
