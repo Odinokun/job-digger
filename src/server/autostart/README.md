@@ -1,6 +1,6 @@
 # src/server/autostart - starting the working instance
 
-The working instance (the clone in `~/code/job-digger-app`, README, "Робочий екземпляр") starts by itself on macOS login - through a LaunchAgent of the built-in `launchd`, with no new dependencies (task [6.10](../../../tasks/6.10-autostart-on-login.md)). How to use it: [README](../../../README.md#автозапуск).
+The working instance (the clone in `~/code/job-digger-app`, [WORKING-INSTANCE.md](../../../WORKING-INSTANCE.md)) starts by itself on macOS login - through a LaunchAgent of the built-in `launchd`, with no new dependencies (task [6.10](../../../tasks/6.10-autostart-on-login.md)). How to use it: [WORKING-INSTANCE.md](../../../WORKING-INSTANCE.md#autostart).
 
 | File                   | Contents                                                                      |
 | ---------------------- | ----------------------------------------------------------------------------- |
