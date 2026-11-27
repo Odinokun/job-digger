@@ -252,9 +252,9 @@ unfinished run.
   takes about as long as downloading.
 - **When E2E fail**, the run gets a `playwright-report` artifact - an HTML report with the
   trace of the failed scenario, kept for 7 days.
-- **Required checks:** `Lint and types` and `Tests` are the checks to require before
-  merging into `main` (a ruleset or branch protection). Third-party checks such as the
-  GitGuardian secret scanner are better left optional: they may go red because of a
+- **Required checks:** the `main` ruleset requires `Lint and types` and `Tests` to pass
+  before a merge, and forbids force pushes and deleting `main`. Third-party checks such
+  as the GitGuardian secret scanner are left optional: they may go red because of a
   branch's history, which squash merge does not bring into `main`.
 
 To reproduce a CI run locally:
