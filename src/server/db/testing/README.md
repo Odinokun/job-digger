@@ -2,7 +2,7 @@
 
 The harness for integration tests: a real PostgreSQL instead of database mocks.
 `database.ts` is shared with E2E too: their separate database is prepared by the same
-code ([README](../../../../README.md#e2e-тести)).
+code ([README](../../../../README.md#e2e-tests)).
 Test levels and TDD rules: [CLAUDE.md](../../../../CLAUDE.md#tests-and-tdd).
 
 ## Files

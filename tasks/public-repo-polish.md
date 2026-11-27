@@ -22,3 +22,9 @@
 5. [Переклад src/server](translate-server.md)
 6. [Переклад src/lib, e2e і конфігів](translate-lib-e2e.md)
 7. [Кореневий README для стороннього читача](public-readme.md)
+
+## Після останнього merge - руками (автор)
+
+- Зробити репозиторій публічним: GitHub → Settings → General → Danger Zone → Change visibility.
+- Увімкнути обов'язкові перевірки для `main` (на публічному репозиторії вони доступні й на GitHub Free): ruleset або branch protection з «Require status checks to pass» для `Lint and types` і `Tests` (кореневий README, розділ CI).
+- За бажанням - опис і topics репозиторію, закріпити його в профілі.
