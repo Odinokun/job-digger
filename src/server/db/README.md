@@ -2,7 +2,7 @@
 
 The schema, the connection and helper scripts. The data model is the schema itself
 (`schema.ts`) plus the decisions below. How to start the local database and a cheat sheet
-of Docker commands: [the root README](../../../README.md#база-даних).
+of Docker commands: [the root README](../../../README.md#database).
 
 ## Files
 
@@ -235,7 +235,7 @@ not build the app.
 ## Helper scripts
 
 `seed.ts` and `check-connection.ts` run through `node` without a bundler - like the
-project's other helper scripts ([the root README](../../../README.md#стек)). Hence the
+project's other helper scripts ([the root README](../../../README.md#stack)). Hence the
 `.ts` extension in their imports: native TypeScript in Node requires it.
 
 `drizzle-kit` reads `.env` by itself, so we do not need the `dotenv` from the Drizzle docs

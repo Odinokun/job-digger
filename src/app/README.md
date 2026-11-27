@@ -426,7 +426,7 @@ Every new UI change follows them.
 
 ## Accessibility
 
-The goal and how it is checked: [README](../../README.md#доступність). What follows for
+The goal and how it is checked: [README](../../README.md#accessibility). What follows for
 the code:
 
 - **Contrast.** Text at least 4.5:1 against its background ([1.4.3](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum)), an icon that shows a state and a field border 3:1 ([1.4.11](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast)). The limit is not rounded: 4.48:1 is a violation. Orange text and icons use `--attention`, not `--highlight` - see [Ink theme](#ink-theme).
@@ -728,7 +728,7 @@ four links that is an unnecessary client layer, so we use semantic `<header>`/`<
 and `next/link`, which also prefetches.
 
 Menu texts come from next-intl: `getTranslations` on the server, keys in `messages/` at
-the root ([localization](../../README.md#локалізація)). Client components use
+the root ([localization](../../README.md#localization)). Client components use
 `useTranslations`: `NextIntlClientProvider` in `layout.tsx` passes the translations down
 itself, so no props with texts are needed.
 

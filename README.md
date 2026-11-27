@@ -1,257 +1,263 @@
 # Job Digger
 
-Персональний застосунок для пошуку кар'єрних сторінок компаній, регулярного моніторингу вакансій і показу нових вакансій. Масштаб - від десятків до 300+ компаній.
+A personal app that finds the career pages of companies you care about, checks them for
+vacancies on a schedule and shows you what is new. It is built for anything from a few
+dozen to 300+ companies and runs locally: Next.js, PostgreSQL in Docker, no accounts.
 
-> **Стан:** рання стадія розробки. Зараз у репозиторії каркас застосунку й локальна база даних - схеми, інтерфейсу й перевірок вакансій ще немає.
+![The Jobs page in the light theme](.github/readme/jobs-light.png)
 
-## Стек
+<details>
+<summary>More screenshots: dark theme, Companies, phone</summary>
 
-Next.js 16 (App Router, TypeScript) · HeroUI v3 + Tailwind CSS v4 · PostgreSQL + Drizzle ORM · Vitest і Playwright Test
+![The Jobs page in the dark theme](.github/readme/jobs-dark.png)
+![The Companies page in the light theme](.github/readme/companies-light.png)
+![The Companies page in the dark theme](.github/readme/companies-dark.png)
+<img src=".github/readme/jobs-phone.png" alt="The Jobs page on a 390 px phone screen" width="390">
 
-Проєкт на ESM (`"type": "module"`). Службові скрипти запускаються просто через `node`: Node 26 виконує TypeScript без збирача і читає `.env` через `--env-file`, тому ні `tsx`, ні `dotenv` у залежностях немає. Через нативний TypeScript імпорти в таких скриптах пишуться з розширенням `.ts` (опція `allowImportingTsExtensions` у `tsconfig.json`).
+</details>
 
-## Запуск локально
+The screenshots are made from the test fixtures: saved responses of real job boards
+served by the local fake web server the E2E tests use.
+
+## What it does
+
+- **Add a company from one address.** Paste a site or a job board link, and the app
+  fills in the name, the main site and the career page.
+- **Find career pages.** Find pages follows links from the company site to an ATS,
+  looks for career pages on the site itself and tries boards with the company's name.
+  Every finding is read once before you save it.
+- **Read 14 ATS platforms**: Greenhouse, Lever, Ashby, Workday, PeopleForce, Breezy HR,
+  CleverStaff, Hurma, Personio, softgarden, Workable, BambooHR, Pinpoint and
+  TalentAdore. A company's own career page without an ATS can be read too, once you
+  confirm which links on it are vacancies.
+- **Check on a schedule.** Scheduled auto-checks (every 3-24 h), Check all, Check now
+  and Retry go through one queue in PostgreSQL: at most 5 sources at once, at most 2
+  requests at a time to one site, with a 2 s pause, 3 attempts per request and respect
+  for `429 Retry-After`.
+- **Keep track of vacancies.** Unread, Read, Favorites and All, with Undo. A vacancy that
+  disappears from the site is removed, unless it is a favorite: then it stays, marked
+  Closed.
+- **Spot what needs attention.** Failed sources, pages nothing can read, the history of
+  checks.
+- **The rest:** CSV import and export, light and dark themes, English and Ukrainian,
+  a phone layout, WCAG 2.2 AA checked by axe on every PR.
+
+## Stack
+
+Next.js 16 (App Router, TypeScript) · HeroUI v3 + Tailwind CSS v4 · PostgreSQL 18 +
+Drizzle ORM · Cheerio · next-intl · Vitest and Playwright Test · GitHub Actions
+
+The project is ESM (`"type": "module"`). Helper scripts run with plain `node`: Node 26
+runs TypeScript without a bundler and reads `.env` through `--env-file`, so there is
+neither `tsx` nor `dotenv` among the dependencies. Because of native TypeScript, imports
+in such scripts carry the `.ts` extension (`allowImportingTsExtensions` in
+`tsconfig.json`).
+
+How the code is laid out - frontend and backend in one Next.js app, split by folder -
+is described in [`CLAUDE.md`](CLAUDE.md#repository-layout) and in the README in each
+folder of `src/`.
+
+## Running locally
+
+You need Node 26 (see [`.nvmrc`](.nvmrc)) and Docker Desktop.
 
 ```bash
-nvm use        # Node 26 з .nvmrc
-npm install
-npm run dev
+git clone https://github.com/Odinokun/job-digger.git
+cd job-digger
+nvm use                 # Node 26 from .nvmrc
+npm ci
+
+cp .env.example .env    # then replace CHANGE_ME with a password of your own (in all four places)
+docker compose up -d    # start PostgreSQL in the background
+docker compose ps       # wait for the healthy status
+npm run db:migrate      # apply the migrations
+npm run db:seed         # create the system user
+npm run db:seed:demo    # optional: demo companies to click around
+
+npm run dev             # http://127.0.0.1:3000
 ```
 
-Застосунок буде доступний на http://127.0.0.1:3000 - лише з цього комп'ютера, назовні сервер не слухає.
+The server listens on `127.0.0.1` only and is not reachable from the network. The demo
+companies point at real public career pages, so Check now and Check all on them send
+requests to those sites.
 
-Разом із сервером (`npm run dev` чи `npm start`) стартує фоновий цикл черги перевірок: його запускає [`src/instrumentation.ts`](src/instrumentation.ts) - файл, який Next виконує один раз на старті сервера. Цикл кожні 2 с дивиться в базу, тож без піднятої бази в лозі зʼявлятимуться помилки кроку черги. Як він працює - [`src/server/queue/README.md`](src/server/queue/README.md#worker-loop). Там само стартує розклад автоперевірки (вимикається `AUTO_CHECK=off`) - [`src/server/checks/README.md`](src/server/checks/README.md#auto-check).
+Together with the server (`npm run dev` or `npm start`) the background loop of the
+check queue starts: [`src/instrumentation.ts`](src/instrumentation.ts), which Next runs
+once on server start, launches it. The loop looks into the database every 2 s, so
+without a running database the log fills with queue errors. How it works:
+[`src/server/queue/README.md`](src/server/queue/README.md#worker-loop). The auto-check
+schedule starts there too (`AUTO_CHECK=off` turns it off):
+[`src/server/checks/README.md`](src/server/checks/README.md#auto-check).
 
-### Install-скрипти залежностей
+The author runs a separate clone for daily use, with its own database, backups and
+macOS autostart: [WORKING-INSTANCE.md](WORKING-INSTANCE.md).
 
-Частина пакетів виконує скрипти під час установки: `esbuild` лінкує платформний бінарник, `@swc/core` і `@parcel/watcher` підбирають prebuilt під систему, у `fsevents` є `binding.gyp`. npm 11 просить переглянути такі скрипти, і схвалені пакети перелічені разом із версіями в полі `allowScripts` у `package.json` - тому `npm install` і `npm ci` проходять без попереджень.
+## Database
 
-Саме поле поки що довідкове: [документація npm](https://docs.npmjs.com/cli/v11/commands/npm-approve-scripts) прямо каже, що install-скрипти виконуються й без схвалення. Тобто попередження ніколи не означало поломки - воно означало непереглянутий код.
+PostgreSQL 18 runs locally in a Docker container (the same major version as Neon, where
+an online version may go later). The variables, with comments, are in
+[`.env.example`](.env.example); `.env` itself never reaches git.
 
-Коли якийсь із цих пакетів оновиться або з'явиться новий зі своїм install-скриптом, попередження повернеться. Це навмисно: новий код варто глянути, перш ніж дозволяти йому виконуватися під час установки.
+The integration tests use a separate database in the same container - it is created on
+the first `npm run test:integration`, only `TEST_DATABASE_URL` in `.env` is needed
+([details](src/server/db/testing/README.md)).
 
-| Команда                            | Що робить                                                   |
-| ---------------------------------- | ----------------------------------------------------------- |
-| `npm install-scripts ls`           | показує, чиї install-скрипти ще не переглянуті              |
-| `npm install-scripts approve --all`| схвалює всі й записує версії в `package.json`               |
-| `npm install-scripts deny <pkg>`   | явно забороняє пакет                                        |
-| `npm install-scripts prune`        | прибирає записи про пакети, яких у дереві вже немає         |
+How the schema, migrations and seed work: [`src/server/db/README.md`](src/server/db/README.md).
+The service is described in [`docker-compose.yml`](docker-compose.yml). The database
+listens on `127.0.0.1:5432` and this machine only; if the port is taken by another
+PostgreSQL, change it with `POSTGRES_PORT`. The data lives in the Docker volume `pgdata`
+and survives re-creating the container.
 
-Два місця, де npm поводиться несподівано: `--dry-run` у цих команд усе одно змінює `package.json` (npm 11.20), а `npm install-scripts ls` бачить менше, ніж `npm ci` - `fsevents` спливає тільки при свіжій установці.
-
-### npm audit
-
-CI проганяє `npm audit --audit-level=high`: нова вразливість рівня high чи critical робить PR червоним, а moderate лише видно в лозі ([розділ CI](#ci)).
-
-**Прийнятий ризик: esbuild 0.18 у ланцюжку drizzle-kit** - [GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99), moderate. Ланцюжок: `drizzle-kit` → `@esbuild-kit/esm-loader` → `@esbuild-kit/core-utils` → `esbuild@0.18.20`. Advisory стосується лише dev-сервера esbuild (режим `serve`): він відповідає з `Access-Control-Allow-Origin: *`, і сторонній сайт може прочитати зібрані файли. `@esbuild-kit/core-utils` викликає лише `transform` і `transformSync` - разова трансформація коду, сервер не запускається, тож вразливого коду ми не виконуємо (перевірено 21.11.2026 на drizzle-kit 0.31.11).
-
-Чого не робимо:
-
-- `npm audit fix --force` - відкотив би drizzle-kit до 0.18.1, а це гірше за саму проблему;
-- `overrides` на новіший esbuild - виграшу немає, а `@esbuild-kit` написаний під API 0.18 і може зламатися.
-
-Переглянути рішення, коли drizzle-kit позбудеться `@esbuild-kit/esm-loader` (пакет deprecated на користь `tsx`, який у drizzle-kit уже є).
-
-## База даних
-
-PostgreSQL 18 працює локально в контейнері Docker (та сама мажорна версія, що й онлайн на Neon). Потрібен запущений Docker Desktop.
-
-```bash
-cp .env.example .env    # далі вписати в .env пароль замість CHANGE_ME (у двох місцях)
-docker compose up -d    # підняти базу у фоні
-docker compose ps       # має бути статус healthy
-npm run db:migrate      # застосувати міграції
-npm run db:seed         # створити системного користувача
-npm run db:seed:demo    # за бажанням: демо-компанії, щоб було на чому клікати
-```
-
-Перелік змінних із коментарями - у [`.env.example`](.env.example); сам `.env` у git не потрапляє.
-
-Інтеграційні тести працюють на окремій базі в тому самому контейнері - вона створюється сама при першому `npm run test:integration`, потрібна лише змінна `TEST_DATABASE_URL` у `.env` ([деталі](src/server/db/testing/README.md)).
-
-Як працює схема, міграції й seed - [`src/server/db/README.md`](src/server/db/README.md). Опис сервісу - у [`docker-compose.yml`](docker-compose.yml). База слухає `127.0.0.1:5432` і лише цей комп'ютер, назовні порт не відкритий; якщо цей порт уже зайнятий іншим PostgreSQL, його можна змінити змінною `POSTGRES_PORT`. Дані лежать у томі Docker `pgdata` і переживають перестворення контейнера.
-
-### Шпаргалка команд
-
-| Команда                      | Що робить                                                           |
+| Command                      | What it does                                                        |
 | ---------------------------- | ------------------------------------------------------------------- |
-| `docker compose up -d`       | Запустити базу у фоні (`-d` - не займати термінал)                  |
-| `docker compose ps`          | Стан контейнера: чи працює, чи вже `healthy`                        |
-| `docker compose logs -f db`  | Дивитися логи бази живцем (`Ctrl+C` - вийти)                        |
-| `docker compose stop`        | Зупинити базу; контейнер і дані лишаються                           |
-| `docker compose start`       | Запустити зупинену базу знову                                       |
-| `docker compose restart db`  | Перезапустити базу                                                  |
-| `docker compose down`        | Зупинити й видалити контейнер; **дані в томі лишаються**            |
-| `docker compose down -v`     | Те саме плюс видалити том: **усі локальні дані бази зникнуть**       |
-| `npm run db:psql`            | Відкрити psql усередині контейнера (`\q` - вийти)                   |
-| `docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "..."'` | Разовий SQL-запит без входу в psql |
+| `docker compose up -d`       | Start the database in the background                                |
+| `docker compose ps`          | Container state: running, `healthy` yet                             |
+| `docker compose logs -f db`  | Follow the database log (`Ctrl+C` to leave)                         |
+| `docker compose stop`        | Stop the database; the container and the data stay                  |
+| `docker compose start`       | Start the stopped database again                                    |
+| `docker compose down`        | Stop and remove the container; **the data in the volume stays**     |
+| `docker compose down -v`     | The same plus remove the volume: **all local data is gone**         |
+| `npm run db:psql`            | Open psql inside the container (`\q` to leave)                      |
+| `docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "..."'` | A one-off SQL query without entering psql |
 
-### Про що варто знати
+Worth knowing:
 
-Змінні `POSTGRES_USER`, `POSTGRES_PASSWORD` і `POSTGRES_DB` діють **лише при першій ініціалізації**, коли тому з даними ще немає ([документація образу](https://github.com/docker-library/docs/blob/master/postgres/README.md)). Якщо змінити пароль у `.env` вже після створення бази, у самій базі він залишиться старим і підключення почне падати. Єдиний спосіб застосувати нові креденшали - `docker compose down -v` і запуск заново, тобто з втратою локальних даних.
+- `POSTGRES_USER`, `POSTGRES_PASSWORD` and `POSTGRES_DB` apply **only on the first
+  initialisation**, when there is no data volume yet
+  ([image documentation](https://github.com/docker-library/docs/blob/master/postgres/README.md)).
+  A password changed in `.env` later stays old in the database itself, and connections
+  start failing. The only way to apply new credentials is `docker compose down -v` and a
+  fresh start, that is losing the local data.
+- Without `.env` or without a password in it, `docker compose up` fails at once with a
+  message about the required variable - the database never starts with an empty password.
+- `npm run db:psql` opens psql interactively but passes no extra arguments: everything
+  after `--` goes to `sh`, not to `psql`. For one-off queries, use the full command from
+  the table.
 
-Якщо `.env` немає або в ньому не заданий пароль, `docker compose up` одразу падає з повідомленням про потрібну змінну - база не піднімається з порожнім паролем.
+## Scripts
 
-`npm run db:psql` відкриває psql інтерактивно, але додаткових аргументів не прокидає: усе після `--` потрапляє в `sh`, а не в `psql`. Для разових запитів - повна команда з таблиці вище.
+| Command                    | What it does                                               |
+| -------------------------- | ---------------------------------------------------------- |
+| `npm run dev`              | Dev server on `127.0.0.1:3000`                             |
+| `npm run build`            | Production build                                           |
+| `npm start`                | Run the production build on `127.0.0.1:3000`               |
+| `npm test`                 | All tests: unit and integration                            |
+| `npm run test:unit`        | Unit tests only (no database)                              |
+| `npm run test:integration` | Tests with a real database only                            |
+| `npm run test:watch`       | Tests in watch mode while working                          |
+| `npm run test:e2e`         | E2E in Playwright: the server starts by itself             |
+| `npm run test:e2e:pending` | Only the red scenario of the current stage (`@pending` tag) |
+| `npm run test:e2e:ui`      | The same E2E in UI mode - steps, DOM and requests visible  |
+| `npm run lint`             | ESLint: Next.js, React, TypeScript and Tailwind rules      |
+| `npm run typecheck`        | Next route types + `tsc --noEmit`, without a build         |
+| `npm run format`           | Prettier: format the files                                 |
+| `npm run format:check`     | Prettier: check only, no changes - for CI                  |
+| `npm run db:generate`      | Generate a migration from changes in the Drizzle schema    |
+| `npm run db:migrate`       | Apply new migrations to the database                       |
+| `npm run db:seed`          | Create the system user (safe to repeat)                    |
+| `npm run db:seed:demo`     | Add demo companies for manual testing (local only)         |
+| `npm run db:check`         | Check the database connection and show its version         |
+| `npm run db:psql`          | psql in the database container (the database must be up)   |
 
-Кілька команд в одному `psql -c` виконуються однією транзакцією: помилка в будь-якій відкотить і попередні.
+The scripts of the working instance (`app`, `app:update`, `autostart:*`, `db:backup`) are
+in [WORKING-INSTANCE.md](WORKING-INSTANCE.md#scripts).
 
-## Робочий екземпляр
+## Tests
 
-Для щоденного користування - окремий `git clone` на `main` з окремою базою (рішення автора 20.11.2026, задача [6.08](tasks/6.08-separate-work-instance.md)). Тека розробки лишається для гілок, міграцій із незлитих PR і демо-даних; справжні компанії живуть лише в робочій базі.
+Three levels, and **tests never reach real websites**:
 
-|          | Розробка                       | Робочий екземпляр                  |
-| -------- | ------------------------------ | ---------------------------------- |
-| Тека     | `~/code/job-digger`            | `~/code/job-digger-app`            |
-| Код      | будь-яка гілка                 | лише `main`                        |
-| Сервер   | `npm run dev`, порт 3000       | `npm run app`, порт 3100           |
-| База     | `job_digger`                   | `job_digger_app`                   |
+- **Unit** (Vitest, `*.test.ts`) - pure logic: parsers, address normalization, the
+  vacancy lifecycle, SSRF protection, CSV, the polling schedule.
+- **Integration** (Vitest + PostgreSQL, `*.integration.test.ts`) - the queue, conditional
+  deletes, concurrent changes, on a separate test database.
+- **E2E** (Playwright Test, `e2e/*.spec.ts`) - a handful of key scenarios in Chromium,
+  against a production build, a separate database and a fake web server.
 
-Обидві бази живуть в одному контейнері `job-digger-db`, піднятому з теки розробки. У теці робочого екземпляра `docker compose` не запускається. Обробники черги в двох серверах працюють кожен зі своєю базою й одне одному не заважають.
+Every parser has a real response from its platform saved to a file, and a local fake web
+server serves these responses instead of the real sites: the HTTP client sends every
+request there in test mode, and SSRF protection lets only that address through. The
+saved responses and the address scheme:
+[`src/server/http/testing/README.md`](src/server/http/testing/README.md).
 
-Один раз, щоб створити:
+Logic is written test-first; `src/readme-coverage.test.ts` also checks that every code
+file in `src/` is mentioned in the README next to it.
 
-```bash
-cd ~/code
-git clone git@github.com:Odinokun/job-digger.git job-digger-app
-cd job-digger-app
-nvm use
-cp ../job-digger/.env .env   # далі див. нижче: DATABASE_URL і BACKUP_DIR
-docker exec job-digger-db createdb -U job_digger job_digger_app   # -U - POSTGRES_USER з .env
-npm run app:update            # залежності, копія бази, міграції, збірка
-npm run db:seed               # системний користувач
-npm run app                   # http://127.0.0.1:3100
-```
+### E2E tests
 
-У `.env` клону змінюються лише два рядки. У `DATABASE_URL` - тільки назва бази в кінці, після останнього `/`; користувач на початку адреси лишається `job_digger`:
-
-```bash
-DATABASE_URL=postgres://job_digger:<пароль>@127.0.0.1:5432/job_digger_app
-BACKUP_DIR="/абсолютний/шлях/до/наявної/теки"
-```
-
-Після кожного merge у `main` - зупинити сервер (Ctrl+C), `npm run app:update`, `npm run app` (з автозапуском - `npm run app:restart`, див. нижче). `app:update` відмовляється працювати не на `main` і виконує `git pull --ff-only`, `npm ci`, копію бази (`npm run db:backup`), `npm run db:migrate` (на базу з `.env` цієї теки) і `npm run build`. Нова міграція в робочій базі зʼявляється лише так - після merge, а не з гілки розробки.
-
-### Резервні копії
-
-Копія робочої бази - файл `job_digger_app-<час UTC>.dump` (формат `pg_dump -Fc`) у теці `BACKUP_DIR` (рішення автора 20.11.2026: тека в iCloud Drive, тримаємо 30 копій). Робиться сама: `npm run app` - якщо остання копія старша за добу, `npm run app:update` - завжди, перед міграціями. Не вдалася копія - сервер не стартує, а оновлення не йде далі. Зробити копію руками - `npm run db:backup`. Логіка - [`src/server/db/backup.ts`](src/server/db/backup.ts).
-
-Відновлення (перевірено 20.11.2026: копія бази розробки, відновлена в порожню базу, збіглася з оригіналом рядок у рядок, разом із журналом міграцій). Спершу зупинити `npm run app`, бо `dropdb` не видаляє базу з відкритими підключеннями:
-
-```bash
-docker exec job-digger-db dropdb -U job_digger --if-exists job_digger_app
-docker exec job-digger-db createdb -U job_digger job_digger_app
-docker exec -i job-digger-db pg_restore -U job_digger -d job_digger_app --no-owner < "<шлях до файлу .dump>"
-npm run app
-```
-
-Якщо зник увесь том Docker, спершу `docker compose up -d` у теці розробки: контейнер створить базу розробки, а `job_digger_app` - ні, тож `createdb` вище потрібен.
-
-### Автозапуск
-
-Робочий екземпляр може стартувати сам при вході в macOS. Один раз, у клоні після `npm run app:update`:
-
-```bash
-npm run autostart:on    # з цієї хвилини сервер працює у фоні, термінал можна закрити
-```
-
-- При першому запуску macOS покаже вікно із запитом доступу до iCloud Drive (для копії в `BACKUP_DIR`) - його треба дозволити. Поки відповіді немає, копія чекає, і сервер не стартує.
-- Docker Desktop теж має стартувати при вході в систему - це його власне налаштування; сервер чекає на базу скільки завгодно.
-- Після кожного `npm run app:update` - `npm run app:restart`. `npm run app` у терміналі при ввімкненому автозапуску впаде з `EADDRINUSE`: порт 3100 уже зайнятий.
-- Лог - `~/Library/Logs/job-digger/app.log`.
-- Впав - перезапуститься сам, не частіше ніж раз на хвилину. Вимкнути автозапуск і зупинити сервер - `npm run autostart:off`.
-- Змінилася версія Node (nvm) - `npm run autostart:on` ще раз: шлях до `node` записаний в автозапуск.
-
-Як влаштовано - [`src/server/autostart/README.md`](src/server/autostart/README.md).
-
-Cookie не розділяються за портом ([RFC 6265, розділ 8.5](https://www.rfc-editor.org/rfc/rfc6265#section-8.5)), тож мова й тема на портах 3000 і 3100 спільні.
-
-## Скрипти
-
-| Команда                | Що робить                                              |
-| ---------------------- | ------------------------------------------------------ |
-| `npm run dev`          | Dev-сервер на `127.0.0.1:3000`                         |
-| `npm run build`        | Продакшн-збірка                                        |
-| `npm start`            | Запуск продакшн-збірки на `127.0.0.1:3000`             |
-| `npm run app`          | Робочий екземпляр: продакшн-збірка на `127.0.0.1:3100` |
-| `npm run app:update`   | Оновити робочий екземпляр після merge (лише на `main`) |
-| `npm test`             | Усі тести: юніт та інтеграційні                        |
-| `npm run test:unit`    | Лише юніт-тести (без бази)                             |
-| `npm run test:integration` | Лише тести зі справжньою базою                     |
-| `npm run test:watch`   | Тести у watch-режимі під час роботи                    |
-| `npm run test:e2e`     | E2E у Playwright: сервер підіймається сам              |
-| `npm run test:e2e:pending` | Лише червоний сценарій поточного етапу (тег `@pending`) |
-| `npm run test:e2e:ui`  | Ті самі E2E у режимі UI - видно кроки, DOM і запити    |
-| `npm run lint`         | ESLint: правила Next.js, React і TypeScript            |
-| `npm run typecheck`    | Типи маршрутів Next + `tsc --noEmit`, без збірки        |
-| `npm run format`       | Prettier: форматування файлів                          |
-| `npm run format:check` | Prettier: лише перевірка, без змін - для CI            |
-| `npm run db:generate`  | Згенерувати міграцію зі змін у схемі Drizzle           |
-| `npm run db:migrate`   | Застосувати нові міграції до бази                      |
-| `npm run db:seed`      | Створити системного користувача (запуск повторюваний)  |
-| `npm run db:seed:demo` | Додати демо-компанії для ручної перевірки (лише локально) |
-| `npm run autostart:on` | Автозапуск робочого екземпляра при вході в macOS ([деталі](#автозапуск)) |
-| `npm run autostart:off` | Вимкнути автозапуск і зупинити сервер                 |
-| `npm run app:restart`  | Перезапустити сервер, запущений автозапуском          |
-| `npm run db:backup`    | Резервна копія бази в `BACKUP_DIR` ([деталі](#резервні-копії)) |
-| `npm run db:check`     | Перевірити підключення до бази й показати її версію    |
-| `npm run db:psql`      | psql у контейнері бази (потрібна піднята база)         |
-
-## E2E-тести
-
-Сценарії лежать у теці [`e2e/`](e2e) з розширенням `*.spec.ts` - окремо від тестів Vitest у `src`, щоб два раннери не бачили чужих файлів. Конфігурація - [`playwright.config.ts`](playwright.config.ts).
-
-Перед першим прогоном після клонування потрібен браузер:
+Before the first run after cloning, Playwright needs a browser:
 
 ```bash
 npx playwright install chromium
 ```
 
-Він качається в кеш системи (~290 МБ), а не в репозиторій. Ставимо лише Chromium: застосунок персональний, кросбраузерність не мета.
+It goes to the system cache (~290 MB), not to the repository. Only Chromium: the app is
+personal, cross-browser support is not a goal.
 
-Сценарії: `navigation.spec.ts` (застосунок відкривається), `theme.spec.ts` (перемикання оформлення), `companies.spec.ts` (компанію додано з однієї адреси, відредаговано й видалено), `vacancies.spec.ts` (дошка Greenhouse стає вакансіями в Unread - критерій етапу 3), `check-all.spec.ts` (загальна перевірка й підсумок - етап 4), `find-pages.spec.ts` (пошук сторінок - етап 5), `csv.spec.ts` (Export → Import того самого файлу без дублікатів - етап 6), `background-check.spec.ts` (відкрита сторінка Jobs показує вакансії з перевірки, яку запустили деінде), `own-page.spec.ts` (власна сторінка як список за рецептом), `companies-search.spec.ts` (пошук компанії за назвою на вкладці All) `mobile.spec.ts` (на 390 px жодна сторінка не ширша за екран, меню - з бургера) і `accessibility.spec.ts` (axe не знаходить порушень WCAG 2.2 A/AA на жодній сторінці в обох темах). Спільні пошуки елементів - `locators.ts`.
+After that `npm run test:e2e` is enough. There is no need to start the app beforehand
+or to stop a running `npm run dev`: E2E work next to it.
 
-**Червоний сценарій етапу.** Сценарій-критерій пишеться на початку етапу й лишається червоним до його кінця, тому має тег `@pending`. У `playwright.config.ts` два проєкти на одному браузері: `chromium` (його запускають `npm run test:e2e` і CI) пропускає `@pending`, `pending` (`npm run test:e2e:pending`) запускає лише його й показує крок, на якому він падає. Між етапами - коли критерій попереднього вже зелений, а наступного ще не написано - команда завершується «No tests found». Прапорця `--pass-with-no-tests` свідомо немає: з ним забутий тег на новому сценарії мовчки давав би зелений прогін. Проєкти, а не `grepInvert` у корені конфігу, бо `--grep` у консолі виключення з конфігу не скасовує. Голий `npx playwright test` запускає обидва проєкти, тобто й червоний сценарій. Другий лічить зміни атрибута `data-theme`, а не кінцевий стан: баг, через який він зʼявився, кінцевого стану не ламав.
+- **Their own server.** Playwright builds the app (`npm run build`) and starts the
+  production build on `127.0.0.1:3001`. Not a dev server, because a second `next dev`
+  next to yours does not start: in Next 16 a lockfile keeps two `next dev` from working
+  in one project, while `next build` writes to a separate folder. The server on 3001 is
+  never reused: if the port is taken, the run fails, because it is unknown which
+  database that server works with.
+- **Their own database.** The scenarios add and delete companies, so they work with
+  `E2E_DATABASE_URL`, not the development database. Before the run `e2e/global-setup.ts`
+  creates it if needed, runs the migrations, clears the tables and creates the system
+  user. The scenarios run one at a time (`workers: 1`): parallel copies would see each
+  other's data.
+- **The fake web server** on `127.0.0.1:4010` serves the saved platform responses
+  (`src/server/http/testing/serve-fake-web.ts`); Playwright passes `FAKE_WEB_ORIGIN` to
+  the app.
 
-Далі достатньо `npm run test:e2e`. Застосунок піднімати заздалегідь не потрібно, а запущений `npm run dev` зупиняти теж не треба: E2E працюють поруч із ним.
+The scenarios cover adding, editing and deleting a company, a Greenhouse board turning
+into unread vacancies, Check all and its summary, Find pages, CSV there and back, a check
+started in another tab, an own page read by a recipe, search, theme switching, the phone
+layout and accessibility.
 
-- **Свій сервер.** Playwright збирає застосунок (`npm run build`) і запускає продакшн-збірку на `127.0.0.1:3001`. Не dev-сервер, бо другий `next dev` поруч із вашим не стартує: у Next 16 lockfile не дає двом `next dev` працювати в одному проєкті, а `next build` пише в окрему теку й з dev уживається. Тепла збірка займає кілька секунд. Сервер на 3001 ніколи не перевикористовується: якщо порт уже зайнятий, прогін падає, бо невідомо, з якою базою працює той сервер. Готовність сервера Playwright перевіряє за відкритим портом, а не запитом на `/`: вебсервери він підіймає ще до `globalSetup`, тобто до того, як база E2E існує, а сторінка Jobs на `/` читає базу. Перевірка за url на чистій машині (CI) чекала б вічно - локально це не видно, бо база лишається з минулих прогонів.
-- **Своя база.** Сценарії додають і видаляють компанії, тому працюють не з базою розробки, а з `E2E_DATABASE_URL` (див. `.env.example`). Перед прогоном `e2e/global-setup.ts` створює її, якщо немає, проганяє міграції, чистить таблиці й заводить системного користувача; код спільний з інтеграційними тестами (`src/server/db/testing/database.ts`). `e2e/env.ts` читає `.env` (Playwright сам його не читає) і не дає адресі збігтися з `DATABASE_URL` чи `TEST_DATABASE_URL`. База одна на всі сценарії, тому вони йдуть по черзі (`workers: 1`): паралельні копії бачили б дані одна одної. Сценарій, що рахує дані по всіх компаніях (лічильник непрочитаних, Check all), ще й сам чистить базу в `beforeAll` через `resetDatabase` з `e2e/database.ts`: інакше компанії сценарію, що йшов раніше, змінили б його числа.
-- **Фейковий вебсервер.** Тести ніколи не ходять на справжні сайти: поруч із застосунком Playwright піднімає на `127.0.0.1:4010` сервер зі збереженими відповідями платформ (`src/server/http/testing/serve-fake-web.ts`) і передає застосунку `FAKE_WEB_ORIGIN`. Схема адрес і самі відповіді - [src/server/http/testing/README.md](src/server/http/testing/README.md).
-
-На CI той самий конфіг: базу дає сервіс PostgreSQL workflow, до кроків додаються HTML-звіт і одна спроба повтору впалого сценарію з трейсом.
+**The red scenario of a stage.** The scenario that defines a stage as done is written at
+its start and stays red until the end, so it carries the `@pending` tag.
+`playwright.config.ts` has two projects on one browser: `chromium` (run by
+`npm run test:e2e` and CI) skips `@pending`, while `pending` (`npm run test:e2e:pending`)
+runs only it and shows the step where it fails. Between stages the command ends with
+"No tests found". There is deliberately no `--pass-with-no-tests`: with it a forgotten tag
+on a new scenario would silently give a green run.
 
 ## CI
 
-Перевірки виконує GitHub Actions за файлом [`.github/workflows/ci.yml`](.github/workflows/ci.yml) - на кожен pull request і на кожен push у `main`. Новий коміт у гілку скасовує її попередній незавершений прогін, щоб не витрачати хвилини на вже неактуальний код.
+GitHub Actions runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml) on every pull
+request and every push to `main`. A new commit to a branch cancels its previous
+unfinished run.
 
-| Job              | Що виконує                                                                           |
+| Job              | What it runs                                                                         |
 | ---------------- | ------------------------------------------------------------------------------------ |
-| `Lint and types` | `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm audit --audit-level=high` ([чому high](#npm-audit)) |
-| `Tests`          | `npm run test:unit`, `npm run test:integration`, `npm run test:e2e` (збірку робить сам Playwright) |
+| `Lint and types` | `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm audit --audit-level=high` ([why high](#npm-audit)) |
+| `Tests`          | `npm run test:unit`, `npm run test:integration`, `npm run test:e2e` (Playwright builds the app itself) |
 
-Версія Node береться з [`.nvmrc`](.nvmrc) - локально й на CI вона одна.
+- **The Node version** comes from [`.nvmrc`](.nvmrc) - one version locally and on CI.
+- **Actions are pinned to a full commit SHA**, not a tag like `@v7`: a tag can be moved
+  to other code if someone gets access to the action's repository, a SHA cannot be forged
+  ([GitHub, secure use](https://docs.github.com/en/actions/reference/security/secure-use)).
+  A version comment sits next to the SHA (`# v7.0.1`), and
+  [Dependabot](.github/dependabot.yml) updates both once a week with a `ci: ...` PR.
+- **The database on CI** is a PostgreSQL service container next to the job, the same
+  `postgres:18` image as in [`docker-compose.yml`](docker-compose.yml). The connection
+  strings are set right in the workflow: the container lives only for the run and is
+  reachable only from its machine, so these credentials do not belong in GitHub
+  Secrets. The password is `${{ github.run_id }}`, so the file has no string that looks
+  like a real password and would trigger a secret scanner.
+- **Playwright browsers are not cached**, as the
+  [Playwright documentation](https://playwright.dev/docs/ci) advises: restoring the cache
+  takes about as long as downloading.
+- **When E2E fail**, the run gets a `playwright-report` artifact - an HTML report with the
+  trace of the failed scenario, kept for 7 days.
+- **Required checks:** `Lint and types` and `Tests` are the checks to require before
+  merging into `main` (a ruleset or branch protection). Third-party checks such as the
+  GitGuardian secret scanner are better left optional: they may go red because of a
+  branch's history, which squash merge does not bring into `main`.
 
-**Actions закріплені за повним commit SHA**, а не за тегом `@v7`: тег можна
-переставити на інший код, якщо хтось отримає доступ до репозиторію action, а SHA
-підробити не вийде ([GitHub, secure use](https://docs.github.com/en/actions/reference/security/secure-use)).
-Поруч із SHA - коментар із версією (`# v7.0.1`). Оновлює їх
-[Dependabot](.github/dependabot.yml): раз на тиждень відкриває PR `ci: ...`, де
-міняє SHA разом із коментарем. Такий PR зливається, як і будь-який інший, після
-зеленого CI.
-
-Чому не lockfile GitHub (`.github/workflows/actions.lock`, розширення `gh actions-lock`),
-хоча документація каже, що він «supersedes SHA pinning»: у нас три офіційні actions
-`actions/*`, а lockfile - новий інструмент на машині автора й новий крок у CI, статус
-якого документація не називає (рішення автора 21.11.2026, задача 7.09).
-
-**База на CI.** PostgreSQL піднімається service container'ом поруч із job: той самий образ `postgres:18`, що в [`docker-compose.yml`](docker-compose.yml). Змінна `TEST_DATABASE_URL` задається прямо у workflow - контейнер живе лише цей прогін і доступний лише з машини прогону, тому в GitHub Secrets цим креденшалам не місце. Паролем служить `${{ github.run_id }}`: він унікальний для кожного прогону, і у файлі не лежить рядок, схожий на справжній пароль, - інакше на кожному PR червонів би сканер секретів. Базу `job_digger_test` і міграції на ній робить [`global-setup.ts`](src/server/db/testing/global-setup.ts), так само як локально. `DATABASE_URL` на CI не заданий: поки жодна сторінка не читає базу, він не потрібен.
-
-**Браузери Playwright не кешуються** - так радить [документація Playwright](https://playwright.dev/docs/ci): відновлення кешу триває приблизно стільки ж, скільки завантаження, а OS-залежності під Linux однаково не кешуються.
-
-**Коли E2E впали**, у прогоні з'являється артефакт `playwright-report` - HTML-звіт із трейсом впалого сценарію, зберігається 7 днів. На зеленому прогоні артефакту немає.
-
-Відтворити прогін CI локально:
+To reproduce a CI run locally:
 
 ```bash
 npm run format:check && npm run lint && npm run typecheck && npm audit --audit-level=high
@@ -259,40 +265,128 @@ npm test
 CI=1 npm run test:e2e
 ```
 
-**Заблокувати merge червоного PR автоматично на цьому тарифі не вийде.** Репозиторій приватний, а для приватних репозиторіїв на GitHub Free недоступні ні classic branch protection, ні rulesets - API на обидва запити відповідає `403 Upgrade to GitHub Pro or make this repository public to enable this feature`. Тому правило «PR із червоними тестами не зливається» тримається на тому, що автор дивиться вкладку Checks перед squash merge, а не на налаштуваннях GitHub.
+## Dependencies
 
-Якщо репозиторій колись стане публічним або акаунт - Pro, вимушування вмикається опцією «Require status checks to pass before merging»: або [classic branch protection](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches), або [ruleset](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets) з тим самим обмеженням (rulesets гнучкіші: на одну гілку їх може діяти кілька, класичне правило - лише одне). Обов'язковими варто робити саме job `Lint and types` і `Tests`: сторонні чеки (наприклад сканер секретів GitGuardian) можуть червоніти через історію гілки, яка при squash merge у `main` не потрапляє.
+### Dependency install scripts
 
-## Доступність
+Some packages run scripts on install: `esbuild` links a platform binary, `@swc/core` and
+`@parcel/watcher` pick a prebuilt for the system, `fsevents` has a `binding.gyp`. npm 11
+asks to review such scripts, and the approved packages are listed with their versions in
+the `allowScripts` field of `package.json` - so `npm install` and `npm ci` pass without
+warnings.
 
-Ціль - [WCAG 2.2](https://www.w3.org/TR/WCAG22/) рівня AA: усі критерії рівнів A і AA ([що означають рівні](https://www.w3.org/WAI/WCAG22/Understanding/conformance)). Як це перевіряється:
+The field is advisory for now: the
+[npm documentation](https://docs.npmjs.com/cli/v11/commands/npm-approve-scripts) says
+plainly that install scripts run even without approval. So the warning never meant
+breakage - it meant unreviewed code. When one of these packages updates, or a new one
+with its own install script appears, the warning comes back on purpose: new code is
+worth a look before it is allowed to run during install.
 
-- **Автоматично на кожному PR** - `e2e/accessibility.spec.ts`: [axe](https://playwright.dev/docs/accessibility-testing) (`@axe-core/playwright`) сканує всі сторінки й модалку Add company у світлій і темній темах за тегами WCAG 2.x A/AA, а також правилом `heading-order` (заголовки без стрибків через рівень; в axe воно best practice). Порушення валить E2E.
-- **Lighthouse** (26.11.2026, категорія Accessibility): на Companies 98 через `heading-order`, решта сторінок - без зауважень. Після прихованого `h2` над списком компаній це правило проходить і в axe-скануванні.
-- **Руками** - клавіатура (порядок Tab, видимий фокус, повернення фокусу з модалок і меню), reflow на 320 px і масштаб 200%, сценарії з VoiceOver. Автоматика ловить лише частину проблем, тому ручна перевірка лишається.
+| Command                             | What it does                                         |
+| ----------------------------------- | ---------------------------------------------------- |
+| `npm install-scripts ls`            | shows whose install scripts are not reviewed yet     |
+| `npm install-scripts approve --all` | approves all and writes the versions to `package.json` |
+| `npm install-scripts deny <pkg>`    | explicitly denies a package                          |
+| `npm install-scripts prune`         | removes entries for packages no longer in the tree   |
 
-Правила для коду й рішення щодо кольорів - [src/app/README.md](src/app/README.md#accessibility), історія аудиту - [tasks/accessibility-audit.md](tasks/accessibility-audit.md).
+Two places where npm behaves unexpectedly: `--dry-run` on these commands still changes
+`package.json` (npm 11.20), and `npm install-scripts ls` sees less than `npm ci` -
+`fsevents` shows up only on a fresh install.
 
-## Локалізація
+### npm audit
 
-Інтерфейс англійською й українською. Переклади - у [`messages/en.json`](messages/en.json) і [`messages/uk.json`](messages/uk.json), набір ключів у них однаковий і це перевіряє тест [`src/i18n/messages.test.ts`](src/i18n/messages.test.ts). Коди мов - підтеги за BCP 47: `uk` - українська мова (не країна, країна була б `UA`).
+CI runs `npm audit --audit-level=high`: a new high or critical vulnerability turns the PR
+red, while moderate ones are only visible in the log.
 
-Мова **не живе в URL**: next-intl налаштований у режимі без i18n-роутингу, бо за планом мова - особисте налаштування користувача. Локаль читається з cookie `locale` у [`src/i18n/request.ts`](src/i18n/request.ts), невідоме значення відкидається, фолбек - English. Список мов - [`src/i18n/config.ts`](src/i18n/config.ts).
+**An accepted risk: esbuild 0.18 in the drizzle-kit chain** -
+[GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99), moderate. The
+chain: `drizzle-kit` → `@esbuild-kit/esm-loader` → `@esbuild-kit/core-utils` →
+`esbuild@0.18.20`. The advisory concerns only esbuild's dev server (the `serve` mode): it
+answers with `Access-Control-Allow-Origin: *`, and a third-party site can read the built
+files. `@esbuild-kit/core-utils` calls only `transform` and `transformSync` - a one-off
+code transformation, no server is started, so we never run the vulnerable code (checked
+21.11.2026 on drizzle-kit 0.31.11).
 
-Перемикача мови в інтерфейсі ще немає - він з’явиться разом з екраном Settings. Щоб побачити українську зараз, досить виставити cookie в DevTools:
+What we do not do:
 
-```js
-document.cookie = "locale=uk; path=/";
-```
+- `npm audit fix --force` - it would roll drizzle-kit back to 0.18.1, which is worse than
+  the problem itself;
+- `overrides` to a newer esbuild - there is no gain, and `@esbuild-kit` is written for the
+  0.18 API and may break.
 
-Наслідок читання cookie: усі сторінки рендеряться на кожен запит (у виводі `npm run build` вони позначені як `ƒ Dynamic`). Для застосунку, який показує дані з бази, це не втрата.
+Revisit the decision when drizzle-kit drops `@esbuild-kit/esm-loader` (the package is
+deprecated in favour of `tsx`, which drizzle-kit already has).
 
-## Ліцензія
+## Accessibility
 
-Код проєкту - [MIT](LICENSE). Не під MIT: скіли агента в `.agents/skills/` (чужий код зі своїми ліцензіями, деталі - [.claude/README.md](.claude/README.md#skills)) і збережені відповіді сайтів у `src/server/http/testing/responses/` (копії публічних сторінок лише для тестів, [src/server/http/testing/README.md](src/server/http/testing/README.md#saved-responses)).
+The goal is [WCAG 2.2](https://www.w3.org/TR/WCAG22/) level AA: all level A and AA criteria
+([what the levels mean](https://www.w3.org/WAI/WCAG22/Understanding/conformance)). How it is checked:
 
-## Документація
+- **Automatically on every PR** - `e2e/accessibility.spec.ts`:
+  [axe](https://playwright.dev/docs/accessibility-testing) (`@axe-core/playwright`) scans
+  every page and the Add company modal in the light and dark themes by the WCAG 2.x A/AA
+  tags, plus the `heading-order` rule (headings without skipping a level; a best practice
+  in axe). A violation fails E2E.
+- **Lighthouse** (26.11.2026, the Accessibility category): 98 on Companies because of
+  `heading-order`, no remarks on the other pages. After a hidden `h2` was added above the
+  company list, this rule passes in the axe scan too.
+- **By hand** - the keyboard (Tab order, visible focus, focus returning from modals and
+  menus), reflow at 320 px and 200% zoom, scenarios with VoiceOver. Automation catches
+  only part of the problems, so the manual check stays.
 
-- [Задачі й етапи](tasks/README.md) - що зроблено, що в роботі, що далі.
-- [Екрани](src/app/README.md#screens-what-they-show-and-what-is-left-out) - що показує кожен розділ і чого в ньому свідомо немає.
-- [Правила розробки](CLAUDE.md) - процес, мова, тести, Git і задачі.
+Rules for the code and the colour decisions: [src/app/README.md](src/app/README.md#accessibility);
+the audit history: [tasks/accessibility-audit.md](tasks/accessibility-audit.md).
+
+## Localization
+
+The UI is in English and Ukrainian; the language is picked in Settings. Translations live
+in [`messages/en.json`](messages/en.json) and [`messages/uk.json`](messages/uk.json); their
+key sets are the same, which the test [`src/i18n/messages.test.ts`](src/i18n/messages.test.ts)
+checks. Language codes are BCP 47 subtags: `uk` is the Ukrainian language (not a country;
+the country would be `UA`). Data from websites - vacancy and company names, locations - is
+never translated.
+
+The language **does not live in the URL**: next-intl runs without i18n routing, because the
+language is a personal setting. The locale is read from the `locale` cookie in
+[`src/i18n/request.ts`](src/i18n/request.ts); an unknown value is dropped, and the fallback
+is English. The list of languages: [`src/i18n/config.ts`](src/i18n/config.ts).
+
+A consequence of reading a cookie: every page renders on each request (`npm run build`
+marks them `ƒ Dynamic`). For an app that shows data from a database this is no loss.
+
+## How it is built
+
+The project is developed in small steps with [Claude Code](https://code.claude.com) as an
+AI coding agent, and the author reviews every change:
+
+- **Tasks** live in [`tasks/`](tasks/README.md): one table with every task and its status,
+  and a file per task with its description and steps. The work went in stages: the
+  foundation, companies, parsing and vacancies, the queue and checks, career page search,
+  automation and Settings. Stage 7 - moving to Vercel with Neon and Google sign-in - is
+  still ahead.
+- **One task is one branch and one pull request.** Commits and PR titles follow
+  Conventional Commits; the agent commits step by step and opens the PR, the author
+  reviews it, checks it by hand and squash-merges it.
+- **Logic is test-first**, and each stage started with a red E2E scenario as its
+  definition of done.
+- **The rules for the agent** - process, language, tests, security, Git - are in
+  [`CLAUDE.md`](CLAUDE.md); hooks and skills are in [`.claude/`](.claude/README.md).
+
+The old task files and early pull requests are in Ukrainian, the author's working
+language; everything in the code and the documentation is in English.
+
+## License
+
+The project's code is [MIT](LICENSE). Not under MIT: the agent skills in `.agents/skills/`
+(third-party code with its own licenses, details in [.claude/README.md](.claude/README.md#skills))
+and the saved website responses in `src/server/http/testing/responses/` (copies of public
+pages for tests only,
+[src/server/http/testing/README.md](src/server/http/testing/README.md#saved-responses)).
+
+## Documentation
+
+- [Tasks and stages](tasks/README.md) - what is done, what is next.
+- [Screens](src/app/README.md#screens-what-they-show-and-what-is-left-out) - what each page
+  shows and what it deliberately leaves out.
+- [Development rules](CLAUDE.md) - process, language, tests, Git and tasks.
+- The README in each folder of `src/` - the details of that part of the code.
