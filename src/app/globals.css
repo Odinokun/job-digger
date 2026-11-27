@@ -3,8 +3,9 @@
    HeroUI styles. */
 @import "@heroui/styles";
 
-/* The fonts from layout.tsx are wired to Tailwind tokens: font-sans, font-display
-   and font-mono in classes give Instrument Sans, Instrument Serif and IBM Plex Mono.
+/* The fonts from layout.tsx are wired to Tailwind tokens: font-sans, font-display,
+   font-brand and font-mono in classes give Instrument Sans, Space Grotesk, Fraunces
+   and IBM Plex Mono.
    inline is needed because the value is a reference to another CSS variable.
 
    --color-* is the Tailwind namespace that generates colour utilities, so the lines

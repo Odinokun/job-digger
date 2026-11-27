@@ -1,76 +1,74 @@
-# Кандидати теми - архів вибору
+# Theme candidates - an archive of the choice
 
-Довідник на випадок повернення: тут лежать **усі варіанти, які розглядалися**, з
-точними значеннями, щоб будь-який можна було застосувати заново, не підбираючи
-вдруге. Вибране зараз описане в [README поруч](./README.md#ink-theme), цей файл -
-тільки відхилене й запасне.
+A reference in case we come back: this holds **every option that was considered**,
+with exact values, so any of them can be applied again without picking it a second
+time. The current choice is described in the [README next to this file](./README.md#ink-theme);
+this file holds only the rejected and the spare ones.
 
-Причина, чому файл існує: прототип на двох картках і застосунок на 48 компаніях із
-довгими адресами виглядають по-різному, тому рішення може змінитися після роботи на
-справжніх даних.
+Why the file exists: a prototype on two cards and the app on 48 companies with long
+addresses look different, so the decision may change after working on real data.
 
-Усе нижче перевіряється на екрані Companies. Як застосувати будь-який набір -
-[«Як підмінити тему»](#як-підмінити-тему) в кінці.
+Everything below is checked on the Companies screen. How to apply any set:
+["How to swap the theme"](#how-to-swap-the-theme) at the end.
 
-## Вибрано
+## Chosen
 
-| Частина | Значення |
+| Part | Value |
 | --- | --- |
-| Палітра | Ink |
-| Заголовки | Space Grotesk 600, letter-spacing -0.03em |
-| Логотип | Fraunces 600, letter-spacing -0.014em |
-| Тіло | Instrument Sans |
-| Адреси | IBM Plex Mono |
-| Бейджі | Solid - заливка токеном, текст `*-foreground` |
+| Palette | Ink |
+| Headings | Space Grotesk 600, letter-spacing -0.03em |
+| Logo | Fraunces 600, letter-spacing -0.014em |
+| Body | Instrument Sans |
+| Addresses | IBM Plex Mono |
+| Badges | Solid - filled with the token, text `*-foreground` |
 
-## Палітри
+## Palettes
 
-Дев'ять наборів. Назви токенів - ті, що в
-`node_modules/@heroui/styles/dist/themes/default/variables.css`; перевизначати
-потрібно лише базові, похідні (`*-hover`, `*-soft`, `border-secondary`) HeroUI
-рахує через `color-mix` сам.
+Nine sets. The token names are those in
+`node_modules/@heroui/styles/dist/themes/default/variables.css`; only the base ones
+need overriding, HeroUI computes the derived ones (`*-hover`, `*-soft`,
+`border-secondary`) with `color-mix` itself.
 
-**Обмеження, яке діє на всі:** тон `accent` не має наближатися до `success` (~150),
-`warning` (~66) і `danger` (~26) - інакше кнопка світиться тим самим кольором, що
-бейдж статусу. Вільні діапазони: синє 230-270, циан 195-215, фіолетове 275-300,
-маджента 330-345. Саме через це відпав варіант із бурштиновим accent.
+**A limit that applies to all:** the `accent` hue must not come close to `success`
+(~150), `warning` (~66) and `danger` (~26) - otherwise a button glows in the same colour
+as a status badge. Free ranges: blue 230-270, cyan 195-215, violet 275-300, magenta
+330-345. That is exactly why the amber accent option dropped out.
 
-| Набір | Accent (тон) | Нейтраль | Радіус | Шрифти |
+| Set | Accent (hue) | Neutral | Radius | Fonts |
 | --- | --- | --- | --- | --- |
-| **Ink** (вибрано) | без тону | chroma <= 0.006, hue 250 | 4px | Instrument Sans + Instrument Serif |
-| Unread | азур 238 | chroma 0.002-0.007, hue 250 | 6px | Inter Tight + IBM Plex Mono |
-| Dossier | циан 204 | chroma 0.002-0.011, hue 70-82 | 8px | Source Sans 3 + Newsreader |
-| Manuscript | індиго 272 | chroma 0.004-0.014, hue 62-80 | 10px | Source Sans 3 + Fraunces |
-| Nordic | небесний 232 | chroma 0.006-0.025, hue 240-248 | 12px | DM Sans |
-| Reader | фіолет 288 | chroma 0.004-0.018, hue 282-288 | 6px | Source Serif 4 (увесь UI) |
-| Carbon | циан 196 | chroma 0.004-0.013, hue 230-242 | 8px | Inter + Geist Mono |
-| Porcelain | синій 252 | chroma 0.002-0.010, hue 250-252 | 14px | Instrument Sans |
-| Oxide | слива 352 | chroma 0.002-0.014, hue 40-60 | 6px | Inter Tight + Bricolage Grotesque |
+| **Ink** (chosen) | no hue | chroma <= 0.006, hue 250 | 4px | Instrument Sans + Instrument Serif |
+| Unread | azure 238 | chroma 0.002-0.007, hue 250 | 6px | Inter Tight + IBM Plex Mono |
+| Dossier | cyan 204 | chroma 0.002-0.011, hue 70-82 | 8px | Source Sans 3 + Newsreader |
+| Manuscript | indigo 272 | chroma 0.004-0.014, hue 62-80 | 10px | Source Sans 3 + Fraunces |
+| Nordic | sky 232 | chroma 0.006-0.025, hue 240-248 | 12px | DM Sans |
+| Reader | violet 288 | chroma 0.004-0.018, hue 282-288 | 6px | Source Serif 4 (the whole UI) |
+| Carbon | cyan 196 | chroma 0.004-0.013, hue 230-242 | 8px | Inter + Geist Mono |
+| Porcelain | blue 252 | chroma 0.002-0.010, hue 250-252 | 14px | Instrument Sans |
+| Oxide | plum 352 | chroma 0.002-0.014, hue 40-60 | 6px | Inter Tight + Bricolage Grotesque |
 
-Прибрані ще на першому колі: **Queue** (фіолет 284, IBM Plex Sans, радіус 2px,
-моноширинні назви платформ) і **Signal** (маджента 342, Manrope, радіус 14px).
+Removed already in the first round: **Queue** (violet 284, IBM Plex Sans, radius 2px,
+monospaced platform names) and **Signal** (magenta 342, Manrope, radius 14px).
 
-### Що відрізняє кожен набір
+### What sets each one apart
 
-- **Unread** - колір означає стан: нейтраль майже без відтінку, щоб єдина насичена
-  пляма читалася як «тут щось нове».
-- **Dossier** - 48 компаній як картотека: назва набрана як заголовок документа,
-  адреси й параметри фільтрів - дрібним моноширинним, як примітка.
-- **Manuscript** - холодний accent на теплій сепії, як папір і синє чорнило.
-- **Nordic** - єдиний, де нейтраль має видимий відтінок (chroma до 0.025).
-- **Reader** - інтерфейс цілком із засічками: екран Companies це переважно текст.
-- **Carbon** - єдиний спроєктований від темної схеми, світла в ньому похідна.
-- **Porcelain** - межі задає простір: `--border` майже збігається з `--surface`,
-  тому поле вводу зроблене темнішим за картку, інакше його не видно.
-- **Oxide** - єдиний теплий accent. Слива 352 проти danger 28 - лише 36 градусів
-  різниці, тому взята суттєво темнішою (0.448 проти 0.555). Перевіряти треба
-  кнопкою Delete поруч із Add company.
+- **Unread** - colour means state: a neutral with almost no hue, so the single
+  saturated spot reads as "something new here".
+- **Dossier** - 48 companies as a card index: the name is set like a document title,
+  addresses and filter parameters in small monospace, like a note.
+- **Manuscript** - a cool accent on warm sepia, like paper and blue ink.
+- **Nordic** - the only one where the neutral has a visible hue (chroma up to 0.025).
+- **Reader** - an interface entirely in serifs: the Companies screen is mostly text.
+- **Carbon** - the only one designed from the dark scheme, the light one derived from it.
+- **Porcelain** - space sets the boundaries: `--border` almost matches `--surface`, so
+  the input field is made darker than the card, otherwise it is invisible.
+- **Oxide** - the only warm accent. Plum 352 against danger 28 is only 36 degrees apart,
+  so it is taken noticeably darker (0.448 against 0.555). Check it with the Delete
+  button next to Add company.
 
-### Повні набори токенів
+### Full token sets
 
-Світла схема в `:root`, темна в `.dark, [data-theme="dark"]`. Ink тут немає - він
-у [`globals.css`](./globals.css).
-
+The light scheme in `:root`, the dark one in `.dark, [data-theme="dark"]`. Ink is not
+here - it is in [`globals.css`](./globals.css).
 #### Unread
 
 ```css
@@ -291,9 +289,9 @@
 --surface: oklch(1 0 0);
 --muted: oklch(0.528 0.01 252);
 --default: oklch(0.955 0.003 250);
---field-background: oklch(0.968 0.003 250); /* темніше за картку - навмисно */
+--field-background: oklch(0.968 0.003 250); /* darker than the card - on purpose */
 --field-placeholder: oklch(0.595 0.009 252);
---border: oklch(0.938 0.003 250); /* майже = surface */
+--border: oklch(0.938 0.003 250); /* almost = surface */
 --separator: oklch(0.955 0.002 250);
 --accent: oklch(0.535 0.192 252);
 --accent-foreground: oklch(0.99 0.005 252);
@@ -351,89 +349,91 @@
 --danger: oklch(0.642 0.185 28);
 ```
 
-## Шрифти заголовків
+## Heading fonts
 
-Десять кандидатів, усі з Google Fonts. `weight` і `letter-spacing` підібрані під
-кожне сімейство: однакові значення на дидоні й на гротеску дають різний результат.
-Кирилиця не перевірялася ні для одного - основна версія англійська.
+Ten candidates, all from Google Fonts. `weight` and `letter-spacing` are tuned to each
+family: the same values on a Didone and on a grotesque give different results.
+Cyrillic was not checked for any of them - the main version is English.
 
-| Шрифт | `next/font/google` | Вага | letter-spacing | Чим вирізняється |
+| Font | `next/font/google` | Weight | letter-spacing | What sets it apart |
 | --- | --- | --- | --- | --- |
-| **Space Grotesk** (вибрано) | `Space_Grotesk` | 600 | -0.03em | Зрізані кути, вузька «a». Тримає різкий радіус 4px краще за будь-який серіф |
-| Instrument Sans | `Instrument_Sans` | 600 | -0.022em | Той самий, що в тілі - окремого шрифту не треба взагалі |
-| Fraunces | `Fraunces` | 600 | -0.014em | Змінний серіф із «wonk»: засічки нерівні, назва виглядає написаною |
-| Newsreader | `Newsreader` | 500 | -0.004em | Вузький екранний серіф, виграє місце в довгих назвах |
-| Source Serif 4 | `Source_Serif_4` | 600 | -0.012em | Міцний текстовий серіф, добре і на 30px, і на 18px |
-| Lora | `Lora` | 600 | -0.008em | «Пензель» у вигинах, тепліший за Source Serif |
-| Playfair Display | `Playfair_Display` | 600 | -0.018em | Дидон; тонкі штрихи сипляться на 18px. Затертий у шаблонах |
-| DM Serif Display | `DM_Serif_Display` | 400 | -0.016em | Одна вага, жирного не існує. Лише під заголовки |
-| Bricolage Grotesque | `Bricolage_Grotesque` | 700 | -0.03em | Нерівні ширини літер, на h1 читається як лого |
-| Archivo | `Archivo` | 700 | -0.028em | Щільний новинний гротеск, вужчий за Instrument Sans |
+| **Space Grotesk** (chosen) | `Space_Grotesk` | 600 | -0.03em | Cut corners, a narrow "a". Holds the sharp 4px radius better than any serif |
+| Instrument Sans | `Instrument_Sans` | 600 | -0.022em | The same as the body - no separate font needed at all |
+| Fraunces | `Fraunces` | 600 | -0.014em | A variable serif with "wonk": uneven serifs, the name looks handwritten |
+| Newsreader | `Newsreader` | 500 | -0.004em | A narrow screen serif, saves room in long names |
+| Source Serif 4 | `Source_Serif_4` | 600 | -0.012em | A sturdy text serif, good at both 30px and 18px |
+| Lora | `Lora` | 600 | -0.008em | A "brush" in the curves, warmer than Source Serif |
+| Playfair Display | `Playfair_Display` | 600 | -0.018em | A Didone; thin strokes crumble at 18px. Worn out in templates |
+| DM Serif Display | `DM_Serif_Display` | 400 | -0.016em | One weight, no bold exists. Headings only |
+| Bricolage Grotesque | `Bricolage_Grotesque` | 700 | -0.03em | Uneven letter widths, reads as a logo on h1 |
+| Archivo | `Archivo` | 700 | -0.028em | A dense news grotesque, narrower than Instrument Sans |
 
-**Instrument Serif** (`Instrument_Serif`, вага 400, -0.005em) стояв у темі першим і
-був відхилений автором. Вага в нього лише одна, тому `font-bold` дає синтетичне
-жирне - звідси правило «ієрархія розміром, не вагою», яке лишилося й зі Space Grotesk.
+**Instrument Serif** (`Instrument_Serif`, weight 400, -0.005em) was first in the theme
+and was rejected by the author. It has only one weight, so `font-bold` gives synthetic
+bold - hence the rule "hierarchy by size, not weight", which stayed with Space Grotesk too.
 
-## Шрифти логотипа
+## Logo fonts
 
-Напис «Job Digger» у хедері вибирався окремо від заголовків: на останньому колі
-стояли два кандидати, кожен у парі з кожним заголовком.
+The "Job Digger" wordmark in the header was chosen separately from the headings: the
+last round had two candidates, each paired with each heading font.
 
-| Шрифт | `next/font/google` | Вага | letter-spacing |
+| Font | `next/font/google` | Weight | letter-spacing |
 | --- | --- | --- | --- |
-| **Fraunces** (вибрано) | `Fraunces` | 600 | -0.014em |
+| **Fraunces** (chosen) | `Fraunces` | 600 | -0.014em |
 | Playfair Display | `Playfair_Display` | 600 | -0.018em |
 
-## Бейджі статусів
+## Status badges
 
-Чотири щільності. Ключове правило: `*-soft` і `*-soft-foreground` беруться з одного
-токена, тому чим щільніший фон, тим ближче текст має бути до `--foreground`
-сторінки - інакше текст зливається з фоном у пляму. Відсотки для схем різні, бо
-`--foreground` у них протилежний.
+Four densities. The key rule: `*-soft` and `*-soft-foreground` come from one token, so
+the denser the background, the closer the text has to be to the page's `--foreground`
+- otherwise the text merges with the background into a blob. The percentages differ
+between the schemes, because their `--foreground` is opposite.
 
-| Обробка | Фон | Текст (світла / темна) | Обведення |
+| Treatment | Background | Text (light / dark) | Ring |
 | --- | --- | --- | --- |
-| **Solid** (вибрано) | заливка токеном | `*-foreground` | - |
+| **Solid** (chosen) | filled with the token | `*-foreground` | - |
 | Soft 24% | 24% | 92% / 92% | 35% |
 | Soft 50% | 50% | 55% / 28% | 70% |
 | Soft 75% | 75% | 28% / 15% | 100% |
 
-Відхилені раніше: **Soft 15%** (те, як HeroUI рахує за замовчуванням: текст 70/80%)
-і **Vibrant** - вбудований `[data-vibrant-palette="true"]`, який підіймає
-`*-soft-foreground` до 92% без жодного рядка в темі.
+Rejected earlier: **Soft 15%** (what HeroUI computes by default: text 70/80%) and
+**Vibrant** - the built-in `[data-vibrant-palette="true"]`, which raises
+`*-soft-foreground` to 92% without a single line in the theme.
 
-Формули для приглушених обробок:
+Formulas for the muted treatments:
 
 ```css
---<колір>-soft: color-mix(in oklab, var(--<колір>) <фон>%, transparent);
---<колір>-soft-foreground: color-mix(in oklab, var(--<колір>) <текст>%, var(--foreground));
---<колір>-soft-ring: color-mix(in oklab, var(--<колір>) <обведення>%, transparent);
+--<colour>-soft: color-mix(in oklab, var(--<colour>) <background>%, transparent);
+--<colour>-soft-foreground: color-mix(in oklab, var(--<colour>) <text>%, var(--foreground));
+--<colour>-soft-ring: color-mix(in oklab, var(--<colour>) <ring>%, transparent);
 ```
 
-`--*-soft-ring` у HeroUI немає - це наш токен, якщо колись знадобиться обведення.
+HeroUI has no `--*-soft-ring` - it is our token, in case a ring is ever needed.
 
-## Геометрія
+## Geometry
 
-Те, що довелося перевизначати, і чому - подробиці в
+What had to be overridden, and why: details in the
 [README](./README.md#ink-theme).
 
-| Що | Дефолт HeroUI | У нас |
+| What | HeroUI default | Ours |
 | --- | --- | --- |
-| Кнопка | `rounded-3xl` = `--radius * 3` = 12px | 4px через `--radius-3xl` |
-| Картка | `min(32px, --radius-3xl)` = 12px | 6px, перевизначенням `.card` |
-| Рамка картки | немає зовсім, лише тінь | 1px `var(--border)` |
-| Hover кнопки | `accent 90% + accent-foreground 10%` | явні значення |
+| Button | `rounded-3xl` = `--radius * 3` = 12px | 4px through `--radius-3xl` |
+| Card | `min(32px, --radius-3xl)` = 12px | 6px, by overriding `.card` |
+| Card border | none at all, only a shadow | 1px `var(--border)` |
+| Button hover | `accent 90% + accent-foreground 10%` | explicit values |
 
-## Як підмінити тему
+## How to swap the theme
 
-1. Узяти набір токенів вище і замінити ним блоки `:root` і `.dark` у
-   [`globals.css`](./globals.css). Похідні токени не переносити - HeroUI їх рахує сам.
-2. Шрифти - у [`layout.tsx`](./layout.tsx): імена сімейств із таблиць вище,
+1. Take a token set above and replace the `:root` and `.dark` blocks in
+   [`globals.css`](./globals.css) with it. Do not carry over the derived tokens - HeroUI
+   computes them itself.
+2. Fonts are in [`layout.tsx`](./layout.tsx): the family names from the tables above,
    `subsets: ["latin", "latin-ext"]`.
-3. Перевірити `npm run build`: він падає, якщо сімейства, ваги або субсета немає.
-4. Перечитати, чи не стали неправдою твердження про тему в
-   [README](./README.md#ink-theme) - зокрема про безтоновий accent і токен `--info`,
-   бо вони справедливі лише для Ink.
+3. Check `npm run build`: it fails if a family, weight or subset does not exist.
+4. Reread whether the statements about the theme in the
+   [README](./README.md#ink-theme) have become untrue - in particular about the hueless
+   accent and the `--info` token, because they hold only for Ink.
 
-Крок 4 найважливіший: `--info` існує саме тому, що в Ink accent без тону. У наборі
-з кольоровим accent цей токен не потрібен, і бейдж «нові» має братися з accent.
+Step 4 matters most: `--info` exists precisely because the accent in Ink has no hue. In
+a set with a coloured accent this token is not needed, and the "new" badge should take
+the accent.

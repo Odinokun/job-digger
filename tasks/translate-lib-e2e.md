@@ -19,4 +19,4 @@
 - [x] `e2e/`
 - [x] Конфіги в корені і `.github`
 - [x] Коментарі в `src/app/globals.css`
-- [ ] `src/app/theme-candidates.md`
+- [x] `src/app/theme-candidates.md`
