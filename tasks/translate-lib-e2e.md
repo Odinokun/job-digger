@@ -16,7 +16,7 @@
 - [x] README у `src/lib` англійською і посилання на нові якорі
 - [x] Коментарі в коді `src/lib`
 - [x] `src/i18n` і корінь `src`
-- [ ] `e2e/`
+- [x] `e2e/`
 - [ ] Конфіги в корені і `.github`
 - [ ] Коментарі в `src/app/globals.css`
 - [ ] `src/app/theme-candidates.md`

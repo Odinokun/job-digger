@@ -4,28 +4,27 @@ import { resetDatabase } from "./database.ts";
 import { companyCard, vacancyRow } from "./locators.ts";
 
 /**
- * Головний сценарій етапу 3 (задача 3.20): додав URL - бачиш вакансії.
+ * The main scenario of stage 3 (task 3.20): add a URL - see vacancies.
  *
- * Критерій готовності етапу: написаний на його початку й був червоним, поки етап
- * не зроблено. Тег `@pending` зняла задача 3.16 - тепер це звичайний сценарій
- * і йде в CI.
+ * The stage's definition of done: written at its start and red until the stage was
+ * finished. Task 3.16 removed the `@pending` tag - now it is an ordinary scenario
+ * and runs in CI.
  *
- * Справжній Greenhouse тут не викликається: застосунок іде на фейковий
- * вебсервер, який віддає збережену дошку Discord - 26 вакансій
- * (src/server/http/testing/README.md).
+ * The real Greenhouse is not called here: the app goes to the fake web server, which
+ * serves the saved Discord board - 26 vacancies (src/server/http/testing/README.md).
  */
 
 const BOARD_URL = "job-boards.greenhouse.io/discord";
 const BOARD_SIZE = 26;
 const TITLE = "Account Executive, Mobile Gaming & Apps";
 
-// Лічильник непрочитаних рахує всі компанії: чужі вакансії зіпсували б числа.
+// The unread counter counts all companies: other vacancies would spoil the numbers.
 test.beforeAll(resetDatabase);
 
 test("a Greenhouse board turns into unread vacancies that can be read and favorited", async ({
   page,
 }) => {
-  // Додавання: адреса дошки сама дає назву, Greenhouse підтримується.
+  // Adding: the board address gives the name itself, Greenhouse is supported.
   await page.goto("/companies");
   await page.getByRole("button", { name: "Add company" }).click();
   const addDialog = page.getByRole("dialog", { name: "Add company" });
@@ -34,8 +33,8 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   await addDialog.getByLabel("Company website").blur();
   await expect(addDialog.getByLabel("Company name")).toHaveValue("Discord");
 
-  // Посилання на дошку заповнює кар'єрну сторінку й назву, а сайт компанії -
-  // ні, і без нього Save неактивна (задача company-site-required).
+  // A board link fills in the career page and the name but not the company site, and
+  // without it Save is disabled (task company-site-required).
   await expect(addDialog.getByLabel("Company website")).toHaveValue("");
   await expect(addDialog.getByRole("button", { name: "Save" })).toBeDisabled();
   await addDialog.getByLabel("Company website").fill("discord.com");
@@ -50,18 +49,18 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   const card = companyCard(page, "Discord");
   await expect(card).toBeVisible();
 
-  // Перша перевірка стартує сама одразу після Save (задача 5.09). Завершення
-  // видно за часом останньої перевірки.
+  // The first check starts by itself right after Save (task 5.09). Its end is visible
+  // by the last check time.
   await expect(card.getByText(/Last checked/)).toBeVisible({ timeout: 15_000 });
 
-  // Лічильник непрочитаних - у меню біля Jobs і в назві вкладки браузера.
+  // The unread counter is in the menu next to Jobs and in the browser tab title.
   const jobsLink = page
     .getByRole("navigation", { name: "Main" })
     .getByRole("link", { name: /^Jobs/ });
   await expect(jobsLink).toHaveText(`Jobs ${BOARD_SIZE}`);
   await expect(page).toHaveTitle(`(${BOARD_SIZE}) Job Digger`);
 
-  // Unread: уся дошка, кожна вакансія з назвою компанії.
+  // Unread: the whole board, each vacancy with the company name.
   await page
     .getByRole("navigation", { name: "Main" })
     .getByRole("link", { name: /^Jobs/ })
@@ -71,16 +70,16 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   ).toHaveCount(BOARD_SIZE);
   await expect(vacancyRow(page, TITLE)).toContainText("Discord");
 
-  // Числа у вкладках - скільки рядків у кожній (задача jobs-tab-counts).
+  // The numbers in the tabs - how many rows each has (task jobs-tab-counts).
   const tabs = page.getByRole("navigation", { name: "Job lists" });
   await expect(tabs).toHaveText(
     `Unread (${BOARD_SIZE})Read (0)Favorites (0)All (${BOARD_SIZE})`,
   );
 
-  // Дії над рядком доходять до сервера із запізненням: вкладку перемикаємо,
-  // поки дія ще не записала позначку в базу. Рядок зникає з Unread одразу
-  // (оптимістично), тож людина цілком може так зробити, - і на CI тест без
-  // затримки падав через ту саму гонитву (задача 3.22).
+  // Row actions reach the server with a delay: we switch the tab while the action
+  // has not yet written the mark to the database. The row leaves Unread at once
+  // (optimistically), so a person may well do this - and on CI the test without a
+  // delay failed because of that very race (task 3.22).
   await page.route("**/*", async (route) => {
     if (route.request().headers()["next-action"] !== undefined) {
       await new Promise((done) => setTimeout(done, 1000));
@@ -88,20 +87,20 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
     await route.continue();
   });
 
-  // Mark as read переносить вакансію з Unread у Read.
+  // Mark as read moves the vacancy from Unread to Read.
   await vacancyRow(page, TITLE)
     .getByRole("button", { name: "Mark as read" })
     .click();
   await expect(vacancyRow(page, TITLE)).toHaveCount(0);
-  // Числа вкладок рухаються разом із рядком, ще до відповіді сервера, яку
-  // маршрут вище затримує на секунду.
+  // The tab numbers move together with the row, even before the server response,
+  // which the route above delays by a second.
   await expect(tabs).toHaveText(
     `Unread (${BOARD_SIZE - 1})Read (1)Favorites (0)All (${BOARD_SIZE})`,
     { timeout: 500 },
   );
   await expect(jobsLink).toHaveText(`Jobs ${BOARD_SIZE - 1}`);
 
-  // Undo повертає вакансію в Unread на її місце (задача vacancy-undo-toast).
+  // Undo returns the vacancy to its place in Unread (task vacancy-undo-toast).
   const undoNotice = page
     .getByRole("alertdialog")
     .filter({ hasText: "Marked as read" });
@@ -113,7 +112,7 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   );
   await expect(undoNotice).toHaveCount(0);
 
-  // Знову Mark as read - далі сценарій іде з прочитаною вакансією.
+  // Mark as read again - the scenario continues with the vacancy read.
   await vacancyRow(page, TITLE)
     .getByRole("button", { name: "Mark as read" })
     .click();
@@ -123,14 +122,14 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   await page.getByRole("link", { name: /^Read/ }).click();
   await expect(vacancyRow(page, TITLE)).toBeVisible();
 
-  // Favorite додає її у Favorites.
+  // Favorite adds it to Favorites.
   await vacancyRow(page, TITLE)
     .getByRole("button", { name: "Favorite" })
     .click();
 
   await page.getByRole("link", { name: /^Favorites/ }).click();
   await expect(vacancyRow(page, TITLE)).toBeVisible();
-  // Щойно додана - у групі свіжого обраного (задача favorites-added-today).
+  // Just added - in the recent favorites group (task favorites-added-today).
   await expect(
     page.getByRole("heading", { name: "Last 12 hours" }),
   ).toBeVisible();
@@ -138,8 +137,8 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
     "Favorites (1)",
   );
 
-  // Mark all as read: діалог називає, скільки вакансій позначить, - усі
-  // непрочитані, крім уже прочитаної вище.
+  // Mark all as read: the dialog names how many vacancies it will mark - all unread
+  // ones except the one already read above.
   await page.getByRole("link", { name: /^Unread/ }).click();
   await page.getByRole("button", { name: "Mark all as read" }).click();
   const confirmDialog = page.getByRole("alertdialog", {
@@ -155,7 +154,7 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   await expect(tabs).toHaveText(
     `Unread (0)Read (${BOARD_SIZE})Favorites (1)All (${BOARD_SIZE})`,
   );
-  // Непрочитаних немає - числа немає ні в меню, ні в назві вкладки.
+  // No unread left - no number in the menu or in the tab title.
   await expect(jobsLink).toHaveText("Jobs");
   await expect(page).toHaveTitle("Job Digger");
 
@@ -164,7 +163,7 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
     page.locator('a[href^="https://job-boards.greenhouse.io/discord/jobs/"]'),
   ).toHaveCount(BOARD_SIZE);
 
-  // Mark all as unread у картці компанії повертає всі її вакансії в Unread.
+  // Mark all as unread on the company card returns all its vacancies to Unread.
   await page
     .getByRole("navigation", { name: "Main" })
     .getByRole("link", { name: /^Companies/ })
@@ -173,7 +172,7 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
     .getByRole("navigation", { name: "Company lists" })
     .getByRole("link", { name: /^Tracked/ })
     .click();
-  // Кнопка лише з іконкою називає дію підказкою при наведенні.
+  // An icon-only button names its action in a tooltip on hover.
   const markUnread = companyCard(page, "Discord").getByRole("button", {
     name: "Mark all as unread",
   });
@@ -184,7 +183,7 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
   await expect(
     page.getByText(`${BOARD_SIZE} vacancies of Discord marked as unread.`),
   ).toBeVisible();
-  // Лічильник у шапці оновлюється й без переходу на Jobs.
+  // The header counter updates even without going to Jobs.
   await expect(jobsLink).toHaveText(`Jobs ${BOARD_SIZE}`);
 
   await page
@@ -195,8 +194,8 @@ test("a Greenhouse board turns into unread vacancies that can be read and favori
     page.locator('a[href^="https://job-boards.greenhouse.io/discord/jobs/"]'),
   ).toHaveCount(BOARD_SIZE);
 
-  // Mark all as unread у вкладці Read (задача 6.18): дзеркало Mark all as read,
-  // теж через діалог із кількістю.
+  // Mark all as unread on the Read tab (task 6.18): a mirror of Mark all as read, also
+  // through a dialog with the count.
   await vacancyRow(page, TITLE)
     .getByRole("button", { name: "Mark as read" })
     .click();

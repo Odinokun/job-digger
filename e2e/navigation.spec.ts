@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-// Сценарій-заглушка каркаса E2E: застосунок відкривається і показує меню.
-// Елементи шукаємо за роллю й доступним іменем, а не за класами Tailwind:
-// класи змінює верстка, роль і назва - це те, що бачить користувач.
+// A placeholder scenario of the E2E scaffold: the app opens and shows the menu.
+// Elements are found by role and accessible name, not by Tailwind classes: the
+// markup changes classes, while the role and name are what the user sees.
 // https://playwright.dev/docs/locators#locate-by-role
 test("opens the app and shows the main navigation", async ({ page }) => {
   await page.goto("/");

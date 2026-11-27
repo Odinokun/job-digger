@@ -3,17 +3,16 @@ import { expect, test } from "@playwright/test";
 import { companyCard } from "./locators.ts";
 
 /**
- * Повний шлях компанії: додати, відредагувати, видалити.
+ * The full path of a company: add, edit, delete.
  *
- * Завершальний сценарій етапу 2. Додавання починається з однієї адреси
- * (картка 2.12): вставлена кар'єрна сторінка сама розкладається на сайт,
- * назву й кар'єрну сторінку.
+ * The final scenario of stage 2. Adding starts from one address (card 2.12): a
+ * pasted career page splits itself into the site, the name and the career page.
  *
- * `bosch.com/de/careers/jobs` - не ATS, тому джерело отримує платформу
- * «Unsupported page», а компанія живе на вкладці Not tracked.
+ * `bosch.com/de/careers/jobs` is not an ATS, so the source gets the "Unsupported
+ * page" platform, and the company lives on the Not tracked tab.
  *
- * База E2E чиститься перед прогоном (`e2e/global-setup.ts`), тож Bosch тут
- * не зустрінеться з однойменною компанією і не викличе попередження про дублікат.
+ * The E2E database is cleared before the run (`e2e/global-setup.ts`), so Bosch does
+ * not meet a company with the same name here and does not trigger a duplicate warning.
  */
 
 test("adds a company from one address, edits it and deletes it", async ({
@@ -21,14 +20,14 @@ test("adds a company from one address, edits it and deletes it", async ({
 }) => {
   await page.goto("/companies");
 
-  // Додавання: одна вставлена адреса заповнює решту полів.
+  // Adding: one pasted address fills in the other fields.
   await page.getByRole("button", { name: "Add company" }).click();
   const addDialog = page.getByRole("dialog", { name: "Add company" });
 
   await addDialog
     .getByLabel("Company website")
     .fill("bosch.com/de/careers/jobs");
-  // Підказка спрацьовує, коли поле адреси втрачає фокус.
+  // The suggestion fires when the address field loses focus.
   await addDialog.getByLabel("Company website").blur();
 
   await expect(addDialog.getByLabel("Company website")).toHaveValue(
@@ -48,7 +47,7 @@ test("adds a company from one address, edits it and deletes it", async ({
     .click();
   await expect(companyCard(page, "Bosch")).toBeVisible();
 
-  // Редагування: нова назва видна на картці.
+  // Editing: the new name is visible on the card.
   await companyCard(page, "Bosch")
     .getByRole("button", { name: "Edit" })
     .click();
@@ -61,9 +60,9 @@ test("adds a company from one address, edits it and deletes it", async ({
   await expect(companyCard(page, "Bosch Group")).toBeVisible();
   await expect(companyCard(page, "Bosch")).toHaveCount(0);
 
-  // «Лише посилання» (задача 6.17): сторінку, яку нічим прочитати, людина
-  // позначає сама, і вона перестає рахуватися непрочитаною. Клік - по підпису:
-  // сам `<input>` HeroUI ховає під намальованою галочкою.
+  // "Link only" (task 6.17): the person marks a page nothing can read themselves,
+  // and it stops counting as unread. The click goes to the label: HeroUI hides the
+  // `<input>` itself under the drawn checkmark.
   const card = companyCard(page, "Bosch Group");
   await expect(card).toContainText("1 page not read");
   await card.getByText("Link only", { exact: true }).click();
@@ -77,7 +76,7 @@ test("adds a company from one address, edits it and deletes it", async ({
     }),
   ).toBeChecked();
 
-  // Видалення - лише після підтвердження.
+  // Deleting - only after confirmation.
   await companyCard(page, "Bosch Group")
     .getByRole("button", { name: "Delete company" })
     .click();
@@ -90,9 +89,9 @@ test("adds a company from one address, edits it and deletes it", async ({
   await expect(companyCard(page, "Bosch Group")).toHaveCount(0);
 });
 
-// Задача 6.12: підказка назви приходить на виході з поля адреси - тобто саме
-// тоді, коли фокус переходить у поле назви. Друк одразу після кліку
-// дописувався до підказки («AcmeAcme Corp»).
+// Task 6.12: the name suggestion arrives when the address field loses focus - that
+// is, exactly when focus moves to the name field. Typing right after the click was
+// appended to the suggestion ("AcmeAcme Corp").
 test("a name typed right after the address replaces the suggestion", async ({
   page,
 }) => {

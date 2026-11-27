@@ -3,16 +3,15 @@ import { expect, test } from "@playwright/test";
 import { resetDatabase } from "./database.ts";
 
 /**
- * Перевірка, що почалась уже після завантаження сторінки (задача 6.29):
- * автоперевірка за розкладом чи дія в іншій вкладці. Відкрита сторінка Jobs
- * має показати знайдені вакансії й лічильник без перезавантаження.
+ * A check that started after the page loaded (task 6.29): a scheduled auto-check
+ * or an action in another tab. An open Jobs page has to show the vacancies found and
+ * the counter without a reload.
  *
- * Розклад у E2E вимкнений (`AUTO_CHECK=off` у playwright.config.ts), тож
- * перевірку запускає друга вкладка: Save нової компанії одразу її перевіряє
- * (задача 5.09). Повільне опитування раз на 60 с тест не чекає - він
- * «повертається» на вкладку подією `visibilitychange`, і опитувач питає
- * одразу. Дошка Lever - на фейковому вебсервері, справжні сайти не
- * викликаються.
+ * The schedule is off in E2E (`AUTO_CHECK=off` in playwright.config.ts), so a second
+ * tab starts the check: Save of a new company checks it right away (task 5.09). The
+ * test does not wait for the slow 60 s poll - it "comes back" to the tab with a
+ * `visibilitychange` event, and the poller asks right away. The Lever board is on
+ * the fake web server; real sites are not called.
  */
 
 const LEVER = { url: "jobs.lever.co/leverdemo", name: "Lever Demo", jobs: 10 };
@@ -43,8 +42,8 @@ test("an open Jobs page shows vacancies found by a check started elsewhere", asy
   await dialog.getByRole("button", { name: "Save" }).click();
   await expect(dialog).toBeHidden();
 
-  // Перевірка йде у фоні: «повертаємось» на першу вкладку, доки сервер не
-  // скаже, що вакансії знайдено.
+  // The check runs in the background: we "come back" to the first tab until the
+  // server says the vacancies are found.
   await expect(async () => {
     await page.evaluate(() =>
       document.dispatchEvent(new Event("visibilitychange")),
@@ -52,7 +51,7 @@ test("an open Jobs page shows vacancies found by a check started elsewhere", asy
     await expect(jobsLink).toHaveText(`Jobs ${LEVER.jobs}`, { timeout: 2000 });
   }).toPass({ timeout: 30_000 });
 
-  // Порожній список заповнився сам, без toast «new vacancies».
+  // The empty list filled itself, without a "new vacancies" toast.
   await expect(page.getByText("No vacancies yet.")).toBeHidden();
   await expect(
     page.getByRole("main").getByRole("listitem").first(),

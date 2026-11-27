@@ -5,15 +5,15 @@ import { expect, test, type Page } from "@playwright/test";
 import { companyCard } from "./locators.ts";
 
 /**
- * CSV туди й назад (задача 6.07) - сценарій етапу 6.
+ * CSV there and back (task 6.07) - the stage 6 scenario.
  *
- * Компанії заводяться імпортом, тоді весь список експортується з карʼєрними
- * адресами, і той самий файл імпортується назад: нічого нового не
- * зʼявляється, усе впізнається як дублікат, а підписи джерел переживають
- * дорогу.
+ * Companies are brought in by import, then the whole list is exported with career
+ * addresses, and the same file is imported back: nothing new appears, everything
+ * is recognised as a duplicate, and the source labels survive the round trip.
  *
- * Компанії синтетичні (`*.example`), а `jobs.example` фейковий вебсервер не
- * знає - сценарій нічого не читає з мережі, лише пише в базу.
+ * The companies are synthetic (`*.example`), and the fake web server does not know
+ * `jobs.example` - the scenario reads nothing from the network, it only writes to
+ * the database.
  */
 
 const SOURCE_FILE = [
@@ -44,12 +44,12 @@ async function importFile(page: Page, name: string, contents: Buffer) {
   await page.getByRole("button", { name: "Import CSV" }).click();
 }
 
-/** Підсумок імпорту. Живих регіонів на сторінці кілька - беремо свій. */
+/** The import summary. The page has several live regions - we take ours. */
 function importSummary(page: Page) {
   return page.getByRole("status").filter({ hasText: "Added" });
 }
 
-/** Числа у вкладках Companies - «Tracked (N)» і «Not tracked (N)». */
+/** The numbers in the Companies tabs - "Tracked (N)" and "Not tracked (N)". */
 async function tabCounts(page: Page) {
   await page.goto("/companies");
   const tabs = page.getByRole("navigation", { name: "Company lists" });
@@ -72,12 +72,12 @@ test("exports companies to CSV and imports the same file without duplicates", as
   );
 
   const before = await tabCounts(page);
-  // Підпис джерела доїхав: саме для цього формат має `career_label`.
+  // The source label made it: this is what the format has `career_label` for.
   await expect(
     companyCard(page, "Roundtrip One").getByText("Germany, remote"),
   ).toBeVisible();
 
-  // Експорт усього списку разом із карʼєрними адресами.
+  // Export of the whole list together with career addresses.
   await page.goto("/settings");
   await settings(page).getByText("Include career page URLs").click();
   const [download] = await Promise.all([
@@ -90,7 +90,7 @@ test("exports companies to CSV and imports the same file without duplicates", as
     'Roundtrip One,https://roundtrip-one.example,https://jobs.example/roundtrip-one?country=de,"Germany, remote"',
   );
 
-  // Той самий файл назад: нового нічого, рядків із помилкою немає.
+  // The same file back: nothing new, no rows with errors.
   await importFile(page, "exported.csv", exported);
   await expect(importSummary(page)).toContainText(
     "Added 0 companies and 0 career pages",

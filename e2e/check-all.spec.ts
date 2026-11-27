@@ -3,14 +3,14 @@ import { expect, type Page, test } from "@playwright/test";
 import { resetDatabase } from "./database.ts";
 
 /**
- * Головний сценарій етапу 4 (задача 4.11): Check all від запуску до підсумку.
+ * The main scenario of stage 4 (task 4.11): Check all from start to summary.
  *
- * Критерій готовності етапу: написаний на його початку й червоний, поки етап
- * не зроблено. Тег `@pending` зняла задача 4.10 - тепер це звичайний сценарій.
+ * The stage's definition of done: written at its start and red until the stage was
+ * finished. Task 4.10 removed the `@pending` tag - now it is an ordinary scenario.
  *
- * Три компанії на фейковому вебсервері (src/server/http/testing/README.md):
- * дві читаються, третя - дошка Greenhouse, якої на сервері немає, тож її
- * джерело падає з 404. Справжні сайти не викликаються.
+ * Three companies on the fake web server (src/server/http/testing/README.md): two
+ * can be read, the third is a Greenhouse board the server does not have, so its
+ * source fails with a 404. Real sites are not called.
  */
 
 const LEVER = { url: "jobs.lever.co/leverdemo", name: "Lever Demo", jobs: 10 };
@@ -23,12 +23,12 @@ const BROKEN = { url: "job-boards.greenhouse.io/ghost", name: "Ghost" };
 
 const SOURCES = 3;
 /**
- * Вакансії обох дошок. Їх знаходить уже перша перевірка, що стартує одразу після
- * Save (задача 5.09), тож для самого Check all вони не нові.
+ * Vacancies of both boards. The first check, which starts right after Save
+ * (task 5.09), already finds them, so for Check all itself they are not new.
  */
 const VACANCIES = LEVER.jobs + PEOPLEFORCE.jobs;
 
-// Check all рахує всі компанії на Tracked: чужі зіпсували б числа.
+// Check all counts all companies on Tracked: other companies would spoil the numbers.
 test.beforeAll(resetDatabase);
 
 async function addCompany(
@@ -39,12 +39,12 @@ async function addCompany(
   const dialog = page.getByRole("dialog", { name: "Add company" });
 
   await dialog.getByLabel("Company website").fill(company.url);
-  // Підказка розкладає адресу на поля, коли поле втрачає фокус; назву потім
-  // ставимо свою, щоб не залежати від того, що підказка з неї зробить.
+  // The suggestion splits the address into fields when the field loses focus; then
+  // we set our own name, so as not to depend on what the suggestion makes of it.
   await dialog.getByLabel("Company website").blur();
   await dialog.getByLabel("Company name").fill(company.name);
-  // Підказка перенесла адресу дошки в кар'єрну сторінку, а сайт компанії
-  // обовʼязковий - вводимо його самі.
+  // The suggestion moved the board address into the career page, and the company
+  // site is required - we enter it ourselves.
   await dialog
     .getByLabel("Company website")
     .fill(`${company.name.toLowerCase().replaceAll(" ", "-")}.example`);
@@ -56,8 +56,8 @@ async function addCompany(
 test("Check all checks every tracked source and reports the failed one", async ({
   page,
 }) => {
-  // Типових 30 с замало: три додавання, сама перевірка і опитування раз на
-  // кілька секунд, поки підсумок не спливе.
+  // The default 30 s is not enough: three additions, the check itself and polling
+  // every few seconds until the summary pops up.
   test.setTimeout(60_000);
 
   await page.goto("/companies");
@@ -65,60 +65,60 @@ test("Check all checks every tracked source and reports the failed one", async (
     await addCompany(page, company);
   }
 
-  // Усі три - на Tracked: джерело Ghost відстежується, хоч і зламане.
+  // All three are on Tracked: the Ghost source is tracked, even though it is broken.
   const tracked = page
     .getByRole("navigation", { name: "Company lists" })
     .getByRole("link", { name: /^Tracked/ });
   await tracked.click();
   await expect(tracked).toContainText("3");
 
-  // Перші перевірки після Save мають закінчитись до Check all: інакше дві
-  // перевірки одних джерел ідуть навперегони, і числа підсумку випадкові.
+  // The first checks after Save have to finish before Check all: otherwise two
+  // checks of the same sources race each other, and the summary numbers are random.
   const jobsLink = page
     .getByRole("navigation", { name: "Main" })
     .getByRole("link", { name: /^Jobs/ });
   await expect(jobsLink).toHaveText(`Jobs ${VACANCIES}`, { timeout: 30_000 });
 
-  // Запуск. Індикатор зʼявляється одразу з відповіді на Check all, а не з
-  // першого опитування, тож його видно, хоч фейковий сервер відповідає миттєво.
+  // The start. The indicator appears at once from the Check all response, not from
+  // the first poll, so it is visible even though the fake server answers instantly.
   await page.getByRole("button", { name: "Check all" }).click();
   await expect(
     page.getByRole("banner").getByText(new RegExp(`Checking \\d+/${SOURCES}`)),
   ).toBeVisible();
 
-  // Підсумок спливає сам, без перезавантаження сторінки. Toast HeroUI - це
-  // `alertdialog` з назвою із заголовка; `role="alert"` усередині обгортає лише
-  // текст, а кнопка дії лежить поруч із ним.
+  // The summary pops up by itself, without a page reload. A HeroUI toast is an
+  // `alertdialog` named by its title; the `role="alert"` inside wraps only the text,
+  // and the action button sits next to it.
   const summary = page.getByRole("alertdialog", { name: "Check finished" });
   await expect(summary).toBeVisible({ timeout: 30_000 });
   await expect(summary).toContainText(`${SOURCES} sources checked`);
   await expect(summary).toContainText(`${SOURCES - 1} ok`);
   await expect(summary).toContainText("1 failed");
-  // Вакансії вже знайшла перша перевірка - нових Check all не бачить.
+  // The first check already found the vacancies - Check all sees no new ones.
   await expect(summary).toContainText("0 new");
   await expect(summary).toContainText("0 removed");
   await expect(page.getByRole("banner").getByText(/Checking/)).toBeHidden();
 
-  // Лічильник біля Jobs той самий: вакансії ті самі, нічого не зникло.
+  // The counter next to Jobs is the same: the same vacancies, nothing disappeared.
   await expect(jobsLink).toHaveText(`Jobs ${VACANCIES}`);
 
-  // Невдале джерело - у Failed Sources Drawer, і лише воно.
+  // The failed source is in the Failed Sources Drawer, and only it.
   await summary.getByRole("button", { name: "Show failed sources" }).click();
   const drawer = page.getByRole("dialog", { name: "Failed sources" });
   await expect(drawer.getByRole("listitem")).toHaveCount(1);
   const failed = drawer.getByRole("listitem").filter({ hasText: BROKEN.name });
   await expect(failed).toContainText(BROKEN.url);
 
-  // Retry: дошки так і немає, тож джерело знову падає й лишається в списку,
-  // а drawer не закривається.
+  // Retry: the board still does not exist, so the source fails again and stays in
+  // the list, and the drawer does not close.
   await failed.getByRole("button", { name: "Retry" }).click();
   await expect(drawer.getByRole("listitem")).toHaveCount(1);
   await expect(failed).toContainText(BROKEN.url);
   await page.keyboard.press("Escape");
   await expect(drawer).toBeHidden();
 
-  // History: один рядок на загальну перевірку. Retry його не міняє і
-  // нового не додає.
+  // History: one row per general check. Retry does not change it and does not add
+  // a new one.
   await page
     .getByRole("navigation", { name: "Main" })
     .getByRole("link", { name: "History" })

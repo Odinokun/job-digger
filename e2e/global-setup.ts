@@ -1,12 +1,12 @@
 /**
- * Виконується один раз перед усіма сценаріями: готує окрему базу E2E.
+ * Runs once before all scenarios: prepares the separate E2E database.
  *
- * Сценарії пишуть у базу - додають, змінюють і видаляють компанії. Тому вони
- * працюють не з базою розробки, а з власною, яка перед кожним прогоном
- * створюється (якщо її ще немає), чиститься, мігрується й чиститься ще раз
- * разом із системним користувачем. Перше чищення - щоб нова міграція не
- * спіткнулась об дані минулого прогону (`emptyTables`). Так результат не
- * залежить від того, що лежить у базі розробки, і не псує її.
+ * The scenarios write to the database - they add, change and delete companies. So
+ * they work not with the development database but with their own, which before every
+ * run is created (if it does not exist yet), cleared, migrated and cleared again
+ * together with the system user. The first clearing is so that a new migration does
+ * not trip over the data of the previous run (`emptyTables`). This way the result
+ * does not depend on what is in the development database and does not spoil it.
  * https://playwright.dev/docs/test-global-setup-teardown
  */
 import {

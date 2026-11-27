@@ -4,13 +4,11 @@ import { resetDatabase } from "./database.ts";
 import { companyCard } from "./locators.ts";
 
 /**
- * Власна кар'єрна сторінка за рецептом (задача 6.21): сторінка, яку нічим
- * прочитати, стає списком вакансій, коли людина підтверджує, які посилання на
- * ній - вакансії.
+ * An own career page by recipe (task 6.21): a page nothing can read becomes a
+ * vacancy list when a person confirms which links on it are vacancies.
  *
- * `kinggroup.io/vacancies/tech` - справжня сторінка kinggroup на Framer,
- * збережена у фейковому вебсервері (src/server/http/testing): 10 вакансій
- * посиланнями `./design/<slug>`.
+ * `kinggroup.io/vacancies/tech` is the real kinggroup page on Framer, saved in the
+ * fake web server (src/server/http/testing): 10 vacancies as `./design/<slug>` links.
  */
 
 test.beforeAll(resetDatabase);
@@ -18,7 +16,7 @@ test.beforeAll(resetDatabase);
 test("an own career page is read as a list after the user confirms its links", async ({
   page,
 }) => {
-  // Після підтвердження йде перша перевірка компанії.
+  // After the confirmation the company's first check runs.
   test.setTimeout(60_000);
 
   await page.goto("/companies");
@@ -34,7 +32,7 @@ test("an own career page is read as a list after the user confirms its links", a
   await addDialog.getByRole("button", { name: "Save" }).click();
   await expect(addDialog).toBeHidden();
 
-  // Сторінку нічим прочитати - компанія в Not tracked.
+  // Nothing can read the page - the company is on Not tracked.
   await page
     .getByRole("navigation", { name: "Company lists" })
     .getByRole("link", { name: /^Not tracked/ })
@@ -42,7 +40,7 @@ test("an own career page is read as a list after the user confirms its links", a
   const card = companyCard(page, "Kinggroup");
   await card.getByRole("button", { name: "Read as list" }).click();
 
-  // Діалог показує, що знайшов на сторінці: група з 10 посилань і назви.
+  // The dialog shows what it found on the page: a group of 10 links and the titles.
   const dialog = page.getByRole("dialog", { name: "Read the page as a list" });
   const group = dialog.getByRole("radio", { name: "10 links" });
   await expect(group).toBeChecked({ timeout: 15_000 });
@@ -51,12 +49,12 @@ test("an own career page is read as a list after the user confirms its links", a
   await dialog.getByRole("button", { name: "Read these" }).click();
   await expect(dialog).toBeHidden();
 
-  // Компанія пішла з Not tracked - картка зникає одразу, без перезавантаження.
-  // Раніше вона лишалася з написом про непрочитану сторінку, хоча лічильники
-  // вкладок уже оновились.
+  // The company left Not tracked - the card disappears at once, without a reload.
+  // Before, it stayed with the unread page note, even though the tab counts had
+  // already updated.
   await expect(card).toBeHidden();
 
-  // Компанія тепер відстежується, і перша перевірка приносить вакансії.
+  // The company is tracked now, and the first check brings vacancies.
   const jobsLink = page
     .getByRole("navigation", { name: "Main" })
     .getByRole("link", { name: /^Jobs/ });
