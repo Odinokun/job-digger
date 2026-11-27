@@ -84,7 +84,7 @@ Screens: **Jobs** (Unread / Read / Favorites / All), **Companies** (Tracked / No
 
 - **English:** documentation (READMEs, `CLAUDE.md`, `.claude/`), code comments, commits, PR titles and descriptions, names in code (variables, functions, files, tables and columns), test names, logs and technical error messages.
 - **Ukrainian:** the files in `tasks/`. They are the author's working notes.
-- Some READMEs and code comments are still in Ukrainian: the tasks `translate-app`, `translate-server`, `translate-lib-e2e` and `public-readme` translate them. New text is written in English straight away.
+- The root `README.md` is still in Ukrainian: task `public-readme` translates it. Cyrillic left in code and READMEs elsewhere is data (company names, button texts and career words the parsers match, test inputs). New text is written in English straight away.
 - **UI texts** are in English and Ukrainian, as next-intl keys in two translation files. A test checks that both files have the same keys. Data from websites (vacancy and company names, locations) is never translated.
 - The language is not in the URL: next-intl runs without i18n routing and reads the locale from a cookie, because the language is a personal setting. Details in the [README](README.md#локалізація), code in `src/i18n/`.
 
