@@ -25,6 +25,6 @@
 
 ## Після останнього merge - руками (автор)
 
-- Зробити репозиторій публічним: GitHub → Settings → General → Danger Zone → Change visibility.
-- Увімкнути обов'язкові перевірки для `main` (на публічному репозиторії вони доступні й на GitHub Free): ruleset або branch protection з «Require status checks to pass» для `Lint and types` і `Tests` (кореневий README, розділ CI).
+- [x] Зробити репозиторій публічним (автор, 27.11.2026).
+- [x] Обов'язкові перевірки для `main` (27.11.2026, рішення автора): ruleset «main» через `gh api` - `Lint and types` і `Tests` мають бути зелені, force push і видалення `main` заборонені, схвалення PR не вимагається. Змінити - Settings → Rules → Rulesets.
 - За бажанням - опис і topics репозиторію, закріпити його в профілі.
