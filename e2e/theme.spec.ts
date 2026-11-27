@@ -1,17 +1,17 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
 /**
- * Перемикання оформлення.
+ * Switching the appearance.
  *
- * Сценарій не просто перевіряє кінцеву тему, а **лічить зміни `data-theme`**.
- * Баг, через який він зʼявився, кінцевий стан не ламав: тема встигала
- * увімкнутися й повернутися назад, бо атрибутом володіли двоє - React, який
- * рендерив його з cookie, і клієнтський перемикач. На екрані це було блимання,
- * а в консолі - помилка про `<script>`, що зʼявився під час клієнтського
- * рендера. Перевірка «на кінцевий стан» усе це пропускала.
+ * The scenario does not just check the final theme, it **counts `data-theme`
+ * changes**. The bug that caused it did not break the final state: the theme managed
+ * to switch on and back, because two owners held the attribute - React, which
+ * rendered it from the cookie, and the client switcher. On screen this was a flicker,
+ * and in the console an error about a `<script>` that appeared during a client
+ * render. A "final state" check let all of this through.
  */
 
-/** Починає стежити за змінами `data-theme` на `<html>`. */
+/** Starts watching `data-theme` changes on `<html>`. */
 async function watchThemeChanges(page: Page): Promise<void> {
   await page.evaluate(() => {
     const changes: (string | null)[] = [];
@@ -35,12 +35,12 @@ async function themeChanges(page: Page): Promise<(string | null)[]> {
   );
 }
 
-/** Вибір, збережений у cookie, - те саме, що прочитає скрипт теми. */
+/** The choice saved in the cookie - the same the theme script will read. */
 async function storeTheme(
   context: BrowserContext,
   value: string,
 ): Promise<void> {
-  // Адреса застосунку - з `use.baseURL` конфігу, щоб порт жив в одному місці.
+  // The app address comes from the config's `use.baseURL`, so the port lives in one place.
   const url = test.info().project.use.baseURL;
 
   if (!url) {
@@ -51,11 +51,11 @@ async function storeTheme(
 }
 
 /**
- * Натискає кнопку режиму й чекає, поки Server Action **завершиться**.
+ * Presses a mode button and waits until the Server Action **finishes**.
  *
- * Чекати обовʼязково: саме перерендер після відповіді дії раніше й повертав
- * атрибут назад. Чекаємо на саму відповідь, а не на таймер, - інакше тест або
- * пропускав би баг, або був би повільним.
+ * Waiting is required: the rerender after the action's response is exactly what used
+ * to switch the attribute back. We wait for the response itself, not a timer -
+ * otherwise the test would either miss the bug or be slow.
  */
 async function chooseTheme(page: Page, name: string): Promise<void> {
   const saved = page.waitForResponse(
@@ -66,7 +66,7 @@ async function chooseTheme(page: Page, name: string): Promise<void> {
 
   await page.getByRole("radio", { name }).click();
   await saved;
-  // Відповідь прийшла - лишилося дати React застосувати оновлене дерево.
+  // The response arrived - it remains to let React apply the updated tree.
   await page.waitForTimeout(150);
 }
 
@@ -91,12 +91,12 @@ test("switching to System flips the theme once and logs no error", async ({
   await watchThemeChanges(page);
   await chooseTheme(page, "System");
 
-  // Рівно одна зміна: увімкнулася темна - і лишилася. Друге значення тут
-  // означало б, що атрибут хтось перезаписав.
+  // Exactly one change: dark switched on and stayed. A second value here would mean
+  // someone overwrote the attribute.
   expect(await themeChanges(page)).toEqual(["dark"]);
   expect(errors).toEqual([]);
 
-  // Вибір має пережити перезавантаження.
+  // The choice has to survive a reload.
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 });
@@ -113,7 +113,7 @@ test("switching between light and dark flips once each way", async ({
   await chooseTheme(page, "Dark");
   await chooseTheme(page, "Light");
 
-  // Подвійна зміна на кожне натискання - це те блимання кнопок, яке видно оком.
+  // A double change on every press is the button flicker visible to the eye.
   expect(await themeChanges(page)).toEqual(["dark", "light"]);
 });
 
@@ -128,7 +128,7 @@ test("System follows the operating system while the page stays open", async ({
   const html = page.locator("html");
   await expect(html).toHaveAttribute("data-theme", "light");
 
-  // Вечірній перехід системи в темну не має чекати на перезавантаження.
+  // The system's evening switch to dark should not wait for a reload.
   await page.emulateMedia({ colorScheme: "dark" });
   await expect(html).toHaveAttribute("data-theme", "dark");
 
@@ -150,8 +150,8 @@ test("an explicit choice ignores the operating system", async ({
   await page.emulateMedia({ colorScheme: "dark" });
   await expect(html).toHaveAttribute("data-theme", "dark");
 
-  // Найважливіший бік цієї перевірки: слухач системної теми не має чіпати
-  // сторінку, коли користувач уже вибрав сам.
+  // The most important side of this check: the system theme listener must not touch
+  // the page once the user has chosen themselves.
   await page.emulateMedia({ colorScheme: "light" });
   await expect(html).toHaveAttribute("data-theme", "dark");
 });

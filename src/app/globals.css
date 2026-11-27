@@ -1,17 +1,18 @@
 @import "tailwindcss";
-/* Порядок обовʼязковий: tailwindcss першим, інакше стилі HeroUI
-   перекриваються Preflight. */
+/* The order is required: tailwindcss first, otherwise Preflight overrides the
+   HeroUI styles. */
 @import "@heroui/styles";
 
-/* Шрифти з layout.tsx підключаються до токенів Tailwind: font-sans, font-display
-   і font-mono у класах дають Instrument Sans, Instrument Serif і IBM Plex Mono.
-   inline потрібен тому, що значення - посилання на іншу CSS-змінну.
+/* The fonts from layout.tsx are wired to Tailwind tokens: font-sans, font-display,
+   font-brand and font-mono in classes give Instrument Sans, Space Grotesk, Fraunces
+   and IBM Plex Mono.
+   inline is needed because the value is a reference to another CSS variable.
 
-   --color-* - простір імен Tailwind, який генерує утиліти кольору, тому рядки
-   нижче створюють bg-info, text-info, bg-highlight, text-highlight і їхні
-   *-foreground. У HeroUI таких токенів немає, і вони потрібні саме цій темі:
-   --accent тут безтоновий, тож без власних кольорів бейдж «є нові вакансії»
-   вийшов би сірим, а «зверни увагу» не було б чим сказати. Деталі -
+   --color-* is the Tailwind namespace that generates colour utilities, so the lines
+   below create bg-info, text-info, bg-highlight, text-highlight and their
+   *-foreground. HeroUI has no such tokens, and this theme needs them: --accent here
+   has no hue, so without our own colours the "new vacancies" badge would come out
+   grey, and there would be no way to say "pay attention". Details:
    src/app/README.md. */
 @theme inline {
   --font-sans: var(--font-app-sans);
@@ -26,36 +27,36 @@
   --color-counter: var(--counter);
   --color-attention: var(--attention);
 
-  /* Кнопка HeroUI має `rounded-3xl` жорстко у своєму CSS, а бібліотека рахує
-     --radius-3xl як calc(var(--radius) * 3) - тобто 12px за нашого
-     --radius: 0.25rem (themes/shared/theme.css). Розмикаємо звʼязок, щоб
-     кнопка була 4px. Наслідок свідомий: різкішають і модалки з поповерами,
-     бо шкала радіусів одна на всіх. */
+  /* The HeroUI button has `rounded-3xl` hard-coded in its CSS, and the library
+     computes --radius-3xl as calc(var(--radius) * 3) - that is 12px with our
+     --radius: 0.25rem (themes/shared/theme.css). We break the link so the button
+     is 4px. The consequence is deliberate: modals and popovers get sharper too,
+     because there is one radius scale for all. */
   --radius-3xl: 0.25rem;
 
-  /* Четвертий рівень шкали тексту - підказка під полем і метадані: 13 px,
-     між text-xs і text-sm (правила інтерфейсу, src/app/README.md). */
+  /* The fourth level of the type scale - a hint under a field and metadata: 13 px,
+     between text-xs and text-sm (UI rules, src/app/README.md). */
   --text-hint: 0.8125rem;
   --text-hint--line-height: 1.25rem;
 }
 
-/* Тема «Ink».
+/* The "Ink" theme.
 
-   Перевизначаються лише базові токени: похідні (*-hover, *-soft, *-soft-foreground,
-   border-secondary, separator-secondary) HeroUI виводить із них через color-mix сам -
-   node_modules/@heroui/styles/dist/themes/default/variables.css.
+   Only the base tokens are overridden: HeroUI derives the derived ones (*-hover,
+   *-soft, *-soft-foreground, border-secondary, separator-secondary) from them with
+   color-mix itself - node_modules/@heroui/styles/dist/themes/default/variables.css.
 
-   Блоки навмисно поза @layer: бібліотека тримає свою тему в @layer base, а в
-   каскаді незашаровані оголошення сильніші за зашаровані - тому ці значення
-   перекривають її незалежно від порядку імпортів.
+   The blocks are deliberately outside @layer: the library keeps its theme in
+   @layer base, and in the cascade unlayered declarations beat layered ones - so
+   these values override it regardless of import order.
 
-   Темна схема описана наперед і поки не видна: клас .dark ніде не ставиться,
-   перемикач Light/Dark/System - окрема картка. */
+   The dark scheme is the `[data-theme="dark"]` block below; the theme script sets
+   the attribute (src/app/README.md, "Theme switching"). */
 :root {
   --radius: 0.25rem;
 
-  /* Основа: холодний сірий майже без відтінку (chroma <= 0.006). Нейтраль із
-     власним тоном тут була б шумом - уся увага належить семантичним кольорам. */
+  /* The base: a cool grey with almost no hue (chroma <= 0.006). A neutral with a
+     hue of its own would be noise here - all attention belongs to the semantic colours. */
   --background: oklch(0.968 0.001 250);
   --foreground: oklch(0.185 0.004 250);
 
@@ -72,78 +73,77 @@
   --field-background: oklch(1 0 0);
   --field-foreground: oklch(0.185 0.004 250);
   --field-placeholder: oklch(0.565 0.006 250);
-  /* Рамка полів і чекбоксів. У HeroUI вона типово прозора, і поле з тим самим
-     фоном, що й модалка, зникало - у темній схемі не видно було ні не
-     відміченого чекбокса, ні порожніх полів (задача 6.14). Контраст не менше
-     3:1 до фону поруч - вимога WCAG 1.4.11 до меж елементів керування:
-     3.1:1 до --background, 3.4:1 до --surface. Hover і focus HeroUI виводить
-     із неї сам. Товщина теж: HeroUI типово ставить полям 0px. */
+  /* The border of fields and checkboxes. In HeroUI it is transparent by default, and
+     a field with the same background as the modal disappeared - in the dark scheme
+     neither an unchecked checkbox nor empty fields were visible (task 6.14). Contrast
+     of at least 3:1 to the background next to it is the WCAG 1.4.11 requirement for
+     control boundaries: 3.1:1 to --background, 3.4:1 to --surface. HeroUI derives
+     hover and focus from it itself. The width too: HeroUI gives fields 0px by default. */
   --field-border: oklch(0.64 0.006 250);
   --field-border-width: 1px;
 
   --border: oklch(0.888 0.003 250);
   --separator: oklch(0.92 0.002 250);
 
-  /* Accent без тону: кнопка читається як дія, а не як стан. Побічний наслідок -
-     тон accent не може сперечатися з success, warning чи danger, бо його немає. */
+  /* An accent without a hue: a button reads as an action, not a state. A side effect -
+     the accent hue cannot argue with success, warning or danger, because it has none. */
   --accent: oklch(0.225 0.008 250);
   --accent-foreground: oklch(0.985 0.001 250);
 
-  /* Семантика - єдиний колір на екрані. *-foreground потрібні тому, що бейджі
-     статусів заливаються самим токеном (Solid), а не його *-soft. */
-  /* #218041: світлий текст бейджа на ньому - 4.77:1 (WCAG 1.4.3, тексту
-     треба 4.5:1). Попередній oklch(0.575 ...) давав 3.96:1 (задача
+  /* Semantics is the only colour on screen. *-foreground is needed because status
+     badges are filled with the token itself (Solid), not its *-soft. */
+  /* #218041: the badge's light text on it is 4.77:1 (WCAG 1.4.3, text needs
+     4.5:1). The previous oklch(0.575 ...) gave 3.96:1 (task
      accessibility-audit). */
   --success: oklch(0.53 0.13 150);
   --success-foreground: oklch(0.985 0.005 150);
-  /* Один помаранчевий на тему (рішення автора 24.11.2026, задача one-orange):
-     warning - той самий колір, що й highlight. Раніше вони були на 10° один
-     від одного, і зірочка поруч із бейджем Closed виглядала «майже тим
-     самим» кольором. */
+  /* One orange per theme (the author's decision of 24.11.2026, task one-orange):
+     warning is the same colour as highlight. They used to be 10° apart, and the
+     star next to the Closed badge looked like "almost the same" colour. */
   --warning: var(--highlight);
   --warning-foreground: var(--highlight-foreground);
-  /* Чистий яскравий червоний #dc0000: тексту 4.74:1 до фону сторінки й
-     5.21:1 до картки (WCAG 1.4.3, норма 4.5:1). Обраний автором #e30000 давав
-     4.48:1 - ліміт не округлюється, тож це порушення (задача
-     accessibility-audit). #ff0000 дав би лише 3.6:1. */
+  /* A pure bright red #dc0000: text is 4.74:1 to the page background and 5.21:1 to
+     a card (WCAG 1.4.3, the norm is 4.5:1). The #e30000 the author chose gave
+     4.48:1 - the limit is not rounded, so that is a violation (task
+     accessibility-audit). #ff0000 would give only 3.6:1. */
   --danger: oklch(0.555 0.236 29.2);
   --danger-foreground: oklch(0.985 0.005 26);
 
-  /* Власний семантичний колір: «є нові вакансії». Азур, бо його тон (238)
-     далекий від success, warning і danger. */
+  /* Our own semantic colour: "there are new vacancies". Azure, because its hue (238)
+     is far from success, warning and danger. */
   --info: oklch(0.528 0.188 238);
   --info-foreground: oklch(0.99 0.005 238);
 
-  /* Рамка фокусу. HeroUI типово бере --accent, а наш accent - колір самих
-     залитих кнопок, тож фокус на Add company чи вибраній English зливався з
-     кнопкою (WCAG 2.4.7 Focus Visible, AA). Азур - як рідна рамка браузера на
-     посиланнях: 3.5:1 до чорної кнопки, 4.4:1 до фону (рішення автора
-     25.11.2026, задача accessibility-audit). */
+  /* The focus ring. HeroUI takes --accent by default, and our accent is the colour
+     of the filled buttons themselves, so focus on Add company or a selected English
+     merged with the button (WCAG 2.4.7 Focus Visible, AA). Azure, like the browser's
+     native ring on links: 3.5:1 to a black button, 4.4:1 to the background (the
+     author's decision of 25.11.2026, task accessibility-audit). */
   --focus: var(--info);
 
-  /* Власний колір «зверни увагу» для заливок: бейдж Closed і попередження
-     (через warning), індикатор тосту нових вакансій. Колір автора (24.11.2026,
-     задача one-orange), ≈ #ff9918. Як текст чи іконка на світлому фоні він
-     дає лише 1.95-2.1:1, тож текст і іконки уваги беруть темніший
-     --attention нижче. Темний текст бейджів на ньому - 8.6:1. */
+  /* Our own "pay attention" colour for fills: the Closed badge and warnings (through
+     warning), the new vacancies toast indicator. The author's colour (24.11.2026,
+     task one-orange), ≈ #ff9918. As text or an icon on a light background it gives
+     only 1.95-2.1:1, so attention text and icons take the darker --attention below.
+     The badges' dark text on it is 8.6:1. */
   --highlight: lab(74 37.05 75.51);
   --highlight-foreground: oklch(0.19 0.012 60);
 
-  /* Число непрочитаних у меню - текст, не заливка. Highlight як текст дає
-     менше 3:1 (тексту треба 4.5:1), тож у світлій схемі число червоне -
-     4.74:1. Рішення автора 19.11.2026. */
+  /* The unread count in the menu is text, not a fill. Highlight as text gives less
+     than 3:1 (text needs 4.5:1), so in the light scheme the number is red -
+     4.74:1. The author's decision of 19.11.2026. */
   --counter: var(--danger);
 
-  /* Помаранчевий для тексту й іконок: підпис Unsupported page, зафарбована
-     зірочка Favorites, маркер непрочитаного. Заливки лишаються highlight, а
-     сам highlight як текст дає 2.1:1 до картки - менше за 4.5:1 для тексту
-     (WCAG 1.4.3) і 3:1 для іконки стану (1.4.11). #b15900: 4.88:1 до картки,
-     4.44:1 до фону сторінки (рішення автора 25.11.2026, задача
-     accessibility-audit). Червоний - лише помилки (аудит інтерфейсу, A6). */
+  /* Orange for text and icons: the Unsupported page label, the filled Favorites
+     star, the unread marker. Fills stay highlight, and highlight itself as text
+     gives 2.1:1 to a card - less than 4.5:1 for text (WCAG 1.4.3) and 3:1 for a
+     state icon (1.4.11). #b15900: 4.88:1 to a card, 4.44:1 to the page background
+     (the author's decision of 25.11.2026, task accessibility-audit). Red is for
+     errors only (UI audit, A6). */
   --attention: oklch(0.56 0.14 55);
 
-  /* Hover задається явно. Похідні HeroUI домішують лише 10% accent-foreground,
-     і на майже чорній кнопці такої зміни не видно. */
+  /* Hover is set explicitly. HeroUI's derived values mix in only 10% of
+     accent-foreground, and on an almost black button such a change is invisible. */
   --accent-hover: oklch(0.385 0.012 250);
   --default-hover: oklch(0.878 0.004 250);
 }
@@ -168,21 +168,21 @@
   --field-background: oklch(0.193 0.004 250);
   --field-foreground: oklch(0.965 0.002 250);
   --field-placeholder: oklch(0.632 0.006 250);
-  /* 3.6:1 до --background, 3.3:1 до --surface і --overlay (6.14). */
+  /* 3.6:1 to --background, 3.3:1 to --surface and --overlay (6.14). */
   --field-border: oklch(0.52 0.006 250);
 
   --border: oklch(0.272 0.005 250);
   --separator: oklch(0.232 0.004 250);
 
-  /* Дзеркально до світлої схеми: майже біла кнопка з темним текстом. */
+  /* A mirror of the light scheme: an almost white button with dark text. */
   --accent: oklch(0.955 0.003 250);
   --accent-foreground: oklch(0.168 0.006 250);
 
-  /* Світліші за свої світлі відповідники: на темному тлі той самий тон
-     читається тускліше. */
+  /* Lighter than their light counterparts: on a dark background the same hue reads
+     duller. */
   --success: oklch(0.722 0.14 150);
   --success-foreground: oklch(0.16 0.012 150);
-  /* Один помаранчевий на тему: той самий #ffb100, що й зірочки й число в меню. */
+  /* One orange per theme: the same #ffb100 as the stars and the number in the menu. */
   --warning: var(--highlight);
   --warning-foreground: var(--highlight-foreground);
   --danger: oklch(0.648 0.192 26);
@@ -191,10 +191,10 @@
   --info: oklch(0.652 0.172 238);
   --info-foreground: oklch(0.145 0.032 238);
 
-  /* Те саме посилання ще раз: HeroUI задає --focus і в темній схемі. */
+  /* The same reference once more: HeroUI sets --focus in the dark scheme too. */
   --focus: var(--info);
 
-  /* #ffb100 як є: на темному тлі контраст 10.9:1. */
+  /* #ffb100 as it is: on a dark background the contrast is 10.9:1. */
   --highlight: oklch(0.814 0.17 77);
   --highlight-foreground: oklch(0.175 0.012 77);
 
@@ -204,26 +204,26 @@
   --accent-hover: oklch(0.808 0.006 250);
   --default-hover: oklch(0.332 0.006 250);
 
-  /* Під діалогом сторінка майже не темніла: 60% чорного поверх і так темного
-     фону (аудит, C2). */
+  /* Under a dialog the page barely darkened: 60% black over an already dark
+     background (audit, C2). */
   --backdrop: rgba(0, 0, 0, 0.8);
 }
 
-/* Картка. Це перевизначення класу бібліотеки, не токена: у HeroUI `.card` має
-   лише тінь, рамки немає зовсім, а радіус дорівнює кнопчиному
-   (components/card.css). При оновленні HeroUI цей блок треба перечитати - саме
-   тому він стоїть окремо й підписаний. */
+/* The card. This overrides a library class, not a token: in HeroUI `.card` has
+   only a shadow, no border at all, and its radius equals the button's
+   (components/card.css). When HeroUI is updated this block has to be reread - that
+   is why it stands apart and is commented. */
 .card {
   border-radius: calc(var(--radius) * 1.5);
   border: 1px solid var(--border);
 }
 
-/* Вибрана кнопка в ToggleButtonGroup (Settings: тема, мова, інтервал). HeroUI
-   заливає її --accent-soft - 12-15% accent поверх фону. Accent у нас безтоновий,
-   тож у темній схемі це майже білий на 12% (L≈0.24) - темніше за невибрані
-   кнопки з --default (L≈0.25), і вибору не видно. Суцільний accent, як у
-   основної кнопки, - рішення автора 21.11.2026. Токени й стани -
-   components/toggle-button.css; при оновленні HeroUI перечитати. */
+/* The selected button in a ToggleButtonGroup (Settings: theme, language, interval).
+   HeroUI fills it with --accent-soft - 12-15% accent over the background. Our accent
+   has no hue, so in the dark scheme this is almost white at 12% (L≈0.24) - darker
+   than the unselected buttons with --default (L≈0.25), and the choice is invisible.
+   A solid accent, like the primary button, is the author's decision of 21.11.2026.
+   Tokens and states: components/toggle-button.css; reread when HeroUI is updated. */
 .toggle-button {
   --toggle-button-bg-selected: var(--accent);
   --toggle-button-bg-selected-hover: var(--accent-hover);
@@ -231,17 +231,17 @@
   --toggle-button-fg-selected: var(--accent-foreground);
 }
 
-/* Вторинна кнопка (secondary, tertiary, а з ними й іконкові) має видиму межу.
-   Її заливка --default відрізняється від фону лише на ≈1.2:1, і без рамки
-   кнопка здавалась меншою за основну та зникала в темній схемі (аудит
-   інтерфейсу, A2, рішення автора 21.11.2026). Прозора рамка є в кожної кнопки,
-   тож розміри в ряду однакові. Стани - components/button.css; при оновленні
-   HeroUI перечитати. */
+/* A secondary button (secondary, tertiary, and with them the icon ones) has a
+   visible boundary. Its --default fill differs from the background by only ≈1.2:1,
+   and without a border the button looked smaller than the primary one and vanished
+   in the dark scheme (UI audit, A2, the author's decision of 21.11.2026). Every
+   button has a transparent border, so sizes in a row are equal. States:
+   components/button.css; reread when HeroUI is updated. */
 @layer components {
-  /* У шарі бібліотеки, а не поза шарами: інакше правило перебило б утиліти
-     (як-от `border-danger`) і рамку варіанта outline. */
-  /* `:where` обнуляє специфічність, щоб колір рамки вторинних кнопок нижче
-     переміг прозорий. */
+  /* In the library's layer, not outside the layers: otherwise the rule would beat
+     utilities (like `border-danger`) and the outline variant's border. */
+  /* `:where` resets specificity so the border colour of secondary buttons below
+     wins over transparent. */
   :where(.button:not(.button--outline)) {
     border: 1px solid transparent;
   }
@@ -251,23 +251,23 @@
     border-color: var(--field-border);
   }
 
-  /* Кнопка лише з іконкою і хрестик закриття не стискаються у flex-рядку.
-     Ширина в них задана (`w-10`), але `flex-shrink: 1` дозволяв ужати кнопку
-     до самої іконки, коли поруч довгий текст без пробілів - так сплющувався
-     кошик поруч із довгою адресою в Edit company (знахідка автора 21.11.2026).
-     Текстові кнопки від цього захищає `whitespace-nowrap`, іконкові - ні. */
+  /* An icon-only button and the close cross do not shrink in a flex row. Their
+     width is set (`w-10`), but `flex-shrink: 1` let the button be squeezed down to
+     the icon itself when long text without spaces was next to it - that is how the
+     bin next to a long address in Edit company got flattened (the author's finding
+     of 21.11.2026). `whitespace-nowrap` protects text buttons from this, icon ones
+     not. */
   .button--icon-only,
   .close-button {
     flex-shrink: 0;
   }
 }
 
-/* Діалоги: заголовок - перший рівень шкали тексту (20/600), з відступом від
-   першого поля. Тіло діалогу HeroUI фарбує приглушеним кольором, і його
-   успадковували підзаголовки розділів - вони ставали блідішими за підписи
-   полів під ними (аудит, A3). Приглушеними лишаються лише підказки, яким
-   колір задано явно. Джерело - components/modal.css, alert-dialog.css,
-   drawer.css; при оновленні HeroUI перечитати. */
+/* Dialogs: the title is the first level of the type scale (20/600), with space
+   before the first field. HeroUI paints the dialog body in a muted colour, and
+   section subheadings inherited it - they became paler than the field labels under
+   them (audit, A3). Only hints with an explicitly set colour stay muted. Sources:
+   components/modal.css, alert-dialog.css, drawer.css; reread when HeroUI is updated. */
 .modal__heading,
 .alert-dialog__heading,
 .drawer__heading {
@@ -276,8 +276,8 @@
   font-weight: 600;
 }
 
-/* Форма в Edit company стоїть між шапкою й тілом, тож сусідство буває й
-   через неї. */
+/* In Edit company the form stands between the header and the body, so they can
+   also be neighbours through it. */
 .modal__header + .modal__body,
 .modal__header + form > .modal__body {
   margin-top: 1rem;

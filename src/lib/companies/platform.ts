@@ -1,17 +1,18 @@
 import { companyUrlHost } from "./url.ts";
 
 /**
- * Платформи карʼєрних джерел: за платформою вибирається парсер.
+ * Career source platforms: the platform selects the parser.
  *
- * Перелік живе тут, а не в схемі бази, бо потрібен і на клієнті, а зі схеми
- * тягнувся б разом із Drizzle. Enum `career_platform` будується з цього
- * масиву - значення й порядок у базі й у коді не можуть розійтися.
+ * The list lives here, not in the database schema, because the client needs it too,
+ * and from the schema it would come together with Drizzle. The `career_platform`
+ * enum is built from this array - the values and their order in the database and
+ * in the code cannot drift apart.
  *
- * `own_page` - власна кар'єрна сторінка компанії, яку читаємо за рецептом
- * (задача 6.21): людина підтвердила, які посилання на ній - вакансії. За
- * адресою її не розпізнати, тож `detectPlatform` її ніколи не повертає.
+ * `own_page` is a company's own career page read by a recipe (task 6.21): a person
+ * confirmed which links on it are vacancies. It cannot be recognised by address, so
+ * `detectPlatform` never returns it.
  *
- * `unsupported` - сторінку знайдено, але читати її нічим
+ * `unsupported` means the page was found but nothing can read it
  * (src/server/parsers/README.md).
  */
 export const CAREER_PLATFORMS = [
@@ -34,43 +35,43 @@ export const CAREER_PLATFORMS = [
   "unsupported",
 ] as const;
 
-/** Платформа карʼєрного джерела так, як її зберігає база. */
+/** The career source platform as the database stores it. */
 export type CareerPlatform = (typeof CAREER_PLATFORMS)[number];
 
 /**
- * Домени платформ. Ключ - суфікс хоста, значення - платформа.
+ * Platform domains. The key is a host suffix, the value is a platform.
  *
- * Перелік свідомо короткий: тут лише ті хости, які видає сама платформа.
- * Кастомний домен клієнта ATS (`jobs.company.com`) сюди не потрапляє -
- * адреса про нього нічого не каже.
+ * The list is short on purpose: it holds only the hosts the platform itself gives
+ * out. An ATS customer's custom domain (`jobs.company.com`) does not get here - the
+ * address says nothing about it.
  *
- * - `greenhouse.io` - офіційна документація описує `boards.greenhouse.io`
- *   (support.greenhouse.io/hc/en-us/articles/360020776251); новіший
- *   `job-boards.greenhouse.io` офіційно не описаний, але віддає ті самі дошки,
- *   тому суфікс покриває обидва.
- * - `lever.co` - публічний Postings API Lever працює з хостами `jobs.lever.co`
- *   і `jobs.eu.lever.co` (github.com/lever/postings-api).
- * - `myworkdayjobs.com` і `myworkdaysite.com` - два формати career site Workday.
- * - `peopleforce.io` - карʼєрний сайт PeopleForce живе на власному субдомені.
- * - `breezy.hr` - дошка Breezy HR теж на субдомені компанії (задача 3.24).
- * - `cleverstaff.net` - дошка CleverStaff на хості самої платформи,
- *   `cleverstaff.net/i/{alias}-vacancies` (задача 3.25).
- * - `hurma.work` - публічна сторінка вакансій Hurma на субдомені компанії,
- *   `{company}.hurma.work/public-vacancies` (задача 3.26).
- * - `jobs.personio.de` і `jobs.personio.com` - дошка Personio на субдомені
- *   компанії (developer.personio.de/docs/retrieving-open-job-positions; `.com`
- *   віддає те саме - задача 3.27). Сам `personio.de`/`.com` - сайт постачальника.
- * - `softgarden.io` (стара дошка) і `career.softgarden.de` (новий кар'єрний
- *   сайт) - два продукти softgarden, обидва на субдомені компанії (задача 3.28).
- *   Решта `softgarden.de` (`static.`, сайт) - не дошки.
- * - `workable.com` - кар'єрна сторінка `apply.workable.com/{account}` і старий
- *   формат `{account}.workable.com` (задача 6.25).
- * - `bamboohr.com` - кар'єрна сторінка BambooHR на субдомені компанії,
- *   `{company}.bamboohr.com/careers` (задача 6.26).
- * - `pinpointhq.com` - кар'єрна сторінка Pinpoint на субдомені компанії
- *   (задача 6.27).
- * - `ats.talentadore.com` - JSON вакансій TalentAdore, `positions/{token}/json`
- *   (задача 6.28). Сам `talentadore.com` - сайт постачальника.
+ * - `greenhouse.io` - the official documentation describes `boards.greenhouse.io`
+ *   (support.greenhouse.io/hc/en-us/articles/360020776251); the newer
+ *   `job-boards.greenhouse.io` is not officially documented but serves the same
+ *   boards, so the suffix covers both.
+ * - `lever.co` - Lever's public Postings API works with the `jobs.lever.co` and
+ *   `jobs.eu.lever.co` hosts (github.com/lever/postings-api).
+ * - `myworkdayjobs.com` and `myworkdaysite.com` - two Workday career site formats.
+ * - `peopleforce.io` - the PeopleForce career site lives on its own subdomain.
+ * - `breezy.hr` - the Breezy HR board is on the company's subdomain too (task 3.24).
+ * - `cleverstaff.net` - the CleverStaff board is on the platform's own host,
+ *   `cleverstaff.net/i/{alias}-vacancies` (task 3.25).
+ * - `hurma.work` - the public Hurma vacancies page on the company's subdomain,
+ *   `{company}.hurma.work/public-vacancies` (task 3.26).
+ * - `jobs.personio.de` and `jobs.personio.com` - the Personio board on the company's
+ *   subdomain (developer.personio.de/docs/retrieving-open-job-positions; `.com`
+ *   serves the same - task 3.27). `personio.de`/`.com` itself is the vendor's site.
+ * - `softgarden.io` (the old board) and `career.softgarden.de` (the new career
+ *   site) - two softgarden products, both on the company's subdomain (task 3.28).
+ *   The rest of `softgarden.de` (`static.`, the site) are not boards.
+ * - `workable.com` - the career page `apply.workable.com/{account}` and the old
+ *   `{account}.workable.com` format (task 6.25).
+ * - `bamboohr.com` - the BambooHR career page on the company's subdomain,
+ *   `{company}.bamboohr.com/careers` (task 6.26).
+ * - `pinpointhq.com` - the Pinpoint career page on the company's subdomain
+ *   (task 6.27).
+ * - `ats.talentadore.com` - the TalentAdore vacancies JSON, `positions/{token}/json`
+ *   (task 6.28). `talentadore.com` itself is the vendor's site.
  */
 const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
   ["greenhouse.io", "greenhouse"],
@@ -93,40 +94,40 @@ const PLATFORM_DOMAINS: Array<[suffix: string, platform: CareerPlatform]> = [
 ];
 
 /**
- * Платформа джерела, виведена з його адреси.
+ * The source platform derived from its address.
  *
- * Приймає **очищену** адресу - ту саму форму, яку віддає `normalizeCompanyUrl`
- * (без протоколу, хост у нижньому регістрі). Тому тут немає ні розбору URL, ні
- * обробки кривого вводу: валідація сталася кроком раніше.
+ * Accepts a **normalized** address - the form `normalizeCompanyUrl` returns (no
+ * protocol, the host in lower case). That is why there is neither URL parsing nor
+ * handling of broken input here: validation happened a step earlier.
  *
- * Невідомий хост - це `unsupported`: доки сторінку не прочитали пробним
- * запитом, вважати її придатною нема підстав. `schema_org` функція не
- * повертає ніколи - розмітку JobPosting видно лише з вмісту сторінки.
+ * An unknown host is `unsupported`: until a trial request has read the page, there is
+ * no reason to consider it readable. The function never returns `schema_org` -
+ * JobPosting markup is visible only from the page content.
  */
 export function detectPlatform(normalizedUrl: string): CareerPlatform {
   return matchPlatformDomain(normalizedUrl)?.[1] ?? "unsupported";
 }
 
 /**
- * Суфікс хоста, за яким платформу впізнали, або `null` для невідомого хоста.
+ * The host suffix the platform was recognised by, or `null` for an unknown host.
  *
- * Потрібен там, де з адреси треба дістати частину, яку додала сама платформа:
- * у `bosch.wd3.myworkdayjobs.com` суфікс - `myworkdayjobs.com`, і все перед ним
- * належить компанії (`suggest.ts`).
+ * Needed where the part the platform itself added has to be taken out of the
+ * address: in `bosch.wd3.myworkdayjobs.com` the suffix is `myworkdayjobs.com`, and
+ * everything before it belongs to the company (`suggest.ts`).
  */
 export function platformHostSuffix(normalizedUrl: string): string | null {
   return matchPlatformDomain(normalizedUrl)?.[0] ?? null;
 }
 
-/** Рядок `PLATFORM_DOMAINS`, під який підпадає хост адреси. */
+/** The `PLATFORM_DOMAINS` entry the address host falls under. */
 function matchPlatformDomain(
   normalizedUrl: string,
 ): (typeof PLATFORM_DOMAINS)[number] | undefined {
   const host = companyUrlHost(normalizedUrl);
 
   return PLATFORM_DOMAINS.find(
-    // Порівнюється межа лейбла домену, а не кінець рядка: інакше
-    // `not-greenhouse.io` вважався б дошкою Greenhouse.
+    // The domain label boundary is compared, not the end of the string: otherwise
+    // `not-greenhouse.io` would count as a Greenhouse board.
     ([suffix]) => host === suffix || host.endsWith(`.${suffix}`),
   );
 }

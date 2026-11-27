@@ -1,46 +1,46 @@
 /**
- * Коли питати сервер про стан перевірки (src/server/checks/README.md).
- * Без React і без мережі: що саме питати і що робити з відповіддю, вирішує
- * той, хто створює опитувач (`app/components/check-status-provider.tsx`).
+ * When to ask the server about the check state (src/server/checks/README.md).
+ * No React and no network: what exactly to ask and what to do with the answer is
+ * decided by whoever creates the poller (`app/components/check-status-provider.tsx`).
  */
 import type { CheckStatus } from "./check-status";
 
-/** Як часто опитувати, поки перевірка йде. */
+/** How often to poll while a check is running. */
 export const POLL_INTERVAL_MS = 3000;
 
 /**
- * Як часто опитувати, поки перевірки немає: щоб помітити автоперевірку, яка
- * почалась уже після завантаження сторінки. Розклад сам дивиться раз на
- * хвилину (`server/checks/auto-check-scheduler.ts`), частіше питати марно.
+ * How often to poll while there is no check: to notice an auto-check that started
+ * after the page loaded. The schedule itself looks once a minute
+ * (`server/checks/auto-check-scheduler.ts`), so asking more often is pointless.
  */
 export const IDLE_POLL_INTERVAL_MS = 60_000;
 
-/** Скільки невдалих опитувань поспіль - і зʼєднання вважається втраченим. */
+/** How many failed polls in a row before the connection counts as lost. */
 export const MAX_FAILED_POLLS = 3;
 
 export interface StatusPollerOptions {
   fetchStatus: () => Promise<CheckStatus>;
   onStatus: (status: CheckStatus) => void;
-  /** Зʼєднання втрачене - викликається один раз, і опитування зупиняється. */
+  /** The connection is lost - called once, and polling stops. */
   onLost: () => void;
   intervalMs?: number;
   idleIntervalMs?: number;
   /**
-   * Чи прихована вкладка. Поза перевіркою прихована вкладка не опитується;
-   * коли її знову показали, власник кличе `resume`.
+   * Whether the tab is hidden. Outside a check a hidden tab is not polled; when it
+   * is shown again, the owner calls `resume`.
    */
   isHidden?: () => boolean;
 }
 
 export interface StatusPoller {
-  /** Одне опитування зараз - на завантаженні сторінки. */
+  /** One poll now - on page load. */
   start(): void;
   /**
-   * Стан, відомий без опитування (відповідь Check all): показується одразу,
-   * а якщо перевірка йде - опитування починається.
+   * A state known without polling (the Check all response): it is shown at once,
+   * and if a check is running, polling starts.
    */
   track(status: CheckStatus): void;
-  /** Вкладку знову показали: опитати зараз, не чекаючи таймера. */
+  /** The tab is shown again: poll now, without waiting for the timer. */
   resume(): void;
   stop(): void;
 }
@@ -57,7 +57,7 @@ export function createStatusPoller({
   let inFlight = false;
   let failures = 0;
   let stopped = false;
-  // Чи йде перевірка за останньою відомою відповіддю - від цього частота.
+  // Whether a check is running, by the last known answer - the rate depends on it.
   let busy = false;
 
   function cancel(): void {
@@ -66,12 +66,12 @@ export function createStatusPoller({
   }
 
   function schedule(delay: number): void {
-    // Одне заплановане чи поточне опитування за раз: `track` посеред
-    // опитування не має подвоювати частоту.
+    // One scheduled or running poll at a time: a `track` in the middle of a poll
+    // must not double the rate.
     if (stopped || inFlight || timer !== undefined) return;
     timer = setTimeout(() => {
       timer = undefined;
-      // Поза перевіркою прихована вкладка не опитується - до `resume`.
+      // Outside a check a hidden tab is not polled - until `resume`.
       if (!busy && isHidden()) return;
       void poll();
     }, delay);
@@ -90,7 +90,7 @@ export function createStatusPoller({
     } catch {
       failures += 1;
       if (failures >= MAX_FAILED_POLLS) {
-        // До наступного завантаження сторінки опитування не повертається.
+        // Polling does not come back until the next page load.
         stopped = true;
         onLost();
         return;
@@ -99,8 +99,8 @@ export function createStatusPoller({
       inFlight = false;
     }
 
-    // Після невдачі - швидкий повтор: інакше збій поза перевіркою
-    // помічався б лише за три хвилини.
+    // After a failure, a quick retry: otherwise a failure outside a check would
+    // be noticed only after three minutes.
     schedule(busy || failures > 0 ? intervalMs : idleIntervalMs);
   }
 
@@ -113,7 +113,7 @@ export function createStatusPoller({
       onStatus(status);
       busy = isBusy(status);
       if (busy) {
-        // Повільний таймер замінюється швидким.
+        // The slow timer is replaced with a fast one.
         if (!inFlight) cancel();
         schedule(intervalMs);
       }
@@ -130,7 +130,7 @@ export function createStatusPoller({
   };
 }
 
-/** Чи йде щось, за чим варто стежити: загальна перевірка чи Find new pages. */
+/** Whether something worth watching is running: a general check or Find new pages. */
 export function isBusy(status: CheckStatus): boolean {
   return status.run !== null || status.findingNewPages;
 }

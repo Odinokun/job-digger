@@ -4,12 +4,12 @@ import { resetDatabase } from "./database.ts";
 import { companyCard } from "./locators.ts";
 
 /**
- * Телефон (аудит інтерфейсу, A1): на 390 px жодна сторінка не ширша за екран,
- * а меню ховається за бургер. Раніше меню в шапці й картка з довгою адресою
- * розпирали сторінку до 413-484 px, і вона скролилась убік.
+ * Phone (UI audit, A1): at 390 px no page is wider than the screen, and the menu
+ * hides behind a burger. Before, the header menu and a card with a long address
+ * stretched the page to 413-484 px, and it scrolled sideways.
  *
- * Довга адреса з фільтрами - як у справжніх джерел (mozilla.org, Sigma): вона
- * має обрізатись «…» усередині картки, а не тягнути картку за край.
+ * A long address with filters, like real sources have (mozilla.org, Sigma): it has
+ * to be cut with "…" inside the card rather than pull the card past the edge.
  */
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -31,8 +31,8 @@ test("no page scrolls sideways on a phone, and the menu opens from the burger", 
 }) => {
   await page.goto("/companies");
 
-  // Компанія з довгою кар'єрною сторінкою, яку нічим прочитати: вона живе на
-  // Not tracked і показує адресу в картці.
+  // A company with a long career page nothing can read: it lives on Not tracked and
+  // shows the address on the card.
   await page.getByRole("button", { name: "Add company" }).click();
   const addDialog = page.getByRole("dialog", { name: "Add company" });
   await addDialog.getByLabel("Company website").fill("acme.example");
@@ -50,7 +50,7 @@ test("no page scrolls sideways on a phone, and the menu opens from the burger", 
     await expectNoSideScroll(page);
   }
 
-  // Меню шапки на телефоні не видно - лише бургер; перехід закриває панель.
+  // The header menu is not visible on a phone - only the burger; navigating closes the panel.
   await expect(
     page.getByRole("navigation", { name: "Main" }).first(),
   ).toBeHidden();

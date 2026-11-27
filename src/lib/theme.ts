@@ -1,35 +1,36 @@
 /**
- * Оформлення інтерфейсу: що користувач вибрав, а не що зараз видно на екрані.
+ * The UI appearance: what the user chose, not what is on the screen right now.
  *
- * `system` - не третя тема, а відмова вибирати: тоді тему задає операційна
- * система, і вона може змінитися під час роботи застосунку.
+ * `system` is not a third theme but a refusal to choose: then the operating
+ * system sets the theme, and it may change while the app is running.
  */
 export const THEME_PREFERENCES = ["light", "dark", "system"] as const;
 
 export type ThemePreference = (typeof THEME_PREFERENCES)[number];
 
 /**
- * Доки користувач не вибрав - беремо тему з системи.
+ * Until the user chooses, the theme comes from the system.
  */
 export const DEFAULT_THEME: ThemePreference = "system";
 
 /**
- * Імʼя cookie з вибраним оформленням.
+ * The name of the cookie with the chosen appearance.
  *
- * Cookie, а не таблиця `settings`: сервер читає її в `layout.tsx` і ставить
- * `data-theme` уже в SSR-HTML, тож явний вибір не мигає при завантаженні.
- * Запит у базу на кожен рендер layout від спалаху однаково не врятував би. До
- * того ж тема - радше властивість пристрою (на телефоні темна, на моніторі
- * світла), ніж акаунта. Той самий патерн, що в мови (`src/i18n/config.ts`).
+ * A cookie, not the `settings` table: the server reads it in `layout.tsx` and sets
+ * `data-theme` already in the SSR HTML, so an explicit choice does not flash on
+ * load. A database query on every layout render would not prevent the flash anyway.
+ * Besides, the theme is more a property of the device (dark on the phone, light on
+ * the monitor) than of the account. The same pattern as the language
+ * (`src/i18n/config.ts`).
  */
 export const THEME_COOKIE_NAME = "theme";
 
 /**
- * Вибране оформлення з недовіреного значення.
+ * The chosen appearance from an untrusted value.
  *
- * Cookie приходить від клієнта, і в ній може лежати будь-що: невідоме значення
- * означає «користувач не вибирав», а не помилку. Те саме правило, що в
- * `isSupportedLocale` і `parseCompaniesTab`.
+ * The cookie comes from the client and may hold anything: an unknown value means
+ * "the user has not chosen", not an error. The same rule as in
+ * `isSupportedLocale` and `parseCompaniesTab`.
  */
 export function parseThemePreference(value: unknown): ThemePreference {
   return THEME_PREFERENCES.includes(value as ThemePreference)

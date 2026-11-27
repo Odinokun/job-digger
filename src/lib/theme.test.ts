@@ -10,8 +10,8 @@ describe("parseThemePreference", () => {
   });
 
   it("falls back to the default when the value is unknown", () => {
-    // Значення приходить із cookie, тобто від клієнта: там може лежати будь-що,
-    // і жодне з цього не має ламати рендер сторінки.
+    // The value comes from a cookie, that is from the client: it may hold anything,
+    // and none of it should break the page render.
     for (const value of [
       "Dark",
       "",
@@ -26,8 +26,8 @@ describe("parseThemePreference", () => {
   });
 
   it("defaults to the system preference", () => {
-    // Застосунок не вирішує за користувача: доки він не вибрав, тема береться
-    // з налаштувань операційної системи.
+    // The app does not decide for the user: until they choose, the theme comes
+    // from the operating system settings.
     expect(DEFAULT_THEME).toBe("system");
   });
 });

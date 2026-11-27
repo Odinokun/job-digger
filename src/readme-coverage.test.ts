@@ -5,29 +5,29 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 /**
- * Кожен файл коду в `src/` згаданий у README поруч із ним.
+ * Every code file in `src/` is mentioned in the README next to it.
  *
- * Правило «документація оновлюється разом зі зміною» (`CLAUDE.md`) само себе
- * не перевіряє: перелік компонентів у `src/app/README.md` двічі відстав від
- * коду, причому вдруге - одразу після того, як про це завели картку (2.18).
- * Уважність тут не працює, тому перевіряє тест.
+ * The rule "documentation changes together with the code" (`CLAUDE.md`) does not
+ * check itself: the component list in `src/app/README.md` fell behind the code
+ * twice, the second time right after a card was opened about it (2.18). Attention
+ * does not work here, so a test checks.
  *
- * **Що вважається згадкою.** Для кожного файлу шукається найближчий README
- * вгору по дереву, аж до кореня репозиторію. Файл згаданий, якщо README
- * містить його шлях відносно своєї теки (`companies/page.tsx`,
- * `src/i18n/request.ts`) - або просто імʼя, але лише коли воно в межах цього
- * README унікальне. Інакше згадка `actions.ts` для `companies/` зараховувала б
- * і `settings/actions.ts`.
+ * **What counts as a mention.** For each file the nearest README up the tree, up to
+ * the repository root, is looked up. The file is mentioned if the README contains
+ * its path relative to the README's folder (`companies/page.tsx`,
+ * `src/i18n/request.ts`) - or just its name, but only when the name is unique within
+ * that README. Otherwise a mention of `actions.ts` for `companies/` would also count
+ * for `settings/actions.ts`.
  *
- * **Чого тест не ловить:** застарілого опису файлу (згадка є, але бреше) і
- * згадки, що лишилася після видалення файлу. Перше - свідоме обмеження з картки
- * 2.18: зміст опису перевірити нічим, крім очей.
+ * **What the test does not catch:** a stale file description (the mention is there
+ * but wrong) and a mention left after the file was deleted. The first is a deliberate
+ * limit from card 2.18: nothing but eyes can check the content of a description.
  */
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = join(REPO_ROOT, "src");
 
-/** Тести - не код, який треба описувати: їхні назви повторюють назви модулів. */
+/** Tests are not code to describe: their names repeat the module names. */
 const isTest = (file: string) => /\.test\.tsx?$/.test(file);
 
 function codeFiles(directory: string): string[] {
@@ -42,7 +42,7 @@ function codeFiles(directory: string): string[] {
   });
 }
 
-/** Найближчий README.md від теки файлу вгору до кореня репозиторію. */
+/** The nearest README.md from the file's folder up to the repository root. */
 function nearestReadme(file: string): string {
   let directory = dirname(file);
 
@@ -61,7 +61,7 @@ function nearestReadme(file: string): string {
   }
 }
 
-/** Шлях у тому вигляді, у якому його пишуть у README: зі скісними рисками. */
+/** The path in the form it is written in a README: with forward slashes. */
 function asPosix(path: string): string {
   return path.split(sep).join(posix.sep);
 }
@@ -95,7 +95,7 @@ describe("README coverage", () => {
       }
     }
 
-    // Список, а не перше падіння: так одразу видно весь борг документації.
+    // A list, not the first failure: this way the whole documentation debt is visible at once.
     expect(missing).toEqual([]);
   });
 });

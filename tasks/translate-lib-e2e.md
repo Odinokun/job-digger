@@ -10,3 +10,15 @@
 - `src/app/theme-candidates.md` - увесь файл;
 - корінь `src`: `src/instrumentation.ts`, `src/readme-coverage.test.ts`;
 - конфіги в корені з українськими коментарями: `docker-compose.yml`, `next.config.ts`, `drizzle.config.ts`, `.gitignore`, `.prettierignore`, `.env.example`, `.github/dependabot.yml`.
+
+## Кроки
+
+- [x] README у `src/lib` англійською і посилання на нові якорі
+- [x] Коментарі в коді `src/lib`
+- [x] `src/i18n` і корінь `src`
+- [x] `e2e/`
+- [x] Конфіги в корені і `.github`
+- [x] Коментарі в `src/app/globals.css`
+- [x] `src/app/theme-candidates.md`
+
+PR: #166

@@ -1,16 +1,16 @@
 import { isUuid } from "../uuid.ts";
 
 /**
- * Курсор keyset-пагінації: останній показаний рядок.
+ * The keyset pagination cursor: the last row shown.
  *
- * `key` - значення поля, за яким список відсортований (назва компанії, а для
- * Jobs у задачі 3.15 - дата виявлення в ISO), `id` - внутрішній ключ того ж
- * рядка. Пара потрібна тому, що саме поле сортування не унікальне: дві компанії
- * можуть зватися однаково, і без `id` рядки на межі порції або зникали б, або
- * приходили двічі.
+ * `key` is the value of the field the list is sorted by (the company name; for Jobs,
+ * since task 3.15, the detection date in ISO), `id` is the internal key of the same
+ * row. The pair is needed because the sort field itself is not unique: two
+ * companies may have the same name, and without `id` rows at the page boundary
+ * would either disappear or come twice.
  *
- * Номера сторінки тут немає свідомо: `OFFSET` зсувається, коли під час
- * перегляду з'являються нові рядки.
+ * There is no page number here on purpose: `OFFSET` shifts when new rows appear
+ * while the list is being viewed.
  */
 export type Cursor = {
   key: string;
@@ -18,20 +18,20 @@ export type Cursor = {
 };
 
 /**
- * Скільки символів `key` приймаємо.
+ * How many characters of `key` we accept.
  *
- * Курсор приходить аргументом Server Action, тобто з клієнта: без межі туди
- * можна покласти мегабайтний рядок, який поїде параметром у запит до бази.
- * Назви компаній настільки довгими не бувають, а ISO-дата - 24 символи.
+ * The cursor arrives as a Server Action argument, that is from the client: without
+ * a limit one could put a megabyte string there, which would go as a parameter into
+ * a database query. Company names are never that long, and an ISO date is 24 characters.
  */
 export const MAX_CURSOR_KEY_LENGTH = 512;
 
 /**
- * Курсор із недовіреного значення або `null`, якщо воно курсором не є.
+ * The cursor from an untrusted value, or `null` if it is not a cursor.
  *
- * `null` замість винятку: «курсора немає» і «курсор зіпсований» для списку -
- * те саме, обидва означають «почни з початку». Повертаємо новий об'єкт лише з
- * двох відомих полів, щоб у запит не потрапило нічого стороннього.
+ * `null` instead of an exception: "no cursor" and "a corrupted cursor" are the same
+ * for a list, both mean "start from the beginning". We return a new object with only
+ * the two known fields, so nothing foreign gets into the query.
  */
 export function parseCursor(value: unknown): Cursor | null {
   if (typeof value !== "object" || value === null) {

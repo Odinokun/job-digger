@@ -1,7 +1,7 @@
 /**
- * Опції Export CSV і адреса, якою їх передають
- * маршруту завантаження `/api/companies-csv`. У `src/lib`, бо адресу складає
- * сторінка Settings, а читає сервер.
+ * Export CSV options and the address that passes them to the `/api/companies-csv`
+ * download route. In `src/lib` because the Settings page builds the address and the
+ * server reads it.
  */
 export interface ExportCsvOptions {
   tracked: boolean;
@@ -9,7 +9,7 @@ export interface ExportCsvOptions {
   careerUrls: boolean;
 }
 
-/** За замовчуванням - обидва списки, без карʼєрних адрес. */
+/** By default - both lists, without career addresses. */
 export const DEFAULT_EXPORT_OPTIONS: ExportCsvOptions = {
   tracked: true,
   notTracked: true,
@@ -18,7 +18,7 @@ export const DEFAULT_EXPORT_OPTIONS: ExportCsvOptions = {
 
 const KEYS = ["tracked", "notTracked", "careerUrls"] as const;
 
-/** Адреса файлу: лише ввімкнені опції, кожна - `=1`. */
+/** The file address: only the enabled options, each as `=1`. */
 export function exportCsvHref(options: ExportCsvOptions): string {
   const params = new URLSearchParams();
 
@@ -29,7 +29,7 @@ export function exportCsvHref(options: ExportCsvOptions): string {
   return `/api/companies-csv?${params.toString()}`;
 }
 
-/** Опції з адреси. Усе, крім `1`, - вимкнено: адресу можна набрати руками. */
+/** Options from the address. Anything except `1` is off: the address can be typed by hand. */
 export function parseExportOptions(params: URLSearchParams): ExportCsvOptions {
   return {
     tracked: params.get("tracked") === "1",

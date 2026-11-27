@@ -5,15 +5,15 @@ import { truncateAll } from "../src/server/db/testing/database.ts";
 import { e2eDatabaseUrl } from "./env.ts";
 
 /**
- * Чиста база E2E: порожні таблиці й системний користувач.
+ * A clean E2E database: empty tables and the system user.
  *
- * Перед прогоном це робить `global-setup.ts`. Сценарій, який рахує дані по
- * всіх компаніях (лічильник непрочитаних, Check all), викликає це ще й сам у
- * `beforeAll`: база одна на всі сценарії, і компанії, додані сценарієм, що
- * йшов раніше, змінили б його числа.
+ * `global-setup.ts` does this before the run. A scenario that counts data across all
+ * companies (the unread counter, Check all) also calls it itself in `beforeAll`:
+ * there is one database for all scenarios, and companies added by an earlier
+ * scenario would change its numbers.
  *
- * Застосунок працює від імені системного користувача і сам його не створює
- * (`getSystemUser` лише читає), тому без нього сторінки впадуть.
+ * The app runs as the system user and does not create it itself (`getSystemUser`
+ * only reads), so without it the pages fail.
  */
 export async function resetDatabase(): Promise<void> {
   const db = drizzle(e2eDatabaseUrl);
@@ -27,12 +27,13 @@ export async function resetDatabase(): Promise<void> {
 }
 
 /**
- * Лише порожні таблиці, без системного користувача - перед міграціями.
+ * Only empty tables, without the system user - before migrations.
  *
- * База E2E живе між прогонами, і нова міграція може не пройти на старих
- * даних: так `0024` (сайт компанії обовʼязковий) впала на компаніях без сайту,
- * що лишились від минулого прогону. Порожнім таблицям міграція не страшна.
- * Журнал міграцій drizzle лежить у схемі `drizzle`, тож його це не чіпає.
+ * The E2E database lives between runs, and a new migration may fail on old data:
+ * that is how `0024` (the company site is required) failed on companies without a
+ * site left over from a previous run. A migration has nothing to fear from empty
+ * tables. The drizzle migration journal is in the `drizzle` schema, so this does not
+ * touch it.
  */
 export async function emptyTables(): Promise<void> {
   const db = drizzle(e2eDatabaseUrl);

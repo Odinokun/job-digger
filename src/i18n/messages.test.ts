@@ -3,9 +3,9 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 /**
- * Переклади інтерфейсу живуть у двох файлах, і набір ключів у них мусить бути
- * однаковий: ключ, доданий лише в одну мову, в іншій покаже сире імʼя ключа
- * замість тексту. Цей тест - єдина автоматична перевірка цієї умови.
+ * UI translations live in two files, and their key sets must be the same: a key
+ * added to only one language shows the raw key name instead of text in the other.
+ * This test is the only automatic check of that condition.
  */
 const locales = ["en", "uk"] as const;
 
@@ -16,8 +16,8 @@ function readMessages(locale: string): Messages {
   return JSON.parse(readFileSync(path, "utf8")) as Messages;
 }
 
-// Повні шляхи всіх ключів: вкладені обʼєкти дають "Nav.jobs", а не просто
-// "jobs", тож переїзд ключа в інший розділ теж помітний.
+// Full paths of all keys: nested objects give "Nav.jobs", not just "jobs", so a key
+// moving to another section is noticed too.
 function collectKeyPaths(messages: Messages, prefix = ""): string[] {
   return Object.entries(messages).flatMap(([key, value]) => {
     const path = prefix ? `${prefix}.${key}` : key;

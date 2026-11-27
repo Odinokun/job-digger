@@ -41,7 +41,7 @@ a page stays Unsupported until Find new pages finds it.
 `same-domain` only warns: several different companies can live on one domain. The same
 name is a warning too, and the weakest signal of the three, so it is checked last
 (`findCompaniesByName`). The name comparison rule itself is in
-[`lib/companies`](../../lib/companies/README.md#коли-дві-назви---одна-компанія).
+[`lib/companies`](../../lib/companies/README.md#when-two-names-are-one-company).
 
 **One confirmation for both warnings.** The `confirmed` flag gets past both `same-domain`
 and `same-name`: the user clicks Add anyway once and expects the company to be saved, not a

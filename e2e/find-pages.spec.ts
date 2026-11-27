@@ -3,16 +3,16 @@ import { expect, test } from "@playwright/test";
 import { resetDatabase } from "./database.ts";
 
 /**
- * Головний сценарій етапу 5 (задача 5.12): від головної адреси компанії до
- * вакансій у Unread через Find pages (src/server/discovery/README.md).
+ * The main scenario of stage 5 (task 5.12): from a company's main address to
+ * vacancies in Unread through Find pages (src/server/discovery/README.md).
  *
- * Критерій готовності етапу: написаний на його початку й червоний, поки етап
- * не зроблено. Тег `@pending` зняла задача 5.11 - тепер це звичайний сценарій.
+ * The stage's definition of done: written at its start and red until the stage was
+ * finished. Task 5.11 removed the `@pending` tag - now it is an ordinary scenario.
  *
- * Сайт компанії - `acme.example` на фейковому вебсервері
- * (src/server/http/testing/README.md): головна сторінка з посиланням Careers на
- * дошку Lever `leverdemo`, збережену в етапі 3. Домен `.example` зарезервований
- * (RFC 2606), тож навіть без фейкового сервера запит нікуди б не пішов.
+ * The company site is `acme.example` on the fake web server
+ * (src/server/http/testing/README.md): a home page with a Careers link to the Lever
+ * board `leverdemo`, saved in stage 3. The `.example` domain is reserved (RFC 2606),
+ * so even without the fake server a request would go nowhere.
  */
 
 const SITE = "acme.example";
@@ -23,8 +23,8 @@ test.beforeAll(resetDatabase);
 test("Find pages turns a company site into tracked vacancies", async ({
   page,
 }) => {
-  // Пошук обходить сайт і пробно читає знахідки, а потім іде перша
-  // перевірка: типових 30 с може не вистачити.
+  // The search walks the site and trial-reads the findings, then the first check
+  // runs: the default 30 s may not be enough.
   test.setTimeout(60_000);
 
   await page.goto("/companies");
@@ -34,8 +34,8 @@ test("Find pages turns a company site into tracked vacancies", async ({
   await dialog.getByLabel("Company website").fill(SITE);
   await dialog.getByRole("button", { name: "Find pages" }).click();
 
-  // Знахідки показуються вже пробно прочитаними: платформа, адреса і
-  // кількість вакансій.
+  // Findings are shown already trial-read: the platform, the address and the
+  // vacancy count.
   const found = dialog
     .getByRole("list", { name: "Found pages" })
     .getByRole("listitem")
@@ -44,25 +44,25 @@ test("Find pages turns a company site into tracked vacancies", async ({
   await expect(found).toContainText(BOARD.platform);
   await expect(found).toContainText(`${BOARD.jobs} vacancies`);
 
-  // Назву компанії пошук заповнює сам; її можна змінити.
+  // The search fills in the company name itself; it can be changed.
   await expect(dialog.getByLabel("Company name")).not.toHaveValue("");
 
-  // Адресу знахідки можна відкрити, щоб перевірити її перед вибором
-  // (задача 6.15): посилання в новій вкладці, поза підписом галочки.
+  // A finding's address can be opened to check it before choosing (task 6.15): a
+  // link in a new tab, outside the checkbox label.
   const link = found.getByRole("link", { name: BOARD.url });
   await expect(link).toHaveAttribute("target", "_blank");
   await expect(link).toHaveAttribute("rel", "noopener noreferrer");
 
-  // Джерело для відстеження вибирає користувач. Клік - по підпису, як
-  // зробила б людина: сам `<input>` HeroUI ховає під намальованою галочкою, і
-  // `check()` на ньому не дістає (перехоплює `checkbox__control`).
+  // The user chooses the source to track. The click goes to the label, as a person
+  // would do it: HeroUI hides the `<input>` itself under the drawn checkmark, and
+  // `check()` on it does not get through (`checkbox__control` intercepts it).
   await found.getByText(BOARD.platform, { exact: true }).click();
   await expect(found.getByRole("checkbox")).toBeChecked();
   await dialog.getByRole("button", { name: "Save" }).click();
   await expect(dialog).toBeHidden();
 
-  // Save одразу запускає першу перевірку компанії (пункт 7): вакансії
-  // зʼявляються без Check all.
+  // Save starts the company's first check right away (item 7): vacancies appear
+  // without Check all.
   const jobsLink = page
     .getByRole("navigation", { name: "Main" })
     .getByRole("link", { name: /^Jobs/ });

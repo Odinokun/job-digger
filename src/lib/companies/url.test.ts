@@ -11,8 +11,8 @@ describe("normalizeCompanyUrl", () => {
   });
 
   it("keeps the path as typed, because bosch.com/de and bosch.com/ua differ", () => {
-    // Протоколу немає - користувач просто скопіював домен зі шляхом.
-    // Регістр шляху лишається: у HTTP шлях регістрозалежний.
+    // No protocol - the user simply copied the domain with the path.
+    // The path case stays: in HTTP the path is case-sensitive.
     expect(normalizeCompanyUrl("bosch.com/DE/")).toEqual({
       ok: true,
       url: "bosch.com/DE",
@@ -20,8 +20,8 @@ describe("normalizeCompanyUrl", () => {
   });
 
   it("drops the fragment but keeps the query", () => {
-    // `#top` на сервер навіть не йде, а `?lang=de` інколи єдине, що
-    // відрізняє національну версію сайту.
+    // `#top` never even goes to the server, while `?lang=de` is sometimes the only
+    // thing that tells a national version of a site apart.
     expect(normalizeCompanyUrl("https://bosch.com/de?lang=de#top")).toEqual({
       ok: true,
       url: "bosch.com/de?lang=de",
@@ -40,7 +40,7 @@ describe("normalizeCompanyUrl", () => {
   });
 
   it("refuses a scheme we never fetch", () => {
-    // Лише http і https: решту ми не завантажуємо (CLAUDE.md, «Безпека»).
+    // Only http and https: we do not fetch anything else (CLAUDE.md, "Security").
     expect(normalizeCompanyUrl("ftp://bosch.com")).toEqual({
       ok: false,
       reason: "unsupported-scheme",
@@ -58,7 +58,7 @@ describe("absoluteCompanyUrl", () => {
   });
 
   it("leaves an address that already has a scheme alone", () => {
-    // Шлях, регістр і query лишаються такими, як ввів користувач.
+    // The path, case and query stay as the user entered them.
     expect(absoluteCompanyUrl("http://bosch.com/DE?lang=de")).toBe(
       "http://bosch.com/DE?lang=de",
     );

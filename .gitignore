@@ -45,10 +45,10 @@ next-env.d.ts
 .idea/
 .vscode/
 
-# тимчасові файли для роботи з Claude Code (скриншоти тощо)
+# temporary files for working with Claude Code (screenshots and the like)
 _temp/
 
-# playwright (артефакти прогонів E2E; браузери живуть у кеші поза репозиторієм)
+# playwright (E2E run artifacts; the browsers live in a cache outside the repository)
 /test-results/
 /playwright-report/
 /blob-report/

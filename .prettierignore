@@ -4,22 +4,22 @@ out/
 build/
 package-lock.json
 
-# Міграції й знімки схеми генерує drizzle-kit, руками вони не змінюються
+# drizzle-kit generates the migrations and schema snapshots; they are never edited by hand
 drizzle/
 
-# Артефакти прогонів Playwright: HTML-звіт, трейси, скриншоти
+# Playwright run artifacts: the HTML report, traces, screenshots
 test-results/
 playwright-report/
 blob-report/
-# Скіли Claude Code: вендорні файли зі сторонніх репозиторіїв. Форматувати їх не можна -
-# хеш кожного скіла лежить у skills-lock.json, і правка зламала б `npx skills check`
+# Claude Code skills: vendored files from third-party repositories. They must not be formatted -
+# each skill's hash is in skills-lock.json, and an edit would break `npx skills check`
 .agents/
 
-# Особисті дозволи Claude Code: у git файл не потрапляє, тож у CI його немає
-# взагалі, а локально він ламав `npm run format:check` без жодної зміни в коді
+# Personal Claude Code permissions: the file never reaches git, so CI does not have it
+# at all, and locally it broke `npm run format:check` without any change in the code
 .claude/settings.local.json
 
-# Збережені справжні відповіді платформ для фейкового вебсервера: лежать як є,
-# байт у байт (src/server/http/testing/README.md). Більшість без розширення, і
-# Prettier їх не бачив; `jobs.feed.json` softgarden першим має розширення
+# Saved real platform responses for the fake web server: kept as they are,
+# byte for byte (src/server/http/testing/README.md). Most have no extension, and
+# Prettier did not see them; softgarden's `jobs.feed.json` was the first with an extension
 src/server/http/testing/responses/

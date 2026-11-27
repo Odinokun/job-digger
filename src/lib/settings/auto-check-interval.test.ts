@@ -14,13 +14,13 @@ describe("parseAutoCheckInterval", () => {
 
   it("reads an interval from the list", () => {
     expect(parseAutoCheckInterval(12)).toBe(12);
-    // Із форми значення приходить рядком.
+    // From a form the value comes as a string.
     expect(parseAutoCheckInterval("24")).toBe(24);
   });
 
   it("answers null for anything off the list", () => {
-    // Значення приходить аргументом Server Action, тобто будь-яке: зберігати
-    // його не можна, а мовчки підміняти іншим - теж.
+    // The value arrives as a Server Action argument, so it can be anything: it must
+    // not be saved, and silently replacing it with another is not allowed either.
     expect(parseAutoCheckInterval(5)).toBeNull();
     expect(parseAutoCheckInterval("6h")).toBeNull();
     expect(parseAutoCheckInterval("")).toBeNull();

@@ -28,8 +28,8 @@ describe("prepareCareerSource", () => {
     ).toEqual({
       ok: true,
       url: "https://www.mozilla.org/en-US/careers/listings/",
-      // `www.` і кінцевий слеш зняті, бо саме ця форма лягає в
-      // `career_sources.normalized_url` і служить порівнянню.
+      // `www.` and the trailing slash are dropped, because this is the form that goes
+      // into `career_sources.normalized_url` and serves the comparison.
       normalizedUrl: "mozilla.org/en-US/careers/listings",
       label: null,
       platform: "unsupported",
@@ -80,8 +80,8 @@ describe("prepareCareerSource", () => {
     ).toEqual({ ok: false, problem: "duplicate" });
   });
 
-  // Саме цей випадок і просив картку 2.16: три фільтри однієї сторінки -
-  // три окремі джерела.
+  // Exactly the case card 2.16 asked for: three filters of one page are three
+  // separate sources.
   it("takes an address that differs only by its query", () => {
     expect(
       prepareCareerSource({
@@ -93,8 +93,8 @@ describe("prepareCareerSource", () => {
     ).toMatchObject({ ok: true });
   });
 
-  // Адреса, яку база вже не прийме, у `existingUrls` опинитися не може, але
-  // список приходить із бази, а не з форми - падати на ній нема за чим.
+  // An address the database would no longer accept cannot end up in `existingUrls`,
+  // but the list comes from the database, not from the form - no reason to fail on it.
   it("ignores an existing address it cannot normalize", () => {
     expect(
       prepareCareerSource({

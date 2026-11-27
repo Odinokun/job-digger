@@ -1,33 +1,33 @@
-# Локальна база даних для розробки.
-# Як підняти, шпаргалка команд і попередження про втрату даних - у README.md («База даних»).
+# The local database for development.
+# How to start it, a command cheat sheet and the data loss warning: README.md, the database section.
 services:
   db:
     image: postgres:18
     container_name: job-digger-db
     restart: unless-stopped
 
-    # Порт відкритий лише для цього компʼютера, як і `next dev -H 127.0.0.1`:
-    # без префікса 127.0.0.1 Docker відкрив би базу на всю локальну мережу.
+    # The port is open only to this machine, like `next dev -H 127.0.0.1`:
+    # without the 127.0.0.1 prefix Docker would open the database to the whole local network.
     ports:
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
 
-    # Ці змінні діють лише при першій ініціалізації, коли тому ще немає.
-    # Зміна пароля згодом вимагає `docker compose down -v`, тобто втрати локальних даних.
+    # These variables apply only on the first initialisation, when there is no volume yet.
+    # Changing the password later needs `docker compose down -v`, that is losing the local data.
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required, see README.md}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required, see README.md}
       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required, see README.md}
 
-    # Стандартних 64 МБ /dev/shm для PostgreSQL замало - розмір радить документація образу.
+    # The default 64 MB of /dev/shm is too little for PostgreSQL - the image documentation advises this size.
     shm_size: 128mb
 
     volumes:
-      # Для PostgreSQL 18 том монтується саме сюди; до 17 включно шлях був
-      # /var/lib/postgresql/data, тому старі приклади з інтернету тут не підходять.
+      # For PostgreSQL 18 the volume is mounted exactly here; up to 17 the path was
+      # /var/lib/postgresql/data, so older examples from the internet do not fit here.
       - pgdata:/var/lib/postgresql
 
-    # Під час ініціалізації база ще не приймає підключення, тому міграції й застосунок
-    # мають чекати саме на healthy, а не на «контейнер запущений».
+    # During initialisation the database does not accept connections yet, so migrations and the app
+    # have to wait for healthy, not for "the container is running".
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s

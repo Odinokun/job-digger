@@ -1,7 +1,7 @@
 import { defineConfig } from "drizzle-kit";
 
-// Конфіг читає лише drizzle-kit - CLI для міграцій. Сам застосунок його не імпортує:
-// підключення до бази живе в src/server/db/client.ts.
+// Only drizzle-kit, the migrations CLI, reads this config. The app itself does not
+// import it: the database connection lives in src/server/db/client.ts.
 const url = process.env.DATABASE_URL;
 
 if (!url) {
@@ -12,12 +12,12 @@ if (!url) {
 
 export default defineConfig({
   dialect: "postgresql",
-  // Одна схема і один набір міграцій для локальної бази і Neon.
+  // One schema and one set of migrations for the local database and Neon.
   schema: "./src/server/db/schema.ts",
   out: "./drizzle",
   dbCredentials: { url },
-  // Міграції застосовуються лише з файлів у ./drizzle, тому зміни схеми
-  // проходять рев'ю як код. `drizzle-kit push` ми не використовуємо.
+  // Migrations are applied only from the files in ./drizzle, so schema changes go
+  // through review like code. We do not use `drizzle-kit push`.
   strict: true,
   verbose: true,
 });

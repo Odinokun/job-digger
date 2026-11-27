@@ -7,16 +7,16 @@ import prettier from "eslint-config-prettier/flat";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Пакет 4.x експортує лише configs.recommended, і це вже flat-конфіг.
+  // Version 4.x exports only configs.recommended, and it is already a flat config.
   tailwindcss.configs.recommended,
   {
     settings: {
-      // Обовʼязковий для Tailwind v4: плагін читає токени й утиліти з цього файлу.
+      // Required for Tailwind v4: the plugin reads tokens and utilities from this file.
       tailwindcss: { cssConfigPath: "./src/app/globals.css" },
     },
     rules: {
-      // Порядок класів задає prettier-plugin-tailwindcss - два інструменти на
-      // одну роботу тільки воювали б між собою.
+      // prettier-plugin-tailwindcss sets the class order - two tools for one job
+      // would only fight each other.
       "tailwindcss/classnames-order": "off",
     },
   },

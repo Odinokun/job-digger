@@ -26,7 +26,7 @@ describe("export options", () => {
   });
 
   it("reads anything but 1 as off", () => {
-    // Адресу можна набрати руками: невідоме значення - вимкнена опція.
+    // The address can be typed by hand: an unknown value means the option is off.
     expect(
       parseExportOptions(new URLSearchParams("tracked=yes&careerUrls=1")),
     ).toEqual({ tracked: false, notTracked: false, careerUrls: true });

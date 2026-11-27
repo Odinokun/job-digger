@@ -1,50 +1,50 @@
 /**
- * Список вакансій на сторінці Jobs: вкладки й рядок.
+ * The vacancy list on the Jobs page: tabs and rows.
  *
- * Лежить у `src/lib`, а не в `src/server`: типи потрібні й клієнтському списку
- * з Load more.
+ * It lives in `src/lib`, not in `src/server`: the client list with Load more needs
+ * the types too.
  */
 
-/** Вкладки в тому порядку, у якому їх показує сторінка. */
+/** The tabs in the order the page shows them. */
 export const JOBS_TABS = ["unread", "read", "favorites", "all"] as const;
 
 /**
- * - `unread` - активні, ще не прочитані;
- * - `read` - активні прочитані;
- * - `favorites` - усі з Favorite, зокрема зниклі з сайту (Closed);
- * - `all` - усі активні.
+ * - `unread` - active, not read yet;
+ * - `read` - active, read;
+ * - `favorites` - everything in Favorites, including those gone from the site (Closed);
+ * - `all` - all active ones.
  *
- * Активна - без позначки Closed.
+ * Active means without the Closed mark.
  */
 export type JobsTab = (typeof JOBS_TABS)[number];
 
-/** Скільки рядків у кожній вкладці - числа в назвах вкладок Jobs. */
+/** How many rows each tab has - the numbers in the Jobs tab names. */
 export type JobsTabCounts = Record<JobsTab, number>;
 
 export type VacancyListItem = {
   id: string;
   title: string;
-  /** Посилання на оригінал; парсер пропускає лише http і https. */
+  /** The link to the original; the parser lets only http and https through. */
   url: string;
-  /** Локації може не бути - тоді в рядку «—». */
+  /** There may be no location - then the row shows "—". */
   location: string | null;
-  /** Назва компанії - через звʼязок «вакансія → джерело → компанія». */
+  /** The company name - through the "vacancy → source → company" link. */
   companyName: string;
   firstDetectedAt: Date;
   isRead: boolean;
   isFavorite: boolean;
   /**
-   * Коли вакансію додали у Favorites, або `null` - не в обраному чи додана
-   * туди до того, як застосунок почав це запам'ятовувати.
+   * When the vacancy was added to Favorites, or `null` - not a favorite, or added
+   * before the app started remembering this.
    */
   favoritedAt: Date | null;
-  /** Коли вакансія з Favorites зникла з сайту, або `null`, якщо вона активна. */
+  /** When a vacancy in Favorites disappeared from the site, or `null` if it is active. */
   closedAt: Date | null;
 };
 
 /**
- * Вкладка з недовіреного значення: параметра адреси або аргумента Server
- * Action. Усе невідоме - Unread, бо саме вона відкривається за замовчуванням.
+ * The tab from an untrusted value: an address parameter or a Server Action
+ * argument. Anything unknown is Unread, because it opens by default.
  */
 export function parseJobsTab(value: unknown): JobsTab {
   return typeof value === "string" &&
@@ -54,10 +54,9 @@ export function parseJobsTab(value: unknown): JobsTab {
 }
 
 /**
- * Чи належить вакансія вкладці - та сама умова, що в запиті вкладок
- * (`src/server/vacancies/list.ts`). Потрібна клієнтові: після Mark as read чи
- * Favorite рядок або лишається у вкладці, або зникає з неї без перечитування
- * списку.
+ * Whether a vacancy belongs to a tab - the same condition as in the tab query
+ * (`src/server/vacancies/list.ts`). The client needs it: after Mark as read or
+ * Favorite a row either stays in the tab or leaves it without rereading the list.
  */
 export function belongsToJobsTab(
   vacancy: Pick<VacancyListItem, "isRead" | "isFavorite" | "closedAt">,
@@ -77,16 +76,16 @@ export function belongsToJobsTab(
   }
 }
 
-/** Зміна позначок однієї вакансії - те, що дія Read чи Favorite обіцяє зробити. */
+/** A change of one vacancy's marks - what a Read or Favorite action promises to do. */
 export type VacancyPatch = {
   id: string;
   changes: Partial<Pick<VacancyListItem, "isRead" | "isFavorite">>;
 };
 
 /**
- * Список із застосованою зміною позначок - оптимістичний стан сторінки Jobs
- * (`useOptimistic`): дія видна одразу, ще до відповіді сервера. Чиста функція,
- * як того вимагає React. Решта рядків лишаються тими самими обʼєктами.
+ * The list with the mark change applied - the optimistic state of the Jobs page
+ * (`useOptimistic`): the action is visible at once, before the server answers. A pure
+ * function, as React requires. The other rows stay the same objects.
  */
 export function patchVacancy(
   items: VacancyListItem[],
@@ -96,11 +95,11 @@ export function patchVacancy(
 }
 
 /**
- * Числа вкладок з урахуванням дій, що ще тривають. `before` - рядки, як їх
- * знає сервер, `after` - ті самі рядки з оптимістичними змінами
- * (`patchVacancy`). Рядок, що змінив вкладку, переносить одиницю з однієї в
- * іншу одразу, разом із самим рядком, - не чекаючи свіжих чисел із сервера.
- * Рядки зіставляються за id; рядок, якого немає в обох списках, не враховується.
+ * Tab counts allowing for actions still in progress. `before` holds the rows as the
+ * server knows them, `after` the same rows with optimistic changes (`patchVacancy`).
+ * A row that changed tabs moves one from one count to the other at once, together
+ * with the row itself, without waiting for fresh numbers from the server. Rows are
+ * matched by id; a row missing from either list is not counted.
  */
 export function adjustTabCounts(
   counts: JobsTabCounts,
@@ -135,10 +134,10 @@ type ListedVacancy = Pick<
 >;
 
 /**
- * Дата, за якою вакансія стоїть у списку вкладки, - та сама, що `sortKey` у
- * запиті (`src/server/vacancies/list.ts`): у Favorites - дата додавання в
- * обране (у старого обраного без неї - дата виявлення), в інших - дата
- * виявлення.
+ * The date a vacancy is ordered by in the tab list - the same as `sortKey` in the
+ * query (`src/server/vacancies/list.ts`): in Favorites, the date it was added to
+ * favorites (for old favorites without one, the detection date); elsewhere, the
+ * detection date.
  */
 function listedAt(vacancy: ListedVacancy, tab: JobsTab): Date {
   return tab === "favorites"
@@ -147,10 +146,9 @@ function listedAt(vacancy: ListedVacancy, tab: JobsTab): Date {
 }
 
 /**
- * Чи стоїть вакансія `a` у списку вкладки вище за `b` - порядок запиту
- * вкладок: дата (`listedAt`), потім id, обидва за спаданням. Postgres
- * порівнює UUID побайтово, а для рядків у нижньому регістрі це те саме, що
- * порівняння рядків.
+ * Whether vacancy `a` stands above `b` in the tab list - the tab query order: the
+ * date (`listedAt`), then id, both descending. Postgres compares UUIDs byte by
+ * byte, and for lower-case strings that is the same as comparing strings.
  */
 function isListedBefore(
   a: ListedVacancy,
@@ -163,14 +161,14 @@ function isListedBefore(
 }
 
 /**
- * Скільки вакансій зі свіжої першої порції вкладки нові для показаного списку
- * (задача 4.13): їх немає серед показаних, і вони стоять вище за останній
- * показаний рядок.
+ * How many vacancies of a fresh first page of the tab are new to the shown list
+ * (task 4.13): they are not among the shown ones, and they stand above the last
+ * shown row.
  *
- * Друга умова відсіює рядки, що піднялися з наступної порції, коли показані
- * вийшли з вкладки (прочитали в Unread): вони не нові, їх покаже Load more.
- * Сама нова вакансія може стати і посеред списку - вакансії однієї перевірки
- * мають одну дату виявлення, і між собою їх упорядковує id.
+ * The second condition filters out rows that moved up from the next page when shown
+ * ones left the tab (read in Unread): they are not new, Load more will show them. A
+ * new vacancy itself may land in the middle of the list - vacancies of one check have
+ * one detection date, and id orders them among themselves.
  */
 export function countNewVacancies(
   shown: ListedVacancy[],
@@ -188,10 +186,10 @@ export function countNewVacancies(
 }
 
 /**
- * Показаний список із рядком на його місці - за порядком вкладки, як у
- * запиті. Потрібен Undo: вакансія, що вийшла з вкладки (прочитана в Unread,
- * прибрана з Favorites), повертається туди, де стояла. Уже показаний рядок
- * заміщається, а той, що вкладці не належить, - прибирається.
+ * The shown list with a row in its place - in tab order, as in the query. Undo needs
+ * it: a vacancy that left the tab (read in Unread, removed from Favorites) goes back
+ * to where it stood. An already shown row is replaced, and one that does not belong
+ * to the tab is removed.
  */
 export function placeVacancy(
   items: VacancyListItem[],
@@ -211,13 +209,14 @@ export function placeVacancy(
     : [...without.slice(0, index), row, ...without.slice(index)];
 }
 
-/** Скільки часу вакансія лишається у групі свіжого обраного. */
+/** How long a vacancy stays in the recent favorites group. */
 export const RECENT_FAVORITE_MS = 12 * 60 * 60 * 1000;
 
 /**
- * Чи додали вакансію у Favorites за останні 12 годин - для групи «Last 12
- * hours» у вкладці Favorites. Рухоме вікно, а не календарний день: не залежить
- * від часового поясу й не спорожніє опівночі (рішення автора 24.11.2026).
+ * Whether the vacancy was added to Favorites in the last 12 hours - for the "Last 12
+ * hours" group on the Favorites tab. A rolling window, not a calendar day: it does
+ * not depend on the time zone and does not empty at midnight (the author's decision
+ * of 24.11.2026).
  */
 export function isRecentFavorite(
   vacancy: Pick<VacancyListItem, "favoritedAt">,

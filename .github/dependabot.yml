@@ -1,18 +1,18 @@
-# Оновлення actions із .github/workflows: вони закріплені за commit SHA
-# (задача 7.09), тож самі по собі вже не оновлюються. Раз на тиждень Dependabot
-# відкриває PR, де міняє SHA разом із коментарем-версією.
+# Updates of the actions in .github/workflows: they are pinned to a commit SHA
+# (task 7.09), so they no longer update by themselves. Once a week Dependabot
+# opens a PR that changes the SHA together with the version comment.
 # https://docs.github.com/en/code-security/dependabot/working-with-dependabot/keeping-your-actions-up-to-date-with-dependabot
 #
-# npm-залежності тут свідомо не підключені: їх оновлюємо руками з `npm audit`
-# у CI (README, розділ «npm audit»).
+# npm dependencies are deliberately not enabled here: we update them by hand, guided
+# by `npm audit` in CI (README, the npm audit section).
 version: 2
 updates:
   - package-ecosystem: "github-actions"
-    # Для actions - саме "/": Dependabot сам дивиться в /.github/workflows.
+    # For actions it is exactly "/": Dependabot looks into /.github/workflows itself.
     directory: "/"
     schedule:
       interval: "weekly"
-    # Назва PR береться з коміту, а коміт - Conventional Commits, як усі
-    # наші: Dependabot сам додає двокрапку після префікса - «ci: ...».
+    # The PR title comes from the commit, and the commit follows Conventional Commits,
+    # like all of ours: Dependabot adds the colon after the prefix itself - "ci: ...".
     commit-message:
       prefix: "ci"
