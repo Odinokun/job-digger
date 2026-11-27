@@ -1,5 +1,5 @@
-# Перевірки, які GitHub проганяє на кожен pull request і на кожен push у main.
-# Ті самі команди запускаються локально - перелік у README («Скрипти»).
+# Checks GitHub runs on every pull request and every push to main.
+# The same commands run locally - the list is in the README, the scripts section.
 name: CI
 
 on:
@@ -7,17 +7,17 @@ on:
   push:
     branches: [main]
 
-# Actions закріплені за повним commit SHA, а не за тегом: тег можна переставити
-# на інший код, SHA - ні. Коментар із версією в тому самому рядку оновлює
-# Dependabot разом із SHA (.github/dependabot.yml; README, розділ «CI»).
+# Actions are pinned to a full commit SHA, not a tag: a tag can be moved to other
+# code, a SHA cannot. Dependabot updates the version comment on the same line
+# together with the SHA (.github/dependabot.yml; README, the CI section).
 # https://docs.github.com/en/actions/reference/security/secure-use
 
-# Токен прогону отримує лише читання коду - рекомендація actions/checkout.
+# The run's token gets read-only access to the code - the actions/checkout recommendation.
 permissions:
   contents: read
 
-# Новий коміт у гілку скасовує її попередній прогін: доїдати чергу
-# на вже неактуальному коді немає сенсу.
+# A new commit to a branch cancels its previous run: finishing the queue on code
+# that is already out of date makes no sense.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -29,42 +29,42 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # Версія Node береться з .nvmrc, щоб не дублювати її ще й тут.
-      # cache: npm кешує ~/.npm за хешем package-lock.json.
+      # The Node version comes from .nvmrc, so it is not duplicated here too.
+      # cache: npm caches ~/.npm keyed by the package-lock.json hash.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
 
-      # ci, а не install: установка строго за package-lock.json, без оновлення версій.
+      # ci, not install: installs strictly from package-lock.json, without updating versions.
       - run: npm ci
 
       - run: npm run format:check
       - run: npm run lint
       - run: npm run typecheck
 
-      # Лише high і critical: moderate у dev-залежностях (esbuild у drizzle-kit)
-      # - прийнятий ризик, обґрунтування в README, розділ «npm audit».
+      # Only high and critical: moderate in dev dependencies (esbuild in drizzle-kit)
+      # is an accepted risk, the reasoning is in the README, the npm audit section.
       - run: npm audit --audit-level=high
 
   tests:
     name: Tests
     runs-on: ubuntu-latest
 
-    # PostgreSQL поруч із job: GitHub підіймає контейнер перед кроками й гасить
-    # після прогону. Кроки не почнуться, поки health-check усередині контейнера
-    # не відповість, тому тести не бачать бази, яка ще ініціалізується.
+    # PostgreSQL next to the job: GitHub starts the container before the steps and
+    # stops it after the run. The steps do not start until the health check inside the
+    # container answers, so the tests never see a database that is still initialising.
     # https://docs.github.com/en/actions/use-cases-and-examples/using-containerized-services/creating-postgresql-service-containers
     services:
       postgres:
-        # Той самий major, що в docker-compose.yml: без тега CI колись поїхав би
-        # на наступну версію, а локальна розробка лишилася б на 18.
+        # The same major as in docker-compose.yml: without a tag CI would one day move
+        # to the next version, while local development stayed on 18.
         image: postgres:18
         env:
-          # Пароль - номер прогону, а не літеральний рядок: контейнер однаково
-          # живе лише цей прогін і доступний лише з його машини, зате у файлі
-          # немає нічого, що сканер секретів (у нас GitGuardian) мав би вважати
-          # креденшалом. Контекст github у services.<id>.env дозволений:
+          # The password is the run number, not a literal string: the container lives
+          # only for this run and is reachable only from its machine anyway, and the
+          # file has nothing a secret scanner (GitGuardian in our case) should treat as
+          # a credential. The github context is allowed in services.<id>.env:
           # https://docs.github.com/en/actions/reference/workflows-and-actions/contexts
           POSTGRES_PASSWORD: ${{ github.run_id }}
         options: >-
@@ -73,17 +73,17 @@ jobs:
           --health-timeout 5s
           --health-retries 5
         ports:
-          # Контейнер стає доступний на машині прогону як 127.0.0.1:5432.
+          # The container becomes reachable on the run's machine as 127.0.0.1:5432.
           - 5432:5432
 
     env:
-      # Базу job_digger_test створює src/server/db/testing/global-setup.ts: він
-      # підключається до службової бази postgres і проганяє міграції. DATABASE_URL
-      # тут не задається - інтеграційним тестам він не потрібен, а запобіжник в
-      # env.ts вимагає лише, щоб адреси не збігалися.
+      # src/server/db/testing/global-setup.ts creates the job_digger_test database: it
+      # connects to the postgres maintenance database and runs the migrations.
+      # DATABASE_URL is not set here - the integration tests do not need it, and the
+      # safeguard in env.ts only requires the addresses not to match.
       TEST_DATABASE_URL: postgres://postgres:${{ github.run_id }}@127.0.0.1:5432/job_digger_test
-      # Окрема база E2E у тому самому контейнері. Її створює e2e/global-setup.ts,
-      # а playwright.config.ts передає застосунку як DATABASE_URL.
+      # A separate E2E database in the same container. e2e/global-setup.ts creates it,
+      # and playwright.config.ts passes it to the app as DATABASE_URL.
       E2E_DATABASE_URL: postgres://postgres:${{ github.run_id }}@127.0.0.1:5432/job_digger_e2e
 
     steps:
@@ -99,16 +99,16 @@ jobs:
       - run: npm run test:unit
       - run: npm run test:integration
 
-      # Браузери не кешуємо. Документація Playwright: «Caching browser binaries
-      # is not recommended» - відновлення кешу триває приблизно стільки ж, скільки
-      # завантаження, а OS-залежності під Linux однаково не кешуються.
+      # Browsers are not cached. The Playwright documentation: "Caching browser binaries
+      # is not recommended" - restoring the cache takes about as long as downloading,
+      # and the OS dependencies on Linux are not cached anyway.
       # https://playwright.dev/docs/ci
       - run: npx playwright install --with-deps chromium
 
       - run: npm run test:e2e
 
-      # Звіт потрібен лише коли E2E впали: на зеленому прогоні його ніхто не
-      # відкриє. У звіті є трейс впалого сценарію (`trace: "on-first-retry"`).
+      # The report is needed only when E2E failed: nobody opens it on a green run. The
+      # report has the trace of the failed scenario (`trace: "on-first-retry"`).
       - if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

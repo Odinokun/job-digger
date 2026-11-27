@@ -2,64 +2,63 @@ import { defineConfig, devices } from "@playwright/test";
 
 import { e2eDatabaseUrl } from "./e2e/env.ts";
 
-// Адреса застосунку в тестах. 127.0.0.1, а не localhost: сервер слухає лише
-// цей інтерфейс (`next start -H 127.0.0.1`), і правило «сервер лише з цього
-// комп'ютера» діє й для тестів.
+// The app address in tests. 127.0.0.1, not localhost: the server listens only on
+// this interface (`next start -H 127.0.0.1`), and the rule "the server is reachable
+// only from this machine" holds for tests too.
 //
-// Порт 3001, а не 3000: на 3000 живе `npm run dev` із базою розробки. Сервер
-// E2E працює поруч із ним і зі своєю базою, тож dev зупиняти не треба.
+// Port 3001, not 3000: `npm run dev` with the development database lives on 3000.
+// The E2E server runs next to it with its own database, so dev need not be stopped.
 const PORT = 3001;
 const baseURL = `http://127.0.0.1:${PORT}`;
 
-// Фейковий вебсервер замість справжніх платформ: тести ніколи не ходять на
-// справжні сайти. Схема адрес і збережені відповіді -
-// src/server/http/testing/README.md.
+// A fake web server instead of real platforms: tests never go to real sites. The
+// address scheme and the saved responses: src/server/http/testing/README.md.
 const FAKE_WEB_PORT = 4010;
 
 /**
- * Playwright Test - лише інструмент E2E, у продакшн-код не потрапляє.
+ * Playwright Test is an E2E tool only and never reaches production code.
  * https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  // E2E живуть окремо від тестів Vitest (`src/**/*.test.ts`), щоб два раннери
-  // не бачили чужих файлів.
+  // E2E tests live apart from the Vitest tests (`src/**/*.test.ts`), so the two
+  // runners do not see each other's files.
   testDir: "e2e",
 
-  // Окрема база E2E: створюється, мігрується й чиститься перед прогоном.
+  // A separate E2E database: created, migrated and cleared before the run.
   globalSetup: "./e2e/global-setup.ts",
 
-  // Сценарії по черзі: усі пишуть в одну базу E2E, і паралельні копії бачили
-  // б дані одна одної (друга копія додавання Bosch отримувала «Already added»).
-  // Так само, як `fileParallelism: false` в інтеграційних тестів.
+  // Scenarios run one at a time: they all write to one E2E database, and parallel
+  // copies would see each other's data (a second copy adding Bosch got "Already
+  // added"). The same as `fileParallelism: false` for the integration tests.
   // https://playwright.dev/docs/test-parallel
   workers: 1,
 
-  // На CI: падати, якщо в коді лишився test.only, і давати одну спробу
-  // повтору на нестабільний сценарій.
+  // On CI: fail if a test.only was left in the code, and give a flaky scenario one
+  // retry.
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
 
   use: {
     baseURL,
-    // Трейс (запис кроків, DOM і запитів) зберігається лише для повтору
-    // впалого тесту - інакше артефакти ростуть на кожному прогоні.
+    // The trace (a record of steps, DOM and requests) is kept only for the retry of
+    // a failed test - otherwise the artifacts grow with every run.
     trace: "on-first-retry",
   },
 
-  // На CI - короткий список кроків плюс HTML-звіт: workflow вигружає його
-  // артефактом, коли E2E впали, і в ньому видно трейс. Локально лишається
-  // типовий `list` без звіту, інакше кожне падіння відкривало б звіт у браузері
-  // (типове значення `open` - `on-failure`).
+  // On CI - a short list of steps plus an HTML report: the workflow uploads it as
+  // an artifact when E2E fail, and it shows the trace. Locally the default `list`
+  // without a report stays, otherwise every failure would open the report in the
+  // browser (the default `open` is `on-failure`).
   // https://playwright.dev/docs/test-reporters
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
 
-  // Один браузер: застосунок персональний, кросбраузерність не мета.
+  // One browser: the app is personal, cross-browser support is not a goal.
   //
-  // Два проєкти на тому самому браузері. `@pending` - критерій готовності
-  // поточного етапу, червоний, поки етап не зроблено (CLAUDE.md, «Тести і
-  // TDD»): `chromium` його пропускає, `pending` запускає лише його. Окремі
-  // проєкти, а не `grepInvert` у корені конфігу, бо `--grep` у консолі
-  // виключення з конфігу не скасовує - лише звужує вибір ще більше.
+  // Two projects on the same browser. `@pending` is the definition of done of the
+  // current stage, red until the stage is finished (CLAUDE.md, "Tests and TDD"):
+  // `chromium` skips it, `pending` runs only it. Separate projects rather than
+  // `grepInvert` at the config root, because `--grep` on the command line does not
+  // cancel the config's exclusion - it only narrows the choice further.
   projects: [
     {
       name: "chromium",
@@ -73,49 +72,48 @@ export default defineConfig({
     },
   ],
 
-  // Playwright сам підіймає фейковий вебсервер і застосунок і чекає, поки
-  // обидва будуть готові.
+  // Playwright itself starts the fake web server and the app and waits until both
+  // are ready.
   // https://playwright.dev/docs/test-webserver
   webServer: [
     {
       name: "FakeWeb",
       command: `node src/server/http/testing/serve-fake-web.ts ${FAKE_WEB_PORT}`,
-      // Готовність - за відкритим портом, а не за url: Playwright приймає лише
-      // статуси до 403, а на корінь фейковий сервер відповідає 404.
+      // Readiness by an open port, not by url: Playwright accepts only statuses up
+      // to 403, and the fake server answers 404 on the root.
       port: FAKE_WEB_PORT,
       reuseExistingServer: false,
     },
     {
       name: "App",
-      // Завжди продакшн-збірка, і локально, і на CI. Другий `next dev` поруч із
-      // запущеним не стартує: у Next 16 lockfile не дає двом `next dev` працювати
-      // в одному проєкті, а `next build` пише в окрему теку і з dev уживається
-      // (node_modules/next/dist/docs/01-app/02-guides/upgrading/version-16.md,
-      // «Concurrent dev and build»). Заодно локальний прогін поводиться так само,
-      // як на CI.
+      // Always a production build, locally and on CI. A second `next dev` next to a
+      // running one does not start: in Next 16 a lockfile keeps two `next dev` from
+      // working in one project, while `next build` writes to a separate folder and
+      // gets along with dev (node_modules/next/dist/docs/01-app/02-guides/upgrading/version-16.md,
+      // "Concurrent dev and build"). Besides, a local run behaves the same as on CI.
       command: `npm run build && npm start -- -p ${PORT}`,
-      // Готовність - за відкритим портом, а не за url. Вебсервери Playwright
-      // підіймає ДО `globalSetup` (playwright 1.65, runner/index.js,
-      // `createGlobalSetupTasks`), а базу E2E створює саме він. Сторінка `/`
-      // (Jobs) читає базу, тож на чистій машині перевірка url отримувала 500,
-      // поки бази немає, і чекала б вічно. `next start` відкриває порт, коли
-      // готовий, а база зʼявиться до першого тесту.
+      // Readiness by an open port, not by url. Playwright starts the web servers
+      // BEFORE `globalSetup` (playwright 1.65, runner/index.js,
+      // `createGlobalSetupTasks`), and it is `globalSetup` that creates the E2E
+      // database. The `/` page (Jobs) reads the database, so on a clean machine a url
+      // check got a 500 while there was no database and would wait forever. `next
+      // start` opens the port when ready, and the database appears before the first test.
       port: PORT,
-      // Змінні тут додаються поверх process.env, а process.env у Next має
-      // перевагу над .env - тож сервер піде в базу E2E, а не в базу розробки.
-      // FAKE_WEB_ORIGIN читає src/server/http/http-client.ts: з ним усі зовнішні
-      // запити застосунку йдуть на фейковий вебсервер.
-      // AUTO_CHECK=off: у свіжій базі E2E загальної перевірки ще не було, і
-      // розклад запустив би її посеред сценарію (задача 6.03).
+      // These variables are added on top of process.env, and in Next process.env
+      // takes precedence over .env - so the server goes to the E2E database, not the
+      // development one. src/server/http/http-client.ts reads FAKE_WEB_ORIGIN: with
+      // it, all of the app's outgoing requests go to the fake web server.
+      // AUTO_CHECK=off: a fresh E2E database has had no general check yet, and the
+      // schedule would start one in the middle of a scenario (task 6.03).
       env: {
         DATABASE_URL: e2eDatabaseUrl,
         FAKE_WEB_ORIGIN: `http://127.0.0.1:${FAKE_WEB_PORT}`,
         AUTO_CHECK: "off",
       },
-      // Не перевикористовувати чужий сервер: якщо на порту вже щось відповідає,
-      // невідомо, з якою базою воно працює. Тоді прогін падає з помилкою.
+      // Do not reuse someone else's server: if something already answers on the
+      // port, it is unknown which database it works with. Then the run fails with an error.
       reuseExistingServer: false,
-      // Холодна збірка довша за теплу - типових 60 с не завжди досить.
+      // A cold build takes longer than a warm one - the default 60 s is not always enough.
       timeout: 120_000,
     },
   ],
