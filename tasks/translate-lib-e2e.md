@@ -20,3 +20,5 @@
 - [x] Конфіги в корені і `.github`
 - [x] Коментарі в `src/app/globals.css`
 - [x] `src/app/theme-candidates.md`
+
+PR: #166
