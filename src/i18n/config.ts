@@ -1,7 +1,7 @@
 /**
- * Мови інтерфейсу. Коди - підтеги мови за BCP 47 (RFC 5646): "uk" - це
- * українська мова, а не країна; регіон ("uk-UA") не потрібен, бо варіантів
- * однієї мови в нас немає.
+ * UI languages. The codes are BCP 47 (RFC 5646) language subtags: "uk" is the
+ * Ukrainian language, not a country; a region ("uk-UA") is not needed, because we
+ * have no variants of one language.
  */
 export const locales = ["en", "uk"] as const;
 
@@ -9,7 +9,7 @@ export type Locale = (typeof locales)[number];
 
 export const defaultLocale: Locale = "en";
 
-/** Імʼя cookie, у якій зберігається вибрана мова. */
+/** The name of the cookie that stores the chosen language. */
 export const localeCookieName = "locale";
 
 export function isSupportedLocale(value: unknown): value is Locale {
