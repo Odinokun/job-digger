@@ -1,23 +1,23 @@
-/** Чому адресу не можна використати. */
+/** Why the address cannot be used. */
 export type UrlRefusalReason = "empty" | "not-a-url" | "unsupported-scheme";
 
 /**
- * Очищена форма адреси компанії - та, за якою адреси порівнюються між собою,
- * або причина, чому адресу взагалі не можна використати.
+ * The normalized form of a company address - the one addresses are compared by -
+ * or the reason the address cannot be used at all.
  */
 export type NormalizedCompanyUrl =
   { ok: true; url: string } | { ok: false; reason: UrlRefusalReason };
 
-/** Завантажуємо лише ці схеми (CLAUDE.md, «Безпека»). */
+/** We fetch only these schemes (CLAUDE.md, "Security"). */
 const SUPPORTED_SCHEMES = ["http:", "https:"];
 
-/** Протокол на початку рядка: `https:`, `ftp:` і будь-який інший. */
+/** A protocol at the start of the string: `https:`, `ftp:` and any other. */
 const SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
 
 /**
- * Приводить адресу компанії до порівнянної форми: без протоколу, без `www.`,
- * без слеша в кінці, домен у нижньому регістрі. Шлях зберігається разом із
- * регістром, бо bosch.com/de і bosch.com/ua - різні компанії.
+ * Brings a company address to a comparable form: no protocol, no `www.`, no
+ * trailing slash, the domain in lower case. The path is kept together with its
+ * case, because bosch.com/de and bosch.com/ua are different companies.
  */
 export function normalizeCompanyUrl(input: string): NormalizedCompanyUrl {
   const trimmed = input.trim();
@@ -28,8 +28,8 @@ export function normalizeCompanyUrl(input: string): NormalizedCompanyUrl {
 
   let parsed;
   try {
-    // Користувач може вставити адресу без протоколу - тоді підставляємо https,
-    // бо інакше `new URL` не розбере рядок зовсім.
+    // The user may paste an address without a protocol - then we add https,
+    // because otherwise `new URL` cannot parse the string at all.
     parsed = new URL(absoluteCompanyUrl(trimmed));
   } catch {
     return { ok: false, reason: "not-a-url" };
@@ -39,25 +39,25 @@ export function normalizeCompanyUrl(input: string): NormalizedCompanyUrl {
     return { ok: false, reason: "unsupported-scheme" };
   }
 
-  // URL сам приводить хост до нижнього регістру й до punycode.
+  // URL itself lowercases the host and converts it to punycode.
   const host = parsed.host.replace(/^www\./, "");
   const path = parsed.pathname.replace(/\/+$/, "");
 
-  // Fragment відкидається - він лишається в браузері й не доходить до сервера.
-  // Query лишається: ним іноді розрізняють національні версії сайту.
+  // The fragment is dropped - it stays in the browser and never reaches the server.
+  // The query stays: it sometimes tells national versions of a site apart.
   return { ok: true, url: `${host}${path}${parsed.search}` };
 }
 
 /**
- * Адреса в абсолютній формі: якщо протоколу немає, підставляється `https://`.
+ * The address in absolute form: if there is no protocol, `https://` is added.
  *
- * Потрібна тому, що зберігати введену адресу як є не можна - без протоколу
- * `<a href>` у списку компаній став би відносним посиланням і вів у нікуди.
- * Решта адреси не змінюється: шлях, регістр і query лишаються, як ввів
- * користувач (`normalizeCompanyUrl` дає іншу, порівнянну форму).
+ * Needed because the entered address cannot be stored as it is - without a protocol
+ * the `<a href>` in the company list would become a relative link leading nowhere.
+ * The rest of the address does not change: the path, case and query stay as the user
+ * entered them (`normalizeCompanyUrl` gives another, comparable form).
  *
- * Функція нічого не перевіряє - придатність адреси встановлює
- * `normalizeCompanyUrl`, і викликати цю варто лише після його `ok`.
+ * The function checks nothing - `normalizeCompanyUrl` establishes whether the address
+ * is usable, and this one should be called only after its `ok`.
  */
 export function absoluteCompanyUrl(input: string): string {
   const trimmed = input.trim();
@@ -66,10 +66,11 @@ export function absoluteCompanyUrl(input: string): string {
 }
 
 /**
- * Хост очищеної адреси - те, що до першого слеша чи знака питання.
+ * The host of a normalized address - what comes before the first slash or question
+ * mark.
  *
- * Приймає результат `normalizeCompanyUrl`, тому розбирати рядок через `URL`
- * тут нема потреби: протоколу немає, хост уже в нижньому регістрі.
+ * Accepts the result of `normalizeCompanyUrl`, so there is no need to parse the
+ * string with `URL` here: there is no protocol, and the host is already in lower case.
  */
 export function companyUrlHost(normalizedUrl: string): string {
   return normalizedUrl.split("/")[0].split("?")[0];

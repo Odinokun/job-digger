@@ -21,7 +21,7 @@ const running: CheckStatus = {
   unread: 2,
   findingNewPages: false,
 };
-/** Find new pages іде, загальної перевірки немає. */
+/** Find new pages is running, there is no general check. */
 const finding: CheckStatus = { ...idle, findingNewPages: true };
 
 const INTERVAL = 3000;
@@ -58,9 +58,9 @@ function setup(responses: (CheckStatus | Error)[]) {
 
 describe("createStatusPoller", () => {
   it("polls on start and then slowly while no check is running", async () => {
-    // Перевірку могли запустити розклад чи інша вкладка - опитування на
-    // завантаженні сторінки її показує, а повільне опитування помічає
-    // перевірку, що почалась пізніше (src/server/checks/README.md).
+    // The schedule or another tab may have started a check - the poll on page load
+    // shows it, and the slow polling notices a check that started later
+    // (src/server/checks/README.md).
     const { poller, fetchStatus, onStatus } = setup([idle, idle]);
 
     poller.start();
@@ -123,7 +123,7 @@ describe("createStatusPoller", () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(fetchStatus).toHaveBeenCalledTimes(2);
 
-    // Таймер, що чекав до resume, не спрацьовує окремо.
+    // The timer that waited until resume does not fire separately.
     await vi.advanceTimersByTimeAsync(IDLE_INTERVAL);
     expect(fetchStatus).toHaveBeenCalledTimes(3);
   });
@@ -142,7 +142,7 @@ describe("createStatusPoller", () => {
     expect(fetchStatus).toHaveBeenCalledTimes(3);
     expect(onStatus).toHaveBeenLastCalledWith(idle);
 
-    // Перевірка закінчилась - опитування знову повільне.
+    // The check is over - polling is slow again.
     await vi.advanceTimersByTimeAsync(INTERVAL * 5);
     expect(fetchStatus).toHaveBeenCalledTimes(3);
   });
@@ -157,8 +157,8 @@ describe("createStatusPoller", () => {
   });
 
   it("starts polling from a status that came from elsewhere", async () => {
-    // Check all повертає стан у відповіді - індикатор видно одразу, а
-    // опитування починається без чекання.
+    // Check all returns the state in its response - the indicator is visible at once,
+    // and polling starts without waiting.
     const { poller, fetchStatus, onStatus } = setup([idle, running, idle]);
     poller.start();
     await vi.advanceTimersByTimeAsync(0);
@@ -193,7 +193,7 @@ describe("createStatusPoller", () => {
     expect(fetchStatus).toHaveBeenCalledTimes(4);
     expect(onLost).toHaveBeenCalledTimes(1);
 
-    // До наступного завантаження сторінки - жодних опитувань.
+    // No polls until the next page load.
     poller.track(running);
     await vi.advanceTimersByTimeAsync(INTERVAL * 5);
     expect(fetchStatus).toHaveBeenCalledTimes(4);

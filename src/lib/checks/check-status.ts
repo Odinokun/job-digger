@@ -1,14 +1,14 @@
 /**
- * Стан загальної перевірки, який інтерфейс отримує опитуванням
- * (src/server/checks/README.md). Тип спільний: його повертає сервер
- * (`server/checks/check-status.ts`) і читає клієнт.
+ * The general check state the UI gets by polling (src/server/checks/README.md).
+ * The type is shared: the server returns it (`server/checks/check-status.ts`) and
+ * the client reads it.
  */
 
-/** Хід активного запуску - числа для «Checking 37/120». */
+/** The progress of an active run - the numbers for "Checking 37/120". */
 export interface RunProgress {
-  /** Скільки джерел у запуску. */
+  /** How many sources the run has. */
   total: number;
-  /** Скільки перевірено - разом із невдалими. */
+  /** How many were checked, failed ones included. */
   checked: number;
   failed: number;
   newVacancies: number;
@@ -16,8 +16,8 @@ export interface RunProgress {
 }
 
 /**
- * Підсумок завершеного запуску, який ще не показували
- * (src/server/checks/README.md). Успішних - `checked - failed`.
+ * The summary of a finished run that has not been shown yet
+ * (src/server/checks/README.md). Successful ones are `checked - failed`.
  */
 export interface RunSummary {
   runId: string;
@@ -28,28 +28,27 @@ export interface RunSummary {
 }
 
 export interface CheckStatus {
-  /** Активний запуск користувача або `null`, якщо перевірка не йде. */
+  /** The user's active run, or `null` if no check is running. */
   run: RunProgress | null;
-  /** Останній завершений запуск із непоказаним підсумком. */
+  /** The last finished run with a summary not shown yet. */
   summary: RunSummary | null;
-  /** Кількість непрочитаних вакансій - лічильник у меню й назві вкладки. */
+  /** The number of unread vacancies - the counter in the menu and the tab title. */
   unread: number;
   /**
-   * Триває Find new pages (задача 5.10): запуску в нього немає, тож окремим
-   * прапорцем. Поки він `true`, інтерфейс опитує стан.
+   * Find new pages is running (task 5.10): it has no run, hence a separate flag.
+   * While it is `true`, the UI polls the state.
    */
   findingNewPages: boolean;
 }
 
 /**
- * Рядок History: рівно пʼять показників завершеної
- * загальної перевірки.
+ * A History row: exactly five figures of a finished general check.
  */
 export interface CheckRunRow {
   id: string;
-  /** Date & time - час запуску. */
+  /** Date & time - when the run started. */
   startedAt: Date;
-  /** Скільки джерел перевірено, зокрема невдалих. */
+  /** How many sources were checked, failed ones included. */
   sourcesChecked: number;
   newVacancies: number;
   removedVacancies: number;

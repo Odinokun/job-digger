@@ -1,36 +1,37 @@
 /**
- * Усе, що не літера й не цифра: пробіли, дефіси, крапки, амперсанди, лапки.
+ * Everything that is not a letter or a digit: spaces, hyphens, dots, ampersands,
+ * quotes.
  *
- * `\p{L}` і `\p{N}` замість `a-z0-9` - назви компаній не перекладаються, тож
- * «Нова Пошта» має лишатися назвою, а не перетворюватися на порожній рядок.
- * Для цього потрібен прапорець `u`.
+ * `\p{L}` and `\p{N}` instead of `a-z0-9` - company names are not translated, so
+ * "Нова Пошта" has to stay a name rather than turn into an empty string. This needs
+ * the `u` flag.
  */
 const NOT_LETTER_OR_DIGIT = /[^\p{L}\p{N}]/gu;
 
 /**
- * Назва компанії у формі, придатній лише для порівняння.
+ * A company name in a form fit only for comparison.
  *
- * «Rolls-Royce», «Rolls Royce», «RollsRoyce» і «rollsRoyce» - одна компанія,
- * записана чотирма способами, і користувач очікує, що застосунок це побачить.
- * Тому регістр і розділові знаки відкидаються, а лишаються самі літери й цифри.
+ * "Rolls-Royce", "Rolls Royce", "RollsRoyce" and "rollsRoyce" are one company
+ * written four ways, and the user expects the app to see that. So case and
+ * punctuation are dropped, and only letters and digits remain.
  *
- * Зберігати цю форму нікуди не треба: вона потрібна раз на додавання компанії,
- * а не в списку (`findCompaniesByName` у
+ * This form does not need to be stored anywhere: it is needed once per company
+ * added, not in the list (`findCompaniesByName` in
  * [`server/companies/duplicates.ts`](../../server/companies/duplicates.ts)).
  *
- * Збіг назв - **попередження, а не заборона**: «Ernst & Young» і «ErnstYoung»
- * зійдуться, але зійдуться й дві справді різні компанії з однаковою назвою.
- * Рішення лишається за користувачем.
+ * A name match is **a warning, not a ban**: "Ernst & Young" and "ErnstYoung" match,
+ * but so do two really different companies with the same name. The decision stays
+ * with the user.
  */
 export function normalizeCompanyName(name: string): string {
   return name.toLowerCase().replace(NOT_LETTER_OR_DIGIT, "");
 }
 
 /**
- * Чи це та сама компанія з погляду назви.
+ * Whether this is the same company as far as the name goes.
  *
- * Дві назви, у яких не лишилося жодної літери чи цифри, однією компанією не
- * вважаються: інакше «---» і «!!!» зійшлися б, хоч спільного в них нічого.
+ * Two names with no letter or digit left are not considered one company:
+ * otherwise "---" and "!!!" would match, though they have nothing in common.
  */
 export function sameCompanyName(one: string, other: string): boolean {
   const normalized = normalizeCompanyName(one);

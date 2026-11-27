@@ -5,42 +5,42 @@ import {
 } from "./platform.ts";
 import { companyUrlHost, normalizeCompanyUrl } from "./url.ts";
 
-/** Що підставити в поля модалки Add company за однією вставленою адресою. */
+/** What to put into the Add company modal fields from one pasted address. */
 export type CompanyFieldSuggestion = {
-  /** Головний сайт компанії. Порожній, якщо з адреси його не видно. */
+  /** The company's main site. Empty if the address does not show it. */
   url: string;
-  /** Назва компанії, вгадана з адреси. */
+  /** The company name guessed from the address. */
   name: string;
-  /** Карʼєрна сторінка. Порожня, якщо адреса на неї не схожа. */
+  /** The career page. Empty if the address does not look like one. */
   careerUrl: string;
 };
 
-/** Нічого не підказуємо: адресу використати не можна. */
+/** We suggest nothing: the address cannot be used. */
 const NOTHING: CompanyFieldSuggestion = { url: "", name: "", careerUrl: "" };
 
 /**
- * Суфікси, які самі по собі назвою компанії бути не можуть.
+ * Suffixes that cannot be a company name on their own.
  *
- * Потрібні для доменів другого рівня: у `bosch.com.ua` передостанній лейбл -
- * `com`, і без цього списку компанія звалася б «Com». Повний Public Suffix List
- * сюди не тягнемо: він великий, оновлюється окремо від нас, а поле назви
- * редаговане - сім суфіксів покривають практично все, що трапляється.
+ * Needed for second-level domains: in `bosch.com.ua` the second-to-last label is
+ * `com`, and without this list the company would be called "Com". We do not pull in
+ * the full Public Suffix List: it is large and updated separately from us, and the
+ * name field is editable - seven suffixes cover practically everything that comes up.
  */
 const SECOND_LEVEL_SUFFIXES = ["co", "com", "net", "org", "gov", "edu", "ac"];
 
 /**
- * Сегмент шляху, що виглядає як мовний код: `de`, `uk`, `en-US`, `de-de`.
+ * A path segment that looks like a language code: `de`, `uk`, `en-US`, `de-de`.
  *
- * Форма, а не список ISO 639-1: список довелося б дорости до всіх кодів і
- * тримати актуальним, а вигоди - лише на рідких випадках. Евристика помилиться
- * на `bosch.com/hr` (Хорватія чи розділ HR), і це прийнято: поле редаговане,
- * тому ціна помилки - одне виправлення руками замість двох.
+ * The form, not the ISO 639-1 list: the list would have to grow to every code and be
+ * kept current, for a gain only in rare cases. The heuristic gets `bosch.com/hr`
+ * (Croatia or an HR section) wrong, and that is accepted: the field is editable, so a
+ * mistake costs one manual fix instead of two.
  */
 const LANGUAGE_SEGMENT_PATTERN = /^[a-z]{2}(-[a-z]{2})?$/i;
 
 /**
- * Платформи, у яких назва компанії стоїть у субдомені, а не в шляху:
- * `bosch.wd3.myworkdayjobs.com` і `acme.peopleforce.io` проти
+ * Platforms where the company name is in the subdomain, not in the path:
+ * `bosch.wd3.myworkdayjobs.com` and `acme.peopleforce.io` versus
  * `jobs.lever.co/spotify`.
  */
 const SUBDOMAIN_SLUG_PLATFORMS: CareerPlatform[] = [
@@ -55,12 +55,12 @@ const SUBDOMAIN_SLUG_PLATFORMS: CareerPlatform[] = [
 ];
 
 /**
- * Підказки для полів Add company, виведені з однієї вставленої адреси.
+ * Suggestions for the Add company fields, derived from one pasted address.
  *
- * Жодного запиту в мережу: усе видно з самого рядка. Справжній пошук сторінок
- * (Find pages) приходить в етапі 5 - ця евристика лишиться для випадків, коли
- * сайт не відповідає, тому всі поля редаговані й підказка ні до чого не
- * зобовʼязує.
+ * No network requests: everything is visible from the string itself. The real page
+ * search (Find pages, stage 5) exists too; this heuristic covers the moment the
+ * address is pasted and the cases where the site does not answer, so all fields are
+ * editable and a suggestion commits to nothing.
  */
 export function suggestCompanyFields(input: string): CompanyFieldSuggestion {
   const normalized = normalizeCompanyUrl(input);
@@ -72,10 +72,10 @@ export function suggestCompanyFields(input: string): CompanyFieldSuggestion {
   const host = companyUrlHost(normalized.url);
   const platform = detectPlatform(normalized.url);
 
-  // Адреса ATS - це карʼєрна сторінка, а не сайт компанії: `lever.co` головним
-  // сайтом Spotify не є, а вгадати `spotify.com` із slug-а не можна - буває
-  // і `.io`, і `.ai`. Тому поле сайту лишається порожнім, його заповнює
-  // користувач (або Find pages в етапі 5).
+  // An ATS address is a career page, not the company site: `lever.co` is not
+  // Spotify's main site, and `spotify.com` cannot be guessed from the slug - it may
+  // be `.io` or `.ai`. So the site field stays empty, and the user fills it in (or
+  // Find pages does).
   if (platform !== "unsupported") {
     return {
       url: "",
@@ -84,9 +84,9 @@ export function suggestCompanyFields(input: string): CompanyFieldSuggestion {
     };
   }
 
-  // Національна версія сайту (`bosch.com/de`) - це все ще головний сайт, а не
-  // окрема сторінка: шлях лишається в адресі сайту, бо без нього `bosch.com`
-  // веде на інший, глобальний сайт. Карʼєрне поле ця адреса не заповнює.
+  // A national version of a site (`bosch.com/de`) is still the main site, not a
+  // separate page: the path stays in the site address, because without it
+  // `bosch.com` leads to another, global site. This address does not fill the career field.
   if (isNationalSiteUrl(normalized.url, host)) {
     return {
       url: normalized.url,
@@ -98,26 +98,26 @@ export function suggestCompanyFields(input: string): CompanyFieldSuggestion {
   return {
     url: host,
     name: companyNameFromHost(host),
-    // Усе, що після домену, - це вже не головний сайт, а конкретна сторінка:
-    // якщо користувач вставив її, вона йде в поле карʼєрної сторінки, щоб шлях
-    // не загубився при обрізанні до домену.
+    // Everything after the domain is no longer the main site but a specific page:
+    // if the user pasted one, it goes into the career page field, so the path is
+    // not lost when the site is cut down to the domain.
     careerUrl: normalized.url === host ? "" : normalized.url,
   };
 }
 
 /**
- * Назва компанії з адреси ATS: `jobs.lever.co/spotify` - «Spotify».
+ * The company name from an ATS address: `jobs.lever.co/spotify` - "Spotify".
  *
- * Порожній рядок означає, що компанії в адресі немає: сама `peopleforce.io`
- * чи `jobs.lever.co` без slug-а - це сторінка платформи, не компанії.
+ * An empty string means the address has no company: `peopleforce.io` itself or
+ * `jobs.lever.co` without a slug is a platform page, not a company page.
  */
 function companyNameFromPlatformUrl(
   normalizedUrl: string,
   host: string,
   platform: CareerPlatform,
 ): string {
-  // У TalentAdore в адресі лише токен компанії (`positions/rR1TqSR`), а не
-  // назва - підказувати нічого (задача 6.28).
+  // A TalentAdore address has only the company token (`positions/rR1TqSR`), not a
+  // name - there is nothing to suggest (task 6.28).
   if (platform === "talentadore") {
     return "";
   }
@@ -133,9 +133,9 @@ function companyNameFromPlatformUrl(
 }
 
 /**
- * Аліас компанії з дошки CleverStaff: `cleverstaff.net/i/8allocate-vacancies` -
- * `8allocate`. Посилання на окрему вакансію (`/i/vacancy-...`) компанії не
- * називає.
+ * The company alias from a CleverStaff board: `cleverstaff.net/i/8allocate-vacancies`
+ * - `8allocate`. A link to a single vacancy (`/i/vacancy-...`) does not name the
+ * company.
  */
 function cleverstaffAlias(normalizedUrl: string, host: string): string {
   const page = normalizedUrl.slice(host.length).split("/").filter(Boolean)[1];
@@ -144,7 +144,7 @@ function cleverstaffAlias(normalizedUrl: string, host: string): string {
     : "";
 }
 
-/** Перший лейбл перед суфіксом платформи: `bosch.wd3.myworkdayjobs.com` - `bosch`. */
+/** The first label before the platform suffix: `bosch.wd3.myworkdayjobs.com` - `bosch`. */
 function platformSubdomain(host: string): string {
   const suffix = platformHostSuffix(host);
 
@@ -152,16 +152,17 @@ function platformSubdomain(host: string): string {
     return "";
   }
 
-  // Платформа може додавати свої лейбли (`wd3` у Workday), тому беремо перший:
-  // саме його задає компанія.
+  // A platform may add its own labels (`wd3` in Workday), so we take the first one:
+  // that is the one the company sets.
   return host.slice(0, host.length - suffix.length - 1).split(".")[0];
 }
 
 /**
- * Чи адреса схожа на національну версію сайту: `bosch.com/de`, `bosch.com/en-US`.
+ * Whether the address looks like a national version of a site: `bosch.com/de`,
+ * `bosch.com/en-US`.
  *
- * Дивимося лише на шлях: query національну версію не скасовує, бо нею іноді
- * саму версію й задають (`bosch.com/de?lang=de`).
+ * Only the path is looked at: a query does not cancel a national version, because
+ * sometimes it is what sets the version (`bosch.com/de?lang=de`).
  */
 function isNationalSiteUrl(normalizedUrl: string, host: string): boolean {
   const segments = pathSegments(normalizedUrl, host);
@@ -169,12 +170,12 @@ function isNationalSiteUrl(normalizedUrl: string, host: string): boolean {
   return segments.length === 1 && LANGUAGE_SEGMENT_PATTERN.test(segments[0]);
 }
 
-/** Перший сегмент шляху: `jobs.lever.co/spotify/jobs` - `spotify`. */
+/** The first path segment: `jobs.lever.co/spotify/jobs` - `spotify`. */
 function firstPathSegment(normalizedUrl: string, host: string): string {
   return pathSegments(normalizedUrl, host)[0] ?? "";
 }
 
-/** Сегменти шляху без порожніх: `bosch.com/de/careers/` - `["de", "careers"]`. */
+/** Path segments without empty ones: `bosch.com/de/careers/` - `["de", "careers"]`. */
 function pathSegments(normalizedUrl: string, host: string): string[] {
   return normalizedUrl
     .slice(host.length)
@@ -183,12 +184,12 @@ function pathSegments(normalizedUrl: string, host: string): string[] {
     .filter((segment) => segment !== "");
 }
 
-/** Назва компанії з хоста: `about.gitlab.com` - «Gitlab». */
+/** The company name from the host: `about.gitlab.com` - "Gitlab". */
 function companyNameFromHost(host: string): string {
   const labels = host.split(".");
 
-  // Передостанній лейбл: у `bosch.com` це `bosch`, у `about.gitlab.com` -
-  // `gitlab`. Для домену другого рівня крок назад повторюється.
+  // The second-to-last label: in `bosch.com` it is `bosch`, in `about.gitlab.com`
+  // `gitlab`. For a second-level domain the step back repeats.
   let index = labels.length - 2;
 
   if (index > 0 && SECOND_LEVEL_SUFFIXES.includes(labels[index])) {

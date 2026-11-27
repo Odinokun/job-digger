@@ -19,8 +19,8 @@ describe("knownAtsName", () => {
   });
 
   it("names an ATS that shares its host with the vendor's website", () => {
-    // JOIN тримає дошки на тому самому хості, що й свій сайт: дошку видно
-    // лише за початком шляху.
+    // JOIN keeps boards on the same host as its own site: a board is visible only
+    // by the start of the path.
     expect(knownAtsName("https://join.com/companies/acme")).toBe("JOIN");
     expect(knownAtsName("https://join.com/en")).toBeNull();
   });
@@ -30,7 +30,7 @@ describe("knownAtsName", () => {
   });
 
   it("ignores the vendor's own website", () => {
-    // Підпис «Powered by Teamtailor» веде на сайт постачальника, а не на дошку.
+    // The "Powered by Teamtailor" credit leads to the vendor's site, not to a board.
     expect(knownAtsName("https://www.teamtailor.com/")).toBeNull();
     expect(knownAtsName("https://teamtailor.com/pricing")).toBeNull();
   });
@@ -41,9 +41,9 @@ describe("knownAtsName", () => {
 
   it("knows nothing about platforms that have a parser", () => {
     expect(knownAtsName("https://jobs.lever.co/acme")).toBeNull();
-    // Workable отримав парсер у задачі 6.25.
+    // Workable got a parser in task 6.25.
     expect(knownAtsName("https://apply.workable.com/acme/")).toBeNull();
-    // BambooHR - у задачі 6.26, Pinpoint - у 6.27.
+    // BambooHR in task 6.26, Pinpoint in 6.27.
     expect(knownAtsName("https://acme.bamboohr.com/careers")).toBeNull();
     expect(knownAtsName("https://acme.pinpointhq.com/")).toBeNull();
   });

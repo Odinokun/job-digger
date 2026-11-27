@@ -43,7 +43,7 @@ describe("companyCheckStatus", () => {
   });
 
   it("is checking for the whole general check", () => {
-    // Check all бере всі компанії Tracked.
+    // Check all takes all Tracked companies.
     expect(
       companyCheckStatus([source()], { isGeneralCheckRunning: true }),
     ).toBe("checking");
@@ -54,7 +54,7 @@ describe("companyCheckStatus", () => {
   });
 
   it("ignores untracked sources", () => {
-    // Сторінка без відстеження не перевіряється - її збій давно не новина.
+    // An untracked page is not checked - its failure has long stopped being news.
     expect(
       companyCheckStatus(
         [source(), source({ isTracked: false, lastCheck: "failed" })],

@@ -1,36 +1,36 @@
 import type { CareerPlatform } from "./platform";
 
 /**
- * Типи й чиста логіка списку компаній.
+ * Types and pure logic of the company list.
  *
- * Лежать у `src/lib`, а не поруч із запитами в `src/server/companies/list.ts`,
- * бо список компаній - клієнтський компонент (накопичує порції Load more), а
- * серверні модулі в клієнт не імпортуються. Той самий хід, що з переліком
- * платформ у [`platform.ts`](./platform.ts).
+ * They live in `src/lib`, not next to the queries in `src/server/companies/list.ts`,
+ * because the company list is a client component (it accumulates Load more pages),
+ * and server modules are not imported into the client. The same move as with the
+ * platform list in [`platform.ts`](./platform.ts).
  */
 
 /**
- * Стани компанії на вкладці Not tracked.
+ * Company states on the Not tracked tab.
  *
- * Перелік тут, а `pgEnum("discovery_status")` будується з нього: інакше ті самі
- * значення жили б у двох місцях і розходилися б.
+ * The list is here, and `pgEnum("discovery_status")` is built from it: otherwise
+ * the same values would live in two places and drift apart.
  */
 export const DISCOVERY_STATUSES = [
   "not_checked",
   "not_found",
   "unsupported",
   "check_failed",
-  // Знайдено дошку лише за назвою, і вона не веде на сайт компанії: Find new
-  // pages її не додає, а користувач підтверджує через Find pages (задача 5.10).
+  // A board was found only by name and does not lead to the company site: Find new
+  // pages does not add it, and the user confirms it through Find pages (task 5.10).
   "possible_page",
 ] as const;
 
 export type DiscoveryStatus = (typeof DISCOVERY_STATUSES)[number];
 
 /**
- * Вкладки сторінки Companies. `attention` - Needs attention (задача 6.11): зріз
- * поверх двох інших, компанія з неї лишається й у своїй Tracked чи Not tracked.
- * `all` - усі компанії користувача, з пошуком за назвою (задача
+ * Tabs of the Companies page. `attention` is Needs attention (task 6.11): a slice
+ * over the other two, and a company in it stays in its Tracked or Not tracked too.
+ * `all` is all of the user's companies, with search by name (task
  * companies-search).
  */
 export const COMPANIES_TABS = [
@@ -41,9 +41,9 @@ export const COMPANIES_TABS = [
 ] as const;
 
 /**
- * Належність до вкладки в базі не зберігається: Tracked - це «є хоч одне
- * джерело, що відстежується», Needs attention -
- * правило в `src/server/companies/list.ts` (`needsAttentionSubquery`).
+ * Tab membership is not stored in the database: Tracked means "at least one source
+ * is tracked", Needs attention is a rule in `src/server/companies/list.ts`
+ * (`needsAttentionSubquery`).
  */
 export type CompaniesTab = (typeof COMPANIES_TABS)[number];
 
@@ -51,58 +51,58 @@ export type CompanySource = {
   id: string;
   url: string;
   /**
-   * Підпис, яким користувач розрізняє джерела одного сайту, або `null`, якщо
-   * підпису немає: адреса сама собою зрозуміла.
+   * The label the user tells sources of one site apart by, or `null` if there is
+   * no label: the address speaks for itself.
    */
   label: string | null;
   platform: CareerPlatform;
   isTracked: boolean;
   /**
-   * Сторінку, яку нічим прочитати, людина позначила «лише посиланням»
-   * (задача 6.17): вона не рахується непрочитаною.
+   * The person marked a page nothing can read as "link only" (task 6.17): it does
+   * not count as unread.
    */
   isReferenceOnly: boolean;
   /**
-   * Чим закінчилася остання перевірка джерела: `null` - ще не перевірялося.
-   * Невдала - це `consecutive_failures > 0`.
+   * How the source's last check ended: `null` means not checked yet. A failed one
+   * is `consecutive_failures > 0`.
    */
   lastCheck: "ok" | "failed" | null;
   /**
-   * Остання успішна перевірка - «Last ok: 12 days ago» біля невдалого джерела:
-   * після збою вакансії не видаляються, і без цієї дати застарілі не відрізнити
-   * від живих.
+   * The last successful check - "Last ok: 12 days ago" next to a failed source:
+   * vacancies are not deleted after a failure, and without this date stale ones
+   * cannot be told from live ones.
    */
   lastSuccessAt: Date | null;
-  /** Джерело в черзі: завдання чекає або виконується. */
+  /** The source is in the queue: its task is waiting or running. */
   isChecking: boolean;
 };
 
 export type CompanyListItem = {
   id: string;
   name: string;
-  /** Головний сайт - обовʼязковий (задача company-site-required). */
+  /** The main site - required (task company-site-required). */
   url: string;
   discoveryStatus: DiscoveryStatus;
   sources: CompanySource[];
   /**
-   * Вакансії всіх джерел компанії: скільки всього і скільки з них у Favorites.
-   * Їх називає діалог видалення - разом із компанією зникають і вони.
+   * Vacancies of all the company's sources: how many in total and how many of them
+   * in Favorites. The delete dialog names them - they go together with the company.
    */
   vacancies: { total: number; favorites: number };
   /**
-   * Остання перевірка серед джерел компанії, успішна чи ні, або `null`, якщо
-   * жодне ще не перевірялося. Картка показує її відносно («Last checked: 5 min
-   * ago»).
+   * The last check among the company's sources, successful or not, or `null` if
+   * none has been checked yet. The card shows it relatively ("Last checked: 5 min
+   * ago").
    */
   lastCheckedAt: Date | null;
 };
 
 /**
- * Чи знайшов би пошук на вкладці All компанію з такою назвою - те саме
- * правило, що в запиті списку (`src/server/companies/list.ts`): назва містить
- * рядок пошуку без огляду на регістр, порожній рядок знаходить усе. Потрібна
- * клієнтові: рядок, доданий чи змінений під час пошуку, лишається в показаному
- * списку, лише якщо підходить під пошук.
+ * Whether the All tab search would find a company with this name - the same rule
+ * as in the list query (`src/server/companies/list.ts`): the name contains the
+ * search string, ignoring case, and an empty string finds everything. The client
+ * needs it: a row added or changed during a search stays in the shown list only if
+ * it matches the search.
  */
 export function matchesCompanySearch(name: string, query: string): boolean {
   const text = query.trim().toLowerCase();
@@ -111,11 +111,11 @@ export function matchesCompanySearch(name: string, query: string): boolean {
 }
 
 /**
- * Вкладка з недовіреного значення: параметра адреси або аргумента Server
- * Action.
+ * The tab from an untrusted value: an address parameter or a Server Action
+ * argument.
  *
- * Усе невідоме - це Tracked, бо саме він відкривається за замовчуванням:
- * помилка в адресі має показати звичайний список, а не порожнечу чи помилку.
+ * Anything unknown is Tracked, because it opens by default: a mistake in the address
+ * should show the ordinary list, not emptiness or an error.
  */
 export function parseCompaniesTab(value: unknown): CompaniesTab {
   return typeof value === "string" &&
@@ -125,15 +125,15 @@ export function parseCompaniesTab(value: unknown): CompaniesTab {
 }
 
 /**
- * Порядок рядків списку: той самий, що задає запит (`order by name, id`).
+ * The order of list rows: the same as the query sets (`order by name, id`).
  *
- * Потрібен на клієнті, коли перейменована компанія повертається з сервера й
- * має стати на своє місце серед уже показаних, не перечитуючи список.
+ * Needed on the client when a renamed company comes back from the server and has to
+ * take its place among the rows already shown, without rereading the list.
  *
- * `localeCompare` збігається з порядком бази: вона створена з `en_US.utf8`, де
- * «acme» стоїть перед «Bosch», а не після нього, як було б при побайтовому
- * порівнянні. Ідентичність вичерпна лише доти, доки база лишається з цією
- * локаллю; точний порядок у будь-якому разі задає наступне читання з сервера.
+ * `localeCompare` matches the database order: the database was created with
+ * `en_US.utf8`, where "acme" comes before "Bosch", not after it as a byte-wise
+ * comparison would put it. They are identical only as long as the database keeps this
+ * locale; the next read from the server sets the exact order in any case.
  */
 export function compareCompanyRows(
   left: CompanyListItem,
@@ -145,17 +145,17 @@ export function compareCompanyRows(
 }
 
 /**
- * Компанія відстежується, якщо хоч одне її джерело відстежується - те саме
- * правило, що ділить вкладки Tracked і Not tracked. Потрібне на вкладці Needs
- * attention, де змішані обидві: дії картки визначає компанія, а не вкладка.
+ * A company is tracked if at least one of its sources is tracked - the same rule
+ * that splits the Tracked and Not tracked tabs. Needed on the Needs attention tab,
+ * where both are mixed: the company, not the tab, decides the card's actions.
  */
 export function isTrackedCompany(sources: CompanySource[]): boolean {
   return sources.some((source) => source.isTracked);
 }
 
 /**
- * Сторінка, яку ми не читаємо і яку людина не позначила «лише посиланням»
- * (задачі 6.11 і 6.17). Те саме правило для бази - `needsAttentionSubquery` у
+ * A page we do not read and the person has not marked "link only" (tasks 6.11 and
+ * 6.17). The same rule for the database is `needsAttentionSubquery` in
  * `src/server/companies/list.ts`.
  */
 export function isNotReadSource(source: CompanySource): boolean {
@@ -163,9 +163,9 @@ export function isNotReadSource(source: CompanySource): boolean {
 }
 
 /**
- * Скільки сторінок компанії ми не читаємо - бейдж «N pages not read» (задача
- * 6.11). Unsupported - постійний стан, а не збій, тому це окремий бейдж уваги,
- * а не Has errors.
+ * How many of the company's pages we do not read - the "N pages not read" badge
+ * (task 6.11). Unsupported is a permanent state, not a failure, so it is a separate
+ * attention badge rather than Has errors.
  */
 export function notReadSourceCount(sources: CompanySource[]): number {
   return sources.filter(isNotReadSource).length;

@@ -29,8 +29,8 @@ function vacancy(
 const CLOSED = new Date("2026-11-18T12:00:00Z");
 
 describe("belongsToJobsTab", () => {
-  // Та сама таблиця, що в запиті вкладок (src/server/vacancies/list.ts): після
-  // дії рядок або лишається у вкладці, або зникає з неї без перечитування.
+  // The same table as in the tab query (src/server/vacancies/list.ts): after an
+  // action a row either stays in the tab or leaves it without a reread.
   const cases: Array<[string, VacancyListItem, JobsTabs]> = [
     [
       "an active unread one",
@@ -77,8 +77,8 @@ describe("parseJobsTab", () => {
   });
 
   it("falls back to Unread for anything else", () => {
-    // Значення приходить з адреси або з аргумента Server Action: вкладка за
-    // замовчуванням краща за помилку.
+    // The value comes from the address or a Server Action argument: the default tab
+    // is better than an error.
     expect(parseJobsTab(undefined)).toBe("unread");
     expect(parseJobsTab("Read")).toBe("unread");
     expect(parseJobsTab(["read"])).toBe("unread");
@@ -114,8 +114,8 @@ describe("patchVacancy", () => {
 });
 
 describe("countNewVacancies", () => {
-  // Порядок списку - як у запиті вкладок: дата виявлення, потім id, обидва
-  // за спаданням. Вакансії однієї перевірки мають одну дату.
+  // The list order is as in the tab query: the detection date, then id, both
+  // descending. Vacancies of one check have one date.
   function found(id: number, at: string): VacancyListItem {
     return {
       ...vacancy({ isRead: false, isFavorite: false, closedAt: null }),
@@ -141,8 +141,8 @@ describe("countNewVacancies", () => {
   });
 
   it("counts a vacancy that lands between the shown ones", () => {
-    // Перевірка ще йде: нова вакансія має ту саму дату, що вже показані, і за
-    // id стає посеред списку, а не нагорі.
+    // The check is still running: the new vacancy has the same date as the shown
+    // ones, and by id it lands in the middle of the list, not at the top.
     const shown = [found(5, LATER), found(3, LATER)];
     const fresh = [found(5, LATER), found(4, LATER), found(3, LATER)];
 
@@ -150,8 +150,8 @@ describe("countNewVacancies", () => {
   });
 
   it("ignores vacancies that moved up from the next portion", () => {
-    // Рядок прочитали в Unread, і в першу порцію підтягнувся наступний, ще не
-    // показаний. Він не новий: його покаже Load more.
+    // A row was read in Unread, and the next one, not shown yet, moved up into the
+    // first page. It is not new: Load more will show it.
     const shown = [found(5, EARLIER), found(3, EARLIER)];
     const fresh = [found(5, EARLIER), found(3, EARLIER), found(2, EARLIER)];
 
@@ -159,16 +159,16 @@ describe("countNewVacancies", () => {
   });
 
   it("does not count shown vacancies that left the fresh page", () => {
-    // Позначка прийшла на сервер: рядок вийшов із вкладки, а в показаному
-    // списку ще є. Це не нова вакансія.
+    // The mark reached the server: the row left the tab but is still in the shown
+    // list. It is not a new vacancy.
     const shown = [found(5, EARLIER), found(3, EARLIER)];
 
     expect(countNewVacancies(shown, [found(3, EARLIER)], "unread")).toBe(0);
   });
 
   it("orders Favorites by when vacancies were added", () => {
-    // У Favorites свіже обране стоїть нагорі, хоч саму вакансію знайшли
-    // давно: додана в іншій вкладці браузера - нова для показаного списку.
+    // In Favorites a fresh favorite is at the top, even though the vacancy itself
+    // was found long ago: added in another browser tab, it is new to the shown list.
     const OLD = "2026-11-01T10:00:00Z";
     const favorite = (id: number, detected: string, added: string) => ({
       ...found(id, detected),
@@ -245,7 +245,7 @@ describe("isRecentFavorite", () => {
   });
 
   it("is true for a vacancy added to Favorites within the last 12 hours", () => {
-    // Учорашній вечір - теж свіже: вікно рухоме, а не календарний день.
+    // Yesterday evening is fresh too: the window is rolling, not a calendar day.
     expect(isRecentFavorite(favorite("2026-11-24T22:00:00Z"), NOW)).toBe(true);
   });
 
@@ -268,7 +268,7 @@ describe("placeVacancy", () => {
   const ids = (items: { id: string }[]) => items.map((item) => item.id.at(-1));
 
   it("puts a row back where the list order puts it", () => {
-    // Undo після Mark as read: рядок повертається на своє місце в Unread.
+    // Undo after Mark as read: the row goes back to its place in Unread.
     const list = [at(3, "2026-11-20T10:00:00Z"), at(1, "2026-11-18T10:00:00Z")];
 
     expect(

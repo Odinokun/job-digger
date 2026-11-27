@@ -5,28 +5,28 @@ import {
   type UrlRefusalReason,
 } from "./url.ts";
 
-/** Що користувач увів у полі «додати карʼєрну сторінку». */
+/** What the user entered in the "add a career page" field. */
 export type CareerSourceInput = {
   url: string;
-  /** Підпис, яким користувач розрізняє джерела одного сайту. Необовʼязковий. */
+  /** The label the user tells sources of one site apart by. Optional. */
   label?: string;
   /**
-   * Адреси джерел, які компанія вже має, - так, як вони лежать у базі.
-   * Дублікат шукається лише серед них: те саме джерело в іншої компанії
-   * дублікатом не є (`src/server/db/README.md`).
+   * The addresses of the sources the company already has, as they are in the
+   * database. A duplicate is looked for only among them: the same source in another
+   * company is not a duplicate (`src/server/db/README.md`).
    */
   existingUrls: string[];
 };
 
-/** Джерело, готове до вставки, - уже з платформою й відстеженням. */
+/** A source ready to insert - already with its platform and tracking. */
 export type PreparedCareerSource = {
   ok: true;
-  /** Адреса в абсолютній формі: саме вона зберігається й стає посиланням. */
+  /** The address in absolute form: this is what is stored and becomes the link. */
   url: string;
   /**
-   * Та сама адреса в очищеній формі. Віддається назовні, бо її зберігає
-   * `career_sources.normalized_url`: порівняння з джерелами інших компаній
-   * робиться запитом, а не в памʼяті (картка 2.17).
+   * The same address in normalized form. Returned because
+   * `career_sources.normalized_url` stores it: the comparison with other companies'
+   * sources is done by a query, not in memory (card 2.17).
    */
   normalizedUrl: string;
   label: string | null;
@@ -35,10 +35,10 @@ export type PreparedCareerSource = {
 };
 
 /**
- * Чому адресу не можна додати як джерело.
+ * Why the address cannot be added as a source.
  *
- * `duplicate` не несе адреси: модалка показує те, що користувач щойно ввів, а
- * джерело-близнюк і так видно в списку вище.
+ * `duplicate` carries no address: the modal shows what the user has just entered, and
+ * the twin source is visible in the list above anyway.
  */
 export type CareerSourceRefusal =
   | { ok: false; problem: "url"; reason: UrlRefusalReason }
@@ -47,22 +47,22 @@ export type CareerSourceRefusal =
 export type CareerSourceResult = PreparedCareerSource | CareerSourceRefusal;
 
 /**
- * Готує карʼєрне джерело до вставки: чистить адресу, ловить дублікат усередині
- * компанії й виводить платформу.
+ * Prepares a career source for insertion: normalizes the address, catches a
+ * duplicate within the company and derives the platform.
  *
- * Чиста функція в `src/lib`, а не частина запиту: те саме потрібно і модалці
- * Edit, і пропозиції в Add company (картка 2.16), а правило дедуплікації має
- * жити в одному місці.
+ * A pure function in `src/lib`, not part of a query: both the Edit modal and the
+ * offer in Add company (card 2.16) need it, and the deduplication rule has to live
+ * in one place.
  *
- * **Дублікат - це збіг очищених адрес.** `https://www.mozilla.org/careers/` і
- * `mozilla.org/careers` - те саме джерело, а два посилання, що відрізняються
- * лише `query`, - різні: `normalizeCompanyUrl` зберігає `query` саме тому, що
- * ним розрізняють фільтри й національні версії сторінки.
+ * **A duplicate is a match of normalized addresses.** `https://www.mozilla.org/careers/`
+ * and `mozilla.org/careers` are the same source, while two links that differ only in
+ * `query` are different: `normalizeCompanyUrl` keeps the `query` precisely because it
+ * tells page filters and national versions apart.
  *
- * Унікальності в базі немає свідомо (`career_sources` без unique-індексу), тому
- * перевірка тут дружня, а не атомарна: двома одночасними Save дубльоване
- * джерело теоретично додасться, і прибирається воно кнопкою Remove. Ціна
- * помилки - рядок у списку, а не втрачені дані.
+ * The database has no uniqueness here on purpose (`career_sources` without a unique
+ * index), so the check is friendly, not atomic: two simultaneous Saves could in
+ * theory add a duplicate source, and the Remove button cleans it up. The price of
+ * the mistake is a row in the list, not lost data.
  */
 export function prepareCareerSource({
   url,
@@ -79,8 +79,8 @@ export function prepareCareerSource({
   const taken = existingUrls.some((existing) => {
     const normalizedExisting = normalizeCompanyUrl(existing);
 
-    // Адреси з бази не перевіряємо повторно: непридатна там узятися не може, а
-    // якщо взялася - вона просто не збігається ні з чим.
+    // Addresses from the database are not checked again: an unusable one cannot get
+    // there, and if it did, it simply matches nothing.
     return normalizedExisting.ok && normalizedExisting.url === normalized.url;
   });
 
@@ -95,10 +95,10 @@ export function prepareCareerSource({
     ok: true,
     url: absoluteCompanyUrl(typed),
     normalizedUrl: normalized.url,
-    // Порожній підпис - це «підпису немає», а не порожній рядок у базі.
+    // An empty label is "no label", not an empty string in the database.
     label: trimmedLabel === "" ? null : trimmedLabel,
     platform,
-    // Сторінку, яку нічим прочитати, зберігаємо без відстеження.
+    // A page nothing can read is saved without tracking.
     isTracked: platform !== "unsupported",
   };
 }

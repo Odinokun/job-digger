@@ -1,15 +1,15 @@
 /**
- * Сповіщення Undo після дії над вакансією (задача vacancy-undo-toast).
+ * Undo notices after an action on a vacancy (task vacancy-undo-toast).
  */
 
-/** Скільки сповіщень Undo видно одночасно (рішення автора 24.11.2026). */
+/** How many Undo notices are visible at once (the author's decision of 24.11.2026). */
 export const MAX_UNDO_NOTICES = 3;
 
 /**
- * Відкриті сповіщення Undo після появи нового: не більше трьох, а зайві -
- * найстаріші - треба закрити. HeroUI `maxVisibleToasts` старі не закриває,
- * лише ховає в стосі, тому рахуємо самі. `open` - ключі від найстарішого до
- * найновішого.
+ * The open Undo notices after a new one appears: at most three, and the extra ones -
+ * the oldest - have to be closed. HeroUI `maxVisibleToasts` does not close old ones,
+ * it only hides them in the stack, so we count ourselves. `open` holds the keys from
+ * the oldest to the newest.
  */
 export function keepRecentUndos(
   open: readonly string[],

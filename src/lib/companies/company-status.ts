@@ -1,7 +1,6 @@
 /**
- * Статус компанії на вкладці Tracked: OK - остання
- * перевірка без помилок, Has errors - є невдалі джерела, Checking - зараз
- * перевіряється.
+ * A company's status on the Tracked tab: OK - the last check had no errors, Has
+ * errors - there are failed sources, Checking - being checked right now.
  */
 import type { CompanySource } from "./company-list";
 
@@ -9,16 +8,16 @@ export type CompanyCheckStatus = "ok" | "has-errors" | "checking";
 
 export interface CompanyCheckStatusContext {
   /**
-   * Йде загальна перевірка користувача - вона бере всі компанії Tracked, тож
-   * кожна з них зараз перевіряється.
+   * The user's general check is running - it takes all Tracked companies, so each of
+   * them is being checked right now.
    */
   isGeneralCheckRunning: boolean;
 }
 
 /**
- * Статус із джерел, що відстежуються: сторінку без відстеження не
- * перевіряють, і її давній збій - не новина. `null` - жодне ще не
- * перевірялося, показувати нічого.
+ * The status from tracked sources: an untracked page is not checked, and its old
+ * failure is not news. `null` means none has been checked yet, there is nothing to
+ * show.
  */
 export function companyCheckStatus(
   sources: CompanySource[],
@@ -38,20 +37,20 @@ export function companyCheckStatus(
   return null;
 }
 
-/** Що показує картка Tracked ліворуч у підвалі: один кольоровий бейдж і, можливо, текст. */
+/** What a Tracked card shows on the left of its footer: one coloured badge and maybe text. */
 export interface CardStatusBadge {
   badge: CompanyCheckStatus | "not-read" | null;
-  /** «N pages not read» приглушеним текстом поруч, бо бейдж уже зайнятий. */
+  /** "N pages not read" as muted text next to it, because the badge is already taken. */
   notReadAsText: boolean;
 }
 
 /**
- * Один кольоровий бейдж на картку (аудит інтерфейсу, A6): чотири кольорові
- * мітки поруч - Checking, Has errors, «2 pages not read» - зливались у шум.
+ * One coloured badge per card (UI audit, A6): four coloured marks side by side -
+ * Checking, Has errors, "2 pages not read" - blurred into noise.
  *
- * Бейдж отримує найважливіше: перевірка, що йде, і помилки - вони вимагають
- * дії зараз; далі непрочитані сторінки; OK - лише коли більше нічого немає.
- * Непрочитані сторінки поруч із Checking чи Has errors лишаються текстом.
+ * The badge goes to what matters most: a running check and errors - they need
+ * action now; then unread pages; OK only when there is nothing else. Unread pages
+ * next to Checking or Has errors stay as text.
  */
 export function cardStatusBadge(
   status: CompanyCheckStatus | null,

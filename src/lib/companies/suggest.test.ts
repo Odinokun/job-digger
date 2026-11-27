@@ -107,7 +107,7 @@ describe("suggestCompanyFields", () => {
       expect(suggestCompanyFields("acme.peopleforce.io/careers").name).toBe(
         "Acme",
       );
-      // Суфікс Personio - з двох лейблів, і `jobs` до назви не потрапляє.
+      // The Personio suffix has two labels, and `jobs` does not get into the name.
       expect(suggestCompanyFields("astrafy.jobs.personio.de").name).toBe(
         "Astrafy",
       );
@@ -117,7 +117,7 @@ describe("suggestCompanyFields", () => {
     });
 
     it("takes the company name from a CleverStaff board", () => {
-      // Перший сегмент шляху - службовий `i`, компанія - у другому.
+      // The first path segment is the service `i`, the company is in the second.
       expect(
         suggestCompanyFields("cleverstaff.net/i/8allocate-vacancies").name,
       ).toBe("8allocate");
@@ -145,7 +145,7 @@ describe("suggestCompanyFields", () => {
   });
 
   it("does not name a company after a TalentAdore token", () => {
-    // Задача 6.28: в адресі лише токен компанії, а не назва.
+    // Task 6.28: the address holds only the company token, not a name.
     expect(
       suggestCompanyFields("ats.talentadore.com/positions/rR1TqSR/json"),
     ).toEqual({

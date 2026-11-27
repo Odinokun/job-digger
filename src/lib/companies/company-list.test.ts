@@ -24,8 +24,8 @@ describe("parseCompaniesTab", () => {
   });
 
   it("falls back to Tracked for anything else", () => {
-    // Значення приходить із адреси або з аргумента Server Action, тож тут буває
-    // будь-що: вкладка за замовчуванням краща за помилку.
+    // The value comes from the address or a Server Action argument, so it can be
+    // anything: the default tab is better than an error.
     expect(parseCompaniesTab("tracked")).toBe("tracked");
     expect(parseCompaniesTab(undefined)).toBe("tracked");
     expect(parseCompaniesTab("Tracked")).toBe("tracked");
@@ -35,9 +35,9 @@ describe("parseCompaniesTab", () => {
 });
 
 describe("matchesCompanySearch", () => {
-  // Те саме правило, що в запиті списку (src/server/companies/list.ts):
-  // рядок, доданий чи змінений під час пошуку, лишається в показаному списку,
-  // лише якщо сервер теж його знайшов би.
+  // The same rule as in the list query (src/server/companies/list.ts): a row added
+  // or changed during a search stays in the shown list only if the server would
+  // find it too.
   it("matches a name that contains the query, in any case", () => {
     expect(matchesCompanySearch("Black Acorn", "aC")).toBe(true);
   });
@@ -107,8 +107,8 @@ describe("company sources", () => {
     isTracked: false,
   });
 
-  // На вкладці Needs attention змішані обидва списки, тож дії картки (Check
-  // now чи Find pages) визначає сама компанія, а не вкладка.
+  // The Needs attention tab mixes both lists, so the company itself, not the tab,
+  // decides the card's actions (Check now or Find pages).
   it("calls a company tracked when any of its sources is tracked", () => {
     expect(isTrackedCompany([unsupported, source({})])).toBe(true);
     expect(isTrackedCompany([unsupported])).toBe(false);
@@ -121,7 +121,7 @@ describe("company sources", () => {
   });
 
   it("does not count a page marked as reference only", () => {
-    // Задача 6.17: людина вирішила, що ця сторінка - лише посилання.
+    // Task 6.17: the person decided this page is only a link.
     const reference = { ...unsupported, isReferenceOnly: true };
 
     expect(notReadSourceCount([unsupported, reference])).toBe(1);

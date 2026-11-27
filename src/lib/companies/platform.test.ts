@@ -57,7 +57,7 @@ describe("detectPlatform", () => {
     expect(detectPlatform("astrafy.jobs.personio.com/job/2888194")).toBe(
       "personio",
     );
-    // Сайт самої Personio - не дошка.
+    // Personio's own site is not a board.
     expect(detectPlatform("www.personio.com/careers")).toBe("unsupported");
   });
 
@@ -66,7 +66,7 @@ describe("detectPlatform", () => {
     expect(detectPlatform("spinncloud.career.softgarden.de/en")).toBe(
       "softgarden",
     );
-    // Скрипти й стилі softgarden - не дошка.
+    // softgarden scripts and styles are not a board.
     expect(detectPlatform("static.softgarden.de/x.js")).toBe("unsupported");
   });
 
@@ -75,8 +75,8 @@ describe("detectPlatform", () => {
   });
 
   it("is not fooled by a host that merely contains a platform domain", () => {
-    // Порівнюється межа лейбла домену, а не просто кінець рядка: інакше
-    // будь-хто міг би назвати свій домен так, щоб ми прийняли його за ATS.
+    // The domain label boundary is compared, not just the end of the string:
+    // otherwise anyone could name their domain so that we take it for an ATS.
     expect(detectPlatform("not-greenhouse.io/jobs")).toBe("unsupported");
     expect(detectPlatform("greenhouse.io.example.com/jobs")).toBe(
       "unsupported",
@@ -90,7 +90,7 @@ describe("detectPlatform", () => {
   });
 
   it("never guesses job posting markup, because the address cannot show it", () => {
-    // schema_org дає лише пробне читання сторінки (етап 3), а не адреса.
+    // Only the page content can give schema_org, never the address.
     const guesses = [
       "careers.acme.example",
       "acme.example/jobs",

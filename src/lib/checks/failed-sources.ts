@@ -1,10 +1,10 @@
 /**
- * Рядок Failed Sources Drawer (src/server/checks/README.md). Тип
- * спільний: його віддає сервер (`server/checks/failed-sources.ts`), а показує
- * клієнт.
+ * A row of the Failed Sources Drawer (src/server/checks/README.md). The type is
+ * shared: the server returns it (`server/checks/failed-sources.ts`), and the client
+ * shows it.
  */
 
-/** Причина збою - з `check_tasks.error`, без технічних подробиць. */
+/** The failure reason - from `check_tasks.error`, without technical details. */
 export type FailureReason =
   | "not-found"
   | "unreadable"
@@ -18,17 +18,17 @@ export interface FailedSource {
   sourceId: string;
   companyName: string;
   url: string;
-  /** Підпис джерела, якщо користувач його дав. */
+  /** The source label, if the user gave one. */
   label: string | null;
   reason: FailureReason;
-  /** Код відповіді сайту - лише для `bad-status`. */
+  /** The site's response code - only for `bad-status`. */
   httpStatus: number | null;
-  /** Retry поставлений у чергу й ще не завершився. */
+  /** A Retry is queued and has not finished yet. */
   isRetrying: boolean;
 }
 
 export interface FailedSourcesList {
   items: FailedSource[];
-  /** Retry доступний лише після завершення загальної перевірки. */
+  /** Retry is available only after the general check has finished. */
   canRetry: boolean;
 }

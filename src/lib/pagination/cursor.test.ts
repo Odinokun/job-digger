@@ -10,8 +10,8 @@ describe("parseCursor", () => {
   });
 
   it("keeps a key that is only whitespace", () => {
-    // Назва компанії з пробілами в базі бути не може, але курсор не вирішує,
-    // що є назвою: він лише переносить значення останнього рядка назад у запит.
+    // A company name with spaces cannot be in the database, but the cursor does not
+    // decide what a name is: it only carries the last row's value back into the query.
     expect(parseCursor({ key: " ", id })).toEqual({ key: " ", id });
   });
 

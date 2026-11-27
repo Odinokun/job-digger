@@ -1,35 +1,35 @@
 /**
- * Відомі ATS без парсера (задача 5.15): платформи, які пошук упізнає за доменом,
- * але читати поки не вміє. Посилання з сайту компанії на таку платформу - не
- * чуже посилання, а кар'єрна сторінка, яку зберігаємо як непідтримуване
- * джерело з назвою платформи. Так видно, які парсери потрібні насправді.
+ * Known ATS without a parser (task 5.15): platforms the search recognises by domain
+ * but cannot read yet. A link from a company site to such a platform is not a
+ * foreign link but a career page, which we save as an unsupported source with the
+ * platform name. This shows which parsers are really needed.
  *
- * Лише домени, без форми адреси дошки: шаблони адрес у документації
- * постачальників здебільшого не описані. Тому знахідка - одна на платформу
- * (`src/server/discovery/ats-links.ts`), а не одна на дошку.
+ * Domains only, without a board address form: vendor documentation mostly does not
+ * describe address templates. That is why there is one finding per platform
+ * (`src/server/discovery/ats-links.ts`), not one per board.
  *
- * Платформа з парсером тут бути не повинна: її впізнає `platform.ts`. Новий
- * парсер прибирає свій рядок звідси (src/server/parsers/README.md, «Як додати
- * платформу»).
+ * A platform with a parser must not be here: `platform.ts` recognises it. A new
+ * parser removes its line from here (src/server/parsers/README.md, "How to add a
+ * platform").
  */
 
 /**
- * Шаблон → назва платформи:
+ * Pattern → platform name:
  *
- * - з крапкою на початку - будь-який піддомен (`.teamtailor.com` -
- *   `acme.teamtailor.com`, компанія в піддомені);
- * - без крапки - рівно цей хост (`jobs.jobvite.com/acme`, компанія в шляху);
- * - зі шляхом - цей хост і адреса, що починається з цього шляху
- *   (`join.com/companies/`): платформа тримає дошки на тому самому хості, що й
- *   свій сайт.
+ * - with a leading dot - any subdomain (`.teamtailor.com` -
+ *   `acme.teamtailor.com`, the company in the subdomain);
+ * - without a dot - exactly this host (`jobs.jobvite.com/acme`, the company in the path);
+ * - with a path - this host and an address starting with this path
+ *   (`join.com/companies/`): the platform keeps boards on the same host as its
+ *   own site.
  *
- * Сам домен і `www.` не підпадають під піддомен: це сайт постачальника, на
- * нього веде «Powered by ...», а не дошка компанії.
+ * The domain itself and `www.` do not count as a subdomain: that is the vendor's
+ * site, which "Powered by ..." links to, not a company board.
  *
- * Хости перевірені справжніми запитами 19.11.2026: хост відповідає й належить
- * цьому постачальнику, а для платформ задачі 5.15 (Україна й Німеччина) - ще й
- * веде на справжню кар'єрну сторінку (BITE, Umantis - власні сторінки
- * постачальників; d.vinci - клієнт `impulse`).
+ * The hosts were checked with real requests on 19.11.2026: the host answers and
+ * belongs to this vendor, and for the platforms of task 5.15 (Ukraine and Germany)
+ * it also leads to a real career page (BITE, Umantis - the vendors' own pages;
+ * d.vinci - the client `impulse`).
  */
 const KNOWN_ATS: Array<[pattern: string, name: string]> = [
   ["jobs.smartrecruiters.com", "SmartRecruiters"],
@@ -51,8 +51,8 @@ const KNOWN_ATS: Array<[pattern: string, name: string]> = [
   [".ultipro.com", "UKG Pro"],
   [".dayforcehcm.com", "Dayforce"],
   ["recruiting.paylocity.com", "Paylocity"],
-  // Німеччина (задача 5.15). rexx тут немає: його клієнти тримають кар'єрну
-  // сторінку на власному домені (задача 5.13).
+  // Germany (task 5.15). rexx is not here: its clients keep the career page on
+  // their own domain (task 5.13).
   ["jobs.b-ite.com", "BITE"],
   [".onlyfy.jobs", "onlyfy"],
   ["jobs.umantis.com", "Umantis"],
@@ -61,8 +61,9 @@ const KNOWN_ATS: Array<[pattern: string, name: string]> = [
 ];
 
 /**
- * Назва відомої ATS без парсера, на яку веде адреса, або `null`. Приймає і
- * абсолютну адресу, і очищену (`acme.bamboohr.com`), як її зберігає база.
+ * The name of a known ATS without a parser that the address leads to, or `null`.
+ * Accepts both an absolute address and a normalized one (`acme.bamboohr.com`), as
+ * the database stores it.
  */
 export function knownAtsName(url: string): string | null {
   const parsed = parse(url);

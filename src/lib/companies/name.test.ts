@@ -18,8 +18,8 @@ describe("normalizeCompanyName", () => {
   });
 
   it("keeps letters of any alphabet", () => {
-    // Назви компаній не перекладаються, тому кирилиця тут така сама назва, як
-    // латиниця, і викидати її не можна.
+    // Company names are not translated, so Cyrillic is as much a name here as Latin,
+    // and it must not be thrown away.
     expect(normalizeCompanyName("Нова Пошта")).toBe("новапошта");
   });
 
@@ -33,8 +33,8 @@ describe("normalizeCompanyName", () => {
   });
 
   it("gives an empty string for a name made of punctuation alone", () => {
-    // Порожня назва базу не проходить (`companies_name_not_blank`), але сюди
-    // приходить недовірений ввід, тому результат має бути визначеним.
+    // An empty name does not pass the database (`companies_name_not_blank`), but
+    // untrusted input arrives here, so the result has to be defined.
     expect(normalizeCompanyName(" --- ")).toBe("");
   });
 });
@@ -49,7 +49,7 @@ describe("sameCompanyName", () => {
   });
 
   it("never matches two empty names", () => {
-    // Інакше дві назви з самих розділових знаків вважалися б однією компанією.
+    // Otherwise two names made only of punctuation would count as one company.
     expect(sameCompanyName("---", "!!!")).toBe(false);
   });
 });
