@@ -210,7 +210,7 @@ and READMEs (task [remove-docs-plan](remove-docs-plan.md)). Its last version is 
 | [Recent favorites on top in Favorites](favorites-added-today.md)                           | done      |
 | [Undo after a vacancy action](vacancy-undo-toast.md)                                       | done      |
 | [Accessibility audit](accessibility-audit.md)                                              | done      |
-| [Prepare the repository for showing](public-repo-polish.md)                                | backlog   |
+| [Prepare the repository for showing](public-repo-polish.md)                                | done      |
 | [JD favicon](favicon-jd.md)                                                                | done      |
 | [Company search on the Companies page](companies-search.md)                                | done      |
 | [One orange in each theme](one-orange.md)                                                  | done      |
@@ -220,5 +220,5 @@ and READMEs (task [remove-docs-plan](remove-docs-plan.md)). Its last version is 
 | [Translate src/app](translate-app.md)                                                      | done      |
 | [Translate src/server](translate-server.md)                                                | done      |
 | [Translate src/lib, e2e and configs](translate-lib-e2e.md)                                 | done      |
-| [Root README for an outside reader](public-readme.md)                                      | todo      |
+| [Root README for an outside reader](public-readme.md)                                      | done      |
 | [Flaky e2e/csv.spec.ts](csv-e2e-flake.md)                                                  | done      |
