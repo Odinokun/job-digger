@@ -182,5 +182,5 @@ PR: #57
 | [Переклад src/app](translate-app.md)                                                             | done      |
 | [Переклад src/server](translate-server.md)                                                       | done      |
 | [Переклад src/lib, e2e і конфігів](translate-lib-e2e.md)                                         | done      |
-| [Кореневий README для стороннього читача](public-readme.md)                                      | backlog   |
+| [Кореневий README для стороннього читача](public-readme.md)                                      | todo      |
 | [Нестабільний e2e/csv.spec.ts](csv-e2e-flake.md)                                                 | done      |
